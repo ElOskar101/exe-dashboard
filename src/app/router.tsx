@@ -1,26 +1,35 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import NotFound from '../pages/not-found.tsx'
-import { ProtectedRoute, UnderConstruction } from '@/features/auth'
-import { Home } from '@/features/home'
+import { ProtectedRoute } from '@/features/auth'
 import Layout from '@/components/layout/layout'
+
+const Home = lazy(() =>
+  import('@/features/home').then((module) => ({ default: module.Home })),
+)
+const NotFound = lazy(() => import('../pages/not-found.tsx'))
+const UnderConstruction = lazy(
+  () => import('@/features/auth/pages/under-construction'),
+)
 
 export const AppRouter = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/under-construction" element={<UnderConstruction />} />
-        <Route path="/404" element={<NotFound />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Home />} />
-        </Route>
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path="/under-construction" element={<UnderConstruction />} />
+          <Route path="/404" element={<NotFound />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Home />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
