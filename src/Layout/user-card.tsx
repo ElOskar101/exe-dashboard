@@ -66,13 +66,13 @@ function UserCard() {
         ) : (
           <>
             <Avatar>
-              <AvatarFallback className="animate-pulse bg-muted">
+              <AvatarFallback className="animate-pulse">
                 {getInitials('loading...')}
               </AvatarFallback>
             </Avatar>
             <div className="text-md leading-none">
-              <div className="mb-1 h-4 w-20 animate-pulse rounded bg-muted"></div>
-              <div className="h-4 w-24 animate-pulse rounded bg-muted text-sm"></div>
+              <div className="mb-1 h-4 w-20 animate-pulse rounded"></div>
+              <div className="h-4 w-24 animate-pulse rounded text-sm"></div>
             </div>
           </>
         )}
@@ -82,7 +82,7 @@ function UserCard() {
             origin-top-right max-h-0 transition-all duration-150
              data-open:max-h-screen w-full"
         >
-          <div className="bg-popover">
+          <div>
             <Button
               className="w-full justify-start"
               size="sm"

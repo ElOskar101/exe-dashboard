@@ -11,10 +11,10 @@ const Header: () => JSX.Element = () => {
 
   return (
     <>
-      <header className="z-1 w-full border-b border-border bg-background shadow-sm">
+      <header className="z-1 w-full border-b shadow-sm">
         <nav className="container mx-auto py-2 flex items-center justify-between">
           {/* Logo */}
-          <a href="/" className="transition-colors hover:text-primary">
+          <a href="/" className="transition-colors">
             <img
               className="w-auto h-8 object-cover"
               src="/agent-icon.svg"

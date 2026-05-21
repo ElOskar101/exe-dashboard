@@ -9,7 +9,7 @@ const ExecutionRow = (
 ) => {
   return (
     <div
-      className="flex w-full scale-100 cursor-pointer items-center gap-x-2 rounded-sm border border-border p-1 transition-all hover:scale-101 hover:bg-accent"
+      className="flex w-full scale-100 cursor-pointer items-center gap-x-2 rounded-sm border p-1 transition-all hover:scale-101"
       onClick={props.onClick}
     >
       <ExecutionStatusCard status={props.status} className="mb-auto" />

@@ -31,11 +31,11 @@ export default function Navbar() {
   }>
 
   return (
-    <nav className="w-full border-b border-border bg-background shadow-sm">
+    <nav className="w-full border-b shadow-sm">
       <div className="container mx-auto flex items-center justify-between py-3">
         <button
           onClick={() => setOpen(!open)}
-          className="rounded p-2 transition-colors hover:bg-accent md:hidden"
+          className="rounded p-2 transition-colors md:hidden"
         >
           ☰
         </button>
@@ -45,8 +45,7 @@ export default function Navbar() {
             ${open ? 'flex' : 'hidden'}
             md:flex flex-col md:flex-row gap-4 md:gap-6
             absolute md:static top-16 left-0 w-full md:w-auto
-            bg-popover md:bg-transparent
-            p-4 md:p-0 border-t md:border-none border-border
+            p-4 md:p-0 border-t md:border-none
             transition-all
           `}
         >
@@ -56,7 +55,7 @@ export default function Navbar() {
             return (
               <a
                 key={route.route}
-                className="flex cursor-pointer items-center gap-x-1 text-foreground transition-colors hover:text-primary"
+                className="flex cursor-pointer items-center gap-x-1 transition-colors"
                 href={route.route}
               >
                 {RouteIcon && <RouteIcon />}

@@ -21,16 +21,16 @@ const ExecutionStatusCard = (props: IExecutionStatusCard) => {
     >
       <IconDeviceImac className="w-[1em] h-[1em] stroke-[2px] m-auto" />
       {status === 'sleeping' && (
-        <IconZzz className="absolute -right-1 -top-1 h-[0.6em] w-[0.6em] origin-center animate-pulse stroke-[3px] text-muted-foreground" />
+        <IconZzz className="absolute -right-1 -top-1 h-[0.6em] w-[0.6em] origin-center animate-pulse stroke-[3px]" />
       )}
       {status === 'completed' && (
-        <IconCircleCheck className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] text-primary" />
+        <IconCircleCheck className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em]" />
       )}
       {status === 'process' && (
-        <IconSettings className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] origin-center animate-spin stroke-[1px] text-foreground" />
+        <IconSettings className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] origin-center animate-spin stroke-[1px]" />
       )}
       {status === 'error' && (
-        <IconExclamationCircle className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] animate-bounce text-destructive" />
+        <IconExclamationCircle className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] animate-bounce" />
       )}
     </div>
   )

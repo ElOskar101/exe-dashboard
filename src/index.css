@@ -124,16 +124,12 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
   html {
     @apply font-sans;
   }
 
   body {
-    @apply min-h-screen bg-background text-foreground;
+    @apply min-h-screen;
     margin: 0;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
