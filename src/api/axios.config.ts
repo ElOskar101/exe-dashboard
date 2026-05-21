@@ -1,18 +1,20 @@
-import axios from "axios";
-import { setupInterceptors } from "./interceptors";
+import axios from 'axios'
+import { setupInterceptors } from './interceptors'
 
-const fetcher = axios.create({ baseURL: import.meta.env.VITE_API_URL });
-export const fetcherExe = axios.create({ baseURL: import.meta.env.VITE_SOCKET_URL + '/api/v1' });
+const fetcher = axios.create({ baseURL: import.meta.env.VITE_API_URL })
+export const fetcherExe = axios.create({
+  baseURL: import.meta.env.VITE_SOCKET_URL + '/api/v1',
+})
 
 fetcher.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token')
   // if (token) config.headers.Authorization = `Bearer ${token}`;
-  if(token) config.headers.set('x-access-token',token)
-  config.headers["Content-Type"] = 'application/json'
+  if (token) config.headers.set('x-access-token', token)
+  config.headers['Content-Type'] = 'application/json'
 
-  return config;
-});
+  return config
+})
 
-setupInterceptors(fetcher);
+setupInterceptors(fetcher)
 
-export default fetcher;
+export default fetcher

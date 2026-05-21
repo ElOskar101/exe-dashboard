@@ -1,6 +1,6 @@
-import fetcher from "../api/axios.config"
-import { IUser } from "../interfaces/user.interface"
+import fetcher from '../api/axios.config'
+import { IUser } from '../interfaces/user.interface'
 
 export const getUserData = () => {
-    return fetcher<IUser>('/users/me')
+  return fetcher<IUser>('/users/me')
 }

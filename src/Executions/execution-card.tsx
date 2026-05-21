@@ -1,72 +1,72 @@
-import React, { ChangeEvent, useContext, useEffect, useState } from "react";
-import { IExecution } from "./interfaces/execution.interface";
-import Card from "../components/Card";
-import CardHeader from "../components/Card/CardHeader";
-import CardBody from "../components/Card/CardBody";
-import classNames from "classnames";
-import { useTranslation } from "react-i18next";
-import { ExecutionConsole } from "./ExecutionConsole";
-import Button from "../components/Button";
-import TablerIcons from "../components/TablerIcons";
+import React, { ChangeEvent, useContext, useEffect, useState } from 'react'
+import { IExecution } from './interfaces/execution.interface'
+import Card from '../components/card'
+import CardHeader from '../components/card/card-header'
+import CardBody from '../components/card/card-body'
+import classNames from 'classnames'
+import { useTranslation } from 'react-i18next'
+import { ExecutionConsole } from './execution-console'
+import Button from '../components/button'
+import TablerIcons from '../components/tabler-icons'
 import {
   getCustomer,
   getCustomers,
   getExecution,
-} from "./services/execution.service";
-import { exeLog } from "../utils/exeData";
-import { Select } from "../components/Select";
-import { AuthContext } from "../context/AuthContext/Context";
+} from './services/execution.service'
+import { exeLog } from '../utils/exe-data'
+import { Select } from '../components/select'
+import { AuthContext } from '../context/auth-context/context'
 
 interface IForm {
-  customer?: string;
-  clinic?: string;
-  bot?: string;
+  customer?: string
+  clinic?: string
+  bot?: string
 }
 
 function ExecutionCard(props: {
-  execution?: IExecution | null;
-  className?: string;
+  execution?: IExecution | null
+  className?: string
 }) {
-  const { t } = useTranslation("home");
-  const { user, permissions } = useContext(AuthContext);
-  const [lines, setLines] = useState<string[]>([]);
+  const { t } = useTranslation('home')
+  const { user, permissions } = useContext(AuthContext)
+  const [lines, setLines] = useState<string[]>([])
   const [customers, setCustomers] = useState<
     Array<{ value: string; label: string; _id?: string }>
-  >([]);
+  >([])
 
-  const [formValue, setFormValue] = useState<IForm>({});
-
-  useEffect(() => {
-    if (props.execution) getExeData();
-  }, [props.execution]);
+  const [formValue, setFormValue] = useState<IForm>({})
 
   useEffect(() => {
-    if (user) getAllCustomers();
-  }, [user]);
+    if (props.execution) getExeData()
+  }, [props.execution])
 
   useEffect(() => {
-    if (formValue.customer) getClinic(formValue.customer);
-  }, [formValue.customer]);
+    if (user) getAllCustomers()
+  }, [user])
+
+  useEffect(() => {
+    if (formValue.customer) getClinic(formValue.customer)
+  }, [formValue.customer])
 
   const getExeData = async () => {
-    if (!props.execution) return;
+    if (!props.execution) return
     setFormValue(() => ({
       clinic: props.execution?.clinic,
       customer: props.execution?.client,
       bot: props.execution?.bot,
-    }));
+    }))
     getExecution(props.execution._id)
       .then((res) => {
-        setLines(() => (res.data.logs || exeLog)?.split("/\r?\n\r?\n/") || []);
+        setLines(() => (res.data.logs || exeLog)?.split('/\r?\n\r?\n/') || [])
       })
       .catch(() => {
-        setLines(() => exeLog.split("/\r?\n\r?\n/") || []);
-      });
-  };
+        setLines(() => exeLog.split('/\r?\n\r?\n/') || [])
+      })
+  }
 
   const getAllCustomers = () => {
     const isValidGetAllClientWithoutArea =
-      permissions["QA"] || permissions["carrier"] || permissions["admin"];
+      permissions['QA'] || permissions['carrier'] || permissions['admin']
 
     getCustomers({
       ...(isValidGetAllClientWithoutArea ? {} : { area: user?.area }),
@@ -80,27 +80,27 @@ function ExecutionCard(props: {
           label: item.clientName,
           _id: item._id,
         })),
-      );
-    });
-  };
+      )
+    })
+  }
 
   const getClinic = (customer: string) => {
-    const customerId = customers.find((item) => item.value === customer)?._id;
-    getCustomer(customerId || "").then((res) => console.log("prro", res));
-  };
+    const customerId = customers.find((item) => item.value === customer)?._id
+    getCustomer(customerId || '').then((res) => console.log('prro', res))
+  }
 
   const onChangeCustomer = (e: ChangeEvent) => {
     setFormValue((prev) => ({
       ...prev,
       customer: (e.target as HTMLSelectElement).value,
-    }));
-  };
+    }))
+  }
 
   return (
-    <Card className={classNames("flex flex-col", props.className)}>
+    <Card className={classNames('flex flex-col', props.className)}>
       <CardHeader className="flex items-center">
         <TablerIcons icon="IconFileCode2" className="mr-1" />
-        {t("executionCard.title")}
+        {t('executionCard.title')}
         <div className="ml-auto">
           <Button
             variant="outline"
@@ -117,7 +117,7 @@ function ExecutionCard(props: {
         <div className="flex flex-col md:flex-row items-center gap-x-2">
           <Select
             options={customers}
-            label={t("customer", { ns: "common" })}
+            label={t('customer', { ns: 'common' })}
             padding="sm"
             className="w-full"
             value={formValue.customer}
@@ -125,14 +125,14 @@ function ExecutionCard(props: {
           />
           <Select
             options={[]}
-            label={t("clinic", { ns: "common" })}
+            label={t('clinic', { ns: 'common' })}
             padding="sm"
             className="w-full"
             value={formValue.clinic}
           />
           <Select
             options={[]}
-            label={t("bot", { ns: "common" })}
+            label={t('bot', { ns: 'common' })}
             padding="sm"
             className="w-full"
             value={formValue.bot}
@@ -140,7 +140,7 @@ function ExecutionCard(props: {
         </div>
       </CardBody>
     </Card>
-  );
+  )
 }
 
-export default ExecutionCard;
+export default ExecutionCard

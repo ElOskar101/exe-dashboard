@@ -1,9 +1,9 @@
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client'
 
 export const socket = io(import.meta.env.VITE_SOCKET_URL, {
   autoConnect: false,
   auth: {
-    token: localStorage.getItem("token"),
+    token: localStorage.getItem('token'),
   },
-  transports: ["websocket", "polling"]
-});
+  transports: ['websocket', 'polling'],
+})

@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./ProtectedRoute.tsx";
-import UnderConstruction from "../pages/UnderConstruction.tsx";
-import NotFound from "../pages/NotFound.tsx";
-import Home from "../Home/Home.tsx";
-import Layout from "../Layout/Layout.tsx";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ProtectedRoute } from './protected-route.tsx'
+import UnderConstruction from '../pages/under-construction.tsx'
+import NotFound from '../pages/not-found.tsx'
+import Home from '../home/home.tsx'
+import Layout from '../layout/layout.tsx'
 
 export const AppRouter = () => {
   return (
@@ -23,5 +23,5 @@ export const AppRouter = () => {
         </Route>
       </Routes>
     </BrowserRouter>
-  );
-};
+  )
+}

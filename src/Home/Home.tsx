@@ -1,31 +1,29 @@
-import React, { useState } from "react";
-import Card from "../components/Card";
-import CardHeader from "../components/Card/CardHeader";
-import CardBody from "../components/Card/CardBody";
-import { useTranslation } from "react-i18next";
-import Button from "../components/Button";
-import TablerIcons from "../components/TablerIcons";
-import exeData from "../utils/exeData";
-import ExecutionRow from "../Executions/ExecutionRow";
-import FolderCard from "../components/FolderCard";
-import ExecutionStatusCard from "../Executions/ExecutionStatusCard";
-import ExecutionCard from "../Executions/ExecutionCard";
-import { IExecution } from "../Executions/interfaces/execution.interface";
+import React, { useState } from 'react'
+import Card from '../components/card'
+import CardHeader from '../components/card/card-header'
+import CardBody from '../components/card/card-body'
+import { useTranslation } from 'react-i18next'
+import Button from '../components/button'
+import TablerIcons from '../components/tabler-icons'
+import exeData from '../utils/exe-data'
+import ExecutionRow from '../executions/execution-row'
+import ExecutionCard from '../executions/execution-card'
+import { IExecution } from '../executions/interfaces/execution.interface'
 
 const Home = () => {
-  const { t } = useTranslation("home");
-  const [selectedExe, setSelectedExe] = useState<IExecution | null>(null);
+  const { t } = useTranslation('home')
+  const [selectedExe, setSelectedExe] = useState<IExecution | null>(null)
 
   const selecteExe = (exe: IExecution) => () => {
-    setSelectedExe(() => exe);
-  };
+    setSelectedExe(() => exe)
+  }
 
   return (
     <div className="py-4 flex flex-col md:flex-row w-full gap-x-3">
       <Card className="w-full md:w-xl">
         <CardHeader className="flex items-center">
           <TablerIcons icon="IconListDetails" className="mr-1" />
-          {t("executionsCard.title")}
+          {t('executionsCard.title')}
           <div className="ms-auto flex gap-x-2">
             <Button
               variant="outline"
@@ -44,7 +42,7 @@ const Home = () => {
           {exeData.map((item, i) => (
             <ExecutionRow
               {...item}
-              key={"execution-row-" + i}
+              key={'execution-row-' + i}
               onClick={selecteExe(item)}
             />
           ))}
@@ -52,9 +50,9 @@ const Home = () => {
       </Card>
       <ExecutionCard className="w-full" execution={selectedExe} />
     </div>
-  );
-};
+  )
+}
 
-Home.propTypes = {};
+Home.propTypes = {}
 
-export default Home;
+export default Home

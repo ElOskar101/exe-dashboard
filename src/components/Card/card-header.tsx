@@ -1,16 +1,14 @@
 import classNames from 'classnames'
-import React, { JSX, ReactElement } from 'react'
+import React, { JSX } from 'react'
 
-interface ICard {
+function CardHeader(props: {
   children?: JSX.Element | string | Array<JSX.Element | string>
   className?: string
-}
-
-const Card = (props: ICard) => {
+}) {
   return (
     <div
       className={classNames(
-        'rounded border border-[var(--neutral-400)] overflow-hidden',
+        'px-2 py-3 border-b border-[var(--neutral-400)] text-md bg-[var(--neutral-100)] dark:bg-[var(--primary-50)]',
         props.className,
       )}
     >
@@ -19,4 +17,4 @@ const Card = (props: ICard) => {
   )
 }
 
-export default Card
+export default CardHeader

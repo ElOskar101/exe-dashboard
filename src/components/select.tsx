@@ -1,10 +1,10 @@
-import classNames from "classnames";
+import classNames from 'classnames'
 
 interface ISelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label: string;
-  error?: string;
-  options: { label: string; value: string }[];
-  padding?: "sm" | "md" | "lg";
+  label: string
+  error?: string
+  options: { label: string; value: string }[]
+  padding?: 'sm' | 'md' | 'lg'
 }
 
 export function Select({
@@ -12,7 +12,7 @@ export function Select({
   error,
   options,
   className,
-  padding = "md",
+  padding = 'md',
   ...props
 }: ISelectProps) {
   return (
@@ -25,9 +25,9 @@ export function Select({
         {...props}
         className={classNames(
           {
-            "px-3 py-2 rounded-lg": padding === "lg",
-            "px-2 py-1 rounded-md": padding === "md",
-            "px-1 py-1 rounded-sm": padding === "sm",
+            'px-3 py-2 rounded-lg': padding === 'lg',
+            'px-2 py-1 rounded-md': padding === 'md',
+            'px-1 py-1 rounded-sm': padding === 'sm',
           },
           `
           border
@@ -36,12 +36,16 @@ export function Select({
           text-[var(--neutral-900)] dark:text-[var(--neutral-100)]
           focus:outline-none focus:ring-2 focus:ring-[var(--primary-500)]
           transition-all`,
-          error ? "border-red-500" : "",
+          error ? 'border-red-500' : '',
           className,
         )}
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value} selected={opt.value === props.value}>
+          <option
+            key={opt.value}
+            value={opt.value}
+            selected={opt.value === props.value}
+          >
             {opt.label}
           </option>
         ))}
@@ -49,5 +53,5 @@ export function Select({
 
       {error && <span className="text-xs text-red-500">{error}</span>}
     </div>
-  );
+  )
 }

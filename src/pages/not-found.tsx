@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next'
 
 export default function NotFound() {
   const { t } = useTranslation('not-found')
@@ -11,9 +11,7 @@ export default function NotFound() {
           {t('title')}
         </h2>
 
-        <p className="text-gray-600 mb-8">
-          {t('description')}
-        </p>
+        <p className="text-gray-600 mb-8">{t('description')}</p>
 
         <a
           href="/"
@@ -23,5 +21,5 @@ export default function NotFound() {
         </a>
       </div>
     </div>
-  );
+  )
 }

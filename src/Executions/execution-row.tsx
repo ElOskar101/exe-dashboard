@@ -1,10 +1,10 @@
-import React from "react";
-import { IExecution } from "./interfaces/execution.interface";
-import Button from "../components/Button";
-import TablerIcons from "../components/TablerIcons";
-import ExecutionStatusCard from "./ExecutionStatusCard";
-import classNames from "classnames";
-import { getDiffDates } from "../utils/common";
+import React from 'react'
+import { IExecution } from './interfaces/execution.interface'
+import Button from '../components/button'
+import TablerIcons from '../components/tabler-icons'
+import ExecutionStatusCard from './execution-status-card'
+import classNames from 'classnames'
+import { getDiffDates } from '../utils/common'
 
 const ExecutionRow = (
   props: IExecution & { onClick?: React.MouseEventHandler },
@@ -18,8 +18,8 @@ const ExecutionRow = (
       <div className="flex flex-col">
         <strong>{props.bot}</strong>
         <span className="text-sm flex flex-wrap items-center">
-          <TablerIcons icon="IconBuildingSkyscraper" className="size-[1.2em]" />{" "}
-          {`${props.client}`} {">"}{" "}
+          <TablerIcons icon="IconBuildingSkyscraper" className="size-[1.2em]" />{' '}
+          {`${props.client}`} {'>'}{' '}
           <TablerIcons icon="IconDental" className="size-[1.2em]" />
           {`${props.clinic}`}
         </span>
@@ -28,7 +28,7 @@ const ExecutionRow = (
         {getDiffDates(props.startedAt, props.finishedAt)}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ExecutionRow;
+export default ExecutionRow

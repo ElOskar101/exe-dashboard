@@ -1,8 +1,8 @@
 {
-    "executionsCard": {
-        "title": "Lastest executions"
-    },
-    "executionCard": {
-        "title": "Execution data"
-    }
+  "executionsCard": {
+    "title": "Lastest executions"
+  },
+  "executionCard": {
+    "title": "Execution data"
+  }
 }

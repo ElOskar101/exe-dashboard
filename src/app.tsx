@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { AppRouter } from "./router/AppRouter.tsx";
-import axios from "axios";
+import { useEffect, useState } from 'react'
+import { AppRouter } from './router/app-router.tsx'
+import axios from 'axios'
 
 function App() {
   // useEffect(() => {
@@ -108,7 +108,7 @@ function App() {
           </div>
         </main> */}
     </>
-  );
+  )
 }
 
-export default App;
+export default App
