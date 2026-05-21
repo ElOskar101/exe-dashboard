@@ -1,9 +1,13 @@
 import axios from 'axios'
 import { setupInterceptors } from './interceptors'
 
-const fetcher = axios.create({ baseURL: import.meta.env.VITE_API_URL })
+const fetcher = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  adapter: 'fetch',
+})
 export const fetcherExe = axios.create({
-  baseURL: import.meta.env.VITE_SOCKET_URL + '/api/v1',
+  baseURL: import.meta.env.VITE_EXE_API_URL,
+  adapter: 'fetch',
 })
 
 fetcher.interceptors.request.use((config) => {
