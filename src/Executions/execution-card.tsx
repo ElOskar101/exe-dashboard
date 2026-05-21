@@ -1,22 +1,27 @@
-import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { IExecution } from './interfaces/execution.interface'
-import Card from '../components/card'
-import CardHeader from '../components/card/card-header'
-import CardBody from '../components/card/card-body'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { ExecutionConsole } from './execution-console'
-import Button from '../components/button'
-import TablerIcons from '../components/tabler-icons'
 import {
   getCustomer,
   getCustomers,
   getExecution,
 } from './services/execution.service'
 import { exeLog } from '../utils/exe-data'
-import { Select } from '../components/select'
 import { AuthContext } from '../context/auth-context/context'
 import { useMountEffect } from '../hooks/use-mount-effect'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { IconFileCode2, IconRefresh } from '@tabler/icons-react'
 
 interface IForm {
   customer?: string
@@ -24,11 +29,45 @@ interface IForm {
   bot?: string
 }
 
+interface ISelectFieldProps {
+  label: string
+  options: { label: string; value: string }[]
+  value?: string
+  onValueChange?: React.Dispatch<string>
+}
+
 const getExecutionForm = (execution?: IExecution | null): IForm => ({
   clinic: execution?.clinic,
   customer: execution?.client,
   bot: execution?.bot,
 })
+
+function SelectField(props: ISelectFieldProps) {
+  return (
+    <label className="flex w-full flex-col gap-1 text-sm font-medium">
+      {props.label}
+      <Select
+        value={props.value || null}
+        onValueChange={(value) => {
+          if (value) props.onValueChange?.(String(value))
+        }}
+      >
+        <SelectTrigger className="w-full" size="sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {props.options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </label>
+  )
+}
 
 function ExecutionCard(props: {
   execution?: IExecution | null
@@ -114,8 +153,7 @@ function ExecutionCardContent(props: {
     })
   })
 
-  const onChangeCustomer = (e: ChangeEvent) => {
-    const customer = (e.target as HTMLSelectElement).value
+  const onChangeCustomer = (customer: string) => {
     const customerId = customers.find((item) => item.value === customer)?._id
 
     setFormValue((prev) => ({
@@ -130,47 +168,36 @@ function ExecutionCardContent(props: {
 
   return (
     <Card className={classNames('flex flex-col', props.className)}>
-      <CardHeader className="flex items-center">
-        <TablerIcons icon="IconFileCode2" className="mr-1" />
-        {t('executionCard.title')}
-        <div className="ml-auto">
-          <Button
-            variant="outline"
-            color="primary"
-            size="sm"
-            className="rounded"
-          >
-            <TablerIcons icon="IconRefresh" className="w-[1.2rem] h-[1.2rem]" />
+      <CardHeader>
+        <CardTitle className="flex items-center gap-1">
+          <IconFileCode2 />
+          {t('executionCard.title')}
+          <Button variant="outline" size="icon-sm" className="ml-auto">
+            <IconRefresh />
           </Button>
-        </div>
+        </CardTitle>
       </CardHeader>
-      <CardBody>
+      <CardContent>
         <ExecutionConsole lines={lines} />
         <div className="flex flex-col md:flex-row items-center gap-x-2">
-          <Select
+          <SelectField
             options={customers}
             label={t('customer', { ns: 'common' })}
-            padding="sm"
-            className="w-full"
             value={formValue.customer}
-            onChange={onChangeCustomer}
+            onValueChange={onChangeCustomer}
           />
-          <Select
+          <SelectField
             options={[]}
             label={t('clinic', { ns: 'common' })}
-            padding="sm"
-            className="w-full"
             value={formValue.clinic}
           />
-          <Select
+          <SelectField
             options={[]}
             label={t('bot', { ns: 'common' })}
-            padding="sm"
-            className="w-full"
             value={formValue.bot}
           />
         </div>
-      </CardBody>
+      </CardContent>
     </Card>
   )
 }

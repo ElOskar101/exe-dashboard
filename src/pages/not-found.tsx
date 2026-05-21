@@ -1,25 +1,23 @@
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function NotFound() {
   const { t } = useTranslation('not-found')
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-6">
-      <div className="bg-white shadow-lg rounded-xl p-10 max-w-md text-center border border-gray-200">
-        <h1 className="text-5xl font-bold text-gray-800 mb-4">404</h1>
-
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-          {t('title')}
-        </h2>
-
-        <p className="text-gray-600 mb-8">{t('description')}</p>
-
-        <a
-          href="/"
-          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition"
-        >
-          {t('button')}
-        </a>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-background px-6">
+      <Card className="max-w-md text-center">
+        <CardHeader>
+          <p className="text-5xl font-bold">404</p>
+          <CardTitle className="text-2xl">{t('title')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-8">
+          <p className="text-muted-foreground">{t('description')}</p>
+          <Button render={<a href="/" />} nativeButton={false}>
+            {t('button')}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }

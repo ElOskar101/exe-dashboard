@@ -1,24 +1,23 @@
 import React from 'react'
 import { IExecution } from './interfaces/execution.interface'
-import TablerIcons from '../components/tabler-icons'
 import ExecutionStatusCard from './execution-status-card'
 import { getDiffDates } from '../utils/common'
+import { IconBuildingSkyscraper, IconDental } from '@tabler/icons-react'
 
 const ExecutionRow = (
   props: IExecution & { onClick?: React.MouseEventHandler },
 ) => {
   return (
     <div
-      className="flex w-full p-1 gap-x-2 rounded-sm border border-[var(--neutral-400)] items-center scale-100 hover:scale-101 transition-all cursor-pointer"
+      className="flex w-full scale-100 cursor-pointer items-center gap-x-2 rounded-sm border border-border p-1 transition-all hover:scale-101 hover:bg-accent"
       onClick={props.onClick}
     >
       <ExecutionStatusCard status={props.status} className="mb-auto" />
       <div className="flex flex-col">
         <strong>{props.bot}</strong>
         <span className="text-sm flex flex-wrap items-center">
-          <TablerIcons icon="IconBuildingSkyscraper" className="size-[1.2em]" />{' '}
-          {`${props.client}`} {'>'}{' '}
-          <TablerIcons icon="IconDental" className="size-[1.2em]" />
+          <IconBuildingSkyscraper className="size-[1.2em]" />{' '}
+          {`${props.client}`} {'>'} <IconDental className="size-[1.2em]" />
           {`${props.clinic}`}
         </span>
       </div>

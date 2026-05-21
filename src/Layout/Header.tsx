@@ -1,9 +1,9 @@
 import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
 import UserCard from './user-card'
-import Button from '../components/button'
-import TablerIcons from '../components/tabler-icons'
 import { useTheme } from '../hooks/use-theme'
+import { Button } from '@/components/ui/button'
+import { IconBrightnessDown, IconMoon } from '@tabler/icons-react'
 
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation()
@@ -11,10 +11,10 @@ const Header: () => JSX.Element = () => {
 
   return (
     <>
-      <header className="w-full dark:bg-[var(--primary-50)] text-[var(--neutral-900)] shadow-sm z-1">
+      <header className="z-1 w-full border-b border-border bg-background shadow-sm">
         <nav className="container mx-auto py-2 flex items-center justify-between">
           {/* Logo */}
-          <a href="/" className="hover:text-blue-600">
+          <a href="/" className="transition-colors hover:text-primary">
             <img
               className="w-auto h-8 object-cover"
               src="/agent-icon.svg"
@@ -23,18 +23,8 @@ const Header: () => JSX.Element = () => {
           </a>
 
           <div className="ms-auto flex items-center gap-x-2">
-            <Button size="sm" variant="link" onClick={handleTheme}>
-              {theme === 'light' ? (
-                <TablerIcons
-                  icon="IconBrightnessDown"
-                  className="w-5 h-5 scale-110 text-[var(--neutral-900)]"
-                />
-              ) : (
-                <TablerIcons
-                  icon="IconMoon"
-                  className="w-5 h-5 text-[var(--neutral-900)]"
-                />
-              )}
+            <Button size="icon-sm" variant="ghost" onClick={handleTheme}>
+              {theme === 'light' ? <IconBrightnessDown /> : <IconMoon />}
             </Button>
             <UserCard />
           </div>

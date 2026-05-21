@@ -1,6 +1,12 @@
 import React from 'react'
-import TablerIcons from '../components/tabler-icons'
 import classNames from 'classnames'
+import {
+  IconCircleCheck,
+  IconDeviceImac,
+  IconExclamationCircle,
+  IconSettings,
+  IconZzz,
+} from '@tabler/icons-react'
 
 interface IExecutionStatusCard {
   status?: 'process' | 'sleeping' | 'error' | 'denegated' | 'completed'
@@ -13,42 +19,19 @@ const ExecutionStatusCard = (props: IExecutionStatusCard) => {
     <div
       className={classNames('relative w-fit h-fit text-2xl', props.className)}
     >
-      <TablerIcons
-        icon="IconDeviceImac"
-        className="w-[1em] h-[1em] stroke-[2px] m-auto"
-      />
-      {/* <TablerIcons
-          icon="IconLoader2"
-          className={classNames('w-[1em] h-[1em] m-auto stroke-[1px] animate-spin', status != 'working' && 'text-transparent')}
-        /> */}
+      <IconDeviceImac className="w-[1em] h-[1em] stroke-[2px] m-auto" />
       {status === 'sleeping' && (
-        <TablerIcons
-          icon="IconZzz"
-          className="absolute w-[0.6em] h-[0.6em] -top-1 -right-1 origin-center animate-pulse stroke-[3px] text-blue-500"
-        />
+        <IconZzz className="absolute -right-1 -top-1 h-[0.6em] w-[0.6em] origin-center animate-pulse stroke-[3px] text-muted-foreground" />
       )}
       {status === 'completed' && (
-        <TablerIcons
-          icon="IconCircleCheck"
-          className="absolute w-[0.6em] h-[0.6em] -bottom-1 -right-1 fill-white text-green-600 "
-        />
+        <IconCircleCheck className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] text-primary" />
       )}
       {status === 'process' && (
-        <TablerIcons
-          icon="IconSettings"
-          className="absolute w-[0.6em] h-[0.6em] -bottom-1 -right-1 fill-white origin-center animate-spin stroke-[1px] text-gray-900"
-        />
+        <IconSettings className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] origin-center animate-spin stroke-[1px] text-foreground" />
       )}
       {status === 'error' && (
-        <TablerIcons
-          icon="IconExclamationCircle"
-          className="absolute w-[0.6em] h-[0.6em] -bottom-1 -right-1 fill-white text-red-500 animate-bounce"
-        />
+        <IconExclamationCircle className="absolute -bottom-1 -right-1 h-[0.6em] w-[0.6em] animate-bounce text-destructive" />
       )}
-      {/* <TablerIcons
-        icon="IconPointer"
-        className="absolute w-[0.1em] h-[0.1em] bottom-1/2 right-1/2 fill-white stroke-[1px]"
-      /> */}
     </div>
   )
 }

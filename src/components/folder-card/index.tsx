@@ -8,12 +8,12 @@ export default function FolderCard() {
       {/* Pestaña */}
       <div
         className="
-        bg-[var(--primary-200)]
-        border border-[var(--primary-400)]
+        bg-muted
+        border border-border
         rounded-t-lg rounded-b-0
         w-40 h-7 ml-4
         flex items-center px-3
-        font-medium text-[var(--primary-800)]
+        font-medium text-foreground
       "
       >
         Carpeta
@@ -23,8 +23,8 @@ export default function FolderCard() {
         <div
           className={`
                 transition-opacity duration-300 min-h-20
-                bg-[var(--neutral-50)]
-                border border-[var(--primary-400)]
+                bg-card
+                border border-border
                 rounded-md
                 p-4
                 `}
@@ -35,8 +35,8 @@ export default function FolderCard() {
         <div
           onClick={() => setOpen(!open)}
           className={`
-            bg-[var(--neutral-50)]
-            border border-[var(--primary-400)]
+            bg-card
+            border border-border
             rounded-md
             p-4
             origin-bottom
@@ -51,10 +51,8 @@ export default function FolderCard() {
             transformStyle: 'preserve-3d',
           }}
         >
-          <h3 className="font-semibold text-[var(--neutral-900)]">
-            Carpeta de archivos
-          </h3>
-          <p className="text-[var(--neutral-700)] text-sm">
+          <h3 className="font-semibold text-foreground">Carpeta de archivos</h3>
+          <p className="text-sm text-muted-foreground">
             Haz click para abrir o cerrar.
           </p>
         </div>

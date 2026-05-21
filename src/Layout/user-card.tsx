@@ -1,9 +1,19 @@
 import React, { useContext, useState } from 'react'
 import { AuthContext } from '../context/auth-context/context'
 import { useTranslation } from 'react-i18next'
-import { Avatar } from '../components/avatar'
-import Button from '../components/button'
-import TablerIcons from '../components/tabler-icons'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { IconLogout2 } from '@tabler/icons-react'
+
+function getInitials(name: string) {
+  return (
+    name
+      ?.split(' ')
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || '?'
+  )
+}
 
 function UserCard() {
   const { user, logout } = useContext(AuthContext)
@@ -33,16 +43,21 @@ function UserCard() {
       >
         {user ? (
           <>
-            <Avatar
-              src={
-                user.urlImage
-                  ? import.meta.env.VITE_PICTURES_URL +
+            <Avatar>
+              {user.urlImage && (
+                <AvatarImage
+                  src={
+                    import.meta.env.VITE_PICTURES_URL +
                     '/pictures/' +
                     user.urlImage
-                  : ''
-              }
-              name={user.username || ''}
-            />
+                  }
+                  alt={user.username || ''}
+                />
+              )}
+              <AvatarFallback>
+                {getInitials(user.username || '')}
+              </AvatarFallback>
+            </Avatar>
             <div className="text-md leading-none">
               {userData?.nameAndUser}
               <div className="text-sm">{userData?.role}</div>
@@ -50,10 +65,14 @@ function UserCard() {
           </>
         ) : (
           <>
-            <Avatar src="" name={'loading...'} className="wave" />
+            <Avatar>
+              <AvatarFallback className="animate-pulse bg-muted">
+                {getInitials('loading...')}
+              </AvatarFallback>
+            </Avatar>
             <div className="text-md leading-none">
-              <div className="w-20 h-4 wave mb-1"></div>
-              <div className="w-24 h-4 text-sm wave"></div>
+              <div className="mb-1 h-4 w-20 animate-pulse rounded bg-muted"></div>
+              <div className="h-4 w-24 animate-pulse rounded bg-muted text-sm"></div>
             </div>
           </>
         )}
@@ -63,14 +82,14 @@ function UserCard() {
             origin-top-right max-h-0 transition-all duration-150
              data-open:max-h-screen w-full"
         >
-          <div className="bg-[var(--primary-50)]">
+          <div className="bg-popover">
             <Button
-              className="flex items-center gap-x-1 w-full justify-start border-transparent"
+              className="w-full justify-start"
               size="sm"
               variant="outline"
               onClick={logout}
             >
-              <TablerIcons icon="IconLogout2" />
+              <IconLogout2 data-icon="inline-start" />
               {t('logout')}
             </Button>
           </div>
