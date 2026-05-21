@@ -1,7 +1,7 @@
 import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
 import UserCard from './user-card'
-import { useTheme } from '../hooks/use-theme'
+import { useTheme } from '@/hooks/use-theme'
 import { Button } from '@/components/ui/button'
 import { IconBrightnessDown, IconMoon } from '@tabler/icons-react'
 

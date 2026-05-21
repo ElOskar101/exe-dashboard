@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react'
-import { IExecution } from './interfaces/execution.interface'
+import { IExecution } from '../model/execution.interface'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { ExecutionConsole } from './execution-console'
@@ -7,10 +7,10 @@ import {
   getCustomer,
   getCustomers,
   getExecution,
-} from './services/execution.service'
+} from '../api/execution.service'
 import { exeLog } from '../utils/exe-data'
-import { AuthContext } from '../context/auth-context/context'
-import { useMountEffect } from '../hooks/use-mount-effect'
+import { AuthContext } from '@/features/auth'
+import { useMountEffect } from '@/hooks/use-mount-effect'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {

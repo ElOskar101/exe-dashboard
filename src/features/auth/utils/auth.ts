@@ -1,4 +1,4 @@
-import { _base64Encode } from './common'
+import { _base64Encode } from '@/utils/common'
 
 export const redirectToLogin = (customUrl?: string) => {
   const loginUrl = import.meta.env.VITE_URL_LOGIN

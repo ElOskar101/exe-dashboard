@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { ProtectedRoute } from './protected-route.tsx'
 import UnderConstruction from '../pages/under-construction.tsx'
 import NotFound from '../pages/not-found.tsx'
-import Home from '../home/home.tsx'
-import Layout from '../layout/layout.tsx'
+import { ProtectedRoute } from '@/features/auth'
+import { Home } from '@/features/home'
+import Layout from '@/components/layout/layout'
 
 export const AppRouter = () => {
   return (

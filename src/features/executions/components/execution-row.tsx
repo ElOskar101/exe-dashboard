@@ -1,7 +1,7 @@
 import React from 'react'
-import { IExecution } from './interfaces/execution.interface'
+import { IExecution } from '../model/execution.interface'
 import ExecutionStatusCard from './execution-status-card'
-import { getDiffDates } from '../utils/common'
+import { getDiffDates } from '@/utils/common'
 import { IconBuildingSkyscraper, IconDental } from '@tabler/icons-react'
 
 const ExecutionRow = (

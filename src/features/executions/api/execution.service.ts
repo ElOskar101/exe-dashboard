@@ -1,7 +1,7 @@
-import fetcher, { fetcherExe } from '../../api/axios.config'
-import { IAdminCustomer, IAPIV2Res } from '../interfaces/customer-v2.interface'
-import { IExecution } from '../interfaces/execution.interface'
-import { IExectionPost } from '../interfaces/execution-post'
+import fetcher, { fetcherExe } from '@/lib/axios'
+import { IAdminCustomer, IAPIV2Res } from '../model/customer-v2.interface'
+import { IExecution } from '../model/execution.interface'
+import { IExectionPost } from '../model/execution-post'
 
 export const getExecutions = () => {
   return fetcherExe<IExecution[]>('/executions')

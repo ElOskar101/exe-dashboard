@@ -1,4 +1,4 @@
-import { AppRouter } from './router/app-router.tsx'
+import { AppRouter } from './router'
 
 function App() {
   return (

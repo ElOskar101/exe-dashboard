@@ -1,4 +1,4 @@
-import { IExecution } from '../executions/interfaces/execution.interface'
+import { IExecution } from '../model/execution.interface'
 
 const exeData: IExecution[] = [
   {

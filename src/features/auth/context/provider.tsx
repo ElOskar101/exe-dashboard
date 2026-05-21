@@ -1,9 +1,10 @@
-import { ReactElement, useCallback, useEffect, useState } from 'react'
-import { _base64Decode, _base64Encode } from '../../utils/common'
-import { getUserData } from '../../services/auth.service'
-import { redirectToLogin } from '../../utils/auth'
+import { ReactElement, useCallback, useState } from 'react'
+import { useMountEffect } from '@/hooks/use-mount-effect'
+import { _base64Decode, _base64Encode } from '@/utils/common'
+import { getUserData } from '../api/auth.service'
+import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
-import { IUser } from '../../interfaces/user.interface'
+import { IUser } from '../model/user.interface'
 
 export const AuthProvider = (props: { children: ReactElement }) => {
   const { children } = props
@@ -62,9 +63,4 @@ export const AuthProvider = (props: { children: ReactElement }) => {
       {children}
     </AuthContext.Provider>
   )
-}
-
-function useMountEffect(effect: () => void | (() => void)) {
-  /* eslint-disable react-hooks/exhaustive-deps */
-  useEffect(effect, [])
 }

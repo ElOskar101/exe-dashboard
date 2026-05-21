@@ -1,4 +1,4 @@
-import { _base64Decode } from './common'
+import { _base64Decode } from '@/utils/common'
 
 // eslint-disable-next-line no-unused-vars
 export const listenForToken = (saveToken: (token: string) => void) => {

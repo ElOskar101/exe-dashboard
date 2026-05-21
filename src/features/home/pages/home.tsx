@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import exeData from '../utils/exe-data'
-import ExecutionRow from '../executions/execution-row'
-import ExecutionCard from '../executions/execution-card'
-import { IExecution } from '../executions/interfaces/execution.interface'
+import {
+  ExecutionCard,
+  ExecutionRow,
+  exeData,
+  type IExecution,
+} from '@/features/executions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IconCancel, IconListDetails } from '@tabler/icons-react'

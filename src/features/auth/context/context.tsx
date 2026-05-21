@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import { IUser } from '../../interfaces/user.interface'
+import { IUser } from '../model/user.interface'
 
 export interface IAuthContext {
   token: string

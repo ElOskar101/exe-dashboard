@@ -1,9 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './app'
-import { listenForToken } from './utils/token-listener'
-import i18n from './i18n'
-import { AuthProvider } from './context/auth-context/provider'
+import App from './app/app'
+import { AuthProvider, listenForToken } from '@/features/auth'
+import i18n from '@/lib/i18n'
 
 listenForToken((t) => localStorage.setItem('token', t))
 
