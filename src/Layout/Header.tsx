@@ -11,7 +11,7 @@ const Header: () => JSX.Element = () => {
 
   return (
     <>
-      <header className="z-1 w-full border-b shadow-sm">
+      <header className="z-1 w-full border-b border-sidebar shadow-sm">
         <nav className="container mx-auto py-2 flex items-center justify-between">
           {/* Logo */}
           <a href="/" className="transition-colors">
