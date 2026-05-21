@@ -10,7 +10,7 @@ i18n
     defaultNS: 'common',
     fallbackLng: 'en',
     lng: 'en',
-    debug: import.meta.env.VITE_ENV,
+    debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false,
     },

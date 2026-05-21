@@ -6,12 +6,12 @@ import {
 } from '@playwright/test'
 import { loadEnv } from 'vite'
 
-const authLoginUrl = 'https://dev-carrier.dentalautomation.ai/api/v2/auth/login'
 const e2eEnv = loadEnv('e2e', process.cwd(), '')
+const authLoginUrl = process.env.E2E_AUTH_LOGIN_URL || e2eEnv.E2E_AUTH_LOGIN_URL
 const username = process.env.E2E_TEST_USERNAME || e2eEnv.E2E_TEST_USERNAME
 const password = process.env.E2E_TEST_PASSWORD || e2eEnv.E2E_TEST_PASSWORD
 
-const hasCredentials = Boolean(username && password)
+const canLogin = Boolean(authLoginUrl && username && password)
 
 async function login(request: APIRequestContext) {
   const response = await request.post(authLoginUrl, {
@@ -72,8 +72,8 @@ test.describe('protected home route', () => {
     request,
   }) => {
     test.skip(
-      !hasCredentials,
-      'Set E2E_TEST_USERNAME and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
+      !canLogin,
+      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
     )
 
     const token = await login(request)
