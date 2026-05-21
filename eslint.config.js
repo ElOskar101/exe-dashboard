@@ -7,7 +7,7 @@ import tsParser from '@typescript-eslint/parser'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'playwright-report', 'test-results']),
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     extends: [
@@ -23,6 +23,12 @@ export default defineConfig([
         sourceType: 'module',
         ecmaFeatures: { jsx: true },
       },
+    },
+  },
+  {
+    files: ['playwright.config.ts', 'tests/**/*.ts'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
   eslintConfigPrettier,
