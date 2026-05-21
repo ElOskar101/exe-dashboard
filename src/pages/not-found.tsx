@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function NotFound() {
-  const { t } = useTranslation('not-found')
+  const { t } = useTranslation('notFound')
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
       <Card className="max-w-md text-center">
