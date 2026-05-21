@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tabler/icons-react": "^3.44.0",
     "axios": "^1.16.1",
+    "classnames": "^2.5.1",
     "i18next": "^26.2.0",
     "i18next-http-backend": "^4.0.0",
     "react": "^19.2.6",

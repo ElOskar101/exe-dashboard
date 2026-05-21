@@ -12,7 +12,7 @@ export const setupInterceptors = (api: AxiosInstance) => {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
         
-        // redirectToLogin();
+        redirectToLogin();
 
         return Promise.reject(error);
       }

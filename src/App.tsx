@@ -1,33 +1,8 @@
-import { useEffect, useState } from 'react'
-import { AppRouter } from './router/AppRouter.tsx'
-
-type Theme = 'light' | 'dark'
-
-const templateSections = ['components', 'layouts', 'pages', 'hooks', 'lib', 'socket'] as const
+import { useEffect, useState } from "react";
+import { AppRouter } from "./router/AppRouter.tsx";
+import axios from "axios";
 
 function App() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') {
-      return 'light'
-    }
-
-    const storedTheme = window.localStorage.getItem('theme')
-
-    if (storedTheme === 'light' || storedTheme === 'dark') {
-      return storedTheme
-    }
-
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  })
-
-  useEffect(() => {
-    const root = document.documentElement
-
-    root.classList.toggle('dark', theme === 'dark')
-    root.style.colorScheme = theme
-    window.localStorage.setItem('theme', theme)
-  }, [theme])
-
   // useEffect(() => {
   //   fetch(import.meta.env.VITE_SOCKET_URL + '/api/v1/executions', {
   //     method: 'POST',
@@ -56,49 +31,43 @@ function App() {
   //     "execution": "2026-04-27",
   //     "bot": "Liberty Dental Plan",
   //     mode: "parallel"
-  //   }, { baseURL: import.meta.env.VITE_SOCKET_URL + '/api/v1/' },).then((res) => {
-  //     console.log('prro', res)
-  //   }).catch((e) => {
-  //     console.log('prro error', e)
-  //   })
+  //   }, { baseURL: import.meta.env.VITE_SOCKET_URL + '/api/v1/' },)
 
-    // const executionId = '6a07684ef351a12f56d67c02'
-    // socket.on("connect", () => {
-    //   // Importante: re-join en cada reconexion
-    //   socket.emit("execution:join", { executionId });
-    // });
+  // const executionId = '6a07684ef351a12f56d67c02'
+  // socket.on("connect", () => {
+  //   // Importante: re-join en cada reconexion
+  //   socket.emit("execution:join", { executionId });
+  // });
 
-    // socket.on("execution:logs:history", (payload) => {
-    //   if (payload.executionId !== executionId) return;
-    //   // Reemplazar buffer inicial de logs
-    //   console.log("history", payload.content);
-    // });
+  // socket.on("execution:logs:history", (payload) => {
+  //   if (payload.executionId !== executionId) return;
+  //   // Reemplazar buffer inicial de logs
+  //   console.log("history", payload.content);
+  // });
 
-    // socket.on("logs", (payload) => {
-    //   if (payload.executionId !== executionId) return;
-    //   // Append incremental
-    //   console.log(`[${payload.stream}]`, payload.message);
-    // });
+  // socket.on("logs", (payload) => {
+  //   if (payload.executionId !== executionId) return;
+  //   // Append incremental
+  //   console.log(`[${payload.stream}]`, payload.message);
+  // });
 
-    // socket.on("status", (payload) => {
-    //   if (payload.executionId !== executionId) return;
-    //   console.log("status", payload.status);
-    // });
+  // socket.on("status", (payload) => {
+  //   if (payload.executionId !== executionId) return;
+  //   console.log("status", payload.status);
+  // });
 
-    // socket.connect();
+  // socket.connect();
 
-
-    // return () => {
-    //   socket.emit("execution:leave", { executionId });
-    //   socket.disconnect();
-    // };
+  // return () => {
+  //   socket.emit("execution:leave", { executionId });
+  //   socket.disconnect();
+  // };
   // }, [])
 
-  return (      <>
-        <AppRouter>
-
-        </AppRouter>
-        {/* <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+  return (
+    <>
+      <AppRouter></AppRouter>
+      {/* <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
           <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6 py-6">
             <header className="flex items-center justify-between gap-4 border-b border-slate-200 pb-6 dark:border-slate-800">
               <div>
@@ -138,9 +107,8 @@ function App() {
             </section>
           </div>
         </main> */}
-      </>
-  )
+    </>
+  );
 }
 
-export default App
-
+export default App;

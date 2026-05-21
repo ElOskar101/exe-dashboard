@@ -12,26 +12,32 @@ export const AuthProvider = (props: { children: ReactElement }) => {
     const [user, setUser] = useState<IUser | null>(null)
 
     useEffect(() => {
-        const savedPermissions = localStorage.getItem('permissions')
-        if (savedPermissions) {
-            setPermissions(() => {
-                return JSON.parse(_base64Decode(savedPermissions))
-            })
+        const savedUserData = sessionStorage.getItem('me')
+        if (savedUserData) {
+            const user: IUser = JSON.parse(_base64Decode(savedUserData))
+            setPermissions(() => getPermissions(user))
+            setUser(() => user)
         } else {
             getUserData().then(({ data }) => {
-                let newPermissions: Record<string, boolean> = {}
-                data.roles.forEach((rol) => {
-                    newPermissions[rol.name] = true
-                    rol.permission.forEach((p) => {
-                        newPermissions[p.name] = true
-                    })
-                })
+                sessionStorage.setItem('me', _base64Encode(JSON.stringify(data)))
                 setUser(() => data)
-                setPermissions(() => newPermissions)
-                localStorage.setItem('permissions', _base64Encode(JSON.stringify(newPermissions)))
+                setPermissions(() => getPermissions(data))
             })
         }
     }, [])
+
+    const getPermissions = (userData: IUser) => {
+        let newPermissions: Record<string, boolean> = {}
+
+        userData.roles.forEach((rol) => {
+            newPermissions[rol.name] = true
+            rol.permission.forEach((p) => {
+                newPermissions[p.name] = true
+            })
+        })
+
+        return newPermissions
+    }
 
     const saveToken = useCallback((newToken: string) => {
         localStorage.setItem("token", newToken);

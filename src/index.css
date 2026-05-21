@@ -1,9 +1,15 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -18,6 +24,10 @@ html.dark {
   color-scheme: dark;
 }
 
+html body {
+  background-color: var(--neutral-50);
+}
+
 body {
   @apply min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
   margin: 0;
@@ -25,4 +35,92 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+:root {
+  /* PRIMARY (#1f6fb1) */
+  --primary-50: #e8f1fa;
+  --primary-100: #d1e3f5;
+  --primary-200: #a3c7eb;
+  --primary-300: #75abe1;
+  --primary-400: #478fd7;
+  --primary-500: #1f6fb1;
+  --primary-600: #195a8e;
+  --primary-700: #13456b;
+  --primary-800: #0d3048;
+  --primary-900: #071b25;
+
+  /* ACCENT (#6c4be8) */
+  --accent-50: #f1edff;
+  --accent-100: #e3dbff;
+  --accent-200: #c7b7ff;
+  --accent-300: #ab93ff;
+  --accent-400: #8f6fff;
+  --accent-500: #6c4be8;
+  --accent-600: #5539c2;
+  --accent-700: #3f2a99;
+  --accent-800: #2a1b70;
+  --accent-900: #150d38;
+
+  /* NEUTRAL (#8f8f95) */
+  --neutral-50: #f7f7f8;
+  --neutral-100: #eeeeef;
+  --neutral-200: #dcdcdf;
+  --neutral-300: #c9c9ce;
+  --neutral-400: #b6b6bd;
+  --neutral-500: #8f8f95;
+  --neutral-600: #6f6f74;
+  --neutral-700: #505055;
+  --neutral-800: #303033;
+  --neutral-900: #18181a;
+}
+
+html.dark {
+  /* PRIMARY (lightened for dark mode) */
+  --primary-50: #0d3048;
+  --primary-100: #13456b;
+  --primary-200: #195a8e;
+  --primary-300: #1f6fb1;
+  --primary-400: #478fd7;
+  --primary-500: #75abe1;
+  --primary-600: #a3c7eb;
+  --primary-700: #d1e3f5;
+  --primary-800: #e8f1fa;
+  --primary-900: #f4f8fd;
+
+  /* ACCENT (lightened for dark mode) */
+  --accent-50: #2a1b70;
+  --accent-100: #3f2a99;
+  --accent-200: #5539c2;
+  --accent-300: #6c4be8;
+  --accent-400: #8f6fff;
+  --accent-500: #ab93ff;
+  --accent-600: #c7b7ff;
+  --accent-700: #e3dbff;
+  --accent-800: #f1edff;
+  --accent-900: #faf8ff;
+
+  /* NEUTRAL (inverted for dark mode) */
+  --neutral-50: #18181a;
+  --neutral-100: #303033;
+  --neutral-200: #505055;
+  --neutral-300: #6f6f74;
+  --neutral-400: #8f8f95;
+  --neutral-500: #b6b6bd;
+  --neutral-600: #c9c9ce;
+  --neutral-700: #dcdcdf;
+  --neutral-800: #eeeeef;
+  --neutral-900: #f7f7f8;
+}
+
+.wave {
+  background: linear-gradient(100deg, #e5e5e5 40%, #f0f0f0 50%, #e5e5e5 60%);
+  background-size: 200% 100%;
+  animation: wave 1.6s linear infinite;
+}
+
+@keyframes wave {
+  100% {
+    background-position: -200% 0;
+  }
 }
