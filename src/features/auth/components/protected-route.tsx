@@ -1,6 +1,7 @@
 import { ReactElement, useContext } from 'react'
 import { Navigate } from 'react-router-dom'
-import { AuthContext, redirectToLogin } from '@/features/auth'
+import { AuthContext } from '../context/context'
+import { redirectToLogin } from '../utils/auth'
 
 export const ProtectedRoute = (props: { children: ReactElement }) => {
   const token = localStorage.getItem('token')

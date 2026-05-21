@@ -1,7 +1,7 @@
 import type { AxiosInstance } from 'axios'
-import { redirectToLogin } from '@/features/auth'
+import { redirectToLogin } from '../utils/auth'
 
-export const setupInterceptors = (api: AxiosInstance) => {
+export const setupAuthInterceptors = (api: AxiosInstance) => {
   api.interceptors.response.use(
     (response) => response,
 

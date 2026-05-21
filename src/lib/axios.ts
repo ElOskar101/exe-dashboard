@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { setupInterceptors } from './interceptors'
 
 const fetcher = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -18,7 +17,5 @@ fetcher.interceptors.request.use((config) => {
 
   return config
 })
-
-setupInterceptors(fetcher)
 
 export default fetcher
