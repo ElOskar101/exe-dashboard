@@ -3,10 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from '@/features/auth'
 import Layout from '@/components/layout/layout'
 
-const Home = lazy(() =>
-  import('@/features/home').then((module) => ({ default: module.Home })),
-)
-const NotFound = lazy(() => import('../pages/not-found.tsx'))
+const Home = lazy(() => import('@/features/home/pages/home'))
+const NotFound = lazy(() => import('@/pages/not-found.tsx'))
 const UnderConstruction = lazy(
   () => import('@/features/auth/pages/under-construction'),
 )
