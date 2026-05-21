@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useContext, useEffect, useState } from 'react'
+import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 import { IExecution } from './interfaces/execution.interface'
 import Card from '../components/card'
 import CardHeader from '../components/card/card-header'
@@ -16,6 +16,7 @@ import {
 import { exeLog } from '../utils/exe-data'
 import { Select } from '../components/select'
 import { AuthContext } from '../context/auth-context/context'
+import { useMountEffect } from '../hooks/use-mount-effect'
 
 interface IForm {
   customer?: string
@@ -23,77 +24,108 @@ interface IForm {
   bot?: string
 }
 
+const getExecutionForm = (execution?: IExecution | null): IForm => ({
+  clinic: execution?.clinic,
+  customer: execution?.client,
+  bot: execution?.bot,
+})
+
 function ExecutionCard(props: {
   execution?: IExecution | null
   className?: string
 }) {
-  const { t } = useTranslation('home')
   const { user, permissions } = useContext(AuthContext)
+
+  return (
+    <ExecutionCardContent
+      {...props}
+      key={[
+        props.execution?._id || 'empty-execution',
+        user?._id || 'empty-user',
+        user?.area || 'empty-area',
+        Object.keys(permissions).sort().join(','),
+      ].join(':')}
+      canLoadCustomers={Boolean(user)}
+      userArea={user?.area}
+      permissions={permissions}
+    />
+  )
+}
+
+function ExecutionCardContent(props: {
+  execution?: IExecution | null
+  className?: string
+  canLoadCustomers: boolean
+  userArea?: string
+  permissions: Record<string, boolean>
+}) {
+  const { t } = useTranslation('home')
   const [lines, setLines] = useState<string[]>([])
   const [customers, setCustomers] = useState<
     Array<{ value: string; label: string; _id?: string }>
   >([])
 
-  const [formValue, setFormValue] = useState<IForm>({})
+  const [formValue, setFormValue] = useState<IForm>(() =>
+    getExecutionForm(props.execution),
+  )
 
-  useEffect(() => {
-    if (props.execution) getExeData()
-  }, [props.execution])
+  const canGetCustomersWithoutArea = useMemo(
+    () =>
+      props.permissions['QA'] ||
+      props.permissions['carrier'] ||
+      props.permissions['admin'],
+    [props.permissions],
+  )
 
-  useEffect(() => {
-    if (user) getAllCustomers()
-  }, [user])
+  useMountEffect(() => {
+    if (props.execution) {
+      getExecution(props.execution._id)
+        .then((res) => {
+          setLines(() => (res.data.logs || exeLog)?.split('/\r?\n\r?\n/') || [])
+        })
+        .catch(() => {
+          setLines(() => exeLog.split('/\r?\n\r?\n/') || [])
+        })
+    }
 
-  useEffect(() => {
-    if (formValue.customer) getClinic(formValue.customer)
-  }, [formValue.customer])
-
-  const getExeData = async () => {
-    if (!props.execution) return
-    setFormValue(() => ({
-      clinic: props.execution?.clinic,
-      customer: props.execution?.client,
-      bot: props.execution?.bot,
-    }))
-    getExecution(props.execution._id)
-      .then((res) => {
-        setLines(() => (res.data.logs || exeLog)?.split('/\r?\n\r?\n/') || [])
-      })
-      .catch(() => {
-        setLines(() => exeLog.split('/\r?\n\r?\n/') || [])
-      })
-  }
-
-  const getAllCustomers = () => {
-    const isValidGetAllClientWithoutArea =
-      permissions['QA'] || permissions['carrier'] || permissions['admin']
+    if (!props.canLoadCustomers) return
 
     getCustomers({
-      ...(isValidGetAllClientWithoutArea ? {} : { area: user?.area }),
+      ...(canGetCustomersWithoutArea ? {} : { area: props.userArea }),
       page: 1,
       limit: 900,
       isActive: true,
     }).then(({ data }) => {
-      setCustomers(() =>
-        data.customers.map((item) => ({
-          value: item.clientName,
-          label: item.clientName,
-          _id: item._id,
-        })),
-      )
-    })
-  }
+      const customerOptions = data.customers.map((item) => ({
+        value: item.clientName,
+        label: item.clientName,
+        _id: item._id,
+      }))
 
-  const getClinic = (customer: string) => {
-    const customerId = customers.find((item) => item.value === customer)?._id
-    getCustomer(customerId || '').then((res) => console.log('prro', res))
-  }
+      setCustomers(() => customerOptions)
+
+      const selectedCustomerId = customerOptions.find(
+        (item) => item.value === formValue.customer,
+      )?._id
+
+      if (selectedCustomerId) {
+        getCustomer(selectedCustomerId).then((res) => console.log('prro', res))
+      }
+    })
+  })
 
   const onChangeCustomer = (e: ChangeEvent) => {
+    const customer = (e.target as HTMLSelectElement).value
+    const customerId = customers.find((item) => item.value === customer)?._id
+
     setFormValue((prev) => ({
       ...prev,
-      customer: (e.target as HTMLSelectElement).value,
+      customer,
     }))
+
+    if (customerId) {
+      getCustomer(customerId).then((res) => console.log('prro', res))
+    }
   }
 
   return (

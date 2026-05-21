@@ -11,7 +11,7 @@ export const AuthProvider = (props: { children: ReactElement }) => {
   const [permissions, setPermissions] = useState<Record<string, boolean>>({})
   const [user, setUser] = useState<IUser | null>(null)
 
-  useEffect(() => {
+  useMountEffect(() => {
     const savedUserData = sessionStorage.getItem('me')
     if (savedUserData) {
       const user: IUser = JSON.parse(_base64Decode(savedUserData))
@@ -24,14 +24,14 @@ export const AuthProvider = (props: { children: ReactElement }) => {
         setPermissions(() => getPermissions(data))
       })
     }
-  }, [])
+  })
 
   const getPermissions = (userData: IUser) => {
-    let newPermissions: Record<string, boolean> = {}
+    const newPermissions: Record<string, boolean> = {}
 
-    userData.roles.forEach((rol) => {
+    userData.roles?.forEach((rol) => {
       newPermissions[rol.name] = true
-      rol.permission.forEach((p) => {
+      rol.permission?.forEach((p) => {
         newPermissions[p.name] = true
       })
     })
@@ -62,4 +62,9 @@ export const AuthProvider = (props: { children: ReactElement }) => {
       {children}
     </AuthContext.Provider>
   )
+}
+
+function useMountEffect(effect: () => void | (() => void)) {
+  /* eslint-disable react-hooks/exhaustive-deps */
+  useEffect(effect, [])
 }

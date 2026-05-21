@@ -3,7 +3,8 @@ import { IUser } from '../../interfaces/user.interface'
 
 export interface IAuthContext {
   token: string
-  saveToken: (t: string) => void
+  // eslint-disable-next-line no-unused-vars
+  saveToken: (token: string) => void
   clearToken: () => void
   logout: () => void
   permissions: Record<string, boolean>
@@ -11,7 +12,7 @@ export interface IAuthContext {
 }
 
 export const AuthContext = createContext<IAuthContext>({
-  saveToken: (t: string) => {},
+  saveToken: () => {},
   clearToken: () => {},
   logout: () => {},
   token: '',

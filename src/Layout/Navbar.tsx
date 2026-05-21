@@ -1,30 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import TablerIcons, { availableIconsTypes } from '../components/tabler-icons'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const { t } = useTranslation('routes')
-  const [routes, setRoutes] = useState<
-    Array<{
-      icon: availableIconsTypes
-      route: string
-      label: string
-    }>
-  >([])
-
-  useEffect(() => {
-    setRoutes(
-      () =>
-        t('routes', { returnObjects: true }) as Array<{
-          icon: availableIconsTypes
-          route: string
-          label: string
-        }>,
-    )
-  }, [])
-
-  const redirectTo = (to: string) => {}
+  const routes = t('routes', { returnObjects: true }) as Array<{
+    icon: availableIconsTypes
+    route: string
+    label: string
+  }>
 
   return (
     <nav className="w-full text-[var(--neutral-900)] shadow-sm dark:bg-[var(--primary-50)] dark:text-[var(--neutral-900)]">

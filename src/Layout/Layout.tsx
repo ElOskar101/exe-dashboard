@@ -1,9 +1,7 @@
-import React, { ReactElement, useState } from 'react'
 import Header from './header.tsx'
-import Navbar from './navbar.tsx'
 import { Outlet } from 'react-router-dom'
 
-function Layout(props: { children?: ReactElement }) {
+function Layout() {
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">
       <Header />

@@ -1,4 +1,5 @@
 import classNames from 'classnames'
+import type React from 'react'
 
 interface ISelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string
@@ -41,11 +42,7 @@ export function Select({
         )}
       >
         {options.map((opt) => (
-          <option
-            key={opt.value}
-            value={opt.value}
-            selected={opt.value === props.value}
-          >
+          <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
         ))}

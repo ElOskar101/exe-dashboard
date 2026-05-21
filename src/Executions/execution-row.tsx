@@ -1,9 +1,7 @@
 import React from 'react'
 import { IExecution } from './interfaces/execution.interface'
-import Button from '../components/button'
 import TablerIcons from '../components/tabler-icons'
 import ExecutionStatusCard from './execution-status-card'
-import classNames from 'classnames'
 import { getDiffDates } from '../utils/common'
 
 const ExecutionRow = (

@@ -48,7 +48,11 @@ const Home = () => {
           ))}
         </CardBody>
       </Card>
-      <ExecutionCard className="w-full" execution={selectedExe} />
+      <ExecutionCard
+        key={selectedExe?._id || 'empty-execution'}
+        className="w-full"
+        execution={selectedExe}
+      />
     </div>
   )
 }

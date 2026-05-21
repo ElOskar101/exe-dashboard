@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { AuthContext } from '../context/auth-context/context'
 import { useTranslation } from 'react-i18next'
 import { Avatar } from '../components/avatar'
@@ -8,22 +8,18 @@ import TablerIcons from '../components/tabler-icons'
 function UserCard() {
   const { user, logout } = useContext(AuthContext)
   const { t } = useTranslation()
-  const [userData, setUserData] = useState<{
-    nameAndUser: string
-    role: string
-  }>({
-    nameAndUser: '',
-    role: '',
-  })
   const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (user)
-      setUserData({
-        nameAndUser: `${user.fullName.split(' ').shift()}@${user.username}`,
-        role: t(`roles.${user.roles[0].name}`),
-      })
-  }, [user])
+  const displayName = user?.fullName?.split(' ').shift() || user?.username || ''
+  const username = user?.username || ''
+  const userData = user
+    ? {
+        nameAndUser: [displayName, username].filter(Boolean).join('@'),
+        role: user.roles?.[0]?.name ? t(`roles.${user.roles[0].name}`) : '',
+      }
+    : {
+        nameAndUser: '',
+        role: '',
+      }
 
   const handleOpen = (to: boolean) => () => setIsOpen(() => to)
 

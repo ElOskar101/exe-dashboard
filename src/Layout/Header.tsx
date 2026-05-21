@@ -1,4 +1,4 @@
-import React, { JSX, ReactElement } from 'react'
+import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
 import UserCard from './user-card'
 import Button from '../components/button'

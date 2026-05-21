@@ -1,6 +1,7 @@
 import { _base64Decode } from './common'
 
-export const listenForToken = (saveToken: (t: string) => void) => {
+// eslint-disable-next-line no-unused-vars
+export const listenForToken = (saveToken: (token: string) => void) => {
   const url = new URL(window.location.href)
   const token = url.searchParams.get('key')
 

@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-import React, { JSX, ReactElement } from 'react'
+import { JSX } from 'react'
 
 interface ICard {
   children?: JSX.Element | string | Array<JSX.Element | string>

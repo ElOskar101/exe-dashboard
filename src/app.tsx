@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
 import { AppRouter } from './router/app-router.tsx'
-import axios from 'axios'
 
 function App() {
   // useEffect(() => {
