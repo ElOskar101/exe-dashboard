@@ -1,4 +1,5 @@
-import { ReactElement, useCallback, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useCallback, useState } from 'react'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { _base64Decode, _base64Encode } from '@/utils/common'
 import { getUserData } from '../services/auth.service'
@@ -6,7 +7,7 @@ import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
 import { IUser } from '../models/user.interface'
 
-export const AuthProvider = (props: { children: ReactElement }) => {
+export const AuthProvider = (props: { children: ReactNode }) => {
   const { children } = props
   const [token, setToken] = useState(localStorage.getItem('token') || '')
   const [permissions, setPermissions] = useState<Record<string, boolean>>({})

@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AuthContext } from '../contexts/context'
 
@@ -14,9 +14,8 @@ function getInitials(name: string) {
 }
 
 function UserCard() {
-  const { user, logout } = useContext(AuthContext)
+  const { user } = useContext(AuthContext)
   const { t } = useTranslation()
-  const [isOpen, setIsOpen] = useState(false)
   const displayName = user?.fullName?.split(' ').shift() || user?.username || ''
   const username = user?.username || ''
   const userData = user
