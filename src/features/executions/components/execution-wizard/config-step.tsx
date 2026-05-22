@@ -1,9 +1,7 @@
-import type { TFunction } from 'i18next'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -12,6 +10,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import type { TFunction } from 'i18next'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
 import type { StepErrors } from '../../lib/execution-wizard-validation'
 import type {
@@ -131,7 +130,7 @@ export function ConfigStep({
         <FieldSet className="h-full">
           <FieldGroup
             data-slot="checkbox-group"
-            className="h-full justify-between gap-6"
+            className="justify-between gap-6"
           >
             <Field orientation="horizontal">
               <Checkbox
@@ -145,9 +144,6 @@ export function ConfigStep({
                 <FieldLabel htmlFor="inNetwork">
                   {t('fields.inNetwork')}
                 </FieldLabel>
-                <FieldDescription>
-                  {t('sections.config.inNetworkDescription')}
-                </FieldDescription>
               </FieldContent>
             </Field>
 
@@ -163,9 +159,6 @@ export function ConfigStep({
                 <FieldLabel htmlFor="shortForm">
                   {t('fields.shortForm')}
                 </FieldLabel>
-                <FieldDescription>
-                  {t('sections.config.shortFormDescription')}
-                </FieldDescription>
               </FieldContent>
             </Field>
 
@@ -181,9 +174,6 @@ export function ConfigStep({
                 <FieldLabel htmlFor="claimsForm">
                   {t('fields.claimsForm')}
                 </FieldLabel>
-                <FieldDescription>
-                  {t('sections.config.claimsFormDescription')}
-                </FieldDescription>
               </FieldContent>
             </Field>
           </FieldGroup>
