@@ -1,0 +1,125 @@
+{
+  "page": {
+    "title": "Create execution",
+    "description": "Build the POST /executions payload step by step and submit it when everything is ready."
+  },
+  "steps": {
+    "stepCounter": "Step {{current}} of {{total}}",
+    "complete": "Complete",
+    "inProgress": "In progress",
+    "upNext": "Up next",
+    "bot": {
+      "title": "Bot",
+      "description": "Capture the bot credentials and endpoint for this execution."
+    },
+    "patients": {
+      "title": "Patients",
+      "description": "Add one or more patients to the execution payload."
+    },
+    "config": {
+      "title": "Execution config",
+      "description": "Choose the processing settings that complete the payload."
+    },
+    "review": {
+      "title": "Review & submit",
+      "description": "Confirm the payload preview before posting it to the API."
+    }
+  },
+  "sections": {
+    "bot": {
+      "legend": "Bot details",
+      "description": "These values are submitted directly inside the bot block."
+    },
+    "patients": {
+      "legend": "Patients",
+      "description": "Add each patient manually. Bulk import is intentionally out of scope for this first version.",
+      "patientTitle": "Patient {{index}}",
+      "patientDescription": "Every patient row becomes one item in execution.patients."
+    },
+    "config": {
+      "legend": "Execution settings",
+      "description": "These fields complete the execution and config sections of the request body.",
+      "modeDescription": "Choose how this execution should run.",
+      "verificationDescription": "Select the verification type to send to the API.",
+      "flagsLegend": "Config flags",
+      "flagsDescription": "Enable only the options needed for this run.",
+      "inNetworkDescription": "Sets config.in-network to true when this execution should stay in network.",
+      "shortFormDescription": "Sets config.shortForm to true when the short form should be used.",
+      "claimsFormDescription": "Sets config.claimsForm to true when the claims form should be included."
+    }
+  },
+  "fields": {
+    "botName": "Bot name",
+    "url": "Portal URL",
+    "username": "Username",
+    "password": "Password",
+    "patientName": "Patient name",
+    "memberId": "Member ID",
+    "dateOfBirth": "Date of birth",
+    "numberOfThreads": "Number of threads",
+    "mode": "Mode",
+    "verificationType": "Verification type",
+    "inNetwork": "In network",
+    "shortForm": "Short form",
+    "claimsForm": "Claims form"
+  },
+  "placeholders": {
+    "botName": "Eligibility Runner",
+    "url": "https://carrier.example.com",
+    "username": "qa.operator",
+    "password": "Enter the bot password",
+    "patientName": "Jane Doe",
+    "memberId": "123456789",
+    "numberOfThreads": "4"
+  },
+  "options": {
+    "modeParallel": "Parallel",
+    "modeStandard": "Standard",
+    "verificationElg": "ELG",
+    "verificationFbd": "FBD"
+  },
+  "buttons": {
+    "back": "Back",
+    "next": "Next",
+    "submit": "Create execution",
+    "submitting": "Creating execution...",
+    "addPatient": "Add patient",
+    "removePatient": "Remove patient",
+    "startOver": "Create another execution"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "validUrl": "Enter a valid URL.",
+    "validDate": "Enter a valid date.",
+    "positiveNumber": "Enter a whole number greater than zero.",
+    "selectMode": "Choose an execution mode.",
+    "selectVerificationType": "Choose a verification type.",
+    "addPatient": "Add at least one patient before continuing.",
+    "patientListTitle": "Patient list is incomplete"
+  },
+  "review": {
+    "botTitle": "Bot payload",
+    "patientsTitle": "Patient payload",
+    "configTitle": "Execution payload",
+    "payloadTitle": "Payload preview",
+    "payloadDescription": "This is the exact body the wizard will send to POST /executions.",
+    "memberIdLabel": "Member ID: {{value}}",
+    "dateOfBirthLabel": "Date of birth: {{value}}",
+    "flagsTitle": "Enabled flags",
+    "noFlags": "No flags enabled"
+  },
+  "submit": {
+    "errorTitle": "Execution could not be created",
+    "errorDescription": "The request failed. Review the payload and try again."
+  },
+  "success": {
+    "title": "Execution created",
+    "description": "The execution was posted successfully and the response is ready to review.",
+    "alertTitle": "Submission complete",
+    "alertDescription": "You can start another execution right away without leaving this page.",
+    "executionId": "Execution ID",
+    "status": "Status",
+    "createdAt": "Created at",
+    "jobId": "Job ID"
+  }
+}

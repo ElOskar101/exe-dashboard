@@ -6,7 +6,14 @@ i18n
   .use(HttpBackend)
   .use(initReactI18next)
   .init({
-    ns: ['common', 'notFound', 'underConstruction', 'routes', 'home'],
+    ns: [
+      'common',
+      'notFound',
+      'underConstruction',
+      'routes',
+      'home',
+      'executions',
+    ],
     defaultNS: 'common',
     fallbackLng: 'en',
     lng: 'en',
