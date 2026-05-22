@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import type {
   ExecutionCreatePayload,
+  ExecutionMetadata,
   ExecutionPatient,
   ExecutionWizardDraft,
 } from '../../model/execution-create'
@@ -13,6 +14,20 @@ interface ReviewStepProps {
 
 const getDisplayValue = (value: string, emptyValue: string) => {
   return value.trim() || emptyValue
+}
+
+const parseJsonObjectString = (value: string): ExecutionMetadata | string => {
+  try {
+    const parsed = JSON.parse(value)
+
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+      return value
+    }
+
+    return parsed as ExecutionMetadata
+  } catch {
+    return value
+  }
 }
 
 const getReviewPatientRows = (
@@ -70,7 +85,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         filenames: patient.filenames.trim(),
         otherInformation: patient.otherInformation,
       })),
-      config: {},
+      config: parseJsonObjectString(draft.execution.config),
       rv: {},
       workers: draft.execution.workers.trim()
         ? Number(draft.execution.workers)
@@ -99,7 +114,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                 {t('fields.client')}
               </dt>
               <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.context.client, emptyValue)}
+                {getDisplayValue(draft.context.clientName, emptyValue)}
               </dd>
             </div>
             <div>
@@ -107,7 +122,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                 {t('fields.clinic')}
               </dt>
               <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.context.clinic, emptyValue)}
+                {getDisplayValue(draft.context.clinicName, emptyValue)}
               </dd>
             </div>
             <div>

@@ -50,8 +50,8 @@
   },
   "fields": {
     "project": "Project",
-    "client": "Client ID",
-    "clinic": "Clinic ID",
+    "client": "Client",
+    "clinic": "Clinic",
     "botName": "Bot name",
     "url": "Portal URL",
     "username": "Username",
@@ -69,6 +69,7 @@
     "patientClinic": "Patient clinic",
     "filenames": "Filenames",
     "patientOtherInformation": "Patient other information",
+    "otherConfig": "Other config",
     "numberOfThreads": "Number of threads",
     "workers": "Workers",
     "retries": "Retries",
@@ -80,8 +81,8 @@
   },
   "placeholders": {
     "project": "liberty",
-    "client": "client-id",
-    "clinic": "clinic-id",
+    "client": "Search clients by name",
+    "clinic": "Select a clinic",
     "botName": "Eligibility Runner",
     "url": "https://carrier.example.com",
     "username": "qa.operator",
@@ -116,6 +117,7 @@
   },
   "validation": {
     "required": "This field is required.",
+    "customerHasNoClinics": "The selected client has no clinics available.",
     "validUrl": "Enter a valid URL.",
     "validDate": "Enter a valid date.",
     "validJsonObject": "Enter a valid JSON object.",
@@ -126,6 +128,16 @@
     "selectVerificationType": "Choose a verification type.",
     "addPatient": "Add at least one patient before continuing.",
     "patientListTitle": "Patient list is incomplete"
+  },
+  "help": {
+    "customerMinCharacters": "Type at least 2 characters to search for a client.",
+    "searchingCustomers": "Searching clients...",
+    "noCustomersFound": "No clients matched your search.",
+    "selected": "Selected",
+    "selectClientFirst": "Select a client to load its clinics.",
+    "loadingClinics": "Loading clinics for the selected client...",
+    "loadClinicsError": "The selected client's clinics could not be loaded.",
+    "selectClinic": "Choose one of the clinics available for this client."
   },
   "review": {
     "botTitle": "Bot payload",

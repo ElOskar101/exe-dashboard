@@ -16,7 +16,12 @@ export type StepErrors = {
   config: {
     workers?: string
     retries?: string
+    config?: string
   }
+}
+
+interface ExecutionWizardValidationOptions {
+  hasSelectedCustomerWithoutClinics?: boolean
 }
 
 const isDateStringValid = (value: string) => {
@@ -35,6 +40,7 @@ export const getExecutionWizardValidationErrors = (
   draft: ExecutionWizardDraft,
   createdBy: string,
   t: TFunction<'executions'>,
+  options: ExecutionWizardValidationOptions = {},
 ): StepErrors => {
   const context: StepErrors['context'] = {}
 
@@ -52,6 +58,10 @@ export const getExecutionWizardValidationErrors = (
 
   if (!draft.context.clinic.trim()) {
     context.clinic = t('validation.required')
+  }
+
+  if (options.hasSelectedCustomerWithoutClinics) {
+    context.clinic = t('validation.customerHasNoClinics')
   }
 
   const bot: StepErrors['bot'] = {}
@@ -117,6 +127,10 @@ export const getExecutionWizardValidationErrors = (
     Number(draft.execution.retries) < 0
   ) {
     config.retries = t('validation.nonNegativeNumber')
+  }
+
+  if (!isJsonObjectStringValid(draft.execution.config)) {
+    config.config = t('validation.validJsonObject')
   }
 
   return {

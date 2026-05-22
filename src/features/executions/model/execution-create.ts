@@ -55,7 +55,7 @@ export interface ExecutionCreatePayload {
       filenames: string
       otherInformation: ExecutionMetadata
     }>
-    config: Record<string, never>
+    config: ExecutionMetadata
     rv: Record<string, never>
     workers: number
     retries: number
@@ -66,12 +66,15 @@ export interface ExecutionWizardDraft {
   context: {
     project: string
     client: string
+    clientName: string
     clinic: string
+    clinicName: string
   }
   bot: ExecutionBot
   execution: {
     patients: ExecutionPatient[]
     workers: string
     retries: string
+    config: string
   }
 }

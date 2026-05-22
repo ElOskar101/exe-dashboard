@@ -71,6 +71,19 @@ export default function ExecutionWizard() {
               errors={wizard.validationErrors.bot}
               showErrors={wizard.showErrors.bot}
               onContextFieldChange={wizard.updateContextField}
+              customerOptions={wizard.customerOptions}
+              isSearchingCustomers={wizard.isSearchingCustomers}
+              customerSearchError={wizard.customerSearchError}
+              selectedCustomerError={wizard.selectedCustomerError}
+              clinicOptions={wizard.clinicOptions}
+              isLoadingClinics={wizard.isLoadingClinics}
+              hasSelectedCustomerWithoutClinics={
+                wizard.hasSelectedCustomerWithoutClinics
+              }
+              onCustomerSearchChange={wizard.updateCustomerSearch}
+              onCustomerClear={wizard.clearCustomerSelection}
+              onCustomerSelect={wizard.selectCustomer}
+              onClinicSelect={wizard.selectClinic}
               onFieldChange={wizard.updateBotField}
               t={t}
             />
@@ -96,6 +109,7 @@ export default function ExecutionWizard() {
               showErrors={wizard.showErrors.config}
               onWorkersChange={wizard.updateWorkers}
               onRetriesChange={wizard.updateRetries}
+              onConfigChange={wizard.updateConfig}
               t={t}
             />
           ) : null}

@@ -23,7 +23,9 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
   context: {
     project: 'liberty',
     client: '',
+    clientName: '',
     clinic: '',
+    clinicName: '',
   },
   bot: {
     botName: '',
@@ -36,5 +38,6 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
     patients: [createEmptyPatient()],
     workers: '2',
     retries: '1',
+    config: '{}',
   },
 })

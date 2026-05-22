@@ -41,10 +41,12 @@ export const buildExecutionPayload = (
   const patientOtherInformation = draft.execution.patients.map((patient) =>
     parseMetadata(patient.otherInformation),
   )
+  const configMetadata = parseMetadata(draft.execution.config)
 
   if (
     !botOtherInformation ||
-    patientOtherInformation.some((metadata) => !metadata)
+    patientOtherInformation.some((metadata) => !metadata) ||
+    !configMetadata
   ) {
     return null
   }
@@ -80,7 +82,7 @@ export const buildExecutionPayload = (
         filenames: patient.filenames.trim(),
         otherInformation: patientOtherInformation[index] ?? {},
       })),
-      config: {},
+      config: configMetadata,
       rv: {},
       workers: Number(draft.execution.workers),
       retries: Number(draft.execution.retries),

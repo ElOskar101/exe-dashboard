@@ -7,11 +7,14 @@ describe('buildExecutionPayload', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'client-1'
+    draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Legacy Dental Care'
     draft.bot.botName = 'Eligibility Runner'
     draft.bot.url = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.execution.config = '{ "parallel": true }'
     draft.execution.patients = [
       {
         patientName: 'Ana',
@@ -65,7 +68,9 @@ describe('buildExecutionPayload', () => {
             },
           },
         ],
-        config: {},
+        config: {
+          parallel: true,
+        },
         rv: {},
         workers: 2,
         retries: 1,
@@ -77,7 +82,9 @@ describe('buildExecutionPayload', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'client-1'
+    draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Legacy Dental Care'
     draft.bot.botName = 'Eligibility Runner'
     draft.bot.url = 'https://carrier.example.com'
     draft.bot.username = 'operator'
@@ -88,5 +95,28 @@ describe('buildExecutionPayload', () => {
     draft.bot.otherInformation = '[]'
 
     expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
+
+    draft.bot.otherInformation = '{ "specifyPayer": "None" }'
+    draft.execution.config = '[]'
+
+    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
+  })
+
+  it('submits selected ids even when display names are present', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-id-42'
+    draft.context.clientName = 'Sunshine Dental'
+    draft.context.clinic = 'clinic-id-9'
+    draft.context.clinicName = 'Main Clinic'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+
+    expect(buildExecutionPayload(draft, 'user-1')).toMatchObject({
+      client: 'customer-id-42',
+      clinic: 'clinic-id-9',
+    })
   })
 })

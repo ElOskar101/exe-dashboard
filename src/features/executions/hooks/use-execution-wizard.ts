@@ -1,4 +1,5 @@
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState, startTransition } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
 import type { TFunction } from 'i18next'
 import { createExecution } from '../services/execution.service'
@@ -18,6 +19,12 @@ import type {
   ExecutionVerificationType,
   ExecutionWizardDraft,
 } from '../model/execution-create'
+import {
+  getCustomerById,
+  searchCustomers,
+  type CustomerSearchItem,
+} from '../services/ccc.service'
+import { useDebouncedValue } from './use-debounced-value'
 
 export type ExecutionWizardStepKey = 'bot' | 'patients' | 'config' | 'review'
 
@@ -43,10 +50,46 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const [createdExecution, setCreatedExecution] = useState<IExecution | null>(
     null,
   )
+  const debouncedCustomerSearch = useDebouncedValue(
+    draft.context.clientName.trim(),
+    300,
+  )
+  const customerSearchEnabled =
+    draft.context.client.trim().length === 0 &&
+    debouncedCustomerSearch.length >= 2
+
+  const customerSearchQuery = useQuery({
+    queryKey: ['execution-customer-search', debouncedCustomerSearch],
+    queryFn: async () => {
+      const response = await searchCustomers(debouncedCustomerSearch)
+
+      return response.data
+    },
+    enabled: customerSearchEnabled,
+  })
+
+  const selectedCustomerQuery = useQuery({
+    queryKey: ['execution-customer', draft.context.client],
+    queryFn: async () => {
+      const response = await getCustomerById(draft.context.client)
+
+      return response.data
+    },
+    enabled: draft.context.client.trim().length > 0,
+  })
+
+  const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
+  const hasSelectedCustomerWithoutClinics =
+    draft.context.client.trim().length > 0 &&
+    selectedCustomerQuery.status === 'success' &&
+    clinicOptions.length === 0
 
   const validationErrors = useMemo(
-    () => getExecutionWizardValidationErrors(draft, createdBy, t),
-    [createdBy, draft, t],
+    () =>
+      getExecutionWizardValidationErrors(draft, createdBy, t, {
+        hasSelectedCustomerWithoutClinics,
+      }),
+    [createdBy, draft, hasSelectedCustomerWithoutClinics, t],
   )
   const payloadPreview = useMemo(
     () => buildExecutionPayload(draft, createdBy),
@@ -76,6 +119,75 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       context: {
         ...previousDraft.context,
         [field]: value,
+      },
+    }))
+  }
+
+  const updateCustomerSearch = (value: string) => {
+    startTransition(() => {
+      setDraft((previousDraft) => ({
+        ...previousDraft,
+        context: {
+          ...previousDraft.context,
+          client: '',
+          clientName: value,
+          clinic: '',
+          clinicName: '',
+        },
+      }))
+    })
+  }
+
+  const clearCustomerSelection = () => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      context: {
+        ...previousDraft.context,
+        client: '',
+        clinic: '',
+        clinicName: '',
+      },
+    }))
+  }
+
+  const selectCustomer = (customer: CustomerSearchItem) => {
+    setDraft((previousDraft) => {
+      if (previousDraft.context.client === customer._id) {
+        return {
+          ...previousDraft,
+          context: {
+            ...previousDraft.context,
+            client: '',
+            clinic: '',
+            clinicName: '',
+          },
+        }
+      }
+
+      return {
+        ...previousDraft,
+        context: {
+          ...previousDraft.context,
+          client: customer._id,
+          clientName: customer.clientName,
+          clinic: '',
+          clinicName: '',
+        },
+      }
+    })
+  }
+
+  const selectClinic = (clinicId: string) => {
+    const selectedClinic = clinicOptions.find(
+      (clinic) => clinic._id === clinicId,
+    )
+
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      context: {
+        ...previousDraft.context,
+        clinic: clinicId,
+        clinicName: selectedClinic?.clinicName ?? '',
       },
     }))
   }
@@ -151,6 +263,16 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       execution: {
         ...previousDraft.execution,
         retries: value,
+      },
+    }))
+  }
+
+  const updateConfig = (value: string) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      execution: {
+        ...previousDraft.execution,
+        config: value,
       },
     }))
   }
@@ -248,8 +370,25 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     submitError,
     createdExecution,
     createdBy,
+    customerOptions: customerSearchQuery.data?.customers ?? [],
+    isSearchingCustomers: customerSearchQuery.isFetching,
+    customerSearchError:
+      customerSearchQuery.error instanceof Error
+        ? customerSearchQuery.error.message
+        : null,
+    selectedCustomerError:
+      selectedCustomerQuery.error instanceof Error
+        ? selectedCustomerQuery.error.message
+        : null,
+    clinicOptions,
+    isLoadingClinics: selectedCustomerQuery.isFetching,
+    hasSelectedCustomerWithoutClinics,
     handleStepChange,
     updateContextField,
+    updateCustomerSearch,
+    clearCustomerSelection,
+    selectCustomer,
+    selectClinic,
     updateBotField,
     updatePatientField,
     updatePatientVerificationType,
@@ -257,6 +396,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     removePatient,
     updateWorkers,
     updateRetries,
+    updateConfig,
     handleNextStep,
     handlePreviousStep,
     handleSubmit,
