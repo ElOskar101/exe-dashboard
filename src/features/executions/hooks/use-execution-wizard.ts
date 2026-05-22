@@ -1,4 +1,5 @@
 import { useContext, useMemo, useState, startTransition } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
 import type { TFunction } from 'i18next'
@@ -13,7 +14,6 @@ import {
   getExecutionWizardValidationErrors,
   hasErrors,
 } from '../lib/execution-wizard-validation'
-import type { IExecution } from '../model/execution.interface'
 import type {
   ExecutionPatient,
   ExecutionVerificationType,
@@ -36,6 +36,7 @@ export const executionWizardSteps: ExecutionWizardStepKey[] = [
 ]
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
+  const navigate = useNavigate()
   const { user } = useContext(AuthContext)
   const createdBy = user?._id ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() =>
@@ -47,9 +48,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [createdExecution, setCreatedExecution] = useState<IExecution | null>(
-    null,
-  )
   const debouncedCustomerSearch = useDebouncedValue(
     draft.context.clientName.trim(),
     300,
@@ -327,7 +325,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     setCurrentStep(0)
     setAttemptedSteps({})
     setSubmitError(null)
-    setCreatedExecution(null)
     setIsSubmitting(false)
   }
 
@@ -349,7 +346,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     try {
       const response = await createExecution(payloadPreview)
 
-      setCreatedExecution(response.data)
+      navigate(`/execution/${response.data._id}`)
     } catch (error) {
       setSubmitError(
         getExecutionRequestErrorMessage(error, t('submit.errorDescription')),
@@ -368,7 +365,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     showErrors,
     isSubmitting,
     submitError,
-    createdExecution,
     createdBy,
     customerOptions: customerSearchQuery.data?.customers ?? [],
     isSearchingCustomers: customerSearchQuery.isFetching,

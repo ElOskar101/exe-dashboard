@@ -2,7 +2,7 @@ export interface IExecution {
   _id: string
   createdBy: string
   playwrightProject: string
-  status: 'completed' | 'process'
+  status: string
   note: []
   attachments: []
   client: string

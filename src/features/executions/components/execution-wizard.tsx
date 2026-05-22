@@ -22,7 +22,6 @@ import {
 import { BotStep } from './execution-wizard/bot-step'
 import { ConfigStep } from './execution-wizard/config-step'
 import { ExecutionSubmitErrorAlert } from './execution-wizard/execution-submit-error-alert'
-import { ExecutionSuccessCard } from './execution-wizard/execution-success-card'
 import { ExecutionWizardStepper } from './execution-wizard/execution-wizard-stepper'
 import { PatientsStep } from './execution-wizard/patients-step'
 import { ReviewStep } from './execution-wizard/review-step'
@@ -30,16 +29,6 @@ import { ReviewStep } from './execution-wizard/review-step'
 export default function ExecutionWizard() {
   const { t } = useTranslation('executions')
   const wizard = useExecutionWizard(t)
-
-  if (wizard.createdExecution) {
-    return (
-      <ExecutionSuccessCard
-        execution={wizard.createdExecution}
-        onReset={wizard.resetWizard}
-        t={t}
-      />
-    )
-  }
 
   return (
     <Card className="mx-auto my-6 w-full max-w-5xl">

@@ -164,5 +164,21 @@
     "status": "Status",
     "createdAt": "Created at",
     "jobId": "Job ID"
+  },
+  "detail": {
+    "title": "Execution logs",
+    "statusUnknown": "Unknown",
+    "loadErrorTitle": "Execution details could not be loaded",
+    "loadErrorDescription": "The realtime log connection is still active, so logs will appear here if the worker sends them.",
+    "logsTitle": "Executed commands",
+    "logsDescription": "Realtime command output for this execution.",
+    "emptyLine": "Empty line",
+    "noLogsTitle": "Waiting for logs",
+    "noLogsDescription": "Command output will appear here as soon as it is available.",
+    "connection": {
+      "connecting": "Connecting",
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
   }
 }

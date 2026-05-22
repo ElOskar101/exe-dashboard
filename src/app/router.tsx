@@ -6,6 +6,9 @@ import Layout from '@/components/layout/layout'
 const ExecutionsPage = lazy(
   () => import('@/features/executions/pages/executions-page'),
 )
+const ExecutionDetailPage = lazy(
+  () => import('@/features/executions/pages/execution-detail-page'),
+)
 const NotFound = lazy(() => import('@/pages/not-found.tsx'))
 const UnderConstruction = lazy(
   () => import('@/features/auth/pages/under-construction'),
@@ -27,6 +30,7 @@ export const AppRouter = () => {
             }
           >
             <Route index element={<ExecutionsPage />} />
+            <Route path="execution/:id" element={<ExecutionDetailPage />} />
           </Route>
         </Routes>
       </Suspense>

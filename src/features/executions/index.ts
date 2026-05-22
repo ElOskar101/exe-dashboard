@@ -1,4 +1,4 @@
-export { createExecution } from './services/execution.service'
+export { createExecution, getExecutionById } from './services/execution.service'
 export { getCustomerById, searchCustomers } from './services/ccc.service'
 export { default as ExecutionsPage } from './pages/executions-page'
 export type { IExecution } from './model/execution.interface'
