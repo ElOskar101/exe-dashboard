@@ -5,26 +5,36 @@ import type {
 
 export const createEmptyPatient = (): ExecutionPatient => ({
   patientName: '',
-  memberId: '',
-  dateOfBirth: '',
+  patientLastName: '',
+  patientMemberId: '',
+  patientDob: '',
+  policyHolderName: '',
+  policyHolderLastName: '',
+  policyHolderDob: '',
+  relationship: '',
+  zipCode: '',
+  clinic: '',
+  verificationType: '',
+  filenames: '',
+  otherInformation: '{\n  "plan": ""\n}',
 })
 
 export const createEmptyDraft = (): ExecutionWizardDraft => ({
+  context: {
+    project: 'liberty',
+    client: '',
+    clinic: '',
+  },
   bot: {
     botName: '',
     url: '',
     username: '',
     password: '',
+    otherInformation: '{\n  "specifyPayer": "None"\n}',
   },
   execution: {
     patients: [createEmptyPatient()],
-    numberOfThreads: '',
-    mode: '',
-    verificationType: '',
-  },
-  config: {
-    'in-network': false,
-    shortForm: false,
-    claimsForm: false,
+    workers: '2',
+    retries: '1',
   },
 })

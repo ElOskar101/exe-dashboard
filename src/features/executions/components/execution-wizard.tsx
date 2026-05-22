@@ -65,9 +65,12 @@ export default function ExecutionWizard() {
         <div className="flex flex-col gap-6">
           {wizard.currentStep === 0 ? (
             <BotStep
+              context={wizard.draft.context}
               bot={wizard.draft.bot}
+              contextErrors={wizard.validationErrors.context}
               errors={wizard.validationErrors.bot}
               showErrors={wizard.showErrors.bot}
+              onContextFieldChange={wizard.updateContextField}
               onFieldChange={wizard.updateBotField}
               t={t}
             />
@@ -79,6 +82,7 @@ export default function ExecutionWizard() {
               errors={wizard.validationErrors.patients}
               showErrors={wizard.showErrors.patients}
               onPatientChange={wizard.updatePatientField}
+              onVerificationTypeChange={wizard.updatePatientVerificationType}
               onAddPatient={wizard.addPatient}
               onRemovePatient={wizard.removePatient}
               t={t}
@@ -90,10 +94,8 @@ export default function ExecutionWizard() {
               draft={wizard.draft}
               errors={wizard.validationErrors.config}
               showErrors={wizard.showErrors.config}
-              onThreadCountChange={wizard.updateThreadCount}
-              onConfigFieldChange={wizard.updateConfigField}
-              onModeChange={wizard.updateMode}
-              onVerificationTypeChange={wizard.updateVerificationType}
+              onWorkersChange={wizard.updateWorkers}
+              onRetriesChange={wizard.updateRetries}
               t={t}
             />
           ) : null}

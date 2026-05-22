@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
+import { AuthContext } from '@/features/auth'
 import type { TFunction } from 'i18next'
 import { createExecution } from '../services/execution.service'
 import { getExecutionRequestErrorMessage } from '../services/execution-errors'
@@ -13,7 +14,6 @@ import {
 } from '../lib/execution-wizard-validation'
 import type { IExecution } from '../model/execution.interface'
 import type {
-  ExecutionModeOption,
   ExecutionPatient,
   ExecutionVerificationType,
   ExecutionWizardDraft,
@@ -29,6 +29,8 @@ export const executionWizardSteps: ExecutionWizardStepKey[] = [
 ]
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
+  const { user } = useContext(AuthContext)
+  const createdBy = user?._id ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() =>
     createEmptyDraft(),
   )
@@ -43,13 +45,16 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   )
 
   const validationErrors = useMemo(
-    () => getExecutionWizardValidationErrors(draft, t),
-    [draft, t],
+    () => getExecutionWizardValidationErrors(draft, createdBy, t),
+    [createdBy, draft, t],
   )
-  const payloadPreview = useMemo(() => buildExecutionPayload(draft), [draft])
+  const payloadPreview = useMemo(
+    () => buildExecutionPayload(draft, createdBy),
+    [createdBy, draft],
+  )
 
   const stepValidity = [
-    !hasErrors(validationErrors.bot),
+    !hasErrors(validationErrors.context) && !hasErrors(validationErrors.bot),
     !validationErrors.patients.form &&
       validationErrors.patients.rows.every((row) => !hasErrors(row)),
     !hasErrors(validationErrors.config),
@@ -60,6 +65,19 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     bot: Boolean(attemptedSteps[0]),
     patients: Boolean(attemptedSteps[1]),
     config: Boolean(attemptedSteps[2]),
+  }
+
+  const updateContextField = (
+    field: keyof ExecutionWizardDraft['context'],
+    value: string,
+  ) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      context: {
+        ...previousDraft.context,
+        [field]: value,
+      },
+    }))
   }
 
   const updateBotField = (
@@ -117,45 +135,40 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const updateThreadCount = (value: string) => {
+  const updateWorkers = (value: string) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
       execution: {
         ...previousDraft.execution,
-        numberOfThreads: value,
+        workers: value,
       },
     }))
   }
 
-  const updateConfigField = (
-    field: keyof ExecutionWizardDraft['config'],
-    value: boolean,
+  const updateRetries = (value: string) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      execution: {
+        ...previousDraft.execution,
+        retries: value,
+      },
+    }))
+  }
+
+  const updatePatientVerificationType = (
+    index: number,
+    value: ExecutionVerificationType | '',
   ) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
-      config: {
-        ...previousDraft.config,
-        [field]: value,
-      },
-    }))
-  }
-
-  const updateMode = (value: ExecutionModeOption) => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
       execution: {
         ...previousDraft.execution,
-        mode: value,
-      },
-    }))
-  }
-
-  const updateVerificationType = (value: ExecutionVerificationType | '') => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      execution: {
-        ...previousDraft.execution,
-        verificationType: value,
+        patients: previousDraft.execution.patients.map(
+          (patient, patientIndex) =>
+            patientIndex === index
+              ? { ...patient, verificationType: value }
+              : patient,
+        ),
       },
     }))
   }
@@ -234,15 +247,16 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     isSubmitting,
     submitError,
     createdExecution,
+    createdBy,
     handleStepChange,
+    updateContextField,
     updateBotField,
     updatePatientField,
+    updatePatientVerificationType,
     addPatient,
     removePatient,
-    updateThreadCount,
-    updateConfigField,
-    updateMode,
-    updateVerificationType,
+    updateWorkers,
+    updateRetries,
     handleNextStep,
     handlePreviousStep,
     handleSubmit,

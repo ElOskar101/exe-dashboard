@@ -5,15 +5,17 @@ import type {
 } from '../model/execution-create'
 
 export type StepErrors = {
+  context: Partial<Record<keyof ExecutionWizardDraft['context'], string>> & {
+    createdBy?: string
+  }
   bot: Partial<Record<keyof ExecutionWizardDraft['bot'], string>>
   patients: {
     form?: string
     rows: Array<Partial<Record<keyof ExecutionPatient, string>>>
   }
   config: {
-    numberOfThreads?: string
-    mode?: string
-    verificationType?: string
+    workers?: string
+    retries?: string
   }
 }
 
@@ -31,8 +33,27 @@ export const hasErrors = (errors: Record<string, string | undefined>) => {
 
 export const getExecutionWizardValidationErrors = (
   draft: ExecutionWizardDraft,
+  createdBy: string,
   t: TFunction<'executions'>,
 ): StepErrors => {
+  const context: StepErrors['context'] = {}
+
+  if (!createdBy) {
+    context.createdBy = t('validation.userRequired')
+  }
+
+  if (!draft.context.project.trim()) {
+    context.project = t('validation.required')
+  }
+
+  if (!draft.context.client.trim()) {
+    context.client = t('validation.required')
+  }
+
+  if (!draft.context.clinic.trim()) {
+    context.clinic = t('validation.required')
+  }
+
   const bot: StepErrors['bot'] = {}
 
   if (!draft.bot.botName.trim()) {
@@ -53,21 +74,26 @@ export const getExecutionWizardValidationErrors = (
     bot.password = t('validation.required')
   }
 
+  if (!isJsonObjectStringValid(draft.bot.otherInformation)) {
+    bot.otherInformation = t('validation.validJsonObject')
+  }
+
   const patients = draft.execution.patients.map((patient) => {
     const rowErrors: StepErrors['patients']['rows'][number] = {}
 
-    if (!patient.patientName.trim()) {
-      rowErrors.patientName = t('validation.required')
+    if (patient.patientDob.trim() && !isDateStringValid(patient.patientDob)) {
+      rowErrors.patientDob = t('validation.validDate')
     }
 
-    if (!patient.memberId.trim()) {
-      rowErrors.memberId = t('validation.required')
+    if (
+      patient.policyHolderDob.trim() &&
+      !isDateStringValid(patient.policyHolderDob)
+    ) {
+      rowErrors.policyHolderDob = t('validation.validDate')
     }
 
-    if (!patient.dateOfBirth.trim()) {
-      rowErrors.dateOfBirth = t('validation.required')
-    } else if (!isDateStringValid(patient.dateOfBirth)) {
-      rowErrors.dateOfBirth = t('validation.validDate')
+    if (!isJsonObjectStringValid(patient.otherInformation)) {
+      rowErrors.otherInformation = t('validation.validJsonObject')
     }
 
     return rowErrors
@@ -75,24 +101,26 @@ export const getExecutionWizardValidationErrors = (
 
   const config: StepErrors['config'] = {}
 
-  if (!draft.execution.numberOfThreads.trim()) {
-    config.numberOfThreads = t('validation.required')
+  if (!draft.execution.workers.trim()) {
+    config.workers = t('validation.required')
   } else if (
-    !Number.isInteger(Number(draft.execution.numberOfThreads)) ||
-    Number(draft.execution.numberOfThreads) <= 0
+    !Number.isInteger(Number(draft.execution.workers)) ||
+    Number(draft.execution.workers) <= 0
   ) {
-    config.numberOfThreads = t('validation.positiveNumber')
+    config.workers = t('validation.positiveNumber')
   }
 
-  if (!draft.execution.mode) {
-    config.mode = t('validation.selectMode')
-  }
-
-  if (!draft.execution.verificationType) {
-    config.verificationType = t('validation.selectVerificationType')
+  if (!draft.execution.retries.trim()) {
+    config.retries = t('validation.required')
+  } else if (
+    !Number.isInteger(Number(draft.execution.retries)) ||
+    Number(draft.execution.retries) < 0
+  ) {
+    config.retries = t('validation.nonNegativeNumber')
   }
 
   return {
+    context,
     bot,
     patients: {
       form:
@@ -102,5 +130,17 @@ export const getExecutionWizardValidationErrors = (
       rows: patients,
     },
     config,
+  }
+}
+
+const isJsonObjectStringValid = (value: string) => {
+  try {
+    const parsed = JSON.parse(value)
+
+    return (
+      Boolean(parsed) && !Array.isArray(parsed) && typeof parsed === 'object'
+    )
+  } catch {
+    return false
   }
 }

@@ -20,49 +20,96 @@ const getReviewPatientRows = (
 ): ExecutionPatient[] => {
   return patients.length > 0
     ? patients
-    : [{ patientName: '', memberId: '', dateOfBirth: '' }]
+    : [
+        {
+          patientName: '',
+          patientLastName: '',
+          patientMemberId: '',
+          patientDob: '',
+          policyHolderName: '',
+          policyHolderLastName: '',
+          policyHolderDob: '',
+          relationship: '',
+          zipCode: '',
+          clinic: '',
+          verificationType: '',
+          filenames: '',
+          otherInformation: '',
+        },
+      ]
 }
 
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
-  const enabledFlags =
-    [
-      draft.config['in-network'] ? t('fields.inNetwork') : null,
-      draft.config.shortForm ? t('fields.shortForm') : null,
-      draft.config.claimsForm ? t('fields.claimsForm') : null,
-    ]
-      .filter(Boolean)
-      .join(', ') || t('review.noFlags')
   const patients = getReviewPatientRows(draft.execution.patients)
-  const reviewPayload =
-    payload ??
-    ({
+  const reviewPayload = payload ?? {
+    project: draft.context.project.trim(),
+    client: draft.context.client.trim(),
+    clinic: draft.context.clinic.trim(),
+    botName: draft.bot.botName.trim(),
+    meta: {
       bot: {
         botName: draft.bot.botName.trim(),
-        url: draft.bot.url.trim(),
+        targetUrl: draft.bot.url.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password,
+        otherInformation: draft.bot.otherInformation,
       },
-      execution: {
-        patients: draft.execution.patients.map((patient) => ({
-          patientName: patient.patientName.trim(),
-          memberId: patient.memberId.trim(),
-          dateOfBirth: patient.dateOfBirth,
-        })),
-        numberOfThreads: draft.execution.numberOfThreads.trim()
-          ? Number(draft.execution.numberOfThreads)
-          : '',
-        mode: draft.execution.mode === 'parallel' ? 'parallel' : '',
-        verificationType: draft.execution.verificationType,
-      },
-      config: draft.config,
-    } as const)
+      patients: draft.execution.patients.map((patient) => ({
+        patientName: patient.patientName.trim(),
+        patientLastName: patient.patientLastName.trim(),
+        patientMemberId: patient.patientMemberId.trim(),
+        patientDob: patient.patientDob,
+        policyHolderName: patient.policyHolderName.trim(),
+        policyHolderLastName: patient.policyHolderLastName.trim(),
+        policyHolderDob: patient.policyHolderDob,
+        relationship: patient.relationship.trim(),
+        zipCode: patient.zipCode.trim(),
+        clinic: patient.clinic.trim(),
+        verificationType: patient.verificationType.toLowerCase(),
+        filenames: patient.filenames.trim(),
+        otherInformation: patient.otherInformation,
+      })),
+      config: {},
+      rv: {},
+      workers: draft.execution.workers.trim()
+        ? Number(draft.execution.workers)
+        : '',
+      retries: draft.execution.retries.trim()
+        ? Number(draft.execution.retries)
+        : '',
+    },
+  }
 
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="flex flex-col gap-6">
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <dl className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-muted-foreground">
+                {t('fields.project')}
+              </dt>
+              <dd className="mt-1 font-medium">
+                {getDisplayValue(draft.context.project, emptyValue)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">
+                {t('fields.client')}
+              </dt>
+              <dd className="mt-1 font-medium">
+                {getDisplayValue(draft.context.client, emptyValue)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">
+                {t('fields.clinic')}
+              </dt>
+              <dd className="mt-1 font-medium">
+                {getDisplayValue(draft.context.clinic, emptyValue)}
+              </dd>
+            </div>
             <div>
               <dt className="text-sm text-muted-foreground">
                 {t('fields.botName')}
@@ -94,7 +141,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           <div className="flex flex-col gap-3">
             {patients.map((patient, index) => (
               <div
-                key={`${patient.memberId}-${index}`}
+                key={`${patient.patientMemberId}-${index}`}
                 className="grid gap-3 rounded-2xl border border-border/70 bg-muted/40 p-3 sm:grid-cols-3"
               >
                 <div>
@@ -110,15 +157,39 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                     {t('fields.memberId')}
                   </p>
                   <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.memberId, emptyValue)}
+                    {getDisplayValue(patient.patientMemberId, emptyValue)}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    {t('fields.dateOfBirth')}
+                    {t('fields.patientDob')}
                   </p>
                   <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.dateOfBirth, emptyValue)}
+                    {getDisplayValue(patient.patientDob, emptyValue)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    {t('fields.relationship')}
+                  </p>
+                  <p className="mt-1 font-medium">
+                    {getDisplayValue(patient.relationship, emptyValue)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    {t('fields.patientClinic')}
+                  </p>
+                  <p className="mt-1 font-medium">
+                    {getDisplayValue(patient.clinic, emptyValue)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    {t('fields.verificationType')}
+                  </p>
+                  <p className="mt-1 font-medium">
+                    {patient.verificationType || emptyValue}
                   </p>
                 </div>
               </div>
@@ -130,37 +201,19 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-muted-foreground">
-                {t('fields.numberOfThreads')}
+                {t('fields.workers')}
               </dt>
               <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.execution.numberOfThreads, emptyValue)}
+                {getDisplayValue(draft.execution.workers, emptyValue)}
               </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">
-                {t('fields.verificationType')}
+                {t('fields.retries')}
               </dt>
               <dd className="mt-1 font-medium">
-                {draft.execution.verificationType || emptyValue}
+                {getDisplayValue(draft.execution.retries, emptyValue)}
               </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.mode')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {draft.execution.mode
-                  ? draft.execution.mode === 'parallel'
-                    ? t('options.modeParallel')
-                    : t('options.modeStandard')
-                  : emptyValue}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('review.flagsTitle')}
-              </dt>
-              <dd className="mt-1 font-medium">{enabledFlags}</dd>
             </div>
           </dl>
         </div>

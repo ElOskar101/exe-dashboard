@@ -3,40 +3,75 @@ export interface ExecutionBot {
   url: string
   username: string
   password: string
+  otherInformation: string
 }
 
 export interface ExecutionPatient {
   patientName: string
-  memberId: string
-  dateOfBirth: string
+  patientLastName: string
+  patientMemberId: string
+  patientDob: string
+  policyHolderName: string
+  policyHolderLastName: string
+  policyHolderDob: string
+  relationship: string
+  zipCode: string
+  clinic: string
+  verificationType: ExecutionVerificationType | ''
+  filenames: string
+  otherInformation: string
 }
 
 export type ExecutionVerificationType = 'ELG' | 'FBD'
 
+export type ExecutionMetadata = Record<string, unknown>
+
 export interface ExecutionCreatePayload {
-  bot: ExecutionBot
-  execution: {
-    patients: ExecutionPatient[]
-    numberOfThreads: number
-    mode: 'parallel' | ''
-    verificationType: ExecutionVerificationType
-  }
-  config: {
-    'in-network': boolean
-    shortForm: boolean
-    claimsForm: boolean
+  project: string
+  createdBy: string
+  client: string
+  clinic: string
+  botName: string
+  meta: {
+    bot: {
+      botName: string
+      targetUrl: string
+      username: string
+      password: string
+      otherInformation: ExecutionMetadata
+    }
+    patients: Array<{
+      patientName: string
+      patientLastName: string
+      patientMemberId: string
+      patientDob: string
+      policyHolderName: string
+      policyHolderLastName: string
+      policyHolderDob: string
+      relationship: string
+      zipCode: string
+      clinic: string
+      verificationType: Lowercase<ExecutionVerificationType> | ''
+      filenames: string
+      otherInformation: ExecutionMetadata
+    }>
+    config: Record<string, never>
+    rv: Record<string, never>
+    workers: number
+    retries: number
   }
 }
 
-export type ExecutionModeOption = 'parallel' | 'standard' | ''
-
 export interface ExecutionWizardDraft {
+  context: {
+    project: string
+    client: string
+    clinic: string
+  }
   bot: ExecutionBot
   execution: {
     patients: ExecutionPatient[]
-    numberOfThreads: string
-    mode: ExecutionModeOption
-    verificationType: ExecutionVerificationType | ''
+    workers: string
+    retries: string
   }
-  config: ExecutionCreatePayload['config']
 }

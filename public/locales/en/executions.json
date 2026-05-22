@@ -10,7 +10,7 @@
     "upNext": "Up next",
     "bot": {
       "title": "Bot",
-      "description": "Capture the bot credentials and endpoint for this execution."
+      "description": "Capture the execution context, bot credentials, and endpoint for this execution."
     },
     "patients": {
       "title": "Patients",
@@ -18,7 +18,7 @@
     },
     "config": {
       "title": "Execution config",
-      "description": "Choose the processing settings that complete the payload."
+      "description": "Choose the runtime settings that complete the payload."
     },
     "review": {
       "title": "Review & submit",
@@ -49,14 +49,29 @@
     }
   },
   "fields": {
+    "project": "Project",
+    "client": "Client ID",
+    "clinic": "Clinic ID",
     "botName": "Bot name",
     "url": "Portal URL",
     "username": "Username",
     "password": "Password",
+    "botOtherInformation": "Bot other information",
     "patientName": "Patient name",
+    "patientLastName": "Patient last name",
     "memberId": "Member ID",
-    "dateOfBirth": "Date of birth",
+    "patientDob": "Patient date of birth",
+    "policyHolderName": "Policy holder name",
+    "policyHolderLastName": "Policy holder last name",
+    "policyHolderDob": "Policy holder date of birth",
+    "relationship": "Relationship",
+    "zipCode": "ZIP code",
+    "patientClinic": "Patient clinic",
+    "filenames": "Filenames",
+    "patientOtherInformation": "Patient other information",
     "numberOfThreads": "Number of threads",
+    "workers": "Workers",
+    "retries": "Retries",
     "mode": "Mode",
     "verificationType": "Verification type",
     "inNetwork": "In network",
@@ -64,13 +79,25 @@
     "claimsForm": "Claims form"
   },
   "placeholders": {
+    "project": "liberty",
+    "client": "client-id",
+    "clinic": "clinic-id",
     "botName": "Eligibility Runner",
     "url": "https://carrier.example.com",
     "username": "qa.operator",
     "password": "Enter the bot password",
-    "patientName": "Jane Doe",
+    "patientName": "Jane",
+    "patientLastName": "Doe",
     "memberId": "123456789",
-    "numberOfThreads": "4"
+    "policyHolderName": "Jane",
+    "policyHolderLastName": "Doe",
+    "relationship": "self",
+    "zipCode": "90001",
+    "patientClinic": "Downtown Clinic",
+    "filenames": "jane-doe.pdf",
+    "numberOfThreads": "4",
+    "workers": "2",
+    "retries": "1"
   },
   "options": {
     "modeParallel": "Parallel",
@@ -91,7 +118,10 @@
     "required": "This field is required.",
     "validUrl": "Enter a valid URL.",
     "validDate": "Enter a valid date.",
+    "validJsonObject": "Enter a valid JSON object.",
     "positiveNumber": "Enter a whole number greater than zero.",
+    "nonNegativeNumber": "Enter a whole number of zero or greater.",
+    "userRequired": "Wait for the signed-in user to load before submitting.",
     "selectMode": "Choose an execution mode.",
     "selectVerificationType": "Choose a verification type.",
     "addPatient": "Add at least one patient before continuing.",
