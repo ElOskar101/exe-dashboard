@@ -29,13 +29,13 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
   FieldSet,
   FieldTitle,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { cn } from '@/lib/utils'
 import {
   IconAlertCircle,
   IconArrowLeft,
@@ -267,7 +267,6 @@ export default function ExecutionWizard() {
   const showBotErrors = Boolean(attemptedSteps[0])
   const showPatientErrors = Boolean(attemptedSteps[1])
   const showConfigErrors = Boolean(attemptedSteps[2])
-  const stepKey = steps[currentStep]
 
   const updateBotField = (
     field: keyof ExecutionWizardDraft['bot'],
@@ -483,20 +482,40 @@ export default function ExecutionWizard() {
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <ol className="grid gap-3 md:grid-cols-4">
-          {steps.map((step, index) => (
-            <li
-              key={step}
-              className="rounded-3xl border border-border/70 bg-muted/20 p-4"
-            >
-              <p className="text-sm text-muted-foreground">
-                {t('steps.stepCounter', {
-                  current: index + 1,
-                  total: steps.length,
-                })}
-              </p>
-              <p className="mt-2 font-medium">{t(`steps.${step}.title`)}</p>
-            </li>
-          ))}
+          {steps.map((step, index) => {
+            const isActiveStep = currentStep === index
+
+            return (
+              <li key={step}>
+                <button
+                  type="button"
+                  aria-current={isActiveStep ? 'step' : undefined}
+                  onClick={() => setCurrentStep(index)}
+                  className={cn(
+                    'relative flex h-full w-full flex-col rounded-3xl border border-border/70 bg-muted/20 p-4 text-left transition-[background-color,border-color,box-shadow] outline-none hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
+                    isActiveStep &&
+                      'border-primary/50 bg-card shadow-sm ring-2 ring-primary/20 hover:bg-card',
+                  )}
+                >
+                  {isActiveStep ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-4 right-4 size-2.5 rounded-full bg-primary"
+                    />
+                  ) : null}
+                  <span className="pr-5 font-medium">
+                    {t(`steps.${step}.title`)}
+                  </span>
+                  <span className="mt-1 text-xs text-muted-foreground">
+                    {t('steps.stepCounter', {
+                      current: index + 1,
+                      total: steps.length,
+                    })}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ol>
 
         <Separator />
@@ -510,17 +529,6 @@ export default function ExecutionWizard() {
         ) : null}
 
         <div className="flex flex-col gap-6">
-          {currentStep === 0 ? null : (
-            <div>
-              <h2 className="text-xl font-medium">
-                {t(`steps.${stepKey}.title`)}
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t(`steps.${stepKey}.description`)}
-              </p>
-            </div>
-          )}
-
           {currentStep === 0 ? (
             <FieldSet>
               <FieldGroup className="md:grid md:grid-cols-2">
@@ -625,10 +633,6 @@ export default function ExecutionWizard() {
 
           {currentStep === 1 ? (
             <FieldSet>
-              <FieldLegend>{t('sections.patients.legend')}</FieldLegend>
-              <FieldDescription>
-                {t('sections.patients.description')}
-              </FieldDescription>
               <FieldGroup>
                 {validationErrors.patients.form && showPatientErrors ? (
                   <Alert variant="destructive">
@@ -649,16 +653,11 @@ export default function ExecutionWizard() {
                       className="rounded-3xl border border-border/70 bg-muted/20 p-4"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-medium">
-                            {t('sections.patients.patientTitle', {
-                              index: index + 1,
-                            })}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {t('sections.patients.patientDescription')}
-                          </p>
-                        </div>
+                        <p className="font-medium">
+                          {t('sections.patients.patientTitle', {
+                            index: index + 1,
+                          })}
+                        </p>
                         <Button
                           variant="ghost"
                           type="button"
@@ -670,7 +669,7 @@ export default function ExecutionWizard() {
                         </Button>
                       </div>
 
-                      <FieldGroup className="mt-4">
+                      <FieldGroup className="mt-4 md:grid md:grid-cols-2">
                         <Field
                           data-invalid={
                             showPatientErrors && Boolean(rowErrors.patientName)
@@ -771,125 +770,120 @@ export default function ExecutionWizard() {
 
           {currentStep === 2 ? (
             <FieldSet>
-              <FieldLegend>{t('sections.config.legend')}</FieldLegend>
-              <FieldDescription>
-                {t('sections.config.description')}
-              </FieldDescription>
-              <FieldGroup>
-                <Field
-                  data-invalid={
-                    showConfigErrors &&
-                    Boolean(validationErrors.config.numberOfThreads)
-                  }
-                >
-                  <FieldLabel htmlFor="threads">
-                    {t('fields.numberOfThreads')}
-                  </FieldLabel>
-                  <Input
-                    id="threads"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={draft.execution.numberOfThreads}
-                    onChange={(event) =>
-                      setDraft((previousDraft) => ({
-                        ...previousDraft,
-                        execution: {
-                          ...previousDraft.execution,
-                          numberOfThreads: event.target.value,
-                        },
-                      }))
-                    }
-                    aria-invalid={
+              <FieldGroup className="grid items-stretch gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.9fr)]">
+                <FieldGroup>
+                  <Field
+                    data-invalid={
                       showConfigErrors &&
                       Boolean(validationErrors.config.numberOfThreads)
                     }
-                    placeholder={t('placeholders.numberOfThreads')}
-                  />
-                  <FieldError>
-                    {showConfigErrors
-                      ? validationErrors.config.numberOfThreads
-                      : null}
-                  </FieldError>
-                </Field>
-
-                <Field
-                  data-invalid={
-                    showConfigErrors && Boolean(validationErrors.config.mode)
-                  }
-                >
-                  <FieldTitle>{t('fields.mode')}</FieldTitle>
-                  <FieldDescription>
-                    {t('sections.config.modeDescription')}
-                  </FieldDescription>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={draft.execution.mode ? [draft.execution.mode] : []}
-                    onValueChange={(value) =>
-                      updateMode((value[0] ?? '') as ExecutionModeOption)
-                    }
-                    aria-label={t('fields.mode')}
+                    className="sm:max-w-64"
                   >
-                    <ToggleGroupItem value="parallel">
-                      {t('options.modeParallel')}
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="standard">
-                      {t('options.modeStandard')}
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                  <FieldError>
-                    {showConfigErrors ? validationErrors.config.mode : null}
-                  </FieldError>
-                </Field>
+                    <FieldLabel htmlFor="threads">
+                      {t('fields.numberOfThreads')}
+                    </FieldLabel>
+                    <Input
+                      id="threads"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={draft.execution.numberOfThreads}
+                      onChange={(event) =>
+                        setDraft((previousDraft) => ({
+                          ...previousDraft,
+                          execution: {
+                            ...previousDraft.execution,
+                            numberOfThreads: event.target.value,
+                          },
+                        }))
+                      }
+                      aria-invalid={
+                        showConfigErrors &&
+                        Boolean(validationErrors.config.numberOfThreads)
+                      }
+                      placeholder={t('placeholders.numberOfThreads')}
+                    />
+                    <FieldError>
+                      {showConfigErrors
+                        ? validationErrors.config.numberOfThreads
+                        : null}
+                    </FieldError>
+                  </Field>
 
-                <Field
-                  data-invalid={
-                    showConfigErrors &&
-                    Boolean(validationErrors.config.verificationType)
-                  }
-                >
-                  <FieldTitle>{t('fields.verificationType')}</FieldTitle>
-                  <FieldDescription>
-                    {t('sections.config.verificationDescription')}
-                  </FieldDescription>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={
-                      draft.execution.verificationType
-                        ? [draft.execution.verificationType]
-                        : []
-                    }
-                    onValueChange={(value) =>
-                      updateVerificationType(
-                        (value[0] ?? '') as ExecutionVerificationType | '',
-                      )
-                    }
-                    aria-label={t('fields.verificationType')}
+                  <FieldGroup className="grid gap-5 sm:w-fit sm:grid-cols-[auto_auto]">
+                    <Field
+                      data-invalid={
+                        showConfigErrors &&
+                        Boolean(validationErrors.config.verificationType)
+                      }
+                    >
+                      <FieldTitle>{t('fields.verificationType')}</FieldTitle>
+                      <ToggleGroup
+                        multiple={false}
+                        variant="outline"
+                        value={
+                          draft.execution.verificationType
+                            ? [draft.execution.verificationType]
+                            : []
+                        }
+                        onValueChange={(value) =>
+                          updateVerificationType(
+                            (value[0] ?? '') as ExecutionVerificationType | '',
+                          )
+                        }
+                        aria-label={t('fields.verificationType')}
+                      >
+                        <ToggleGroupItem value="ELG">
+                          {t('options.verificationElg')}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="FBD">
+                          {t('options.verificationFbd')}
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                      <FieldError>
+                        {showConfigErrors
+                          ? validationErrors.config.verificationType
+                          : null}
+                      </FieldError>
+                    </Field>
+
+                    <Field
+                      data-invalid={
+                        showConfigErrors &&
+                        Boolean(validationErrors.config.mode)
+                      }
+                    >
+                      <FieldTitle>{t('fields.mode')}</FieldTitle>
+                      <ToggleGroup
+                        multiple={false}
+                        variant="outline"
+                        value={
+                          draft.execution.mode ? [draft.execution.mode] : []
+                        }
+                        onValueChange={(value) =>
+                          updateMode((value[0] ?? '') as ExecutionModeOption)
+                        }
+                        aria-label={t('fields.mode')}
+                      >
+                        <ToggleGroupItem value="parallel">
+                          {t('options.modeParallel')}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="standard">
+                          {t('options.modeStandard')}
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                      <FieldError>
+                        {showConfigErrors ? validationErrors.config.mode : null}
+                      </FieldError>
+                    </Field>
+                  </FieldGroup>
+                </FieldGroup>
+
+                <FieldSet className="h-full">
+                  <FieldGroup
+                    data-slot="checkbox-group"
+                    className="h-full justify-between gap-6"
                   >
-                    <ToggleGroupItem value="ELG">
-                      {t('options.verificationElg')}
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="FBD">
-                      {t('options.verificationFbd')}
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                  <FieldError>
-                    {showConfigErrors
-                      ? validationErrors.config.verificationType
-                      : null}
-                  </FieldError>
-                </Field>
-
-                <FieldSet>
-                  <FieldLegend variant="label">
-                    {t('sections.config.flagsLegend')}
-                  </FieldLegend>
-                  <FieldDescription>
-                    {t('sections.config.flagsDescription')}
-                  </FieldDescription>
-                  <FieldGroup data-slot="checkbox-group">
                     <Field orientation="horizontal">
                       <Checkbox
                         id="inNetwork"
@@ -950,11 +944,10 @@ export default function ExecutionWizard() {
           ) : null}
 
           {currentStep === 3 && payloadPreview ? (
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
               <div className="flex flex-col gap-6">
                 <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-                  <h3 className="font-medium">{t('review.botTitle')}</h3>
-                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <dl className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <dt className="text-sm text-muted-foreground">
                         {t('fields.botName')}
@@ -983,32 +976,41 @@ export default function ExecutionWizard() {
                 </div>
 
                 <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-                  <h3 className="font-medium">{t('review.patientsTitle')}</h3>
-                  <div className="mt-4 flex flex-col gap-3">
+                  <div className="flex flex-col gap-3">
                     {payloadPreview.execution.patients.map((patient, index) => (
                       <div
                         key={`${patient.memberId}-${index}`}
-                        className="rounded-2xl border border-border/70 bg-background p-3"
+                        className="grid gap-3 rounded-2xl border border-border/70 bg-muted/40 p-3 sm:grid-cols-3"
                       >
-                        <p className="font-medium">{patient.patientName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('review.memberIdLabel', {
-                            value: patient.memberId,
-                          })}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('review.dateOfBirthLabel', {
-                            value: patient.dateOfBirth,
-                          })}
-                        </p>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {t('fields.patientName')}
+                          </p>
+                          <p className="mt-1 font-medium">
+                            {patient.patientName}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {t('fields.memberId')}
+                          </p>
+                          <p className="mt-1 font-medium">{patient.memberId}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {t('fields.dateOfBirth')}
+                          </p>
+                          <p className="mt-1 font-medium">
+                            {patient.dateOfBirth}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-                  <h3 className="font-medium">{t('review.configTitle')}</h3>
-                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <dl className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <dt className="text-sm text-muted-foreground">
                         {t('fields.numberOfThreads')}
@@ -1059,12 +1061,8 @@ export default function ExecutionWizard() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-border/70 bg-card p-4">
-                <h3 className="font-medium">{t('review.payloadTitle')}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t('review.payloadDescription')}
-                </p>
-                <pre className="mt-4 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
+              <div className="flex max-h-[calc(100vh-14rem)] min-h-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
+                <pre className="min-h-0 flex-1 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
                   {JSON.stringify(payloadPreview, null, 2)}
                 </pre>
               </div>
