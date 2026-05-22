@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AuthContext } from '../context/context'
+import { AuthContext } from '../contexts/context'
 
 function getInitials(name: string) {
   return (

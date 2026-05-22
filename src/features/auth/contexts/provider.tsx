@@ -1,10 +1,10 @@
 import { ReactElement, useCallback, useState } from 'react'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { _base64Decode, _base64Encode } from '@/utils/common'
-import { getUserData } from '../api/auth.service'
+import { getUserData } from '../services/auth.service'
 import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
-import { IUser } from '../model/user.interface'
+import { IUser } from '../models/user.interface'
 
 export const AuthProvider = (props: { children: ReactElement }) => {
   const { children } = props

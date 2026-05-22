@@ -1,4 +1,4 @@
-export { createExecution } from './api/execution.service'
+export { createExecution } from './services/execution.service'
 export { default as ExecutionsPage } from './pages/executions-page'
 export type { IExecution } from './model/execution.interface'
 export type {
