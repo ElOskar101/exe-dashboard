@@ -51,7 +51,8 @@ export default function ExecutionWizard() {
         <ExecutionWizardStepper
           steps={executionWizardSteps}
           currentStep={wizard.currentStep}
-          onStepChange={wizard.setCurrentStep}
+          stepValidity={wizard.stepValidity}
+          onStepChange={wizard.handleStepChange}
           t={t}
         />
 
@@ -97,8 +98,12 @@ export default function ExecutionWizard() {
             />
           ) : null}
 
-          {wizard.currentStep === 3 && wizard.payloadPreview ? (
-            <ReviewStep payload={wizard.payloadPreview} t={t} />
+          {wizard.currentStep === 3 ? (
+            <ReviewStep
+              draft={wizard.draft}
+              payload={wizard.payloadPreview}
+              t={t}
+            />
           ) : null}
         </div>
       </CardContent>

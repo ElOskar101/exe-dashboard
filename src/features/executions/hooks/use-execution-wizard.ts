@@ -53,7 +53,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     !validationErrors.patients.form &&
       validationErrors.patients.rows.every((row) => !hasErrors(row)),
     !hasErrors(validationErrors.config),
-    Boolean(payloadPreview),
+    true,
   ]
 
   const showErrors = {
@@ -160,16 +160,21 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
+  const markCurrentStepAttempted = () => {
+    setAttemptedSteps((previousAttempts) => ({
+      ...previousAttempts,
+      [currentStep]: true,
+    }))
+  }
+
+  const handleStepChange = (step: number) => {
+    markCurrentStepAttempted()
+    setSubmitError(null)
+    setCurrentStep(Math.min(Math.max(step, 0), executionWizardSteps.length - 1))
+  }
+
   const handleNextStep = () => {
-    if (!stepValidity[currentStep]) {
-      setAttemptedSteps((previousAttempts) => ({
-        ...previousAttempts,
-        [currentStep]: true,
-      }))
-
-      return
-    }
-
+    markCurrentStepAttempted()
     setSubmitError(null)
     setCurrentStep((previousStep) =>
       Math.min(previousStep + 1, executionWizardSteps.length - 1),
@@ -177,6 +182,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const handlePreviousStep = () => {
+    markCurrentStepAttempted()
     setSubmitError(null)
     setCurrentStep((previousStep) => Math.max(previousStep - 1, 0))
   }
@@ -191,12 +197,14 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const handleSubmit = async () => {
-    setAttemptedSteps((previousAttempts) => ({
-      ...previousAttempts,
+    setAttemptedSteps({
+      0: true,
+      1: true,
+      2: true,
       3: true,
-    }))
+    })
 
-    if (!payloadPreview) {
+    if (!payloadPreview || stepValidity.some((isStepValid) => !isStepValid)) {
       return
     }
 
@@ -221,11 +229,12 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     currentStep,
     validationErrors,
     payloadPreview,
+    stepValidity,
     showErrors,
     isSubmitting,
     submitError,
     createdExecution,
-    setCurrentStep,
+    handleStepChange,
     updateBotField,
     updatePatientField,
     addPatient,

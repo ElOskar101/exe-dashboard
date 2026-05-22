@@ -8,13 +8,15 @@ import type {
 interface ExecutionWizardStepperProps {
   steps: ExecutionWizardStepKey[]
   currentStep: number
-  onStepChange: ReturnType<typeof useExecutionWizard>['setCurrentStep']
+  stepValidity: boolean[]
+  onStepChange: ReturnType<typeof useExecutionWizard>['handleStepChange']
   t: TFunction<'executions'>
 }
 
 export function ExecutionWizardStepper({
   steps,
   currentStep,
+  stepValidity,
   onStepChange,
   t,
 }: ExecutionWizardStepperProps) {
@@ -22,6 +24,7 @@ export function ExecutionWizardStepper({
     <ol className="grid gap-3 md:grid-cols-4">
       {steps.map((step, index) => {
         const isActiveStep = currentStep === index
+        const hasIncompleteStepInfo = index < 3 && !stepValidity[index]
 
         return (
           <li key={step}>
@@ -35,10 +38,10 @@ export function ExecutionWizardStepper({
                   'border-primary/50 bg-card shadow-sm ring-2 ring-primary/20 hover:bg-card',
               )}
             >
-              {isActiveStep ? (
+              {hasIncompleteStepInfo ? (
                 <span
                   aria-hidden="true"
-                  className="absolute top-4 right-4 size-2.5 rounded-full bg-primary"
+                  className="absolute top-4 right-4 size-2.5 rounded-full bg-orange-500"
                 />
               ) : null}
               <span className="pr-5 font-medium">

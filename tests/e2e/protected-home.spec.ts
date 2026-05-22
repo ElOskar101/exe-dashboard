@@ -86,7 +86,7 @@ test.describe('protected executions route', () => {
     ).toBeVisible()
   })
 
-  test('blocks invalid steps and supports back navigation', async ({
+  test('validates invalid steps while navigating and supports back navigation', async ({
     page,
     request,
   }) => {
@@ -105,10 +105,13 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByLabel('Patient name')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Back' }).click()
     await expect(
       page.getByText('This field is required.').first(),
     ).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Bot' })).toBeVisible()
+    await expect(page.getByLabel('Bot name')).toBeVisible()
 
     await page.getByLabel('Bot name').fill('Eligibility Runner')
     await page.getByLabel('Portal URL').fill('https://carrier.example.com')
@@ -116,12 +119,36 @@ test.describe('protected executions route', () => {
     await page.getByLabel('Password').fill('super-secret')
     await page.getByRole('button', { name: 'Next' }).click()
 
-    await expect(page.getByRole('heading', { name: 'Patients' })).toBeVisible()
+    await expect(page.getByLabel('Patient name')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
 
-    await expect(page.getByRole('heading', { name: 'Bot' })).toBeVisible()
+    await expect(page.getByLabel('Bot name')).toBeVisible()
     await expect(page.getByLabel('Bot name')).toHaveValue('Eligibility Runner')
+  })
+
+  test('shows review content for an empty draft', async ({ page, request }) => {
+    test.skip(
+      !canLogin,
+      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
+    )
+
+    const token = await login(request)
+
+    await stubProtectedRouteDependencies(page)
+    await page.addInitScript((accessToken) => {
+      window.localStorage.setItem('token', accessToken)
+    }, token)
+
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+
+    await expect(page.getByText('Not filled').first()).toBeVisible()
+    await expect(page.getByText('No flags enabled')).toBeVisible()
+    await expect(page.getByText('"numberOfThreads": ""')).toBeVisible()
   })
 
   test('submits the built payload with multiple patients', async ({
@@ -282,7 +309,7 @@ test.describe('protected executions route', () => {
 
     await expect(page.getByText('Execution API is unavailable.')).toBeVisible()
     await expect(
-      page.getByRole('heading', { name: 'Review & submit' }),
+      page.getByRole('button', { name: 'Create execution' }),
     ).toBeVisible()
     await expect(page.getByText('Retry Patient', { exact: true })).toBeVisible()
     await expect(page.getByText('"mode": ""')).toBeVisible()

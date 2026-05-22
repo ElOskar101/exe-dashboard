@@ -106,6 +106,7 @@
     "memberIdLabel": "Member ID: {{value}}",
     "dateOfBirthLabel": "Date of birth: {{value}}",
     "flagsTitle": "Enabled flags",
+    "emptyValue": "Not filled",
     "noFlags": "No flags enabled"
   },
   "submit": {
