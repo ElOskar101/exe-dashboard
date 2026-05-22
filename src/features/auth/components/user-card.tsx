@@ -1,9 +1,7 @@
-import React, { useContext, useState } from 'react'
-import { AuthContext } from '../context/context'
-import { useTranslation } from 'react-i18next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { IconLogout2 } from '@tabler/icons-react'
+import { useContext, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { AuthContext } from '../context/context'
 
 function getInitials(name: string) {
   return (
@@ -31,14 +29,10 @@ function UserCard() {
         role: '',
       }
 
-  const handleOpen = (to: boolean) => () => setIsOpen(() => to)
-
   return (
     <>
-      <a
-        className="flex aling-center gap-x-2 cursor-pointer relative"
-        onClick={handleOpen(true)}
-        onBlur={handleOpen(false)}
+      <button
+        className="flex items-center gap-x-2 cursor-pointer relative"
         tabIndex={0}
       >
         {user ? (
@@ -58,9 +52,9 @@ function UserCard() {
                 {getInitials(user.username || '')}
               </AvatarFallback>
             </Avatar>
-            <div className="text-md leading-none">
+            <div className="leading-none text-xs flex flex-col">
               {userData?.nameAndUser}
-              <div className="text-sm">{userData?.role}</div>
+              <span className="text-muted-foreground">{userData?.role}</span>
             </div>
           </>
         ) : (
@@ -70,31 +64,13 @@ function UserCard() {
                 {getInitials('loading...')}
               </AvatarFallback>
             </Avatar>
-            <div className="text-md leading-none">
+            <div className="leading-none">
               <div className="mb-1 h-4 w-20 animate-pulse rounded"></div>
               <div className="h-4 w-24 animate-pulse rounded text-sm"></div>
             </div>
           </>
         )}
-        <div
-          data-open={isOpen ? 'true' : undefined}
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 shadow-lg overflow-hidden
-            origin-top-right max-h-0 transition-all duration-150
-             data-open:max-h-screen w-full"
-        >
-          <div>
-            <Button
-              className="w-full justify-start"
-              size="sm"
-              variant="outline"
-              onClick={logout}
-            >
-              <IconLogout2 data-icon="inline-start" />
-              {t('logout')}
-            </Button>
-          </div>
-        </div>
-      </a>
+      </button>
     </>
   )
 }
