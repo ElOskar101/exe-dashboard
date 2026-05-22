@@ -1,6 +1,6 @@
-import fetcher from '@/lib/axios'
+import cccClient from '@/lib/axios'
 import { IUser } from '../models/user.interface'
 
 export const getUserData = () => {
-  return fetcher<IUser>('/users/me')
+  return cccClient<IUser>('/users/me')
 }

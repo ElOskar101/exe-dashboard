@@ -1,10 +1,10 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 
-const fetcher = axios.create({
+const cccClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   adapter: 'fetch',
 })
-export const fetcherExe = axios.create({
+export const exeClient = axios.create({
   baseURL: import.meta.env.VITE_EXE_API_URL,
   adapter: 'fetch',
 })
@@ -12,12 +12,11 @@ export const fetcherExe = axios.create({
 const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('token')
   if (token) config.headers.set('x-access-token', token)
-  config.headers['Content-Type'] = 'application/json'
 
   return config
 }
 
-fetcher.interceptors.request.use(applyDefaultHeaders)
-fetcherExe.interceptors.request.use(applyDefaultHeaders)
+cccClient.interceptors.request.use(applyDefaultHeaders)
+exeClient.interceptors.request.use(applyDefaultHeaders)
 
-export default fetcher
+export default cccClient

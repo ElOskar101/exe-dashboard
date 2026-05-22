@@ -6,11 +6,11 @@ import {
   listenForToken,
   setupAuthInterceptors,
 } from '@/features/auth'
-import fetcher from '@/lib/axios'
+import cccClient from '@/lib/axios'
 import i18n from '@/lib/i18n'
 
 listenForToken((t) => localStorage.setItem('token', t))
-setupAuthInterceptors(fetcher)
+setupAuthInterceptors(cccClient)
 
 i18n.init()
 
