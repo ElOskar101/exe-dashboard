@@ -17,6 +17,7 @@ This document explains how frontend clients should connect to the backend Socket
 ## 3) Client -> Server Events
 
 ### `execution:join`
+
 Join execution-specific room and receive initial log history.
 
 Payload:
@@ -28,6 +29,7 @@ Payload:
 ```
 
 ### `execution:leave`
+
 Leave execution-specific room.
 
 Payload:
@@ -41,6 +43,7 @@ Payload:
 ## 4) Server -> Client Events
 
 ### `execution:logs:history`
+
 Sent after `execution:join` with current log file content.
 
 ```json
@@ -51,6 +54,7 @@ Sent after `execution:join` with current log file content.
 ```
 
 ### `logs`
+
 Live log chunks from stdout/stderr/system.
 
 ```json
@@ -64,10 +68,12 @@ Live log chunks from stdout/stderr/system.
 ```
 
 Notes:
+
 - `stream` can be `stdout`, `stderr`, or `system`.
 - `message` may arrive in partial chunks; append exactly as received.
 
 ### `status`
+
 Execution lifecycle update.
 
 ```json
@@ -83,6 +89,7 @@ Execution lifecycle update.
 ```
 
 ### `metrics` (optional)
+
 Worker metrics event (global visibility).
 
 ```json
@@ -105,53 +112,62 @@ Frontend should always filter by `executionId` in listeners to avoid mixing even
 ## 6) Frontend Example (TypeScript)
 
 ```ts
-import { io, Socket } from "socket.io-client";
+import { io, Socket } from 'socket.io-client'
 
-type JoinPayload = { executionId: string };
+type JoinPayload = { executionId: string }
 
-const executionId = "682ba2f2d2930c4fd5e984c4";
-const socket: Socket = io("http://localhost:3000", {
-  transports: ["websocket"],
-});
+const executionId = '682ba2f2d2930c4fd5e984c4'
+const socket: Socket = io('http://localhost:3000', {
+  transports: ['websocket'],
+})
 
-socket.on("connect", () => {
+socket.on('connect', () => {
   // Re-join every reconnect
-  socket.emit("execution:join", { executionId } satisfies JoinPayload);
-});
+  socket.emit('execution:join', { executionId } satisfies JoinPayload)
+})
 
-socket.on("execution:logs:history", (payload: { executionId: string; content: string }) => {
-  if (payload.executionId !== executionId) return;
-  // Initialize UI log buffer
-  console.log(payload.content);
-});
+socket.on(
+  'execution:logs:history',
+  (payload: { executionId: string; content: string }) => {
+    if (payload.executionId !== executionId) return
+    // Initialize UI log buffer
+    console.log(payload.content)
+  },
+)
 
-socket.on("logs", (payload: {
-  executionId: string;
-  jobId?: string;
-  stream: "stdout" | "stderr" | "system";
-  message: string;
-  timestamp: string;
-}) => {
-  if (payload.executionId !== executionId) return;
-  // Append incremental chunks
-  console.log(`[${payload.stream}] ${payload.message}`);
-});
+socket.on(
+  'logs',
+  (payload: {
+    executionId: string
+    jobId?: string
+    stream: 'stdout' | 'stderr' | 'system'
+    message: string
+    timestamp: string
+  }) => {
+    if (payload.executionId !== executionId) return
+    // Append incremental chunks
+    console.log(`[${payload.stream}] ${payload.message}`)
+  },
+)
 
-socket.on("status", (payload: {
-  executionId: string;
-  status: string;
-  pid?: number;
-  exitCode?: number | null;
-  error?: string;
-  timestamp: string;
-}) => {
-  if (payload.executionId !== executionId) return;
-  console.log(payload.status);
-});
+socket.on(
+  'status',
+  (payload: {
+    executionId: string
+    status: string
+    pid?: number
+    exitCode?: number | null
+    error?: string
+    timestamp: string
+  }) => {
+    if (payload.executionId !== executionId) return
+    console.log(payload.status)
+  },
+)
 
 export function cleanupSocket() {
-  socket.emit("execution:leave", { executionId } satisfies JoinPayload);
-  socket.disconnect();
+  socket.emit('execution:leave', { executionId } satisfies JoinPayload)
+  socket.disconnect()
 }
 ```
 
