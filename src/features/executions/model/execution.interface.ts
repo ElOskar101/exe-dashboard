@@ -1,20 +1,31 @@
+export type ExecutionStatus =
+  | 'queued'
+  | 'running'
+  | 'completed'
+  | 'unknown'
+  | 'cancelled'
+  | 'failed'
+
 export interface IExecution {
   _id: string
   createdBy: string
   playwrightProject: string
-  status: string
-  note: []
-  attachments: []
+  status: ExecutionStatus | string
+  notes?: string[]
+  note?: []
+  attachments?: []
   client: string
   clinic: string
   execution: string
-  bot: string
+  bot?: string
+  botName?: string
+  meta?: Record<string, unknown>
   createdAt: string
   updatedAt: string
   jobId: string
   playwrightExecutionId: string
-  pid: number
-  startedAt: string
-  finishedAt: string
+  pid?: number
+  startedAt?: string
+  finishedAt?: string
   logs?: string
 }

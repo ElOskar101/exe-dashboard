@@ -1,7 +1,15 @@
-export { createExecution, getExecutionById } from './services/execution.service'
+export {
+  createExecution,
+  deleteExecution,
+  getExecutionById,
+  getExecutions,
+  stopExecution,
+  updateExecution,
+} from './services/execution.service'
 export { getCustomerById, searchCustomers } from './services/ccc.service'
 export { default as ExecutionsPage } from './pages/executions-page'
-export type { IExecution } from './model/execution.interface'
+export type { ExecutionStatus, IExecution } from './model/execution.interface'
+export type { ExecutionUpdatePayload } from './services/execution.service'
 export type {
   ExecutionCreatePayload,
   ExecutionPatient,
