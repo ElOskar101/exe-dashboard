@@ -1,9 +1,10 @@
 import { useMemo, type ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -24,12 +25,14 @@ import {
   IconAlertCircle,
   IconCircleDashed,
   IconLoader2,
+  IconPlayerStop,
   IconTerminal2,
 } from '@tabler/icons-react'
-import { getExecutionById } from '../services/execution.service'
+import { getExecutionById, stopExecution } from '../services/execution.service'
 import { createExecutionLogLinesFromHistory } from '../lib/execution-log-buffer'
 import { formatExecutionDateTime } from '../lib/format-execution-date'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
+import { isExecutionRunning } from '../lib/execution-display'
 
 type BadgeVariant = ComponentProps<typeof Badge>['variant']
 
@@ -62,6 +65,7 @@ const getConnectionBadgeVariant = (
 
 function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const { t } = useTranslation('executions')
+  const queryClient = useQueryClient()
   const realtimeLogs = useExecutionRealtimeLogs(executionId)
   const executionQuery = useQuery({
     queryKey: ['execution', executionId],
@@ -69,6 +73,15 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       const response = await getExecutionById(executionId)
 
       return response.data
+    },
+  })
+  const stopMutation = useMutation({
+    mutationFn: stopExecution,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['execution', executionId] }),
+        queryClient.invalidateQueries({ queryKey: ['executions'] }),
+      ])
     },
   })
   const executionLogs = executionQuery.data?.logs
@@ -82,6 +95,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const logLines =
     realtimeLogs.lines.length > 0 ? realtimeLogs.lines : fallbackLines
   const currentStatus = realtimeLogs.status ?? executionQuery.data?.status
+  const canStopExecution = isExecutionRunning(currentStatus)
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -103,6 +117,22 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
               >
                 {t(`detail.connection.${realtimeLogs.connectionState}`)}
               </Badge>
+              {canStopExecution ? (
+                <Button
+                  variant="destructive"
+                  disabled={stopMutation.isPending}
+                  onClick={() => stopMutation.mutate(executionId)}
+                >
+                  {stopMutation.isPending ? (
+                    <IconLoader2 data-icon="inline-start" />
+                  ) : (
+                    <IconPlayerStop data-icon="inline-start" />
+                  )}
+                  {stopMutation.isPending
+                    ? t('detail.stopping')
+                    : t('detail.stopExecution')}
+                </Button>
+              ) : null}
             </div>
           </div>
         </CardHeader>
@@ -114,6 +144,16 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
           <AlertTitle>{t('detail.loadErrorTitle')}</AlertTitle>
           <AlertDescription>
             {t('detail.loadErrorDescription')}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {stopMutation.isError ? (
+        <Alert variant="destructive">
+          <IconAlertCircle />
+          <AlertTitle>{t('detail.stopErrorTitle')}</AlertTitle>
+          <AlertDescription>
+            {t('detail.stopErrorDescription')}
           </AlertDescription>
         </Alert>
       ) : null}
