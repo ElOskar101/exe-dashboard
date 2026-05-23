@@ -24,7 +24,6 @@ import {
   searchCustomers,
   type CustomerSearchItem,
 } from '../services/ccc.service'
-import { useDebouncedValue } from './use-debounced-value'
 
 export type ExecutionWizardStepKey = 'bot' | 'patients' | 'config' | 'review'
 
@@ -48,18 +47,27 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const debouncedCustomerSearch = useDebouncedValue(
-    draft.context.clientName.trim(),
-    300,
-  )
+  const customerSearch = draft.context.clientName.trim()
   const customerSearchEnabled =
-    draft.context.client.trim().length === 0 &&
-    debouncedCustomerSearch.length >= 2
+    draft.context.client.trim().length === 0 && customerSearch.length >= 2
 
   const customerSearchQuery = useQuery({
-    queryKey: ['execution-customer-search', debouncedCustomerSearch],
-    queryFn: async () => {
-      const response = await searchCustomers(debouncedCustomerSearch)
+    queryKey: ['execution-customer-search', customerSearch],
+    queryFn: async ({ signal }) => {
+      await new Promise<void>((resolve, reject) => {
+        const timeoutId = window.setTimeout(resolve, 300)
+
+        signal.addEventListener(
+          'abort',
+          () => {
+            window.clearTimeout(timeoutId)
+            reject(new DOMException('Aborted', 'AbortError'))
+          },
+          { once: true },
+        )
+      })
+
+      const response = await searchCustomers(customerSearch)
 
       return response.data
     },

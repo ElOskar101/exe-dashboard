@@ -41,6 +41,50 @@ async function stubProtectedRouteDependencies(page: Page) {
       },
     })
   })
+
+  await page.route('**/api/v2/customers**', async (route) => {
+    const url = new URL(route.request().url())
+
+    if (url.pathname.endsWith('/api/v2/customers/customer-1')) {
+      await route.fulfill({
+        json: {
+          _id: 'customer-1',
+          clientName: 'Legacy Dental Care',
+          isActive: true,
+          clinic: [
+            {
+              _id: 'clinic-1',
+              clinicName: 'Downtown Clinic',
+            },
+          ],
+        },
+      })
+      return
+    }
+
+    await route.fulfill({
+      json: {
+        totalDocs: 1,
+        totalPages: 1,
+        query: {},
+        customers: [
+          {
+            _id: 'customer-1',
+            clientName: 'Legacy Dental Care',
+            isActive: true,
+            createdAt: '2026-05-21T14:00:00.000Z',
+          },
+        ],
+      },
+    })
+  })
+}
+
+async function selectCustomerAndClinic(page: Page) {
+  await page.getByLabel('Client').fill('Legacy')
+  await page.getByRole('button', { name: /Legacy Dental Care/ }).click()
+  await page.getByRole('combobox', { name: 'Clinic' }).click()
+  await page.getByRole('option', { name: 'Downtown Clinic' }).click()
 }
 
 test.describe('protected executions route', () => {
@@ -147,8 +191,8 @@ test.describe('protected executions route', () => {
     await page.getByRole('button', { name: 'Next' }).click()
 
     await expect(page.getByText('Not filled').first()).toBeVisible()
-    await expect(page.getByText('No flags enabled')).toBeVisible()
-    await expect(page.getByText('"numberOfThreads": ""')).toBeVisible()
+    await expect(page.getByText('"workers": 2')).toBeVisible()
+    await expect(page.getByText('"retries": 1')).toBeVisible()
   })
 
   test('submits the built payload with multiple patients', async ({
@@ -200,6 +244,7 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
+    await selectCustomerAndClinic(page)
     await page.getByLabel('Bot name').fill('Eligibility Runner')
     await page.getByLabel('Portal URL').fill('https://carrier.example.com')
     await page.getByLabel('Username').fill('qa.operator')
@@ -213,48 +258,80 @@ test.describe('protected executions route', () => {
     await page.getByLabel('Patient name').nth(1).fill('John Doe')
     await page.getByLabel('Member ID').nth(1).fill('222222')
     await page.getByLabel('Date of birth').nth(1).fill('1992-02-02')
+    await page.getByRole('button', { name: 'ELG' }).first().click()
+    await page.getByRole('button', { name: 'FBD' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
 
-    await page.getByLabel('Number of threads').fill('4')
-    await page.getByRole('button', { name: 'Parallel' }).click()
-    await page.getByRole('button', { name: 'ELG' }).click()
-    await page.getByRole('checkbox', { name: 'In network' }).click()
-    await page.getByRole('checkbox', { name: 'Short form' }).click()
+    await page.getByLabel('Workers').fill('4')
+    await page.getByLabel('Retries').fill('2')
+    await page
+      .getByLabel('Other config')
+      .fill('{ "parallel": true, "inNetwork": true }')
     await page.getByRole('button', { name: 'Next' }).click()
 
-    await expect(page.getByText('"numberOfThreads": 4')).toBeVisible()
+    await expect(page.getByText('"workers": 4')).toBeVisible()
     await page.getByRole('button', { name: 'Create execution' }).click()
 
-    await expect(page.getByText('Execution created')).toBeVisible()
-    await expect(page.getByText('execution-e2e')).toBeVisible()
+    await expect(page).toHaveURL('/execution/execution-e2e')
     expect(submittedPayload).toEqual({
-      bot: {
-        botName: 'Eligibility Runner',
-        url: 'https://carrier.example.com',
-        username: 'qa.operator',
-        password: 'super-secret',
-      },
-      execution: {
+      project: 'liberty',
+      createdBy: 'e2e-user',
+      client: 'customer-1',
+      clinic: 'clinic-1',
+      botName: 'Eligibility Runner',
+      meta: {
+        bot: {
+          botName: 'Eligibility Runner',
+          targetUrl: 'https://carrier.example.com',
+          username: 'qa.operator',
+          password: 'super-secret',
+          otherInformation: {
+            specifyPayer: 'None',
+          },
+        },
         patients: [
           {
             patientName: 'Jane Doe',
-            memberId: '111111',
-            dateOfBirth: '1990-01-01',
+            patientLastName: '',
+            patientMemberId: '111111',
+            patientDob: '1990-01-01',
+            policyHolderName: '',
+            policyHolderLastName: '',
+            policyHolderDob: '',
+            relationship: '',
+            zipCode: '',
+            clinic: '',
+            verificationType: 'elg',
+            filenames: '',
+            otherInformation: {
+              plan: '',
+            },
           },
           {
             patientName: 'John Doe',
-            memberId: '222222',
-            dateOfBirth: '1992-02-02',
+            patientLastName: '',
+            patientMemberId: '222222',
+            patientDob: '1992-02-02',
+            policyHolderName: '',
+            policyHolderLastName: '',
+            policyHolderDob: '',
+            relationship: '',
+            zipCode: '',
+            clinic: '',
+            verificationType: 'fbd',
+            filenames: '',
+            otherInformation: {
+              plan: '',
+            },
           },
         ],
-        numberOfThreads: 4,
-        mode: 'parallel',
-        verificationType: 'ELG',
-      },
-      config: {
-        'in-network': true,
-        shortForm: true,
-        claimsForm: false,
+        config: {
+          parallel: true,
+          inNetwork: true,
+        },
+        rv: {},
+        workers: 4,
+        retries: 2,
       },
     })
   })
@@ -290,6 +367,7 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
+    await selectCustomerAndClinic(page)
     await page.getByLabel('Bot name').fill('Retry Bot')
     await page.getByLabel('Portal URL').fill('https://retry.example.com')
     await page.getByLabel('Username').fill('retry.user')
@@ -299,11 +377,10 @@ test.describe('protected executions route', () => {
     await page.getByLabel('Patient name').fill('Retry Patient')
     await page.getByLabel('Member ID').fill('999999')
     await page.getByLabel('Date of birth').fill('1988-03-03')
+    await page.getByRole('button', { name: 'FBD' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
 
-    await page.getByLabel('Number of threads').fill('2')
-    await page.getByRole('button', { name: 'Standard' }).click()
-    await page.getByRole('button', { name: 'FBD' }).click()
+    await page.getByLabel('Workers').fill('2')
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Create execution' }).click()
 
@@ -312,6 +389,6 @@ test.describe('protected executions route', () => {
       page.getByRole('button', { name: 'Create execution' }),
     ).toBeVisible()
     await expect(page.getByText('Retry Patient', { exact: true })).toBeVisible()
-    await expect(page.getByText('"mode": ""')).toBeVisible()
+    await expect(page.getByText('"workers": 2')).toBeVisible()
   })
 })
