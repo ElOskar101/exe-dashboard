@@ -7,28 +7,30 @@ import type { ExecutionWizardDraft } from '../../model/execution-create'
 
 interface ConfigStepProps {
   draft: ExecutionWizardDraft
+  contextErrors: StepErrors['context']
   errors: StepErrors['config']
   showErrors: boolean
+  onContextFieldChange: ReturnType<typeof useExecutionWizard>['updateContextField']
   onWorkersChange: ReturnType<typeof useExecutionWizard>['updateWorkers']
   onRetriesChange: ReturnType<typeof useExecutionWizard>['updateRetries']
-  onExecutionChange: ReturnType<typeof useExecutionWizard>['updateExecution']
   onConfigChange: ReturnType<typeof useExecutionWizard>['updateConfig']
   t: TFunction<'executions'>
 }
 
 export function ConfigStep({
   draft,
+  contextErrors,
   errors,
   showErrors,
+  onContextFieldChange,
   onWorkersChange,
   onRetriesChange,
-  onExecutionChange,
   onConfigChange,
   t,
 }: ConfigStepProps) {
   return (
     <FieldSet>
-      <FieldGroup className="md:grid md:grid-cols-2">
+      <FieldGroup className="md:grid md:grid-cols-3">
         <Field data-invalid={showErrors && Boolean(errors.workers)}>
           <FieldLabel htmlFor="workers">{t('fields.workers')}</FieldLabel>
           <Input
@@ -59,17 +61,19 @@ export function ConfigStep({
           <FieldError>{showErrors ? errors.retries : null}</FieldError>
         </Field>
 
-        <Field className="md:col-span-2">
-          <FieldLabel htmlFor="execution">{t('fields.execution')}</FieldLabel>
+        <Field data-invalid={showErrors && Boolean(contextErrors.project)}>
+          <FieldLabel htmlFor="project">{t('fields.project')}</FieldLabel>
           <Input
-            id="execution"
-            value={draft.execution.execution}
-            onChange={(event) => onExecutionChange(event.target.value)}
-            placeholder={t('placeholders.execution')}
+            id="project"
+            value={draft.context.project}
+            onChange={(event) => onContextFieldChange('project', event.target.value)}
+            aria-invalid={showErrors && Boolean(contextErrors.project)}
+            placeholder={t('placeholders.project')}
           />
+          <FieldError>{showErrors ? contextErrors.project : null}</FieldError>
         </Field>
 
-        <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-2">
+        <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-3">
           <FieldLabel htmlFor="config">{t('fields.otherConfig')}</FieldLabel>
           <textarea
             id="config"

@@ -3,16 +3,33 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { IconAlertCircle, IconPlus, IconTrash } from '@tabler/icons-react'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
 import type { StepErrors } from '../../lib/execution-wizard-validation'
-import type { ExecutionPatient, ExecutionVerificationType } from '../../model/execution-create'
+import type { ExecutionPatient, ExecutionVerificationType, ExecutionWizardDraft } from '../../model/execution-create'
+import { CustomerSearchField } from './customer-search-field'
 
 interface PatientsStepProps {
+  context: ExecutionWizardDraft['context']
+  execution: ExecutionWizardDraft['execution']['execution']
   patients: ExecutionPatient[]
+  contextErrors: StepErrors['context']
   errors: StepErrors['patients']
   showErrors: boolean
+  customerOptions: ReturnType<typeof useExecutionWizard>['customerOptions']
+  isSearchingCustomers: ReturnType<typeof useExecutionWizard>['isSearchingCustomers']
+  customerSearchError: ReturnType<typeof useExecutionWizard>['customerSearchError']
+  selectedCustomerError: ReturnType<typeof useExecutionWizard>['selectedCustomerError']
+  clinicOptions: ReturnType<typeof useExecutionWizard>['clinicOptions']
+  isLoadingClinics: ReturnType<typeof useExecutionWizard>['isLoadingClinics']
+  hasSelectedCustomerWithoutClinics: ReturnType<typeof useExecutionWizard>['hasSelectedCustomerWithoutClinics']
+  onCustomerSearchChange: ReturnType<typeof useExecutionWizard>['updateCustomerSearch']
+  onCustomerClear: ReturnType<typeof useExecutionWizard>['clearCustomerSelection']
+  onCustomerSelect: ReturnType<typeof useExecutionWizard>['selectCustomer']
+  onClinicSelect: ReturnType<typeof useExecutionWizard>['selectClinic']
+  onExecutionChange: ReturnType<typeof useExecutionWizard>['updateExecution']
   onPatientChange: ReturnType<typeof useExecutionWizard>['updatePatientField']
   onVerificationTypeChange: ReturnType<typeof useExecutionWizard>['updatePatientVerificationType']
   onAddPatient: ReturnType<typeof useExecutionWizard>['addPatient']
@@ -21,9 +38,24 @@ interface PatientsStepProps {
 }
 
 export function PatientsStep({
+  context,
+  execution,
   patients,
+  contextErrors,
   errors,
   showErrors,
+  customerOptions,
+  isSearchingCustomers,
+  customerSearchError,
+  selectedCustomerError,
+  clinicOptions,
+  isLoadingClinics,
+  hasSelectedCustomerWithoutClinics,
+  onCustomerSearchChange,
+  onCustomerClear,
+  onCustomerSelect,
+  onClinicSelect,
+  onExecutionChange,
   onPatientChange,
   onVerificationTypeChange,
   onAddPatient,
@@ -33,6 +65,66 @@ export function PatientsStep({
   return (
     <FieldSet>
       <FieldGroup>
+        <FieldGroup className="md:grid md:grid-cols-3">
+          <Field data-invalid={showErrors && Boolean(contextErrors.client)}>
+            <FieldLabel htmlFor="client">{t('fields.client')}</FieldLabel>
+            <CustomerSearchField
+              id="client"
+              value={context.clientName}
+              selectedCustomerName={context.clientName}
+              invalid={showErrors && Boolean(contextErrors.client)}
+              placeholder={t('placeholders.client')}
+              isLoading={isSearchingCustomers}
+              searchError={customerSearchError}
+              options={customerOptions}
+              noResultsText={t('help.noCustomersFound')}
+              searchingText={t('help.searchingCustomers')}
+              selectedText={t('help.selected')}
+              onValueChange={onCustomerSearchChange}
+              onClearSelection={onCustomerClear}
+              onSelect={onCustomerSelect}
+              selectedCustomerId={context.client}
+            />
+            <FieldError>{showErrors ? contextErrors.client : null}</FieldError>
+          </Field>
+
+          <Field data-invalid={showErrors && Boolean(contextErrors.clinic)}>
+            <FieldLabel htmlFor="clinic">{t('fields.clinic')}</FieldLabel>
+            <Select
+              value={context.clinic}
+              onValueChange={(value) => onClinicSelect(value ?? '')}
+              disabled={
+                !context.client.trim() ||
+                isLoadingClinics ||
+                hasSelectedCustomerWithoutClinics ||
+                Boolean(selectedCustomerError)
+              }
+            >
+              <SelectTrigger id="clinic" aria-invalid={showErrors && Boolean(contextErrors.clinic)} className="w-full">
+                <SelectValue placeholder={t('placeholders.clinic')}>{context.clinicName || undefined}</SelectValue>
+              </SelectTrigger>
+              <SelectContent align="start">
+                {clinicOptions.map((clinic) => (
+                  <SelectItem key={clinic._id} value={clinic._id}>
+                    {clinic.clinicName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError>{showErrors ? contextErrors.clinic : null}</FieldError>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="execution">{t('fields.execution')}</FieldLabel>
+            <Input
+              id="execution"
+              value={execution}
+              onChange={(event) => onExecutionChange(event.target.value)}
+              placeholder={t('placeholders.execution')}
+            />
+          </Field>
+        </FieldGroup>
+
         {errors.form && showErrors ? (
           <Alert variant="destructive">
             <IconAlertCircle />

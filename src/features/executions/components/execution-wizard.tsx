@@ -37,12 +37,22 @@ export default function ExecutionWizard() {
         <div className="flex flex-col gap-6">
           {wizard.currentStep === 0 ? (
             <BotStep
-              context={wizard.draft.context}
               bot={wizard.draft.bot}
-              contextErrors={wizard.validationErrors.context}
               errors={wizard.validationErrors.bot}
               showErrors={wizard.showErrors.bot}
-              onContextFieldChange={wizard.updateContextField}
+              onFieldChange={wizard.updateBotField}
+              t={t}
+            />
+          ) : null}
+
+          {wizard.currentStep === 1 ? (
+            <PatientsStep
+              context={wizard.draft.context}
+              execution={wizard.draft.execution.execution}
+              patients={wizard.draft.execution.patients}
+              contextErrors={wizard.validationErrors.context}
+              errors={wizard.validationErrors.patients}
+              showErrors={wizard.showErrors.patients}
               customerOptions={wizard.customerOptions}
               isSearchingCustomers={wizard.isSearchingCustomers}
               customerSearchError={wizard.customerSearchError}
@@ -54,16 +64,7 @@ export default function ExecutionWizard() {
               onCustomerClear={wizard.clearCustomerSelection}
               onCustomerSelect={wizard.selectCustomer}
               onClinicSelect={wizard.selectClinic}
-              onFieldChange={wizard.updateBotField}
-              t={t}
-            />
-          ) : null}
-
-          {wizard.currentStep === 1 ? (
-            <PatientsStep
-              patients={wizard.draft.execution.patients}
-              errors={wizard.validationErrors.patients}
-              showErrors={wizard.showErrors.patients}
+              onExecutionChange={wizard.updateExecution}
               onPatientChange={wizard.updatePatientField}
               onVerificationTypeChange={wizard.updatePatientVerificationType}
               onAddPatient={wizard.addPatient}
@@ -75,11 +76,12 @@ export default function ExecutionWizard() {
           {wizard.currentStep === 2 ? (
             <ConfigStep
               draft={wizard.draft}
+              contextErrors={wizard.validationErrors.context}
               errors={wizard.validationErrors.config}
               showErrors={wizard.showErrors.config}
+              onContextFieldChange={wizard.updateContextField}
               onWorkersChange={wizard.updateWorkers}
               onRetriesChange={wizard.updateRetries}
-              onExecutionChange={wizard.updateExecution}
               onConfigChange={wizard.updateConfig}
               t={t}
             />

@@ -75,9 +75,12 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
 
   const stepValidity = [
-    !hasErrors(validationErrors.context) && !hasErrors(validationErrors.bot),
-    !validationErrors.patients.form && validationErrors.patients.rows.every((row) => !hasErrors(row)),
-    !hasErrors(validationErrors.config),
+    !hasErrors(validationErrors.bot),
+    !validationErrors.context.client &&
+      !validationErrors.context.clinic &&
+      !validationErrors.patients.form &&
+      validationErrors.patients.rows.every((row) => !hasErrors(row)),
+    !validationErrors.context.createdBy && !validationErrors.context.project && !hasErrors(validationErrors.config),
     true,
   ]
 
