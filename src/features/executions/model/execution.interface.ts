@@ -1,10 +1,12 @@
 export type ExecutionStatus = 'queued' | 'running' | 'completed' | 'unknown' | 'cancelled' | 'failed'
 
+export const EXECUTION_STATUSES = ['queued', 'running', 'completed', 'unknown', 'cancelled', 'failed'] as const
+
 export interface IExecution {
   _id: string
   createdBy: string
   playwrightProject: string
-  status: ExecutionStatus | string
+  status: ExecutionStatus
   notes?: string[]
   note?: []
   attachments?: []

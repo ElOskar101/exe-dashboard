@@ -59,6 +59,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
     project: draft.context.project.trim(),
     client: draft.context.client.trim(),
     clinic: draft.context.clinic.trim(),
+    ...(draft.execution.execution.trim() ? { execution: draft.execution.execution.trim() } : {}),
     botName: draft.bot.botName.trim(),
     meta: {
       bot: {
@@ -167,6 +168,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
               <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.retries, emptyValue)}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-sm text-muted-foreground">{t('fields.execution')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.execution, emptyValue)}</dd>
             </div>
           </dl>
         </div>

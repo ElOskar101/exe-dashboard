@@ -31,6 +31,7 @@ export interface ExecutionCreatePayload {
   createdBy: string
   client: string
   clinic: string
+  execution?: string
   botName: string
   meta: {
     bot: {
@@ -72,6 +73,7 @@ export interface ExecutionWizardDraft {
   }
   bot: ExecutionBot
   execution: {
+    execution: string
     patients: ExecutionPatient[]
     workers: string
     retries: string

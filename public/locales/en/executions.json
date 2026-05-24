@@ -70,6 +70,7 @@
     "filenames": "Filenames",
     "patientOtherInformation": "Patient other information",
     "otherConfig": "Other config",
+    "execution": "Execution",
     "numberOfThreads": "Number of threads",
     "workers": "Workers",
     "retries": "Retries",
@@ -97,6 +98,7 @@
     "patientClinic": "Downtown Clinic",
     "filenames": "jane-doe.pdf",
     "numberOfThreads": "4",
+    "execution": "Daily eligibility",
     "workers": "2",
     "retries": "1"
   },

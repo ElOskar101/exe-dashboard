@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
 import type { TFunction } from 'i18next'
 import { createExecution } from '../services/execution.service'
@@ -17,8 +17,9 @@ export const executionWizardSteps: ExecutionWizardStepKey[] = ['bot', 'patients'
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user } = useContext(AuthContext)
-  const createdBy = user?.fullName ?? ''
+  const createdBy = user?._id ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
   const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>({})
@@ -228,6 +229,16 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
+  const updateExecution = (value: string) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      execution: {
+        ...previousDraft.execution,
+        execution: value,
+      },
+    }))
+  }
+
   const updateConfig = (value: string) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
@@ -301,6 +312,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     try {
       const response = await createExecution(payloadPreview)
 
+      await queryClient.invalidateQueries({ queryKey: ['executions'] })
       navigate(`/execution/${response.data._id}`)
     } catch (error) {
       setSubmitError(getExecutionRequestErrorMessage(error, t('submit.errorDescription')))
@@ -339,6 +351,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     removePatient,
     updateWorkers,
     updateRetries,
+    updateExecution,
     updateConfig,
     handleNextStep,
     handlePreviousStep,

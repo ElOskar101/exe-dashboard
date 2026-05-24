@@ -10,6 +10,7 @@ describe('buildExecutionPayload', () => {
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Legacy Dental Care'
+    draft.execution.execution = 'Daily eligibility'
     draft.bot.botName = 'Eligibility Runner'
     draft.bot.url = 'https://carrier.example.com'
     draft.bot.username = 'operator'
@@ -33,11 +34,12 @@ describe('buildExecutionPayload', () => {
       },
     ]
 
-    expect(buildExecutionPayload(draft, 'John Carter')).toEqual({
+    expect(buildExecutionPayload(draft, 'user-1')).toEqual({
       project: 'liberty',
-      createdBy: 'John Carter',
-      client: 'Legacy Dental Care',
-      clinic: 'Legacy Dental Care',
+      createdBy: 'user-1',
+      client: 'client-1',
+      clinic: 'clinic-1',
+      execution: 'Daily eligibility',
       botName: 'Eligibility Runner',
       meta: {
         bot: {
@@ -94,15 +96,15 @@ describe('buildExecutionPayload', () => {
 
     draft.bot.otherInformation = '[]'
 
-    expect(buildExecutionPayload(draft, 'John Carter')).toBeNull()
+    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
 
     draft.bot.otherInformation = '{ "specifyPayer": "None" }'
     draft.execution.config = '[]'
 
-    expect(buildExecutionPayload(draft, 'John Carter')).toBeNull()
+    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
   })
 
-  it('submits selected names from the chosen customer, clinic, and user', () => {
+  it('submits selected ids from the chosen customer, clinic, and user', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'customer-id-42'
@@ -114,10 +116,25 @@ describe('buildExecutionPayload', () => {
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
 
-    expect(buildExecutionPayload(draft, 'Mia Perez')).toMatchObject({
-      createdBy: 'Mia Perez',
-      client: 'Sunshine Dental',
-      clinic: 'Main Clinic',
+    expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
+      createdBy: 'user-id-7',
+      client: 'customer-id-42',
+      clinic: 'clinic-id-9',
     })
+  })
+
+  it('omits the optional execution name when it is empty', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-id-42'
+    draft.context.clientName = 'Sunshine Dental'
+    draft.context.clinic = 'clinic-id-9'
+    draft.context.clinicName = 'Main Clinic'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+
+    expect(buildExecutionPayload(draft, 'user-id-7')).not.toHaveProperty('execution')
   })
 })

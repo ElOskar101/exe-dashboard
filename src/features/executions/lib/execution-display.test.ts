@@ -50,5 +50,7 @@ describe('execution display helpers', () => {
     expect(isExecutionRunning('queued')).toBe(false)
     expect(isExecutionRunning('completed')).toBe(false)
     expect(isExecutionRunning(null)).toBe(false)
+    expect(normalizeExecutionStatus(null)).toBe('unknown')
+    expect(normalizeExecutionStatus('not-real')).toBe('unknown')
   })
 })

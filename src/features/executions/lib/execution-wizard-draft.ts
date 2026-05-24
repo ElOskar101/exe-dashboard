@@ -32,6 +32,7 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
     otherInformation: '{\n  "specifyPayer": "None"\n}',
   },
   execution: {
+    execution: '',
     patients: [createEmptyPatient()],
     workers: '2',
     retries: '1',

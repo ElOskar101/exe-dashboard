@@ -43,11 +43,11 @@ export const buildExecutionPayload = (
     return null
   }
 
-  return {
+  const payload: ExecutionCreatePayload = {
     project: draft.context.project.trim(),
     createdBy,
-    client: draft.context.clientName.trim(),
-    clinic: draft.context.clinicName.trim(),
+    client: draft.context.client.trim(),
+    clinic: draft.context.clinic.trim(),
     botName: draft.bot.botName.trim(),
     meta: {
       bot: {
@@ -78,4 +78,12 @@ export const buildExecutionPayload = (
       retries: Number(draft.execution.retries),
     },
   }
+
+  const execution = draft.execution.execution.trim()
+
+  if (execution) {
+    payload.execution = execution
+  }
+
+  return payload
 }

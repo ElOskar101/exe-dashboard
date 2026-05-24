@@ -11,6 +11,7 @@ interface ConfigStepProps {
   showErrors: boolean
   onWorkersChange: ReturnType<typeof useExecutionWizard>['updateWorkers']
   onRetriesChange: ReturnType<typeof useExecutionWizard>['updateRetries']
+  onExecutionChange: ReturnType<typeof useExecutionWizard>['updateExecution']
   onConfigChange: ReturnType<typeof useExecutionWizard>['updateConfig']
   t: TFunction<'executions'>
 }
@@ -21,6 +22,7 @@ export function ConfigStep({
   showErrors,
   onWorkersChange,
   onRetriesChange,
+  onExecutionChange,
   onConfigChange,
   t,
 }: ConfigStepProps) {
@@ -55,6 +57,16 @@ export function ConfigStep({
             placeholder={t('placeholders.retries')}
           />
           <FieldError>{showErrors ? errors.retries : null}</FieldError>
+        </Field>
+
+        <Field className="md:col-span-2">
+          <FieldLabel htmlFor="execution">{t('fields.execution')}</FieldLabel>
+          <Input
+            id="execution"
+            value={draft.execution.execution}
+            onChange={(event) => onExecutionChange(event.target.value)}
+            placeholder={t('placeholders.execution')}
+          />
         </Field>
 
         <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-2">

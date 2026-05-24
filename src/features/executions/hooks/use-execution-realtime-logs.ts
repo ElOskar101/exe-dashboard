@@ -8,6 +8,8 @@ import {
   shouldHandleExecutionEvent,
   type ExecutionLogStream,
 } from '../lib/execution-log-buffer'
+import { normalizeExecutionStatus } from '../lib/execution-display'
+import type { ExecutionStatus } from '../model/execution.interface'
 
 type ConnectionState = 'connecting' | 'connected' | 'disconnected'
 
@@ -44,7 +46,7 @@ const leaveExecutionRoom = (executionId: string) => {
 
 export const useExecutionRealtimeLogs = (executionId: string) => {
   const [buffer, setBuffer] = useState(() => createExecutionLogBufferState())
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatus] = useState<ExecutionStatus | null>(null)
   const [connectionState, setConnectionState] = useState<ConnectionState>('connecting')
 
   useMountEffect(() => {
@@ -80,7 +82,7 @@ export const useExecutionRealtimeLogs = (executionId: string) => {
     const handleStatus = (payload: ExecutionStatusPayload) => {
       if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
 
-      setStatus(payload.status)
+      setStatus(normalizeExecutionStatus(payload.status))
     }
 
     socket.auth = {

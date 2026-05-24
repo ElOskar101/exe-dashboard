@@ -79,6 +79,7 @@ export default function ExecutionWizard() {
               showErrors={wizard.showErrors.config}
               onWorkersChange={wizard.updateWorkers}
               onRetriesChange={wizard.updateRetries}
+              onExecutionChange={wizard.updateExecution}
               onConfigChange={wizard.updateConfig}
               t={t}
             />

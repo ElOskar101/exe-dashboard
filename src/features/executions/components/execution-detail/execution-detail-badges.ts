@@ -1,19 +1,20 @@
 import type { ComponentProps } from 'react'
 import { Badge } from '@/components/ui/badge'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
+import { isExecutionFailed, isExecutionSuccessful, normalizeExecutionStatus } from '../../lib/execution-display'
 
 type BadgeVariant = ComponentProps<typeof Badge>['variant']
 
 export const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
-  const normalizedStatus = status?.toLowerCase()
+  const normalizedStatus = normalizeExecutionStatus(status)
 
-  if (!normalizedStatus) return 'outline'
-  if (['completed', 'complete', 'success', 'succeeded'].includes(normalizedStatus)) {
+  if (isExecutionSuccessful(normalizedStatus)) {
     return 'default'
   }
-  if (['failed', 'error', 'cancelled', 'canceled'].includes(normalizedStatus)) {
+  if (isExecutionFailed(normalizedStatus)) {
     return 'destructive'
   }
+  if (normalizedStatus === 'unknown') return 'outline'
 
   return 'secondary'
 }

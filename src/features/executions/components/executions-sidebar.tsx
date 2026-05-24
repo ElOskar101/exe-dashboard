@@ -29,13 +29,19 @@ import {
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { deleteExecution, getExecutions } from '../services/execution.service'
-import { getExecutionLabel, normalizeExecutionStatus } from '../lib/execution-display'
+import {
+  getExecutionLabel,
+  isExecutionPending,
+  isExecutionSuccessful,
+  normalizeExecutionStatus,
+} from '../lib/execution-display'
+import type { ExecutionStatus } from '../model/execution.interface'
 
 const EXECUTIONS_QUERY_KEY = ['executions'] as const
 
-const getStatusDotClassName = (status: string) => {
-  if (status === 'completed') return 'bg-green-500'
-  if (status === 'running' || status === 'queued') return 'bg-blue-500'
+const getStatusDotClassName = (status: ExecutionStatus) => {
+  if (isExecutionSuccessful(status)) return 'bg-green-500'
+  if (isExecutionPending(status)) return 'bg-blue-500'
 
   return 'bg-red-500'
 }
@@ -121,7 +127,7 @@ export function ExecutionsSidebar() {
               <SidebarMenu>
                 {executions.map((execution) => {
                   const label = getExecutionLabel(execution)
-                  const status = normalizeExecutionStatus(execution.status) || t('detail.statusUnknown')
+                  const status = normalizeExecutionStatus(execution.status)
                   const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                   return (
