@@ -26,7 +26,9 @@ export const buildExecutionPayload = (
     !createdBy ||
     !draft.context.project.trim() ||
     !draft.context.client.trim() ||
+    !draft.context.clientName.trim() ||
     !draft.context.clinic.trim() ||
+    !draft.context.clinicName.trim() ||
     !draft.bot.botName.trim() ||
     !draft.bot.url.trim() ||
     !draft.bot.username.trim() ||
@@ -54,8 +56,8 @@ export const buildExecutionPayload = (
   return {
     project: draft.context.project.trim(),
     createdBy,
-    client: draft.context.client.trim(),
-    clinic: draft.context.clinic.trim(),
+    client: draft.context.clientName.trim(),
+    clinic: draft.context.clinicName.trim(),
     botName: draft.bot.botName.trim(),
     meta: {
       bot: {

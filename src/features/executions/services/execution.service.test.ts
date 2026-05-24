@@ -21,9 +21,9 @@ vi.mock('@/lib/axios', () => ({
 
 const executionPayload: ExecutionCreatePayload = {
   project: 'elg-regression',
-  createdBy: 'user-1',
-  client: 'client-1',
-  clinic: 'clinic-1',
+  createdBy: 'Jane Doe',
+  client: 'Legacy Dental Care',
+  clinic: 'Main Clinic',
   botName: 'eligibility-bot',
   meta: {
     bot: {

@@ -22,7 +22,15 @@ import {
 } from '@/components/ui/item'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import {
   IconAlertCircle,
+  IconBug,
   IconCircleDashed,
   IconLoader2,
   IconPlayerStop,
@@ -96,48 +104,49 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
     realtimeLogs.lines.length > 0 ? realtimeLogs.lines : fallbackLines
   const currentStatus = realtimeLogs.status ?? executionQuery.data?.status
   const canStopExecution = isExecutionRunning(currentStatus)
+  const debugSnapshot = useMemo(
+    () => ({
+      currentStatus: currentStatus ?? null,
+      derived: {
+        canStopExecution,
+        executionId,
+        lineCount: logLines.length,
+      },
+      query: {
+        isError: executionQuery.isError,
+        isFetching: executionQuery.isFetching,
+        isLoading: executionQuery.isLoading,
+      },
+      realtime: {
+        connectionState: realtimeLogs.connectionState,
+        partial: realtimeLogs.partial || null,
+        status: realtimeLogs.status,
+      },
+    }),
+    [
+      canStopExecution,
+      currentStatus,
+      executionId,
+      executionQuery.isError,
+      executionQuery.isFetching,
+      executionQuery.isLoading,
+      logLines.length,
+      realtimeLogs.connectionState,
+      realtimeLogs.partial,
+      realtimeLogs.status,
+    ],
+  )
+  const rawExecutionJson = useMemo(
+    () => JSON.stringify(executionQuery.data ?? null, null, 2),
+    [executionQuery.data],
+  )
+  const debugSnapshotJson = useMemo(
+    () => JSON.stringify(debugSnapshot, null, 2),
+    [debugSnapshot],
+  )
 
   return (
     <div className="flex flex-col gap-6 py-6">
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <CardTitle>{t('detail.title')}</CardTitle>
-              <CardDescription>{executionId}</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={getStatusBadgeVariant(currentStatus)}>
-                {currentStatus ?? t('detail.statusUnknown')}
-              </Badge>
-              <Badge
-                variant={getConnectionBadgeVariant(
-                  realtimeLogs.connectionState,
-                )}
-              >
-                {t(`detail.connection.${realtimeLogs.connectionState}`)}
-              </Badge>
-              {canStopExecution ? (
-                <Button
-                  variant="destructive"
-                  disabled={stopMutation.isPending}
-                  onClick={() => stopMutation.mutate(executionId)}
-                >
-                  {stopMutation.isPending ? (
-                    <IconLoader2 data-icon="inline-start" />
-                  ) : (
-                    <IconPlayerStop data-icon="inline-start" />
-                  )}
-                  {stopMutation.isPending
-                    ? t('detail.stopping')
-                    : t('detail.stopExecution')}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
       {executionQuery.isError ? (
         <Alert>
           <IconAlertCircle />
@@ -160,11 +169,121 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconTerminal2 />
-            {t('detail.logsTitle')}
-          </CardTitle>
-          <CardDescription>{t('detail.logsDescription')}</CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-col gap-2">
+              <CardTitle className="flex items-center gap-2">
+                <IconTerminal2 />
+                {t('detail.logsTitle')}
+              </CardTitle>
+              <CardDescription>{t('detail.logsDescription')}</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={getStatusBadgeVariant(currentStatus)}>
+                {currentStatus ?? t('detail.statusUnknown')}
+              </Badge>
+              <Sheet>
+                <SheetTrigger render={<Button variant="outline" size="sm" />}>
+                  <IconBug data-icon="inline-start" />
+                  {t('detail.debugButton')}
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-2xl">
+                  <SheetHeader>
+                    <SheetTitle>{t('detail.debugTitle')}</SheetTitle>
+                  </SheetHeader>
+                  <div className="min-h-0 flex-1 overflow-auto px-6 pb-6">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-muted/30 p-3">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {t('detail.debugFields.status')}
+                        </span>
+                        <Badge
+                          variant={getStatusBadgeVariant(currentStatus)}
+                          className="max-w-full justify-center truncate"
+                        >
+                          {currentStatus ?? t('detail.statusUnknown')}
+                        </Badge>
+                      </div>
+                      <div className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-muted/30 p-3">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {t('detail.debugFields.connection')}
+                        </span>
+                        <Badge
+                          variant={getConnectionBadgeVariant(
+                            realtimeLogs.connectionState,
+                          )}
+                          className="max-w-full justify-center truncate"
+                        >
+                          {t(
+                            `detail.connection.${realtimeLogs.connectionState}`,
+                          )}
+                        </Badge>
+                      </div>
+                      <div className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-muted/30 p-3">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {t('detail.debugFields.logLines')}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="max-w-full justify-center truncate"
+                        >
+                          {logLines.length}
+                        </Badge>
+                      </div>
+                      <div className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-muted/30 p-3">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {t('detail.debugFields.partialChunk')}
+                        </span>
+                        <Badge
+                          variant={
+                            realtimeLogs.partial ? 'secondary' : 'outline'
+                          }
+                          className="max-w-full justify-center truncate"
+                        >
+                          {realtimeLogs.partial || t('detail.debugEmptyValue')}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        <h3 className="font-medium">
+                          {t('detail.rawExecutionTitle')}
+                        </h3>
+                        <pre className="max-h-96 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
+                          {rawExecutionJson}
+                        </pre>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <h3 className="font-medium">
+                          {t('detail.snapshotTitle')}
+                        </h3>
+                        <pre className="max-h-96 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
+                          {debugSnapshotJson}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              {canStopExecution ? (
+                <Button
+                  variant="destructive"
+                  disabled={stopMutation.isPending}
+                  onClick={() => stopMutation.mutate(executionId)}
+                >
+                  {stopMutation.isPending ? (
+                    <IconLoader2 data-icon="inline-start" />
+                  ) : (
+                    <IconPlayerStop data-icon="inline-start" />
+                  )}
+                  {stopMutation.isPending
+                    ? t('detail.stopping')
+                    : t('detail.stopExecution')}
+                </Button>
+              ) : null}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[calc(100vh-22rem)] min-h-96 rounded-2xl border border-border">

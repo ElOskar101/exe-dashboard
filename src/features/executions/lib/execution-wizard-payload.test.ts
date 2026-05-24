@@ -33,11 +33,11 @@ describe('buildExecutionPayload', () => {
       },
     ]
 
-    expect(buildExecutionPayload(draft, 'user-1')).toEqual({
+    expect(buildExecutionPayload(draft, 'John Carter')).toEqual({
       project: 'liberty',
-      createdBy: 'user-1',
-      client: 'client-1',
-      clinic: 'clinic-1',
+      createdBy: 'John Carter',
+      client: 'Legacy Dental Care',
+      clinic: 'Legacy Dental Care',
       botName: 'Eligibility Runner',
       meta: {
         bot: {
@@ -94,15 +94,15 @@ describe('buildExecutionPayload', () => {
 
     draft.bot.otherInformation = '[]'
 
-    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
+    expect(buildExecutionPayload(draft, 'John Carter')).toBeNull()
 
     draft.bot.otherInformation = '{ "specifyPayer": "None" }'
     draft.execution.config = '[]'
 
-    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
+    expect(buildExecutionPayload(draft, 'John Carter')).toBeNull()
   })
 
-  it('submits selected ids even when display names are present', () => {
+  it('submits selected names from the chosen customer, clinic, and user', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'customer-id-42'
@@ -114,9 +114,10 @@ describe('buildExecutionPayload', () => {
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
 
-    expect(buildExecutionPayload(draft, 'user-1')).toMatchObject({
-      client: 'customer-id-42',
-      clinic: 'clinic-id-9',
+    expect(buildExecutionPayload(draft, 'Mia Perez')).toMatchObject({
+      createdBy: 'Mia Perez',
+      client: 'Sunshine Dental',
+      clinic: 'Main Clinic',
     })
   })
 })

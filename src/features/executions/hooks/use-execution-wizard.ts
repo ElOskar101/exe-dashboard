@@ -37,7 +37,7 @@ export const executionWizardSteps: ExecutionWizardStepKey[] = [
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const { user } = useContext(AuthContext)
-  const createdBy = user?._id ?? ''
+  const createdBy = user?.fullName ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() =>
     createEmptyDraft(),
   )
