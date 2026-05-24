@@ -6,50 +6,26 @@ import type { TFunction } from 'i18next'
 import { createExecution } from '../services/execution.service'
 import { getExecutionRequestErrorMessage } from '../services/execution-errors'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
-import {
-  createEmptyDraft,
-  createEmptyPatient,
-} from '../lib/execution-wizard-draft'
-import {
-  getExecutionWizardValidationErrors,
-  hasErrors,
-} from '../lib/execution-wizard-validation'
-import type {
-  ExecutionPatient,
-  ExecutionVerificationType,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
-import {
-  getCustomerById,
-  searchCustomers,
-  type CustomerSearchItem,
-} from '../services/ccc.service'
+import { createEmptyDraft, createEmptyPatient } from '../lib/execution-wizard-draft'
+import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
+import type { ExecutionPatient, ExecutionVerificationType, ExecutionWizardDraft } from '../model/execution-create'
+import { getCustomerById, searchCustomers, type CustomerSearchItem } from '../services/ccc.service'
 
 export type ExecutionWizardStepKey = 'bot' | 'patients' | 'config' | 'review'
 
-export const executionWizardSteps: ExecutionWizardStepKey[] = [
-  'bot',
-  'patients',
-  'config',
-  'review',
-]
+export const executionWizardSteps: ExecutionWizardStepKey[] = ['bot', 'patients', 'config', 'review']
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const { user } = useContext(AuthContext)
   const createdBy = user?.fullName ?? ''
-  const [draft, setDraft] = useState<ExecutionWizardDraft>(() =>
-    createEmptyDraft(),
-  )
+  const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
-  const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>(
-    {},
-  )
+  const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const customerSearch = draft.context.clientName.trim()
-  const customerSearchEnabled =
-    draft.context.client.trim().length === 0 && customerSearch.length >= 2
+  const customerSearchEnabled = draft.context.client.trim().length === 0 && customerSearch.length >= 2
 
   const customerSearchQuery = useQuery({
     queryKey: ['execution-customer-search', customerSearch],
@@ -86,9 +62,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
   const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
   const hasSelectedCustomerWithoutClinics =
-    draft.context.client.trim().length > 0 &&
-    selectedCustomerQuery.status === 'success' &&
-    clinicOptions.length === 0
+    draft.context.client.trim().length > 0 && selectedCustomerQuery.status === 'success' && clinicOptions.length === 0
 
   const validationErrors = useMemo(
     () =>
@@ -97,15 +71,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       }),
     [createdBy, draft, hasSelectedCustomerWithoutClinics, t],
   )
-  const payloadPreview = useMemo(
-    () => buildExecutionPayload(draft, createdBy),
-    [createdBy, draft],
-  )
+  const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
 
   const stepValidity = [
     !hasErrors(validationErrors.context) && !hasErrors(validationErrors.bot),
-    !validationErrors.patients.form &&
-      validationErrors.patients.rows.every((row) => !hasErrors(row)),
+    !validationErrors.patients.form && validationErrors.patients.rows.every((row) => !hasErrors(row)),
     !hasErrors(validationErrors.config),
     true,
   ]
@@ -116,10 +86,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     config: Boolean(attemptedSteps[2]),
   }
 
-  const updateContextField = (
-    field: keyof ExecutionWizardDraft['context'],
-    value: string,
-  ) => {
+  const updateContextField = (field: keyof ExecutionWizardDraft['context'], value: string) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
       context: {
@@ -184,9 +151,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const selectClinic = (clinicId: string) => {
-    const selectedClinic = clinicOptions.find(
-      (clinic) => clinic._id === clinicId,
-    )
+    const selectedClinic = clinicOptions.find((clinic) => clinic._id === clinicId)
 
     setDraft((previousDraft) => ({
       ...previousDraft,
@@ -198,10 +163,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const updateBotField = (
-    field: keyof ExecutionWizardDraft['bot'],
-    value: string,
-  ) => {
+  const updateBotField = (field: keyof ExecutionWizardDraft['bot'], value: string) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
       bot: {
@@ -211,18 +173,13 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const updatePatientField = (
-    index: number,
-    field: keyof ExecutionPatient,
-    value: string,
-  ) => {
+  const updatePatientField = (index: number, field: keyof ExecutionPatient, value: string) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
       execution: {
         ...previousDraft.execution,
-        patients: previousDraft.execution.patients.map(
-          (patient, patientIndex) =>
-            patientIndex === index ? { ...patient, [field]: value } : patient,
+        patients: previousDraft.execution.patients.map((patient, patientIndex) =>
+          patientIndex === index ? { ...patient, [field]: value } : patient,
         ),
       },
     }))
@@ -246,9 +203,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         patients:
           previousDraft.execution.patients.length === 1
             ? [createEmptyPatient()]
-            : previousDraft.execution.patients.filter(
-                (_, patientIndex) => patientIndex !== index,
-              ),
+            : previousDraft.execution.patients.filter((_, patientIndex) => patientIndex !== index),
       },
     }))
   }
@@ -283,19 +238,13 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const updatePatientVerificationType = (
-    index: number,
-    value: ExecutionVerificationType | '',
-  ) => {
+  const updatePatientVerificationType = (index: number, value: ExecutionVerificationType | '') => {
     setDraft((previousDraft) => ({
       ...previousDraft,
       execution: {
         ...previousDraft.execution,
-        patients: previousDraft.execution.patients.map(
-          (patient, patientIndex) =>
-            patientIndex === index
-              ? { ...patient, verificationType: value }
-              : patient,
+        patients: previousDraft.execution.patients.map((patient, patientIndex) =>
+          patientIndex === index ? { ...patient, verificationType: value } : patient,
         ),
       },
     }))
@@ -317,9 +266,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const handleNextStep = () => {
     markCurrentStepAttempted()
     setSubmitError(null)
-    setCurrentStep((previousStep) =>
-      Math.min(previousStep + 1, executionWizardSteps.length - 1),
-    )
+    setCurrentStep((previousStep) => Math.min(previousStep + 1, executionWizardSteps.length - 1))
   }
 
   const handlePreviousStep = () => {
@@ -356,9 +303,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
       navigate(`/execution/${response.data._id}`)
     } catch (error) {
-      setSubmitError(
-        getExecutionRequestErrorMessage(error, t('submit.errorDescription')),
-      )
+      setSubmitError(getExecutionRequestErrorMessage(error, t('submit.errorDescription')))
     } finally {
       setIsSubmitting(false)
     }
@@ -376,14 +321,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     createdBy,
     customerOptions: customerSearchQuery.data?.customers ?? [],
     isSearchingCustomers: customerSearchQuery.isFetching,
-    customerSearchError:
-      customerSearchQuery.error instanceof Error
-        ? customerSearchQuery.error.message
-        : null,
-    selectedCustomerError:
-      selectedCustomerQuery.error instanceof Error
-        ? selectedCustomerQuery.error.message
-        : null,
+    customerSearchError: customerSearchQuery.error instanceof Error ? customerSearchQuery.error.message : null,
+    selectedCustomerError: selectedCustomerQuery.error instanceof Error ? selectedCustomerQuery.error.message : null,
     clinicOptions,
     isLoadingClinics: selectedCustomerQuery.isFetching,
     hasSelectedCustomerWithoutClinics,

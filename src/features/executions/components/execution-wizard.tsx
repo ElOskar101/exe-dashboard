@@ -1,24 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import {
-  IconArrowLeft,
-  IconArrowRight,
-  IconLoader2,
-  IconSend2,
-} from '@tabler/icons-react'
-import {
-  executionWizardSteps,
-  useExecutionWizard,
-} from '../hooks/use-execution-wizard'
+import { IconArrowLeft, IconArrowRight, IconLoader2, IconSend2 } from '@tabler/icons-react'
+import { executionWizardSteps, useExecutionWizard } from '../hooks/use-execution-wizard'
 import { BotStep } from './execution-wizard/bot-step'
 import { ConfigStep } from './execution-wizard/config-step'
 import { ExecutionSubmitErrorAlert } from './execution-wizard/execution-submit-error-alert'
@@ -47,9 +32,7 @@ export default function ExecutionWizard() {
 
         <Separator />
 
-        {wizard.submitError ? (
-          <ExecutionSubmitErrorAlert message={wizard.submitError} t={t} />
-        ) : null}
+        {wizard.submitError ? <ExecutionSubmitErrorAlert message={wizard.submitError} t={t} /> : null}
 
         <div className="flex flex-col gap-6">
           {wizard.currentStep === 0 ? (
@@ -66,9 +49,7 @@ export default function ExecutionWizard() {
               selectedCustomerError={wizard.selectedCustomerError}
               clinicOptions={wizard.clinicOptions}
               isLoadingClinics={wizard.isLoadingClinics}
-              hasSelectedCustomerWithoutClinics={
-                wizard.hasSelectedCustomerWithoutClinics
-              }
+              hasSelectedCustomerWithoutClinics={wizard.hasSelectedCustomerWithoutClinics}
               onCustomerSearchChange={wizard.updateCustomerSearch}
               onCustomerClear={wizard.clearCustomerSelection}
               onCustomerSelect={wizard.selectCustomer}
@@ -103,25 +84,14 @@ export default function ExecutionWizard() {
             />
           ) : null}
 
-          {wizard.currentStep === 3 ? (
-            <ReviewStep
-              draft={wizard.draft}
-              payload={wizard.payloadPreview}
-              t={t}
-            />
-          ) : null}
+          {wizard.currentStep === 3 ? <ReviewStep draft={wizard.draft} payload={wizard.payloadPreview} t={t} /> : null}
         </div>
       </CardContent>
       <CardFooter className="justify-between border-t border-border">
         {wizard.currentStep === 0 ? (
           <span />
         ) : (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={wizard.handlePreviousStep}
-            disabled={wizard.isSubmitting}
-          >
+          <Button type="button" variant="ghost" onClick={wizard.handlePreviousStep} disabled={wizard.isSubmitting}>
             <IconArrowLeft data-icon="inline-start" />
             {t('buttons.back')}
           </Button>
@@ -133,19 +103,9 @@ export default function ExecutionWizard() {
             <IconArrowRight data-icon="inline-end" />
           </Button>
         ) : (
-          <Button
-            type="button"
-            onClick={wizard.handleSubmit}
-            disabled={wizard.isSubmitting}
-          >
-            {wizard.isSubmitting ? (
-              <IconLoader2 data-icon="inline-start" />
-            ) : (
-              <IconSend2 data-icon="inline-start" />
-            )}
-            {wizard.isSubmitting
-              ? t('buttons.submitting')
-              : t('buttons.submit')}
+          <Button type="button" onClick={wizard.handleSubmit} disabled={wizard.isSubmitting}>
+            {wizard.isSubmitting ? <IconLoader2 data-icon="inline-start" /> : <IconSend2 data-icon="inline-start" />}
+            {wizard.isSubmitting ? t('buttons.submitting') : t('buttons.submit')}
           </Button>
         )}
       </CardFooter>

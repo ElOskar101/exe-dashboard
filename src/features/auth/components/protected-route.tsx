@@ -6,9 +6,7 @@ import { redirectToLogin } from '../utils/auth'
 export const ProtectedRoute = (props: { children: ReactElement }) => {
   const token = localStorage.getItem('token')
   const authContext = useContext(AuthContext)
-  const noPermission =
-    Object.keys(authContext.permissions || {}).length > 0 &&
-    !authContext.permissions['admin']
+  const noPermission = Object.keys(authContext.permissions || {}).length > 0 && !authContext.permissions['admin']
 
   if (!token) {
     redirectToLogin()

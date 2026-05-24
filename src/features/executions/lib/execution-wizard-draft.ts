@@ -1,7 +1,4 @@
-import type {
-  ExecutionPatient,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
+import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
 
 export const createEmptyPatient = (): ExecutionPatient => ({
   patientName: '',

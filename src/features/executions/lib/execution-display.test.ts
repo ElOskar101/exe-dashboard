@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  getExecutionLabel,
-  isExecutionRunning,
-  normalizeExecutionStatus,
-} from './execution-display'
+import { getExecutionLabel, isExecutionRunning, normalizeExecutionStatus } from './execution-display'
 import { IExecution } from '../model/execution.interface'
 
 const createExecution = (execution: Partial<IExecution>): IExecution => ({
@@ -34,9 +30,7 @@ describe('execution display helpers', () => {
   })
 
   it('falls back to botName, project, then shortened id', () => {
-    expect(
-      getExecutionLabel(createExecution({ botName: 'Eligibility bot' })),
-    ).toBe('Eligibility bot')
+    expect(getExecutionLabel(createExecution({ botName: 'Eligibility bot' }))).toBe('Eligibility bot')
 
     expect(getExecutionLabel(createExecution({}))).toBe('project-a')
 

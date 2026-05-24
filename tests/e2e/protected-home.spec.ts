@@ -1,9 +1,4 @@
-import {
-  expect,
-  test,
-  type APIRequestContext,
-  type Page,
-} from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 import { loadEnv } from 'vite'
 
 const e2eEnv = loadEnv('e2e', process.cwd(), '')
@@ -89,24 +84,16 @@ async function selectCustomerAndClinic(page: Page) {
 
 test.describe('protected executions route', () => {
   test('redirects anonymous users to login', async ({ page }) => {
-    await page.route(
-      'https://auth.controlcentralcarrier.com/**',
-      async (route) => {
-        await route.fulfill({ body: 'Login' })
-      },
-    )
+    await page.route('https://auth.controlcentralcarrier.com/**', async (route) => {
+      await route.fulfill({ body: 'Login' })
+    })
 
     await page.goto('/')
 
-    await expect(page).toHaveURL(
-      /https:\/\/auth\.controlcentralcarrier\.com\/\?url=.+&mode=dev/,
-    )
+    await expect(page).toHaveURL(/https:\/\/auth\.controlcentralcarrier\.com\/\?url=.+&mode=dev/)
   })
 
-  test('allows logged in users to see the execution wizard', async ({
-    page,
-    request,
-  }) => {
+  test('allows logged in users to see the execution wizard', async ({ page, request }) => {
     test.skip(
       !canLogin,
       'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
@@ -124,16 +111,11 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL('/')
     await expect(page.getByText('Create execution')).toBeVisible()
     await expect(
-      page.getByText(
-        'Build the POST /executions payload step by step and submit it when everything is ready.',
-      ),
+      page.getByText('Build the POST /executions payload step by step and submit it when everything is ready.'),
     ).toBeVisible()
   })
 
-  test('validates invalid steps while navigating and supports back navigation', async ({
-    page,
-    request,
-  }) => {
+  test('validates invalid steps while navigating and supports back navigation', async ({ page, request }) => {
     test.skip(
       !canLogin,
       'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
@@ -152,9 +134,7 @@ test.describe('protected executions route', () => {
     await expect(page.getByLabel('Patient name')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
-    await expect(
-      page.getByText('This field is required.').first(),
-    ).toBeVisible()
+    await expect(page.getByText('This field is required.').first()).toBeVisible()
     await expect(page.getByLabel('Bot name')).toBeVisible()
 
     await page.getByLabel('Bot name').fill('Eligibility Runner')
@@ -195,10 +175,7 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('"retries": 1')).toBeVisible()
   })
 
-  test('submits the built payload with multiple patients', async ({
-    page,
-    request,
-  }) => {
+  test('submits the built payload with multiple patients', async ({ page, request }) => {
     test.skip(
       !canLogin,
       'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
@@ -264,9 +241,7 @@ test.describe('protected executions route', () => {
 
     await page.getByLabel('Workers').fill('4')
     await page.getByLabel('Retries').fill('2')
-    await page
-      .getByLabel('Other config')
-      .fill('{ "parallel": true, "inNetwork": true }')
+    await page.getByLabel('Other config').fill('{ "parallel": true, "inNetwork": true }')
     await page.getByRole('button', { name: 'Next' }).click()
 
     await expect(page.getByText('"workers": 4')).toBeVisible()
@@ -336,10 +311,7 @@ test.describe('protected executions route', () => {
     })
   })
 
-  test('keeps the review state after a failed submission', async ({
-    page,
-    request,
-  }) => {
+  test('keeps the review state after a failed submission', async ({ page, request }) => {
     test.skip(
       !canLogin,
       'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
@@ -385,9 +357,7 @@ test.describe('protected executions route', () => {
     await page.getByRole('button', { name: 'Create execution' }).click()
 
     await expect(page.getByText('Execution API is unavailable.')).toBeVisible()
-    await expect(
-      page.getByRole('button', { name: 'Create execution' }),
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Create execution' })).toBeVisible()
     await expect(page.getByText('Retry Patient', { exact: true })).toBeVisible()
     await expect(page.getByText('"workers": 2')).toBeVisible()
   })

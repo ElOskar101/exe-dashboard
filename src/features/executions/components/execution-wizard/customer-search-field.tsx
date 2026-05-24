@@ -56,11 +56,7 @@ export function CustomerSearchField({
   }
 
   return (
-    <div
-      className="relative"
-      onFocusCapture={() => setIsOpen(true)}
-      onBlurCapture={handleBlur}
-    >
+    <div className="relative" onFocusCapture={() => setIsOpen(true)} onBlurCapture={handleBlur}>
       <Input
         id={id}
         value={value}
@@ -85,9 +81,7 @@ export function CustomerSearchField({
                 {searchingText}
               </div>
             ) : searchError ? (
-              <div className="rounded-2xl px-3 py-2 text-sm text-destructive">
-                {searchError}
-              </div>
+              <div className="rounded-2xl px-3 py-2 text-sm text-destructive">{searchError}</div>
             ) : hasSelectedCustomer ? (
               <button
                 type="button"
@@ -103,9 +97,7 @@ export function CustomerSearchField({
                   <span className="truncate">{selectedCustomerName}</span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {selectedText}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{selectedText}</span>
                   <IconCheck className="size-4 shrink-0" />
                 </span>
               </button>
@@ -131,16 +123,12 @@ export function CustomerSearchField({
                       <IconSearch className="size-4 shrink-0 text-muted-foreground" />
                       <span className="truncate">{customer.clientName}</span>
                     </span>
-                    {isSelected ? (
-                      <IconCheck className="size-4 shrink-0" />
-                    ) : null}
+                    {isSelected ? <IconCheck className="size-4 shrink-0" /> : null}
                   </button>
                 )
               })
             ) : (
-              <div className="rounded-2xl px-3 py-2 text-sm text-muted-foreground">
-                {noResultsText}
-              </div>
+              <div className="rounded-2xl px-3 py-2 text-sm text-muted-foreground">{noResultsText}</div>
             )}
           </div>
         </div>

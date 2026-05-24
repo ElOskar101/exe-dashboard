@@ -126,14 +126,11 @@ socket.on('connect', () => {
   socket.emit('execution:join', { executionId } satisfies JoinPayload)
 })
 
-socket.on(
-  'execution:logs:history',
-  (payload: { executionId: string; content: string }) => {
-    if (payload.executionId !== executionId) return
-    // Initialize UI log buffer
-    console.log(payload.content)
-  },
-)
+socket.on('execution:logs:history', (payload: { executionId: string; content: string }) => {
+  if (payload.executionId !== executionId) return
+  // Initialize UI log buffer
+  console.log(payload.content)
+})
 
 socket.on(
   'logs',

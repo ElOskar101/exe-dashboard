@@ -5,29 +5,10 @@ import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from '@/components/ui/item'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import {
   IconAlertCircle,
   IconBug,
@@ -48,9 +29,7 @@ const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
   const normalizedStatus = status?.toLowerCase()
 
   if (!normalizedStatus) return 'outline'
-  if (
-    ['completed', 'complete', 'success', 'succeeded'].includes(normalizedStatus)
-  ) {
+  if (['completed', 'complete', 'success', 'succeeded'].includes(normalizedStatus)) {
     return 'default'
   }
   if (['failed', 'error', 'cancelled', 'canceled'].includes(normalizedStatus)) {
@@ -61,9 +40,7 @@ const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
 }
 
 const getConnectionBadgeVariant = (
-  connectionState: ReturnType<
-    typeof useExecutionRealtimeLogs
-  >['connectionState'],
+  connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState'],
 ): BadgeVariant => {
   if (connectionState === 'connected') return 'default'
   if (connectionState === 'connecting') return 'secondary'
@@ -94,56 +71,13 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   })
   const executionLogs = executionQuery.data?.logs
   const fallbackLines = useMemo(
-    () =>
-      executionLogs
-        ? createExecutionLogLinesFromHistory(executionLogs).lines
-        : [],
+    () => (executionLogs ? createExecutionLogLinesFromHistory(executionLogs).lines : []),
     [executionLogs],
   )
-  const logLines =
-    realtimeLogs.lines.length > 0 ? realtimeLogs.lines : fallbackLines
+  const logLines = realtimeLogs.lines.length > 0 ? realtimeLogs.lines : fallbackLines
   const currentStatus = realtimeLogs.status ?? executionQuery.data?.status
   const canStopExecution = isExecutionRunning(currentStatus)
-  const debugSnapshot = useMemo(
-    () => ({
-      currentStatus: currentStatus ?? null,
-      derived: {
-        canStopExecution,
-        executionId,
-        lineCount: logLines.length,
-      },
-      query: {
-        isError: executionQuery.isError,
-        isFetching: executionQuery.isFetching,
-        isLoading: executionQuery.isLoading,
-      },
-      realtime: {
-        connectionState: realtimeLogs.connectionState,
-        partial: realtimeLogs.partial || null,
-        status: realtimeLogs.status,
-      },
-    }),
-    [
-      canStopExecution,
-      currentStatus,
-      executionId,
-      executionQuery.isError,
-      executionQuery.isFetching,
-      executionQuery.isLoading,
-      logLines.length,
-      realtimeLogs.connectionState,
-      realtimeLogs.partial,
-      realtimeLogs.status,
-    ],
-  )
-  const rawExecutionJson = useMemo(
-    () => JSON.stringify(executionQuery.data ?? null, null, 2),
-    [executionQuery.data],
-  )
-  const debugSnapshotJson = useMemo(
-    () => JSON.stringify(debugSnapshot, null, 2),
-    [debugSnapshot],
-  )
+  const rawExecutionJson = useMemo(() => JSON.stringify(executionQuery.data ?? null, null, 2), [executionQuery.data])
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -151,9 +85,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         <Alert>
           <IconAlertCircle />
           <AlertTitle>{t('detail.loadErrorTitle')}</AlertTitle>
-          <AlertDescription>
-            {t('detail.loadErrorDescription')}
-          </AlertDescription>
+          <AlertDescription>{t('detail.loadErrorDescription')}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -161,9 +93,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         <Alert variant="destructive">
           <IconAlertCircle />
           <AlertTitle>{t('detail.stopErrorTitle')}</AlertTitle>
-          <AlertDescription>
-            {t('detail.stopErrorDescription')}
-          </AlertDescription>
+          <AlertDescription>{t('detail.stopErrorDescription')}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -210,24 +140,17 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                           {t('detail.debugFields.connection')}
                         </span>
                         <Badge
-                          variant={getConnectionBadgeVariant(
-                            realtimeLogs.connectionState,
-                          )}
+                          variant={getConnectionBadgeVariant(realtimeLogs.connectionState)}
                           className="max-w-full justify-center truncate"
                         >
-                          {t(
-                            `detail.connection.${realtimeLogs.connectionState}`,
-                          )}
+                          {t(`detail.connection.${realtimeLogs.connectionState}`)}
                         </Badge>
                       </div>
                       <div className="flex min-w-0 flex-col gap-2 rounded-2xl border bg-muted/30 p-3">
                         <span className="text-xs font-medium text-muted-foreground">
                           {t('detail.debugFields.logLines')}
                         </span>
-                        <Badge
-                          variant="outline"
-                          className="max-w-full justify-center truncate"
-                        >
+                        <Badge variant="outline" className="max-w-full justify-center truncate">
                           {logLines.length}
                         </Badge>
                       </div>
@@ -236,9 +159,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                           {t('detail.debugFields.partialChunk')}
                         </span>
                         <Badge
-                          variant={
-                            realtimeLogs.partial ? 'secondary' : 'outline'
-                          }
+                          variant={realtimeLogs.partial ? 'secondary' : 'outline'}
                           className="max-w-full justify-center truncate"
                         >
                           {realtimeLogs.partial || t('detail.debugEmptyValue')}
@@ -248,20 +169,9 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
 
                     <div className="mt-6 flex flex-col gap-4">
                       <div className="flex flex-col gap-2">
-                        <h3 className="font-medium">
-                          {t('detail.rawExecutionTitle')}
-                        </h3>
+                        <h3 className="font-medium">{t('detail.rawExecutionTitle')}</h3>
                         <pre className="max-h-96 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
                           {rawExecutionJson}
-                        </pre>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <h3 className="font-medium">
-                          {t('detail.snapshotTitle')}
-                        </h3>
-                        <pre className="max-h-96 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
-                          {debugSnapshotJson}
                         </pre>
                       </div>
                     </div>
@@ -275,16 +185,11 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                   onClick={() => stopMutation.mutate(executionId)}
                 >
                   {stopMutation.isPending ? (
-                    <IconLoader2
-                      className="animate-spin"
-                      data-icon="inline-start"
-                    />
+                    <IconLoader2 className="animate-spin" data-icon="inline-start" />
                   ) : (
                     <IconPlayerStop data-icon="inline-start" />
                   )}
-                  {stopMutation.isPending
-                    ? t('detail.stopping')
-                    : t('detail.stopExecution')}
+                  {stopMutation.isPending ? t('detail.stopping') : t('detail.stopExecution')}
                 </Button>
               ) : null}
             </div>
@@ -302,9 +207,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                           {line.message || t('detail.emptyLine')}
                         </ItemTitle>
                         {line.timestamp ? (
-                          <ItemDescription>
-                            {formatExecutionDateTime(line.timestamp)}
-                          </ItemDescription>
+                          <ItemDescription>{formatExecutionDateTime(line.timestamp)}</ItemDescription>
                         ) : null}
                       </ItemContent>
                       {line.stream ? (
@@ -319,16 +222,10 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                 <Item variant="muted">
                   <ItemContent>
                     <ItemTitle>{t('detail.noLogsTitle')}</ItemTitle>
-                    <ItemDescription>
-                      {t('detail.noLogsDescription')}
-                    </ItemDescription>
+                    <ItemDescription>{t('detail.noLogsDescription')}</ItemDescription>
                   </ItemContent>
                   <ItemActions>
-                    {executionQuery.isLoading ? (
-                      <IconLoader2 className="animate-spin" />
-                    ) : (
-                      <IconCircleDashed />
-                    )}
+                    {executionQuery.isLoading ? <IconLoader2 className="animate-spin" /> : <IconCircleDashed />}
                   </ItemActions>
                 </Item>
               )}

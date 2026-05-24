@@ -7,10 +7,7 @@ interface ExecutionSubmitErrorAlertProps {
   t: TFunction<'executions'>
 }
 
-export function ExecutionSubmitErrorAlert({
-  message,
-  t,
-}: ExecutionSubmitErrorAlertProps) {
+export function ExecutionSubmitErrorAlert({ message, t }: ExecutionSubmitErrorAlertProps) {
   return (
     <Alert variant="destructive">
       <IconAlertCircle />

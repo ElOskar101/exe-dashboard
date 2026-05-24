@@ -18,11 +18,7 @@ const Header: () => JSX.Element = () => {
           <div className="flex items-center gap-2">
             <SidebarTrigger />
             <a href="/" className="transition-colors">
-              <img
-                className="h-8 w-auto object-cover"
-                src="/agent-icon.svg"
-                alt={t('project-name')}
-              />
+              <img className="h-8 w-auto object-cover" src="/agent-icon.svg" alt={t('project-name')} />
             </a>
           </div>
 

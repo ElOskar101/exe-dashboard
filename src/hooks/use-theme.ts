@@ -6,11 +6,9 @@ const THEME_STORAGE_KEY = 'theme'
 const THEME_CHANGE_EVENT = 'themechange'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
-const isTheme = (theme: string | null): theme is ThemeType =>
-  theme === 'light' || theme === 'dark'
+const isTheme = (theme: string | null): theme is ThemeType => theme === 'light' || theme === 'dark'
 
-const getSystemTheme = (): ThemeType =>
-  window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light'
+const getSystemTheme = (): ThemeType => (window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light')
 
 const getStoredTheme = (): ThemeType | null => {
   try {
@@ -70,11 +68,7 @@ const subscribeToTheme = (onStoreChange: () => void) => {
 }
 
 export const useTheme = () => {
-  const theme = useSyncExternalStore(
-    subscribeToTheme,
-    getThemeSnapshot,
-    getServerSnapshot,
-  )
+  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerSnapshot)
 
   const setTheme = useCallback((nextTheme: ThemeType) => {
     applyTheme(nextTheme)

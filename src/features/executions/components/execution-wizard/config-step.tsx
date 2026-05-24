@@ -1,10 +1,4 @@
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from '@/components/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import type { TFunction } from 'i18next'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
@@ -63,10 +57,7 @@ export function ConfigStep({
           <FieldError>{showErrors ? errors.retries : null}</FieldError>
         </Field>
 
-        <Field
-          data-invalid={showErrors && Boolean(errors.config)}
-          className="md:col-span-2"
-        >
+        <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-2">
           <FieldLabel htmlFor="config">{t('fields.otherConfig')}</FieldLabel>
           <textarea
             id="config"

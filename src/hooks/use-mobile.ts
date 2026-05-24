@@ -18,9 +18,5 @@ const getMobileSnapshot = () => {
 const getServerMobileSnapshot = () => false
 
 export function useIsMobile() {
-  return useSyncExternalStore(
-    subscribeToMobile,
-    getMobileSnapshot,
-    getServerMobileSnapshot,
-  )
+  return useSyncExternalStore(subscribeToMobile, getMobileSnapshot, getServerMobileSnapshot)
 }

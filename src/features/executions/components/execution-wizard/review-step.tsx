@@ -30,9 +30,7 @@ const parseJsonObjectString = (value: string): ExecutionMetadata | string => {
   }
 }
 
-const getReviewPatientRows = (
-  patients: ExecutionPatient[],
-): ExecutionPatient[] => {
+const getReviewPatientRows = (patients: ExecutionPatient[]): ExecutionPatient[] => {
   return patients.length > 0
     ? patients
     : [
@@ -87,12 +85,8 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
       })),
       config: parseJsonObjectString(draft.execution.config),
       rv: {},
-      workers: draft.execution.workers.trim()
-        ? Number(draft.execution.workers)
-        : '',
-      retries: draft.execution.retries.trim()
-        ? Number(draft.execution.retries)
-        : '',
+      workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
+      retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
     },
   }
 
@@ -102,52 +96,28 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.project')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.context.project, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.project, emptyValue)}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.client')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.context.clientName, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.client')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.clientName, emptyValue)}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.clinic')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.context.clinicName, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.clinic')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.clinicName, emptyValue)}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.botName')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.bot.botName, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.botName')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.botName, emptyValue)}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.username')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.bot.username, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.username')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.username, emptyValue)}</dd>
             </div>
             <div className="sm:col-span-2">
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.url')}
-              </dt>
-              <dd className="mt-1 break-all font-medium">
-                {getDisplayValue(draft.bot.url, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.url')}</dt>
+              <dd className="mt-1 break-all font-medium">{getDisplayValue(draft.bot.url, emptyValue)}</dd>
             </div>
           </dl>
         </div>
@@ -160,52 +130,28 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                 className="grid gap-3 rounded-2xl border border-border/70 bg-muted/40 p-3 sm:grid-cols-3"
               >
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('fields.patientName')}
-                  </p>
-                  <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.patientName, emptyValue)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('fields.patientName')}</p>
+                  <p className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('fields.memberId')}
-                  </p>
-                  <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.patientMemberId, emptyValue)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('fields.memberId')}</p>
+                  <p className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('fields.patientDob')}
-                  </p>
-                  <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.patientDob, emptyValue)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('fields.patientDob')}</p>
+                  <p className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('fields.relationship')}
-                  </p>
-                  <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.relationship, emptyValue)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('fields.relationship')}</p>
+                  <p className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('fields.patientClinic')}
-                  </p>
-                  <p className="mt-1 font-medium">
-                    {getDisplayValue(patient.clinic, emptyValue)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('fields.patientClinic')}</p>
+                  <p className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('fields.verificationType')}
-                  </p>
-                  <p className="mt-1 font-medium">
-                    {patient.verificationType || emptyValue}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('fields.verificationType')}</p>
+                  <p className="mt-1 font-medium">{patient.verificationType || emptyValue}</p>
                 </div>
               </div>
             ))}
@@ -215,20 +161,12 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.workers')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.execution.workers, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.workers')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.workers, emptyValue)}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">
-                {t('fields.retries')}
-              </dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.execution.retries, emptyValue)}
-              </dd>
+              <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.retries, emptyValue)}</dd>
             </div>
           </dl>
         </div>

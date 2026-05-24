@@ -45,8 +45,7 @@ const leaveExecutionRoom = (executionId: string) => {
 export const useExecutionRealtimeLogs = (executionId: string) => {
   const [buffer, setBuffer] = useState(() => createExecutionLogBufferState())
   const [status, setStatus] = useState<string | null>(null)
-  const [connectionState, setConnectionState] =
-    useState<ConnectionState>('connecting')
+  const [connectionState, setConnectionState] = useState<ConnectionState>('connecting')
 
   useMountEffect(() => {
     const handleConnect = () => {

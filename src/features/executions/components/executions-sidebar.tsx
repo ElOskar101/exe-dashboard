@@ -2,12 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  IconAlertCircle,
-  IconLoader2,
-  IconPlayerPlay,
-  IconTrash,
-} from '@tabler/icons-react'
+import { IconAlertCircle, IconLoader2, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -34,10 +29,7 @@ import {
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { deleteExecution, getExecutions } from '../services/execution.service'
-import {
-  getExecutionLabel,
-  normalizeExecutionStatus,
-} from '../lib/execution-display'
+import { getExecutionLabel, normalizeExecutionStatus } from '../lib/execution-display'
 
 const EXECUTIONS_QUERY_KEY = ['executions'] as const
 
@@ -65,9 +57,7 @@ export function ExecutionsSidebar() {
   const deleteMutation = useMutation({
     mutationFn: deleteExecution,
     onSuccess: async (_deletedExecution, deletedExecutionId) => {
-      setOpenDeleteId((currentOpenId) =>
-        currentOpenId === deletedExecutionId ? null : currentOpenId,
-      )
+      setOpenDeleteId((currentOpenId) => (currentOpenId === deletedExecutionId ? null : currentOpenId))
       await queryClient.invalidateQueries({ queryKey: EXECUTIONS_QUERY_KEY })
 
       if (deletedExecutionId === currentExecutionId) {
@@ -111,9 +101,7 @@ export function ExecutionsSidebar() {
               <Alert className="m-2">
                 <IconAlertCircle />
                 <AlertTitle>{t('sidebar.loadErrorTitle')}</AlertTitle>
-                <AlertDescription>
-                  {t('sidebar.loadErrorDescription')}
-                </AlertDescription>
+                <AlertDescription>{t('sidebar.loadErrorDescription')}</AlertDescription>
                 <Button
                   className="mt-3 w-fit"
                   size="sm"
@@ -125,24 +113,16 @@ export function ExecutionsSidebar() {
               </Alert>
             ) : null}
 
-            {!executionsQuery.isLoading &&
-            !executionsQuery.isError &&
-            executions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-muted-foreground">
-                {t('sidebar.empty')}
-              </div>
+            {!executionsQuery.isLoading && !executionsQuery.isError && executions.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">{t('sidebar.empty')}</div>
             ) : null}
 
             {executions.length > 0 ? (
               <SidebarMenu>
                 {executions.map((execution) => {
                   const label = getExecutionLabel(execution)
-                  const status =
-                    normalizeExecutionStatus(execution.status) ||
-                    t('detail.statusUnknown')
-                  const isDeleting =
-                    deleteMutation.isPending &&
-                    pendingDeleteId === execution._id
+                  const status = normalizeExecutionStatus(execution.status) || t('detail.statusUnknown')
+                  const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                   return (
                     <SidebarMenuItem
@@ -159,10 +139,7 @@ export function ExecutionsSidebar() {
                           <span>{label}</span>
                           <span
                             aria-label={status}
-                            className={cn(
-                              'size-2 shrink-0 rounded-full',
-                              getStatusDotClassName(status),
-                            )}
+                            className={cn('size-2 shrink-0 rounded-full', getStatusDotClassName(status))}
                           />
                         </span>
                       </SidebarMenuButton>
@@ -191,9 +168,7 @@ export function ExecutionsSidebar() {
                         />
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              {t('sidebar.deleteTitle')}
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>{t('sidebar.deleteTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
                               {t('sidebar.deleteDescription', {
                                 execution: label,
@@ -201,25 +176,14 @@ export function ExecutionsSidebar() {
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel disabled={isDeleting}>
-                              {t('sidebar.cancelDelete')}
-                            </AlertDialogCancel>
+                            <AlertDialogCancel disabled={isDeleting}>{t('sidebar.cancelDelete')}</AlertDialogCancel>
                             <Button
                               variant="destructive"
                               disabled={isDeleting}
-                              onClick={() =>
-                                deleteMutation.mutate(execution._id)
-                              }
+                              onClick={() => deleteMutation.mutate(execution._id)}
                             >
-                              {isDeleting ? (
-                                <IconLoader2
-                                  className="animate-spin"
-                                  data-icon="inline-start"
-                                />
-                              ) : null}
-                              {isDeleting
-                                ? t('sidebar.deleting')
-                                : t('sidebar.confirmDelete')}
+                              {isDeleting ? <IconLoader2 className="animate-spin" data-icon="inline-start" /> : null}
+                              {isDeleting ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
                             </Button>
                           </AlertDialogFooter>
                         </AlertDialogContent>

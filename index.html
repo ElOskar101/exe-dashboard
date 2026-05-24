@@ -11,13 +11,8 @@
             return null
           }
         })()
-        const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-        const theme =
-          storedTheme === 'light' || storedTheme === 'dark'
-            ? storedTheme
-            : systemTheme
+        const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        const theme = storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : systemTheme
 
         document.documentElement.classList.toggle('dark', theme === 'dark')
         document.documentElement.style.colorScheme = theme

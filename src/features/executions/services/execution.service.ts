@@ -16,10 +16,7 @@ export const getExecutionById = (executionId: string) => {
   return exeClient.get<IExecution>(`/executions/${executionId}`)
 }
 
-export const updateExecution = (
-  executionId: string,
-  data: ExecutionUpdatePayload,
-) => {
+export const updateExecution = (executionId: string, data: ExecutionUpdatePayload) => {
   return exeClient.patch<IExecution>(`/executions/${executionId}`, data)
 }
 

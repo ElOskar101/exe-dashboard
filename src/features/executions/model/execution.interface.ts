@@ -1,10 +1,4 @@
-export type ExecutionStatus =
-  | 'queued'
-  | 'running'
-  | 'completed'
-  | 'unknown'
-  | 'cancelled'
-  | 'failed'
+export type ExecutionStatus = 'queued' | 'running' | 'completed' | 'unknown' | 'cancelled' | 'failed'
 
 export interface IExecution {
   _id: string

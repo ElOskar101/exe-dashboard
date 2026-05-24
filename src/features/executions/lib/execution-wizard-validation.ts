@@ -1,8 +1,5 @@
 import type { TFunction } from 'i18next'
-import type {
-  ExecutionPatient,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
+import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
 
 export type StepErrors = {
   context: Partial<Record<keyof ExecutionWizardDraft['context'], string>> & {
@@ -95,10 +92,7 @@ export const getExecutionWizardValidationErrors = (
       rowErrors.patientDob = t('validation.validDate')
     }
 
-    if (
-      patient.policyHolderDob.trim() &&
-      !isDateStringValid(patient.policyHolderDob)
-    ) {
+    if (patient.policyHolderDob.trim() && !isDateStringValid(patient.policyHolderDob)) {
       rowErrors.policyHolderDob = t('validation.validDate')
     }
 
@@ -113,19 +107,13 @@ export const getExecutionWizardValidationErrors = (
 
   if (!draft.execution.workers.trim()) {
     config.workers = t('validation.required')
-  } else if (
-    !Number.isInteger(Number(draft.execution.workers)) ||
-    Number(draft.execution.workers) <= 0
-  ) {
+  } else if (!Number.isInteger(Number(draft.execution.workers)) || Number(draft.execution.workers) <= 0) {
     config.workers = t('validation.positiveNumber')
   }
 
   if (!draft.execution.retries.trim()) {
     config.retries = t('validation.required')
-  } else if (
-    !Number.isInteger(Number(draft.execution.retries)) ||
-    Number(draft.execution.retries) < 0
-  ) {
+  } else if (!Number.isInteger(Number(draft.execution.retries)) || Number(draft.execution.retries) < 0) {
     config.retries = t('validation.nonNegativeNumber')
   }
 
@@ -137,10 +125,7 @@ export const getExecutionWizardValidationErrors = (
     context,
     bot,
     patients: {
-      form:
-        draft.execution.patients.length === 0
-          ? t('validation.addPatient')
-          : undefined,
+      form: draft.execution.patients.length === 0 ? t('validation.addPatient') : undefined,
       rows: patients,
     },
     config,
@@ -151,9 +136,7 @@ const isJsonObjectStringValid = (value: string) => {
   try {
     const parsed = JSON.parse(value)
 
-    return (
-      Boolean(parsed) && !Array.isArray(parsed) && typeof parsed === 'object'
-    )
+    return Boolean(parsed) && !Array.isArray(parsed) && typeof parsed === 'object'
   } catch {
     return false
   }

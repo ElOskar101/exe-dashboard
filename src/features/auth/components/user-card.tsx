@@ -30,26 +30,17 @@ function UserCard() {
 
   return (
     <>
-      <button
-        className="flex items-center gap-x-2 cursor-pointer relative"
-        tabIndex={0}
-      >
+      <button className="flex items-center gap-x-2 cursor-pointer relative" tabIndex={0}>
         {user ? (
           <>
             <Avatar>
               {user.urlImage && (
                 <AvatarImage
-                  src={
-                    import.meta.env.VITE_PICTURES_URL +
-                    '/pictures/' +
-                    user.urlImage
-                  }
+                  src={import.meta.env.VITE_PICTURES_URL + '/pictures/' + user.urlImage}
                   alt={user.username || ''}
                 />
               )}
-              <AvatarFallback>
-                {getInitials(user.username || '')}
-              </AvatarFallback>
+              <AvatarFallback>{getInitials(user.username || '')}</AvatarFallback>
             </Avatar>
             <div className="leading-none text-xs flex flex-col">
               {userData?.nameAndUser}
@@ -59,9 +50,7 @@ function UserCard() {
         ) : (
           <>
             <Avatar>
-              <AvatarFallback className="animate-pulse">
-                {getInitials('loading...')}
-              </AvatarFallback>
+              <AvatarFallback className="animate-pulse">{getInitials('loading...')}</AvatarFallback>
             </Avatar>
             <div className="leading-none">
               <div className="mb-1 h-4 w-20 animate-pulse rounded"></div>

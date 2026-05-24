@@ -1,8 +1,4 @@
-import type {
-  ExecutionCreatePayload,
-  ExecutionMetadata,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
+import type { ExecutionCreatePayload, ExecutionMetadata, ExecutionWizardDraft } from '../model/execution-create'
 
 const parseMetadata = (value: string): ExecutionMetadata | null => {
   try {
@@ -40,16 +36,10 @@ export const buildExecutionPayload = (
   }
 
   const botOtherInformation = parseMetadata(draft.bot.otherInformation)
-  const patientOtherInformation = draft.execution.patients.map((patient) =>
-    parseMetadata(patient.otherInformation),
-  )
+  const patientOtherInformation = draft.execution.patients.map((patient) => parseMetadata(patient.otherInformation))
   const configMetadata = parseMetadata(draft.execution.config)
 
-  if (
-    !botOtherInformation ||
-    patientOtherInformation.some((metadata) => !metadata) ||
-    !configMetadata
-  ) {
+  if (!botOtherInformation || patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
     return null
   }
 
@@ -78,9 +68,7 @@ export const buildExecutionPayload = (
         relationship: patient.relationship.trim(),
         zipCode: patient.zipCode.trim(),
         clinic: patient.clinic.trim(),
-        verificationType: patient.verificationType.toLowerCase() as Lowercase<
-          typeof patient.verificationType
-        >,
+        verificationType: patient.verificationType.toLowerCase() as Lowercase<typeof patient.verificationType>,
         filenames: patient.filenames.trim(),
         otherInformation: patientOtherInformation[index] ?? {},
       })),

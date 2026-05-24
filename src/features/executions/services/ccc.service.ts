@@ -35,7 +35,5 @@ export const searchCustomers = (clientName: string) => {
 }
 
 export const getCustomerById = (customerId: string) => {
-  return cccClient.get<CustomerDetailsResponse>(
-    `/api/v2/customers/${customerId}`,
-  )
+  return cccClient.get<CustomerDetailsResponse>(`/api/v2/customers/${customerId}`)
 }

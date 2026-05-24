@@ -24,9 +24,7 @@ const splitLogChunk = (content: string) => {
   const normalizedContent = content.replace(/\r\n/g, '\n')
   const parts = normalizedContent.split('\n')
   const hasTrailingNewline = normalizedContent.endsWith('\n')
-  const completedLines = hasTrailingNewline
-    ? parts.slice(0, -1)
-    : parts.slice(0, -1)
+  const completedLines = hasTrailingNewline ? parts.slice(0, -1) : parts.slice(0, -1)
   const partial = hasTrailingNewline ? '' : (parts.at(-1) ?? '')
 
   return { completedLines, partial }
@@ -37,9 +35,7 @@ export const createExecutionLogBufferState = (): ExecutionLogBufferState => ({
   partial: '',
 })
 
-export const createExecutionLogLinesFromHistory = (
-  content: string,
-): ExecutionLogBufferState => {
+export const createExecutionLogLinesFromHistory = (content: string): ExecutionLogBufferState => {
   const { completedLines, partial } = splitLogChunk(content)
 
   return {
@@ -58,9 +54,7 @@ export const appendExecutionLogChunk = ({
   stream,
   timestamp,
 }: AppendLogChunkInput): ExecutionLogBufferState => {
-  const { completedLines, partial } = splitLogChunk(
-    `${state.partial}${message}`,
-  )
+  const { completedLines, partial } = splitLogChunk(`${state.partial}${message}`)
   const nextLineStart = state.lines.length
 
   return {
@@ -77,7 +71,5 @@ export const appendExecutionLogChunk = ({
   }
 }
 
-export const shouldHandleExecutionEvent = (
-  payloadExecutionId: string | undefined,
-  executionId: string,
-) => payloadExecutionId === executionId
+export const shouldHandleExecutionEvent = (payloadExecutionId: string | undefined, executionId: string) =>
+  payloadExecutionId === executionId
