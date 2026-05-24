@@ -43,11 +43,12 @@ export function ExecutionLogsCard({
             <CardTitle className="flex items-center gap-2">
               <IconTerminal2 />
               {t('detail.logsTitle')}
+              <div>
+                <Badge variant={getStatusBadgeVariant(currentStatus)}>
+                  {currentStatus ?? t('detail.statusUnknown')}
+                </Badge>
+              </div>
             </CardTitle>
-            <CardDescription>{t('detail.logsDescription')}</CardDescription>
-            <div>
-              <Badge variant={getStatusBadgeVariant(currentStatus)}>{currentStatus ?? t('detail.statusUnknown')}</Badge>
-            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ExecutionDebugSheet
