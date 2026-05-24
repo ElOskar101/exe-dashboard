@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
@@ -43,11 +43,7 @@ export function ExecutionLogsCard({
             <CardTitle className="flex items-center gap-2">
               <IconTerminal2 />
               {t('detail.logsTitle')}
-              <div>
-                <Badge variant={getStatusBadgeVariant(currentStatus)}>
-                  {currentStatus ?? t('detail.statusUnknown')}
-                </Badge>
-              </div>
+              <Badge variant={getStatusBadgeVariant(currentStatus)}>{currentStatus ?? t('detail.statusUnknown')}</Badge>
             </CardTitle>
           </div>
           <div className="flex flex-wrap items-center gap-2">

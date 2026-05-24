@@ -9,7 +9,7 @@ export const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
   const normalizedStatus = normalizeExecutionStatus(status)
 
   if (isExecutionSuccessful(normalizedStatus)) {
-    return 'default'
+    return 'success'
   }
   if (isExecutionFailed(normalizedStatus)) {
     return 'destructive'
