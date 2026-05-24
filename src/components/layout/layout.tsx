@@ -10,8 +10,8 @@ function Layout() {
       <SidebarInset>
         <div className="flex h-screen flex-col">
           <Header />
-          <div className="h-full overflow-auto">
-            <div className="container mx-auto px-4 py-6 md:px-6">
+          <div className="min-h-0 flex-1 overflow-auto">
+            <div className="container mx-auto flex min-h-full flex-col px-4 py-6 md:px-6">
               <Outlet />
             </div>
           </div>

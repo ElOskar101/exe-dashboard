@@ -36,7 +36,7 @@ export function ExecutionLogsCard({
   const { t } = useTranslation('executions')
 
   return (
-    <Card>
+    <Card className="min-h-0 flex-1">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
@@ -70,8 +70,8 @@ export function ExecutionLogsCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[calc(100vh-22rem)] min-h-96 rounded-2xl border border-border">
+      <CardContent className="min-h-0 flex-1">
+        <ScrollArea className="h-full min-h-96 rounded-2xl border border-border">
           <div className="p-4">
             <ExecutionLogList isLoading={isLoading} logLines={logLines} />
           </div>

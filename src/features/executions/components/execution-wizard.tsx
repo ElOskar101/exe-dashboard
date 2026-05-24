@@ -16,7 +16,7 @@ export default function ExecutionWizard() {
   const wizard = useExecutionWizard(t)
 
   return (
-    <Card className="mx-auto my-6 w-full max-w-5xl">
+    <Card className="mx-auto w-full max-w-5xl">
       <CardHeader>
         <CardTitle>{t('page.title')}</CardTitle>
         <CardDescription>{t('page.description')}</CardDescription>
