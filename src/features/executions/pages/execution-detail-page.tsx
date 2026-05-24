@@ -176,11 +176,13 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                 {t('detail.logsTitle')}
               </CardTitle>
               <CardDescription>{t('detail.logsDescription')}</CardDescription>
+              <div>
+                <Badge variant={getStatusBadgeVariant(currentStatus)}>
+                  {currentStatus ?? t('detail.statusUnknown')}
+                </Badge>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={getStatusBadgeVariant(currentStatus)}>
-                {currentStatus ?? t('detail.statusUnknown')}
-              </Badge>
               <Sheet>
                 <SheetTrigger render={<Button variant="outline" size="sm" />}>
                   <IconBug data-icon="inline-start" />
@@ -273,7 +275,10 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                   onClick={() => stopMutation.mutate(executionId)}
                 >
                   {stopMutation.isPending ? (
-                    <IconLoader2 data-icon="inline-start" />
+                    <IconLoader2
+                      className="animate-spin"
+                      data-icon="inline-start"
+                    />
                   ) : (
                     <IconPlayerStop data-icon="inline-start" />
                   )}
@@ -320,7 +325,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
                   </ItemContent>
                   <ItemActions>
                     {executionQuery.isLoading ? (
-                      <IconLoader2 />
+                      <IconLoader2 className="animate-spin" />
                     ) : (
                       <IconCircleDashed />
                     )}

@@ -1,12 +1,16 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { IconAlertCircle, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconLoader2,
+  IconPlayerPlay,
+  IconTrash,
+} from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -49,6 +53,7 @@ export function ExecutionsSidebar() {
   const { id: currentExecutionId } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
   const executionsQuery = useQuery({
     queryKey: EXECUTIONS_QUERY_KEY,
     queryFn: async () => {
@@ -60,6 +65,9 @@ export function ExecutionsSidebar() {
   const deleteMutation = useMutation({
     mutationFn: deleteExecution,
     onSuccess: async (_deletedExecution, deletedExecutionId) => {
+      setOpenDeleteId((currentOpenId) =>
+        currentOpenId === deletedExecutionId ? null : currentOpenId,
+      )
       await queryClient.invalidateQueries({ queryKey: EXECUTIONS_QUERY_KEY })
 
       if (deletedExecutionId === currentExecutionId) {
@@ -158,7 +166,14 @@ export function ExecutionsSidebar() {
                           />
                         </span>
                       </SidebarMenuButton>
-                      <AlertDialog>
+                      <AlertDialog
+                        open={openDeleteId === execution._id}
+                        onOpenChange={(open) => {
+                          if (isDeleting) return
+
+                          setOpenDeleteId(open ? execution._id : null)
+                        }}
+                      >
                         <AlertDialogTrigger
                           render={
                             <Button
@@ -189,17 +204,23 @@ export function ExecutionsSidebar() {
                             <AlertDialogCancel disabled={isDeleting}>
                               {t('sidebar.cancelDelete')}
                             </AlertDialogCancel>
-                            <AlertDialogAction
+                            <Button
                               variant="destructive"
                               disabled={isDeleting}
                               onClick={() =>
                                 deleteMutation.mutate(execution._id)
                               }
                             >
+                              {isDeleting ? (
+                                <IconLoader2
+                                  className="animate-spin"
+                                  data-icon="inline-start"
+                                />
+                              ) : null}
                               {isDeleting
                                 ? t('sidebar.deleting')
                                 : t('sidebar.confirmDelete')}
-                            </AlertDialogAction>
+                            </Button>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

@@ -13,7 +13,7 @@ const Header: () => JSX.Element = () => {
   return (
     <>
       <header className="z-1 w-full border-b border-border">
-        <nav className="container mx-auto py-2.5 flex items-center justify-between">
+        <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <SidebarTrigger />
