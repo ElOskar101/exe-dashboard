@@ -3,6 +3,10 @@
     {
       "source": "/execution-api/:path*",
       "destination": "https://api.controlcentralcarrier.com/api/v1/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
     }
   ]
 }
