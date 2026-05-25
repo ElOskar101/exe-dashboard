@@ -11,7 +11,7 @@ export const listenForToken = (saveToken: (token: string) => void) => {
     const returnUrl = sessionStorage.getItem('returnUrl') || '/'
     sessionStorage.removeItem('returnUrl')
 
-    url.searchParams.delete('token')
+    url.searchParams.delete('key')
     window.history.replaceState({}, '', url.toString())
 
     window.location.href = returnUrl

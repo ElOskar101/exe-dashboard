@@ -25,7 +25,7 @@ async function login(request: APIRequestContext) {
 }
 
 async function stubProtectedRouteDependencies(page: Page) {
-  await page.route('**/api/users/me', async (route) => {
+  await page.route('**/users/me', async (route) => {
     await route.fulfill({
       json: {
         _id: 'e2e-user',

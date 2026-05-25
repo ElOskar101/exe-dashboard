@@ -3,6 +3,16 @@ import { Navigate } from 'react-router-dom'
 import { AuthContext } from '../contexts/context'
 import { redirectToLogin } from '../utils/auth'
 
+const ProtectedRouteLoading = () => {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div role="status" aria-live="polite" aria-busy="true" className="text-sm text-muted-foreground">
+        Checking access...
+      </div>
+    </div>
+  )
+}
+
 export const ProtectedRoute = (props: { children: ReactElement }) => {
   const token = localStorage.getItem('token')
   const authContext = useContext(AuthContext)
@@ -10,6 +20,16 @@ export const ProtectedRoute = (props: { children: ReactElement }) => {
 
   if (!token) {
     redirectToLogin()
+    return null
+  }
+
+  if (authContext.isLoadingUser) {
+    return <ProtectedRouteLoading />
+  }
+
+  if (!authContext.user) {
+    redirectToLogin()
+    return null
   }
 
   if (noPermission) {

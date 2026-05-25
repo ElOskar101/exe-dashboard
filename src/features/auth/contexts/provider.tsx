@@ -7,43 +7,72 @@ import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
 import { IUser } from '../models/user.interface'
 
+const getPermissions = (userData: IUser | null) => {
+  const newPermissions: Record<string, boolean> = {}
+
+  userData?.roles?.forEach((rol) => {
+    newPermissions[rol.name] = true
+    rol.permission?.forEach((p) => {
+      newPermissions[p.name] = true
+    })
+  })
+
+  return newPermissions
+}
+
+const getStoredUser = () => {
+  const savedUserData = sessionStorage.getItem('me')
+
+  if (!savedUserData) {
+    return null
+  }
+
+  try {
+    return JSON.parse(_base64Decode(savedUserData)) as IUser
+  } catch {
+    sessionStorage.removeItem('me')
+    return null
+  }
+}
+
 export const AuthProvider = (props: { children: ReactNode }) => {
   const { children } = props
-  const [token, setToken] = useState(localStorage.getItem('token') || '')
-  const [permissions, setPermissions] = useState<Record<string, boolean>>({})
-  const [user, setUser] = useState<IUser | null>(null)
+  const initialToken = localStorage.getItem('token') || ''
+  const initialUser = getStoredUser()
+  const [token, setToken] = useState(initialToken)
+  const [permissions, setPermissions] = useState<Record<string, boolean>>(() => getPermissions(initialUser))
+  const [user, setUser] = useState<IUser | null>(initialUser)
+  const [isLoadingUser, setIsLoadingUser] = useState(() => Boolean(initialToken) && !initialUser)
 
   useMountEffect(() => {
     if (!token) {
+      setIsLoadingUser(false)
       return
     }
 
-    const savedUserData = sessionStorage.getItem('me')
-    if (savedUserData) {
-      const user: IUser = JSON.parse(_base64Decode(savedUserData))
-      setPermissions(() => getPermissions(user))
-      setUser(() => user)
-    } else {
-      getUserData().then(({ data }) => {
+    if (user) {
+      setIsLoadingUser(false)
+      return
+    }
+
+    setIsLoadingUser(true)
+
+    getUserData()
+      .then(({ data }) => {
         sessionStorage.setItem('me', _base64Encode(JSON.stringify(data)))
         setUser(() => data)
         setPermissions(() => getPermissions(data))
       })
-    }
-  })
-
-  const getPermissions = (userData: IUser) => {
-    const newPermissions: Record<string, boolean> = {}
-
-    userData.roles?.forEach((rol) => {
-      newPermissions[rol.name] = true
-      rol.permission?.forEach((p) => {
-        newPermissions[p.name] = true
+      .catch(() => {
+        sessionStorage.removeItem('me')
+        setUser(null)
+        setPermissions({})
+        redirectToLogin(window.location.origin)
       })
-    })
-
-    return newPermissions
-  }
+      .finally(() => {
+        setIsLoadingUser(false)
+      })
+  })
 
   const saveToken = useCallback((newToken: string) => {
     localStorage.setItem('token', newToken)
@@ -52,17 +81,20 @@ export const AuthProvider = (props: { children: ReactNode }) => {
 
   const clearToken = useCallback(() => {
     localStorage.removeItem('token')
+    sessionStorage.removeItem('me')
     setToken('')
+    setUser(null)
+    setPermissions({})
+    setIsLoadingUser(false)
   }, [])
 
   const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('permissions')
+    clearToken()
     redirectToLogin(window.location.origin)
   }
 
   return (
-    <AuthContext.Provider value={{ token, saveToken, clearToken, logout, permissions, user }}>
+    <AuthContext.Provider value={{ token, saveToken, clearToken, logout, isLoadingUser, permissions, user }}>
       {children}
     </AuthContext.Provider>
   )
