@@ -47,6 +47,35 @@ describe('execution-clinic-bots', () => {
     expect(getSelectableClinicBots([activeClinicBot, disabledClinicBot, inactiveNestedBot])).toEqual([activeClinicBot])
   })
 
+  it('sorts selectable clinic bots by bot name', () => {
+    const zBot = createClinicBot({
+      _id: 'clinic-bot-2',
+      bot: {
+        ...createClinicBot().bot,
+        _id: 'bot-2',
+        botName: 'Zion',
+      },
+    })
+    const aBot = createClinicBot({
+      _id: 'clinic-bot-3',
+      bot: {
+        ...createClinicBot().bot,
+        _id: 'bot-3',
+        botName: 'Aetna',
+      },
+    })
+    const mBot = createClinicBot({
+      _id: 'clinic-bot-4',
+      bot: {
+        ...createClinicBot().bot,
+        _id: 'bot-4',
+        botName: 'MetLife',
+      },
+    })
+
+    expect(getSelectableClinicBots([zBot, mBot, aBot])).toEqual([aBot, mBot, zBot])
+  })
+
   it('maps the selected clinic bot into the execution bot payload fields', () => {
     expect(mapClinicBotToExecutionBot(createClinicBot())).toEqual({
       clinicBotId: 'clinic-bot-1',

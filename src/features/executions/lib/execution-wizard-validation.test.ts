@@ -47,7 +47,7 @@ describe('getExecutionWizardValidationErrors', () => {
 
     const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
 
-    expect(errors.patients.bot).toBe('validation.required')
+    expect(errors.bot.clinicBotId).toBe('validation.required')
   })
 
   it('shows a dedicated clinic bot error when the selected clinic has no active bots', () => {
@@ -62,7 +62,27 @@ describe('getExecutionWizardValidationErrors', () => {
       hasSelectedClinicWithoutActiveBots: true,
     })
 
-    expect(errors.patients.bot).toBe('validation.noActiveClinicBots')
+    expect(errors.bot.clinicBotId).toBe('validation.noActiveClinicBots')
+  })
+
+  it('validates editable bot fields after a clinic bot is selected', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Downtown Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
+    draft.bot.targetUrl = 'invalid-url'
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
+
+    expect(errors.bot).toMatchObject({
+      botName: 'validation.required',
+      targetUrl: 'validation.validUrl',
+      username: 'validation.required',
+      password: 'validation.required',
+    })
   })
 
   it('requires core imported patient fields before allowing submission', () => {

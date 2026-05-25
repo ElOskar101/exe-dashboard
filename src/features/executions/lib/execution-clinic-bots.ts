@@ -6,7 +6,9 @@ export const isClinicBotSelectable = (clinicBot: ClinicBotRecord) => {
 }
 
 export const getSelectableClinicBots = (clinicBots: ClinicBotRecord[]) => {
-  return clinicBots.filter(isClinicBotSelectable)
+  return clinicBots
+    .filter(isClinicBotSelectable)
+    .sort((leftBot, rightBot) => leftBot.bot.botName.localeCompare(rightBot.bot.botName))
 }
 
 export const mapClinicBotToExecutionBot = (clinicBot: ClinicBotRecord): ExecutionBot => {

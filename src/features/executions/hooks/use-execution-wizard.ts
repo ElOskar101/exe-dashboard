@@ -12,6 +12,7 @@ import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-
 import { mapCcExecutionRowsToPatients } from '../lib/cc-execution-patients'
 import type { ExecutionWizardDraft } from '../model/execution-create'
 import {
+  decryptClinicBotPassword,
   getCcExecution,
   getClinicBots,
   getClinicExecutionDays,
@@ -20,9 +21,9 @@ import {
   type CustomerSearchItem,
 } from '../services/ccc.service'
 
-export type ExecutionWizardStepKey = 'patients' | 'config' | 'review'
+export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
 
-export const executionWizardSteps: ExecutionWizardStepKey[] = ['patients', 'config', 'review']
+export const executionWizardSteps: ExecutionWizardStepKey[] = ['patients', 'bot', 'config', 'review']
 
 const createEmptyBotSelection = (): ExecutionWizardDraft['bot'] => ({
   clinicBotId: '',
@@ -125,6 +126,32 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     },
   })
 
+  const decryptClinicBotPasswordMutation = useMutation({
+    mutationFn: async (clinicBotId: string) => {
+      const response = await decryptClinicBotPassword(clinicBotId)
+
+      return {
+        clinicBotId,
+        password: response.data,
+      }
+    },
+    onSuccess: ({ clinicBotId, password }) => {
+      setDraft((previousDraft) => {
+        if (previousDraft.bot.clinicBotId !== clinicBotId) {
+          return previousDraft
+        }
+
+        return {
+          ...previousDraft,
+          bot: {
+            ...previousDraft.bot,
+            password,
+          },
+        }
+      })
+    },
+  })
+
   const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
   const clinicBotOptions = useMemo(() => getSelectableClinicBots(clinicBotsQuery.data ?? []), [clinicBotsQuery.data])
   const executionDayOptions = (clinicExecutionDaysQuery.data ?? []).filter((day) => !day.trashed)
@@ -146,16 +173,17 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const stepValidity = [
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
-      !validationErrors.patients.bot &&
       !validationErrors.patients.form &&
       validationErrors.patients.rows.every((row) => !hasErrors(row)),
+    !validationErrors.context.client && !validationErrors.context.clinic && !hasErrors(validationErrors.bot),
     !validationErrors.context.createdBy && !validationErrors.context.project && !hasErrors(validationErrors.config),
     true,
   ]
 
   const showErrors = {
     patients: Boolean(attemptedSteps[0]),
-    config: Boolean(attemptedSteps[1]),
+    bot: Boolean(attemptedSteps[1]),
+    config: Boolean(attemptedSteps[2]),
   }
 
   const updateContextField = (field: keyof ExecutionWizardDraft['context'], value: string) => {
@@ -170,6 +198,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
   const updateCustomerSearch = (value: string) => {
     importPatientsMutation.reset()
+    decryptClinicBotPasswordMutation.reset()
     startTransition(() => {
       setDraft((previousDraft) => ({
         ...previousDraft,
@@ -188,6 +217,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
   const clearCustomerSelection = () => {
     importPatientsMutation.reset()
+    decryptClinicBotPasswordMutation.reset()
     setDraft((previousDraft) => ({
       ...previousDraft,
       context: {
@@ -203,6 +233,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
   const selectCustomer = (customer: CustomerSearchItem) => {
     importPatientsMutation.reset()
+    decryptClinicBotPasswordMutation.reset()
     setDraft((previousDraft) => {
       if (previousDraft.context.client === customer._id) {
         return {
@@ -235,6 +266,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
   const selectClinic = (clinicId: string) => {
     importPatientsMutation.reset()
+    decryptClinicBotPasswordMutation.reset()
     const selectedClinic = clinicOptions.find((clinic) => clinic._id === clinicId)
 
     setDraft((previousDraft) => ({
@@ -250,11 +282,36 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const selectClinicBot = (clinicBotId: string) => {
+    decryptClinicBotPasswordMutation.reset()
     const selectedClinicBot = clinicBotOptions.find((clinicBot) => clinicBot._id === clinicBotId)
+
+    if (!selectedClinicBot) {
+      setDraft((previousDraft) => ({
+        ...previousDraft,
+        bot: createEmptyBotSelection(),
+      }))
+
+      return
+    }
 
     setDraft((previousDraft) => ({
       ...previousDraft,
-      bot: selectedClinicBot ? mapClinicBotToExecutionBot(selectedClinicBot) : createEmptyBotSelection(),
+      bot: {
+        ...mapClinicBotToExecutionBot(selectedClinicBot),
+        password: '',
+      },
+    }))
+
+    decryptClinicBotPasswordMutation.mutate(clinicBotId)
+  }
+
+  const updateBotField = (field: keyof ExecutionWizardDraft['bot'], value: string) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      bot: {
+        ...previousDraft.bot,
+        [field]: value,
+      },
     }))
   }
 
@@ -330,18 +387,10 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const canNavigateToStep = (step: number) => {
-    return step <= currentStep || stepValidity.slice(0, step).every(Boolean)
-  }
-
   const handleStepChange = (step: number) => {
     markCurrentStepAttempted()
     setSubmitError(null)
     const nextStep = Math.min(Math.max(step, 0), executionWizardSteps.length - 1)
-
-    if (!canNavigateToStep(nextStep)) {
-      return
-    }
 
     setCurrentStep(nextStep)
   }
@@ -349,10 +398,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const handleNextStep = () => {
     markCurrentStepAttempted()
     setSubmitError(null)
-
-    if (!stepValidity[currentStep]) {
-      return
-    }
 
     setCurrentStep((previousStep) => Math.min(previousStep + 1, executionWizardSteps.length - 1))
   }
@@ -415,6 +460,9 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     clinicBotOptions,
     isLoadingClinicBots: clinicBotsQuery.isFetching,
     clinicBotsError: clinicBotsQuery.error instanceof Error ? clinicBotsQuery.error.message : null,
+    isDecryptingClinicBotPassword: decryptClinicBotPasswordMutation.isPending,
+    decryptClinicBotPasswordError:
+      decryptClinicBotPasswordMutation.error instanceof Error ? decryptClinicBotPasswordMutation.error.message : null,
     hasSelectedClinicWithoutActiveBots,
     executionDayOptions,
     isLoadingExecutionDays: clinicExecutionDaysQuery.isFetching,
@@ -428,6 +476,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     selectCustomer,
     selectClinic,
     selectClinicBot,
+    updateBotField,
     updateWorkers,
     updateRetries,
     selectExecutionDay,

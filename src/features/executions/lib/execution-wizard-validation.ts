@@ -6,10 +6,10 @@ export type StepErrors = {
     createdBy?: string
   }
   patients: {
-    bot?: string
     form?: string
     rows: Array<Partial<Record<keyof ExecutionPatient, string>>>
   }
+  bot: Partial<Record<'clinicBotId' | 'botName' | 'targetUrl' | 'username' | 'password', string>>
   config: {
     workers?: string
     retries?: string
@@ -76,10 +76,37 @@ export const getExecutionWizardValidationErrors = (
     }),
   }
 
-  if (draft.context.clinic.trim() && !draft.bot.clinicBotId.trim()) {
-    patients.bot = options.hasSelectedClinicWithoutActiveBots
+  const bot: StepErrors['bot'] = {}
+  const hasSelectedClinic = draft.context.clinic.trim().length > 0
+  const hasSelectedClinicBot = draft.bot.clinicBotId.trim().length > 0
+  const hasEditableBotValues = [draft.bot.botName, draft.bot.targetUrl, draft.bot.username, draft.bot.password].some(
+    (value) => value.trim().length > 0,
+  )
+
+  if (hasSelectedClinic && !hasSelectedClinicBot) {
+    bot.clinicBotId = options.hasSelectedClinicWithoutActiveBots
       ? t('validation.noActiveClinicBots')
       : t('validation.required')
+  }
+
+  if (hasSelectedClinicBot || hasEditableBotValues) {
+    if (!draft.bot.botName.trim()) {
+      bot.botName = t('validation.required')
+    }
+
+    if (!draft.bot.targetUrl.trim()) {
+      bot.targetUrl = t('validation.required')
+    } else if (!isUrlValid(draft.bot.targetUrl)) {
+      bot.targetUrl = t('validation.validUrl')
+    }
+
+    if (!draft.bot.username.trim()) {
+      bot.username = t('validation.required')
+    }
+
+    if (!draft.bot.password.trim()) {
+      bot.password = t('validation.required')
+    }
   }
 
   const config: StepErrors['config'] = {}
@@ -103,10 +130,10 @@ export const getExecutionWizardValidationErrors = (
   return {
     context,
     patients: {
-      bot: patients.bot,
       form: draft.execution.patients.length === 0 ? t('validation.addPatient') : undefined,
       rows: patients.rows,
     },
+    bot,
     config,
   }
 }
@@ -116,6 +143,16 @@ const isJsonObjectStringValid = (value: string) => {
     const parsed = JSON.parse(value)
 
     return Boolean(parsed) && !Array.isArray(parsed) && typeof parsed === 'object'
+  } catch {
+    return false
+  }
+}
+
+const isUrlValid = (value: string) => {
+  try {
+    const parsedUrl = new URL(value)
+
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'
   } catch {
     return false
   }

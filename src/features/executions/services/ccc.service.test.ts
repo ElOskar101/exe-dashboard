@@ -1,6 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import cccClient from '@/lib/axios'
-import { getCcExecution, getClinicBots, getClinicExecutionDays, getCustomerById, searchCustomers } from './ccc.service'
+import {
+  decryptClinicBotPassword,
+  getCcExecution,
+  getClinicBots,
+  getClinicExecutionDays,
+  getCustomerById,
+  searchCustomers,
+} from './ccc.service'
 
 vi.mock('@/lib/axios', () => ({
   default: {
@@ -107,5 +114,21 @@ describe('ccc.service', () => {
     await getCcExecution('day-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/day-1')
+  })
+
+  it('decryptClinicBotPassword requests the decrypted password as plain text', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: '"decrypted-password"',
+    })
+
+    const response = await decryptClinicBotPassword('clinic-bot-1')
+
+    expect(cccClient.get).toHaveBeenCalledWith(
+      'https://carriers.dentalautomation.ai/api/clinicbots/decrypt/clinic-bot-1',
+      {
+        responseType: 'text',
+      },
+    )
+    expect(response.data).toBe('decrypted-password')
   })
 })

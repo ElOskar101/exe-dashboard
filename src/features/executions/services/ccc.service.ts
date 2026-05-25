@@ -1,6 +1,8 @@
 import cccClient from '@/lib/axios'
 import type { ExecutionVerificationType } from '../model/execution-create'
 
+const CARRIERS_API_BASE_URL = 'https://carriers.dentalautomation.ai/api'
+
 export interface CustomerSearchItem {
   _id: string
   clientName: string
@@ -92,6 +94,27 @@ export const getClinicBots = (clinicId: string) => {
   return cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
 }
 
+export const decryptClinicBotPassword = async (clinicBotId: string) => {
+  const response = await cccClient.get<string>(`${CARRIERS_API_BASE_URL}/clinicbots/decrypt/${clinicBotId}`, {
+    responseType: 'text',
+  })
+
+  return {
+    ...response,
+    data: normalizeDecryptedPassword(response.data),
+  }
+}
+
 export const getCcExecution = (executionId: string) => {
   return cccClient.get<CcExecutionResponse>(`v2/executions/${executionId}`)
+}
+
+const normalizeDecryptedPassword = (value: string) => {
+  try {
+    const parsedValue = JSON.parse(value)
+
+    return typeof parsedValue === 'string' ? parsedValue : value
+  } catch {
+    return value
+  }
 }

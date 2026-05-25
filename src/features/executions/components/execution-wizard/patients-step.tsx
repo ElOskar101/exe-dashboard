@@ -10,7 +10,6 @@ import type { ExecutionPatient, ExecutionWizardDraft } from '../../model/executi
 import { CustomerSearchField } from './customer-search-field'
 
 interface PatientsStepProps {
-  bot: ExecutionWizardDraft['bot']
   context: ExecutionWizardDraft['context']
   execution: ExecutionWizardDraft['execution']['execution']
   executionName: ExecutionWizardDraft['execution']['executionName']
@@ -25,10 +24,6 @@ interface PatientsStepProps {
   clinicOptions: ReturnType<typeof useExecutionWizard>['clinicOptions']
   isLoadingClinics: ReturnType<typeof useExecutionWizard>['isLoadingClinics']
   hasSelectedCustomerWithoutClinics: ReturnType<typeof useExecutionWizard>['hasSelectedCustomerWithoutClinics']
-  clinicBotOptions: ReturnType<typeof useExecutionWizard>['clinicBotOptions']
-  isLoadingClinicBots: ReturnType<typeof useExecutionWizard>['isLoadingClinicBots']
-  clinicBotsError: ReturnType<typeof useExecutionWizard>['clinicBotsError']
-  hasSelectedClinicWithoutActiveBots: ReturnType<typeof useExecutionWizard>['hasSelectedClinicWithoutActiveBots']
   executionDayOptions: ReturnType<typeof useExecutionWizard>['executionDayOptions']
   isLoadingExecutionDays: ReturnType<typeof useExecutionWizard>['isLoadingExecutionDays']
   executionDaysError: ReturnType<typeof useExecutionWizard>['executionDaysError']
@@ -38,7 +33,6 @@ interface PatientsStepProps {
   onCustomerClear: ReturnType<typeof useExecutionWizard>['clearCustomerSelection']
   onCustomerSelect: ReturnType<typeof useExecutionWizard>['selectCustomer']
   onClinicSelect: ReturnType<typeof useExecutionWizard>['selectClinic']
-  onClinicBotSelect: ReturnType<typeof useExecutionWizard>['selectClinicBot']
   onExecutionDaySelect: ReturnType<typeof useExecutionWizard>['selectExecutionDay']
   onImportPatients: ReturnType<typeof useExecutionWizard>['importPatients']
   onRemovePatient: ReturnType<typeof useExecutionWizard>['removePatient']
@@ -57,7 +51,6 @@ const patientErrorLabels: Record<(typeof patientErrorFieldKeys)[number], string>
 }
 
 export function PatientsStep({
-  bot,
   context,
   execution,
   executionName,
@@ -72,10 +65,6 @@ export function PatientsStep({
   clinicOptions,
   isLoadingClinics,
   hasSelectedCustomerWithoutClinics,
-  clinicBotOptions,
-  isLoadingClinicBots,
-  clinicBotsError,
-  hasSelectedClinicWithoutActiveBots,
   executionDayOptions,
   isLoadingExecutionDays,
   executionDaysError,
@@ -85,7 +74,6 @@ export function PatientsStep({
   onCustomerClear,
   onCustomerSelect,
   onClinicSelect,
-  onClinicBotSelect,
   onExecutionDaySelect,
   onImportPatients,
   onRemovePatient,
@@ -96,7 +84,7 @@ export function PatientsStep({
   return (
     <FieldSet>
       <FieldGroup>
-        <FieldGroup className="md:grid md:grid-cols-5">
+        <FieldGroup className="md:grid md:grid-cols-4">
           <Field data-invalid={showErrors && Boolean(contextErrors.client)}>
             <FieldLabel htmlFor="client">{t('fields.client')}</FieldLabel>
             <CustomerSearchField
@@ -145,34 +133,6 @@ export function PatientsStep({
               </SelectContent>
             </Select>
             <FieldError>{showErrors ? contextErrors.clinic : null}</FieldError>
-          </Field>
-
-          <Field data-invalid={showErrors && Boolean(errors.bot)}>
-            <FieldLabel htmlFor="clinicBot">{t('fields.bot')}</FieldLabel>
-            <Select
-              value={bot.clinicBotId}
-              onValueChange={(value) => onClinicBotSelect(value ?? '')}
-              disabled={
-                !context.clinic.trim() ||
-                isLoadingClinicBots ||
-                hasSelectedClinicWithoutActiveBots ||
-                Boolean(clinicBotsError)
-              }
-            >
-              <SelectTrigger id="clinicBot" aria-invalid={showErrors && Boolean(errors.bot)} className="w-full">
-                <SelectValue placeholder={t('placeholders.bot')}>{bot.botName || undefined}</SelectValue>
-              </SelectTrigger>
-              <SelectContent align="start">
-                <SelectGroup>
-                  {clinicBotOptions.map((clinicBot) => (
-                    <SelectItem key={clinicBot._id} value={clinicBot._id}>
-                      {clinicBot.bot.botName}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <FieldError>{showErrors ? errors.bot : null}</FieldError>
           </Field>
 
           <Field>
@@ -225,22 +185,6 @@ export function PatientsStep({
           </Field>
         </FieldGroup>
 
-        {clinicBotsError ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
-            <AlertDescription>{clinicBotsError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {hasSelectedClinicWithoutActiveBots ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
-            <AlertDescription>{t('help.noActiveClinicBots')}</AlertDescription>
-          </Alert>
-        ) : null}
-
         {executionDaysError ? (
           <Alert variant="destructive">
             <IconAlertCircle />
@@ -279,104 +223,112 @@ export function PatientsStep({
           </p>
         ) : null}
 
-        {patients.map((patient, index) =>
-          (() => {
-            const rowErrors = errors.rows[index] ?? {}
-            const missingFields = patientErrorFieldKeys
-              .filter((field) => Boolean(rowErrors[field]))
-              .map((field) => t(patientErrorLabels[field]))
-            const hasRowErrors = hasErrors(rowErrors)
+        {patients.length > 0 ? (
+          <div className="max-h-[34rem] space-y-4 overflow-y-auto pr-1">
+            {patients.map((patient, index) =>
+              (() => {
+                const rowErrors = errors.rows[index] ?? {}
+                const missingFields = patientErrorFieldKeys
+                  .filter((field) => Boolean(rowErrors[field]))
+                  .map((field) => t(patientErrorLabels[field]))
+                const hasRowErrors = hasErrors(rowErrors)
 
-            return (
-              <div
-                key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
-                className="rounded-3xl border border-border/70 bg-muted/20 p-4"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-medium">
-                    {t('sections.patients.patientTitle', {
-                      index: index + 1,
-                    })}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    type="button"
-                    onClick={() => onRemovePatient(index)}
-                    aria-label={t('buttons.removePatient')}
+                return (
+                  <div
+                    key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
+                    className="rounded-3xl border border-border/70 bg-muted/20 p-4"
                   >
-                    <IconTrash data-icon="inline-start" />
-                    {t('buttons.removePatient')}
-                  </Button>
-                </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium">
+                        {t('sections.patients.patientTitle', {
+                          index: index + 1,
+                        })}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        type="button"
+                        onClick={() => onRemovePatient(index)}
+                        aria-label={t('buttons.removePatient')}
+                      >
+                        <IconTrash data-icon="inline-start" />
+                        {t('buttons.removePatient')}
+                      </Button>
+                    </div>
 
-                <dl className="mt-4 grid gap-3 md:grid-cols-3">
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientLastName, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderName, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderLastName, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderDob, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.zipCode, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
-                    <dd className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
-                    <dd className="mt-1 font-medium">{patient.verificationType || emptyValue}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
-                    <dd className="mt-1 break-words font-medium">{getDisplayValue(patient.filenames, emptyValue)}</dd>
-                  </div>
-                </dl>
+                    <dl className="mt-4 grid gap-3 md:grid-cols-3">
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientLastName, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderName, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
+                        <dd className="mt-1 font-medium">
+                          {getDisplayValue(patient.policyHolderLastName, emptyValue)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderDob, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.zipCode, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
+                        <dd className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
+                        <dd className="mt-1 font-medium">{patient.verificationType || emptyValue}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
+                        <dd className="mt-1 break-words font-medium">
+                          {getDisplayValue(patient.filenames, emptyValue)}
+                        </dd>
+                      </div>
+                    </dl>
 
-                {showErrors && hasRowErrors ? (
-                  <Alert variant="destructive" className="mt-4">
-                    <IconAlertCircle />
-                    <AlertTitle>{t('validation.patientDetailsTitle')}</AlertTitle>
-                    <AlertDescription>
-                      {missingFields.length > 0
-                        ? t('validation.patientDetailsDescription', {
-                            fields: missingFields.join(', '),
-                          })
-                        : rowErrors.otherInformation}
-                    </AlertDescription>
-                  </Alert>
-                ) : null}
-              </div>
-            )
-          })(),
-        )}
+                    {showErrors && hasRowErrors ? (
+                      <Alert variant="destructive" className="mt-4">
+                        <IconAlertCircle />
+                        <AlertTitle>{t('validation.patientDetailsTitle')}</AlertTitle>
+                        <AlertDescription>
+                          {missingFields.length > 0
+                            ? t('validation.patientDetailsDescription', {
+                                fields: missingFields.join(', '),
+                              })
+                            : rowErrors.otherInformation}
+                        </AlertDescription>
+                      </Alert>
+                    ) : null}
+                  </div>
+                )
+              })(),
+            )}
+          </div>
+        ) : null}
       </FieldGroup>
     </FieldSet>
   )
