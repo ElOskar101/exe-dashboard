@@ -46,7 +46,7 @@ export function ExecutionLogsCard({
   const isStatusLoading = isLoading && currentStatus == null
 
   return (
-    <Card className="min-h-0 flex-1">
+    <Card className="min-h-0 flex-1 gap-4">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
