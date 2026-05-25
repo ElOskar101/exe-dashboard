@@ -23,6 +23,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
@@ -133,27 +134,21 @@ export function ExecutionsSidebar() {
                   const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                   return (
-                    <SidebarMenuItem
-                      key={execution._id}
-                      className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1"
-                    >
+                    <SidebarMenuItem key={execution._id}>
                       <SidebarMenuButton
-                        className="h-auto min-w-0 items-start py-2 pr-2"
+                        className="h-auto min-w-0 py-2"
                         render={<Link to={`/execution/${execution._id}`} />}
                         isActive={currentExecutionId === execution._id}
                         tooltip={label}
                       >
-                        <span className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                        <span className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+                          <span
+                            aria-label={status}
+                            className={cn('size-2 shrink-0 rounded-full', getStatusDotClassName(status))}
+                          />
                           <span className="truncate">
                             {execution.playwrightProject} {label}
                           </span>
-                          <span
-                            aria-label={status}
-                            className={cn(
-                              'size-2 shrink-0 justify-self-end rounded-full',
-                              getStatusDotClassName(status),
-                            )}
-                          />
                         </span>
                       </SidebarMenuButton>
                       <AlertDialog
@@ -166,17 +161,15 @@ export function ExecutionsSidebar() {
                       >
                         <AlertDialogTrigger
                           render={
-                            <Button
-                              className="opacity-0 transition-opacity group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100"
-                              size="icon-sm"
-                              variant="ghost"
+                            <SidebarMenuAction
+                              className="hover:bg-sidebar-accent/60 right-2 opacity-0 peer-hover/menu-button:opacity-100 hover:opacity-100 aria-expanded:opacity-100"
                               aria-label={t('sidebar.deleteAction', {
                                 execution: label,
                               })}
                               disabled={isDeleting}
                             >
                               <IconTrash />
-                            </Button>
+                            </SidebarMenuAction>
                           }
                         />
                         <AlertDialogContent>

@@ -1,8 +1,10 @@
+import { memo, useMemo, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IconCircleDashed } from '@tabler/icons-react'
+import Anser from 'anser'
 import { cn } from '@/lib/utils'
 import { formatExecutionDateTime } from '../../lib/format-execution-date'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
@@ -14,12 +16,13 @@ interface ExecutionLogListProps {
 
 export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps) {
   const { t } = useTranslation('executions')
+  const visibleLogLines = useMemo(() => logLines.filter(hasVisibleLogMessage), [logLines])
 
-  if (isLoading && logLines.length === 0) {
+  if (isLoading && visibleLogLines.length === 0) {
     return <ExecutionLogListSkeleton />
   }
 
-  if (logLines.length === 0) {
+  if (visibleLogLines.length === 0) {
     return (
       <Item variant="muted">
         <ItemContent>
@@ -35,11 +38,11 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
 
   return (
     <ItemGroup>
-      {logLines.map((line) => (
+      {visibleLogLines.map((line) => (
         <Item key={line.id} variant="outline" size="sm">
           <ItemContent>
             <ItemTitle className="line-clamp-none break-all font-mono">
-              {line.message || t('detail.emptyLine')}
+              <AnsiLogMessage message={line.message} />
             </ItemTitle>
             {line.timestamp ? <ItemDescription>{formatExecutionDateTime(line.timestamp)}</ItemDescription> : null}
           </ItemContent>
@@ -52,6 +55,48 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
       ))}
     </ItemGroup>
   )
+}
+
+function hasVisibleLogMessage(line: ExecutionLogLine) {
+  return Anser.ansiToText(line.message).trim().length > 0
+}
+
+const AnsiLogMessage = memo(function AnsiLogMessage({ message }: { message: string }) {
+  const parts = Anser.ansiToJson(message, { remove_empty: true })
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        const foreground = part.fg_truecolor || part.fg
+        const background = part.bg_truecolor || part.bg
+        const style: CSSProperties = {
+          backgroundColor: background ? `rgb(${background})` : undefined,
+          color: foreground ? `rgb(${foreground})` : undefined,
+          fontStyle: part.decorations.includes('italic') ? 'italic' : undefined,
+          fontWeight: part.decorations.includes('bold') ? 700 : undefined,
+          textDecorationLine: getTextDecorationLine(part.decorations),
+        }
+
+        return (
+          <span key={index} style={style}>
+            {part.content}
+          </span>
+        )
+      })}
+    </>
+  )
+})
+
+function getTextDecorationLine(decorations: string[]): CSSProperties['textDecorationLine'] {
+  const textDecorations = decorations.filter(
+    (decoration) => decoration === 'underline' || decoration === 'strikethrough',
+  )
+
+  if (textDecorations.length === 0) {
+    return undefined
+  }
+
+  return textDecorations.join(' ') as CSSProperties['textDecorationLine']
 }
 
 const LOG_SKELETON_ROWS = [
