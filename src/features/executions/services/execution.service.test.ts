@@ -54,7 +54,7 @@ describe('execution.service', () => {
 
     await getExecutions()
 
-    expect(exeClient.get).toHaveBeenCalledWith('/executions')
+    expect(exeClient.get).toHaveBeenCalledWith('executions')
   })
 
   it('createExecution posts the execution payload', async () => {
@@ -62,7 +62,7 @@ describe('execution.service', () => {
 
     await createExecution(executionPayload)
 
-    expect(exeClient.post).toHaveBeenCalledWith('/executions', executionPayload)
+    expect(exeClient.post).toHaveBeenCalledWith('executions', executionPayload)
   })
 
   it('getExecutionById requests execution details with logs', async () => {
@@ -70,7 +70,7 @@ describe('execution.service', () => {
 
     await getExecutionById('exe-1')
 
-    expect(exeClient.get).toHaveBeenCalledWith('/executions/exe-1')
+    expect(exeClient.get).toHaveBeenCalledWith('executions/exe-1')
   })
 
   it('updateExecution patches the selected execution', async () => {
@@ -78,7 +78,7 @@ describe('execution.service', () => {
 
     await updateExecution('exe-1', { status: 'cancelled' })
 
-    expect(exeClient.patch).toHaveBeenCalledWith('/executions/exe-1', {
+    expect(exeClient.patch).toHaveBeenCalledWith('executions/exe-1', {
       status: 'cancelled',
     })
   })
@@ -90,7 +90,7 @@ describe('execution.service', () => {
 
     await deleteExecution('exe-1')
 
-    expect(exeClient.delete).toHaveBeenCalledWith('/executions/exe-1')
+    expect(exeClient.delete).toHaveBeenCalledWith('executions/exe-1')
   })
 
   it('stopExecution posts to the execution stop endpoint', async () => {
@@ -98,6 +98,6 @@ describe('execution.service', () => {
 
     await stopExecution('exe-1')
 
-    expect(exeClient.post).toHaveBeenCalledWith('/executions/exe-1/stop')
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/stop')
   })
 })

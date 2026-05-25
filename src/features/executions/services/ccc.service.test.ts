@@ -25,7 +25,7 @@ describe('ccc.service', () => {
 
     await searchCustomers('legacy')
 
-    expect(cccClient.get).toHaveBeenCalledWith('/api/v2/customers', {
+    expect(cccClient.get).toHaveBeenCalledWith('v2/customers', {
       params: {
         clientName: 'legacy',
       },
@@ -44,7 +44,7 @@ describe('ccc.service', () => {
 
     await getCustomerById('customer-1')
 
-    expect(cccClient.get).toHaveBeenCalledWith('/api/v2/customers/customer-1')
+    expect(cccClient.get).toHaveBeenCalledWith('v2/customers/customer-1')
   })
 
   it('getClinicExecutionDays requests execution days for the selected clinic', async () => {
@@ -60,7 +60,7 @@ describe('ccc.service', () => {
 
     await getClinicExecutionDays('clinic-1')
 
-    expect(cccClient.get).toHaveBeenCalledWith('/api/v2/executions/clinic-1/days')
+    expect(cccClient.get).toHaveBeenCalledWith('v2/executions/clinic-1/days')
   })
 
   it('getCcExecution requests the selected CC execution', async () => {
@@ -75,6 +75,6 @@ describe('ccc.service', () => {
 
     await getCcExecution('day-1')
 
-    expect(cccClient.get).toHaveBeenCalledWith('/api/v2/executions/day-1')
+    expect(cccClient.get).toHaveBeenCalledWith('v2/executions/day-1')
   })
 })

@@ -50,7 +50,7 @@ export interface CcExecutionResponse {
 }
 
 export const searchCustomers = (clientName: string) => {
-  return cccClient.get<CustomerSearchResponse>('/api/v2/customers', {
+  return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
       clientName,
     },
@@ -58,13 +58,13 @@ export const searchCustomers = (clientName: string) => {
 }
 
 export const getCustomerById = (customerId: string) => {
-  return cccClient.get<CustomerDetailsResponse>(`/api/v2/customers/${customerId}`)
+  return cccClient.get<CustomerDetailsResponse>(`v2/customers/${customerId}`)
 }
 
 export const getClinicExecutionDays = (clinicId: string) => {
-  return cccClient.get<ClinicExecutionDay[]>(`/api/v2/executions/${clinicId}/days`)
+  return cccClient.get<ClinicExecutionDay[]>(`v2/executions/${clinicId}/days`)
 }
 
 export const getCcExecution = (executionId: string) => {
-  return cccClient.get<CcExecutionResponse>(`/api/v2/executions/${executionId}`)
+  return cccClient.get<CcExecutionResponse>(`v2/executions/${executionId}`)
 }

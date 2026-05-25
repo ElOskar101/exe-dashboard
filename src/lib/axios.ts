@@ -1,11 +1,13 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 
+const stripTrailingSlash = (value?: string) => value?.replace(/\/+$/, '')
+
 const cccClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: stripTrailingSlash(import.meta.env.VITE_API_URL),
   adapter: 'fetch',
 })
 export const exeClient = axios.create({
-  baseURL: import.meta.env.VITE_EXE_API_URL,
+  baseURL: stripTrailingSlash(import.meta.env.VITE_EXE_API_URL),
   adapter: 'fetch',
 })
 

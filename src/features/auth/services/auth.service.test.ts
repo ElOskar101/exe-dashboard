@@ -20,6 +20,6 @@ describe('auth.service', () => {
 
     await getUserData()
 
-    expect(cccClient).toHaveBeenCalledWith('/api/users/me')
+    expect(cccClient).toHaveBeenCalledWith('users/me')
   })
 })
