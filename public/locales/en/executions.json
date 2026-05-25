@@ -209,7 +209,7 @@
     "stopping": "Stopping...",
     "stopErrorTitle": "Execution could not be stopped",
     "stopErrorDescription": "The stop request failed. Check whether the execution is still running and try again.",
-    "logsTitle": "Executed commands",
+    "logsTitle": "Execution commands",
     "logsDescription": "Realtime command output for this execution.",
     "emptyLine": "Empty line",
     "noLogsTitle": "Waiting for logs",

@@ -3,14 +3,15 @@ import { createEmptyDraft } from './execution-wizard-draft'
 import { buildExecutionPayload } from './execution-wizard-payload'
 
 describe('buildExecutionPayload', () => {
-  it('builds the new create execution payload shape', () => {
+  it('builds the new create execution payload shape using the selected sheet name for execution', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'client-1'
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Legacy Dental Care'
-    draft.execution.execution = 'Daily eligibility'
+    draft.execution.execution = 'execution-day-id-1'
+    draft.execution.executionName = 'Daily eligibility'
     draft.bot.botName = 'Eligibility Runner'
     draft.bot.url = 'https://carrier.example.com'
     draft.bot.username = 'operator'
@@ -136,5 +137,23 @@ describe('buildExecutionPayload', () => {
     draft.bot.password = 'secret'
 
     expect(buildExecutionPayload(draft, 'user-id-7')).not.toHaveProperty('execution')
+  })
+
+  it('falls back to the raw execution field when no execution name is available', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-id-42'
+    draft.context.clientName = 'Sunshine Dental'
+    draft.context.clinic = 'clinic-id-9'
+    draft.context.clinicName = 'Main Clinic'
+    draft.execution.execution = 'legacy-execution-value'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+
+    expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
+      execution: 'legacy-execution-value',
+    })
   })
 })

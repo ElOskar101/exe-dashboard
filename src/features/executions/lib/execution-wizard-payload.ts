@@ -79,7 +79,7 @@ export const buildExecutionPayload = (
     },
   }
 
-  const execution = draft.execution.execution.trim()
+  const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
 
   if (execution) {
     payload.execution = execution

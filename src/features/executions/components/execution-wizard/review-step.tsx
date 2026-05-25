@@ -39,11 +39,12 @@ const parseJsonObjectString = (value: string): ExecutionMetadata | string => {
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
   const patients = draft.execution.patients
+  const selectedExecution = draft.execution.executionName.trim() || draft.execution.execution.trim()
   const reviewPayload = payload ?? {
     project: draft.context.project.trim(),
     client: draft.context.client.trim(),
     clinic: draft.context.clinic.trim(),
-    ...(draft.execution.execution.trim() ? { execution: draft.execution.execution.trim() } : {}),
+    ...(selectedExecution ? { execution: selectedExecution } : {}),
     botName: draft.bot.botName.trim(),
     meta: {
       bot: {
