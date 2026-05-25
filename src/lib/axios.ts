@@ -19,7 +19,7 @@ const cccClient = axios.create({
   adapter: 'fetch',
 })
 export const exeClient = axios.create({
-  baseURL: stripTrailingSlash(import.meta.env.VITE_EXE_API_URL),
+  baseURL: stripTrailingSlash(APP_CONFIG.exeApiUrl),
   adapter: 'fetch',
 })
 
