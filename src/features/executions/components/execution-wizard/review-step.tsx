@@ -16,6 +16,12 @@ const getDisplayValue = (value: string, emptyValue: string) => {
   return value.trim() || emptyValue
 }
 
+const getPatientFullName = (patient: ExecutionPatient, emptyValue: string) => {
+  const fullName = [patient.patientName.trim(), patient.patientLastName.trim()].filter(Boolean).join(' ')
+
+  return fullName || emptyValue
+}
+
 const parseJsonObjectString = (value: string): ExecutionMetadata | string => {
   try {
     const parsed = JSON.parse(value)
@@ -116,44 +122,35 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               <dt className="text-sm text-muted-foreground">{t('fields.username')}</dt>
               <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.username, emptyValue)}</dd>
             </div>
-            <div className="sm:col-span-2">
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.password')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.password, emptyValue)}</dd>
+            </div>
+            <div>
               <dt className="text-sm text-muted-foreground">{t('fields.url')}</dt>
               <dd className="mt-1 break-all font-medium">{getDisplayValue(draft.bot.url, emptyValue)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.execution')}</dt>
+              <dd className="mt-1 font-medium">
+                {getDisplayValue(draft.execution.executionName || draft.execution.execution, emptyValue)}
+              </dd>
             </div>
           </dl>
         </div>
 
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 max-h-48 overflow-y-auto">
             {patients.map((patient, index) => (
               <div
                 key={`${patient.patientMemberId}-${index}`}
-                className="grid gap-3 rounded-2xl border border-border/70 bg-muted/40 p-3 sm:grid-cols-3"
+                className="grid grid-cols-5 gap-x-2 items-center gap-y-2 rounded-2xl border border-border/70 bg-muted/40 p-3"
               >
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('fields.patientName')}</p>
-                  <p className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('fields.memberId')}</p>
-                  <p className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('fields.patientDob')}</p>
-                  <p className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('fields.relationship')}</p>
-                  <p className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('fields.patientClinic')}</p>
-                  <p className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('fields.verificationType')}</p>
-                  <p className="mt-1 font-medium">{patient.verificationType || emptyValue}</p>
-                </div>
+                <p className="truncate">{getPatientFullName(patient, emptyValue)}</p>
+                <p>{getDisplayValue(patient.patientDob, emptyValue)}</p>
+                <p>{getDisplayValue(patient.patientMemberId, emptyValue)}</p>
+                <p>{getDisplayValue(patient.relationship, emptyValue)}</p>
+                <p>{patient.verificationType || emptyValue}</p>
               </div>
             ))}
           </div>
@@ -169,17 +166,11 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
               <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.retries, emptyValue)}</dd>
             </div>
-            <div className="sm:col-span-2">
-              <dt className="text-sm text-muted-foreground">{t('fields.execution')}</dt>
-              <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.execution.executionName || draft.execution.execution, emptyValue)}
-              </dd>
-            </div>
           </dl>
         </div>
       </div>
 
-      <div className="flex max-h-[calc(100vh-14rem)] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
+      <div className="flex max-h-[calc(100vh-8rem)] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
         <pre className="min-h-0 min-w-0 flex-1 overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-muted/70 p-4 text-xs leading-6">
           {JSON.stringify(reviewPayload, null, 2)}
         </pre>
