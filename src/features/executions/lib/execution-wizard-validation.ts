@@ -21,6 +21,10 @@ interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
 }
 
+const requiredPatientFields: Array<
+  keyof Pick<ExecutionPatient, 'patientName' | 'patientLastName' | 'patientMemberId' | 'patientDob'>
+> = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob']
+
 export const hasErrors = (errors: Record<string, string | undefined>) => {
   return Object.values(errors).some(Boolean)
 }
@@ -79,6 +83,12 @@ export const getExecutionWizardValidationErrors = (
 
   const patients = draft.execution.patients.map((patient) => {
     const rowErrors: StepErrors['patients']['rows'][number] = {}
+
+    requiredPatientFields.forEach((field) => {
+      if (!patient[field].trim()) {
+        rowErrors[field] = t('validation.required')
+      }
+    })
 
     if (!isJsonObjectStringValid(patient.otherInformation)) {
       rowErrors.otherInformation = t('validation.validJsonObject')

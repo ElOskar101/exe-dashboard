@@ -36,4 +36,42 @@ describe('getExecutionWizardValidationErrors', () => {
 
     expect(errors.config.config).toBe('validation.validJsonObject')
   })
+
+  it('requires core imported patient fields before allowing submission', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Downtown Clinic'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+    draft.execution.patients = [
+      {
+        patientName: 'Jane',
+        patientLastName: '',
+        patientMemberId: '',
+        patientDob: '',
+        policyHolderName: '',
+        policyHolderLastName: '',
+        policyHolderDob: '',
+        relationship: '',
+        zipCode: '',
+        clinic: '',
+        verificationType: 'ELG',
+        filenames: '',
+        otherInformation: '{}',
+      },
+    ]
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
+
+    expect(errors.patients.rows[0]).toMatchObject({
+      patientLastName: 'validation.required',
+      patientMemberId: 'validation.required',
+      patientDob: 'validation.required',
+    })
+  })
 })

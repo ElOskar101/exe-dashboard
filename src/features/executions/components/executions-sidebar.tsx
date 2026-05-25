@@ -76,7 +76,7 @@ export function ExecutionsSidebar() {
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
 
   return (
-    <Sidebar collapsible="offcanvas">
+    <Sidebar collapsible="none">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

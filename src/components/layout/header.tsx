@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { UserCard } from '@/features/auth'
 import { useTheme } from '@/hooks/use-theme'
 import { Button } from '@/components/ui/button'
-import { SidebarTrigger } from '@/components/ui/sidebar'
 import { IconBrightnessDown, IconMoon } from '@tabler/icons-react'
 
 const Header: () => JSX.Element = () => {
@@ -14,9 +13,7 @@ const Header: () => JSX.Element = () => {
     <>
       <header className="z-1 w-full border-b border-border">
         <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
-          {/* Logo */}
           <div className="flex items-center gap-2">
-            <SidebarTrigger />
             <a href="/" className="transition-colors">
               <img className="h-8 w-auto object-cover" src="/agent-icon.svg" alt={t('project-name')} />
             </a>

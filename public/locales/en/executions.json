@@ -132,6 +132,8 @@
     "selectVerificationType": "Choose a verification type.",
     "addPatient": "Add at least one patient before continuing.",
     "patientListTitle": "Patient list is incomplete",
+    "patientDetailsTitle": "Patient details are incomplete",
+    "patientDetailsDescription": "Fill the missing imported fields before creating the execution: {{fields}}.",
     "executionDaysTitle": "Execution days could not be loaded",
     "importPatientsTitle": "Patients could not be imported"
   },

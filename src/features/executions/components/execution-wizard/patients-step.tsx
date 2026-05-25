@@ -5,7 +5,7 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/component
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IconAlertCircle, IconDownload, IconLoader2, IconTrash } from '@tabler/icons-react'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
-import type { StepErrors } from '../../lib/execution-wizard-validation'
+import { hasErrors, type StepErrors } from '../../lib/execution-wizard-validation'
 import type { ExecutionPatient, ExecutionWizardDraft } from '../../model/execution-create'
 import { CustomerSearchField } from './customer-search-field'
 
@@ -40,6 +40,15 @@ interface PatientsStepProps {
 }
 
 const getDisplayValue = (value: string, emptyValue: string) => value.trim() || emptyValue
+
+const patientErrorFieldKeys = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob'] as const
+
+const patientErrorLabels: Record<(typeof patientErrorFieldKeys)[number], string> = {
+  patientName: 'fields.patientName',
+  patientLastName: 'fields.patientLastName',
+  patientMemberId: 'fields.memberId',
+  patientDob: 'fields.patientDob',
+}
 
 export function PatientsStep({
   context,
@@ -214,80 +223,104 @@ export function PatientsStep({
           </p>
         ) : null}
 
-        {patients.map((patient, index) => (
-          <div
-            key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
-            className="rounded-3xl border border-border/70 bg-muted/20 p-4"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-medium">
-                {t('sections.patients.patientTitle', {
-                  index: index + 1,
-                })}
-              </p>
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => onRemovePatient(index)}
-                aria-label={t('buttons.removePatient')}
-              >
-                <IconTrash data-icon="inline-start" />
-                {t('buttons.removePatient')}
-              </Button>
-            </div>
+        {patients.map((patient, index) =>
+          (() => {
+            const rowErrors = errors.rows[index] ?? {}
+            const missingFields = patientErrorFieldKeys
+              .filter((field) => Boolean(rowErrors[field]))
+              .map((field) => t(patientErrorLabels[field]))
+            const hasRowErrors = hasErrors(rowErrors)
 
-            <dl className="mt-4 grid gap-3 md:grid-cols-3">
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</dd>
+            return (
+              <div
+                key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
+                className="rounded-3xl border border-border/70 bg-muted/20 p-4"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium">
+                    {t('sections.patients.patientTitle', {
+                      index: index + 1,
+                    })}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    onClick={() => onRemovePatient(index)}
+                    aria-label={t('buttons.removePatient')}
+                  >
+                    <IconTrash data-icon="inline-start" />
+                    {t('buttons.removePatient')}
+                  </Button>
+                </div>
+
+                <dl className="mt-4 grid gap-3 md:grid-cols-3">
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientLastName, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderName, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderLastName, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderDob, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.zipCode, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
+                    <dd className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
+                    <dd className="mt-1 font-medium">{patient.verificationType || emptyValue}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
+                    <dd className="mt-1 break-words font-medium">{getDisplayValue(patient.filenames, emptyValue)}</dd>
+                  </div>
+                </dl>
+
+                {showErrors && hasRowErrors ? (
+                  <Alert variant="destructive" className="mt-4">
+                    <IconAlertCircle />
+                    <AlertTitle>{t('validation.patientDetailsTitle')}</AlertTitle>
+                    <AlertDescription>
+                      {missingFields.length > 0
+                        ? t('validation.patientDetailsDescription', {
+                            fields: missingFields.join(', '),
+                          })
+                        : rowErrors.otherInformation}
+                    </AlertDescription>
+                  </Alert>
+                ) : null}
               </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientLastName, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderName, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderLastName, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderDob, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.zipCode, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
-                <dd className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
-                <dd className="mt-1 font-medium">{patient.verificationType || emptyValue}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
-                <dd className="mt-1 break-words font-medium">{getDisplayValue(patient.filenames, emptyValue)}</dd>
-              </div>
-            </dl>
-          </div>
-        ))}
+            )
+          })(),
+        )}
       </FieldGroup>
     </FieldSet>
   )
