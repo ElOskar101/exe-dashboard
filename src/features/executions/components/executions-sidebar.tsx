@@ -88,7 +88,7 @@ export function ExecutionsSidebar() {
               tooltip={t('sidebar.createExecution')}
             >
               <span>{t('sidebar.createExecution')}</span>
-              <IconPlus />
+              <IconPlus className="ml-auto" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -143,13 +143,16 @@ export function ExecutionsSidebar() {
                         isActive={currentExecutionId === execution._id}
                         tooltip={label}
                       >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span>
+                        <span className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                          <span className="truncate">
                             {execution.playwrightProject} {label}
                           </span>
                           <span
                             aria-label={status}
-                            className={cn('size-2 shrink-0 rounded-full', getStatusDotClassName(status))}
+                            className={cn(
+                              'size-2 shrink-0 justify-self-end rounded-full',
+                              getStatusDotClassName(status),
+                            )}
                           />
                         </span>
                       </SidebarMenuButton>

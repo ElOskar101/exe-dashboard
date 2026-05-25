@@ -1,15 +1,21 @@
 import { useEffect, useMemo } from 'react'
 
 export function useObjectUrl(content: string | undefined, type: string) {
-  const objectUrl = useMemo(() => {
-    return content ? URL.createObjectURL(new Blob([content], { type })) : undefined
+  const objectUrlResult = useMemo(() => {
+    if (!content) return { error: null, url: undefined }
+
+    try {
+      return { error: null, url: URL.createObjectURL(new Blob([content], { type })) }
+    } catch (error) {
+      return { error, url: undefined }
+    }
   }, [content, type])
 
   useEffect(() => {
     return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      if (objectUrlResult.url) URL.revokeObjectURL(objectUrlResult.url)
     }
-  }, [objectUrl])
+  }, [objectUrlResult.url])
 
-  return objectUrl
+  return objectUrlResult
 }

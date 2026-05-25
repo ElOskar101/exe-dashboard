@@ -84,27 +84,27 @@ export function ExecutionLogsCard({
         </div>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col">
-        <Tabs defaultValue={showReport ? 'report' : 'history'} className="min-h-0 flex-1">
+        <Tabs defaultValue="logs" className="min-h-0 flex-1">
           <TabsList variant="line" aria-label={t('detail.contentTabsLabel')}>
-            {showReport ? <TabsTrigger value="report">{t('detail.reportTab')}</TabsTrigger> : null}
-            <TabsTrigger value="history">{t('detail.historyTab')}</TabsTrigger>
+            <TabsTrigger value="logs" disabled={!showReport}>
+              {t('detail.historyTab')}
+            </TabsTrigger>
+            <TabsTrigger value="report">{t('detail.reportTab')}</TabsTrigger>
           </TabsList>
-          {showReport ? (
-            <TabsContent value="report" className="min-h-0">
-              <ExecutionReportPanel
-                executionId={executionId}
-                isError={isReportError}
-                isLoading={isReportLoading}
-                reportHtml={reportHtml}
-              />
-            </TabsContent>
-          ) : null}
-          <TabsContent value="history" className="min-h-0">
-            <ScrollArea className="h-full min-h-96 rounded-2xl border border-border">
+          <TabsContent value="logs" className="min-h-0">
+            <ScrollArea className="h-[calc(100vh-16rem)] min-h-96 rounded-2xl border border-border">
               <div className="p-4">
                 <ExecutionLogList isLoading={isLoading} logLines={logLines} />
               </div>
             </ScrollArea>
+          </TabsContent>
+          <TabsContent value="report" className="min-h-0">
+            <ExecutionReportPanel
+              executionId={executionId}
+              isError={isReportError}
+              isLoading={isReportLoading}
+              reportHtml={reportHtml}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

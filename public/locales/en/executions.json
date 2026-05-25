@@ -225,7 +225,7 @@
     "logsDescription": "Realtime command output for this execution.",
     "contentTabsLabel": "Execution results",
     "reportTab": "Report",
-    "historyTab": "History",
+    "historyTab": "Logs",
     "reportLoading": "Loading execution report",
     "reportFrameTitle": "Execution report",
     "reportErrorTitle": "Execution report could not be loaded",

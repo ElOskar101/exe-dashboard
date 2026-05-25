@@ -71,14 +71,14 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       ) : null}
 
       <ExecutionLogsCard
-        key={showReport ? 'report' : 'history'}
+        key={showReport ? 'finished' : 'unfinished'}
         canStopExecution={canStopExecution}
         connectionState={realtimeLogs.connectionState}
         currentStatus={currentStatus}
         executionId={reportExecutionId}
         isLoading={executionQuery.isLoading}
         isReportError={reportQuery.isError}
-        isReportLoading={reportQuery.isLoading}
+        isReportLoading={!showReport || reportQuery.isLoading}
         isStopping={stopMutation.isPending}
         logLines={logLines}
         onStopExecution={() => stopMutation.mutate(executionId)}
