@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { IconAlertCircle, IconLoader2, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
+import { IconAlertCircle, IconLoader2, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -85,8 +85,8 @@ export function ExecutionsSidebar() {
               isActive={!currentExecutionId}
               tooltip={t('sidebar.createExecution')}
             >
-              <IconPlayerPlay />
               <span>{t('sidebar.createExecution')}</span>
+              <IconPlus />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
