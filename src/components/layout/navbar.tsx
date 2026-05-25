@@ -1,18 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  IconBuildingSkyscraper,
-  IconHome,
-  IconListDetails,
-  IconUsers,
-  type Icon,
-} from '@tabler/icons-react'
+import { IconBuildingSkyscraper, IconHome, IconListDetails, IconUsers, type Icon } from '@tabler/icons-react'
 
-type AvailableIconName =
-  | 'IconBuildingSkyscraper'
-  | 'IconHome'
-  | 'IconUsers'
-  | 'IconListDetails'
+type AvailableIconName = 'IconBuildingSkyscraper' | 'IconHome' | 'IconUsers' | 'IconListDetails'
 
 const routeIcons: Record<AvailableIconName, Icon> = {
   IconBuildingSkyscraper,
@@ -33,10 +23,7 @@ export default function Navbar() {
   return (
     <nav className="w-full border-b shadow-sm">
       <div className="container mx-auto flex items-center justify-between py-3">
-        <button
-          onClick={() => setOpen(!open)}
-          className="rounded p-2 transition-colors md:hidden"
-        >
+        <button onClick={() => setOpen(!open)} className="rounded p-2 transition-colors md:hidden">
           ☰
         </button>
 

@@ -11,16 +11,13 @@ const Header: () => JSX.Element = () => {
 
   return (
     <>
-      <header className="z-1 w-full border-b border-sidebar shadow-sm">
-        <nav className="container mx-auto py-2 flex items-center justify-between">
-          {/* Logo */}
-          <a href="/" className="transition-colors">
-            <img
-              className="w-auto h-8 object-cover"
-              src="/agent-icon.svg"
-              alt={t('project-name')}
-            />
-          </a>
+      <header className="z-1 w-full border-b border-border">
+        <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
+          <div className="flex items-center gap-2">
+            <a href="/" className="transition-colors">
+              <img className="h-8 w-auto object-cover" src="/agent-icon.svg" alt={t('project-name')} />
+            </a>
+          </div>
 
           <div className="ms-auto flex items-center gap-x-2">
             <Button size="icon-sm" variant="ghost" onClick={handleTheme}>

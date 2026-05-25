@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react'
-import { AuthContext } from '../context/context'
-import { useTranslation } from 'react-i18next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { IconLogout2 } from '@tabler/icons-react'
+import { useContext, useState, type FocusEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { IconChevronDown, IconLogout2 } from '@tabler/icons-react'
+import { AuthContext } from '../contexts/context'
 
 function getInitials(name: string) {
   return (
@@ -31,71 +31,60 @@ function UserCard() {
         role: '',
       }
 
-  const handleOpen = (to: boolean) => () => setIsOpen(() => to)
+  const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsOpen(false)
+    }
+  }
 
   return (
-    <>
-      <a
-        className="flex aling-center gap-x-2 cursor-pointer relative"
-        onClick={handleOpen(true)}
-        onBlur={handleOpen(false)}
-        tabIndex={0}
+    <div className="relative" onBlurCapture={handleBlur}>
+      <button
+        type="button"
+        className="flex items-center gap-x-2 rounded-3xl px-2 py-1.5 text-left transition-colors hover:bg-muted"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
       >
         {user ? (
           <>
             <Avatar>
               {user.urlImage && (
                 <AvatarImage
-                  src={
-                    import.meta.env.VITE_PICTURES_URL +
-                    '/pictures/' +
-                    user.urlImage
-                  }
+                  src={import.meta.env.VITE_PICTURES_URL + '/pictures/' + user.urlImage}
                   alt={user.username || ''}
                 />
               )}
-              <AvatarFallback>
-                {getInitials(user.username || '')}
-              </AvatarFallback>
+              <AvatarFallback>{getInitials(user.username || '')}</AvatarFallback>
             </Avatar>
-            <div className="text-md leading-none">
+            <div className="flex flex-col leading-none text-xs">
               {userData?.nameAndUser}
-              <div className="text-sm">{userData?.role}</div>
+              <span className="text-muted-foreground">{userData?.role}</span>
             </div>
+            <IconChevronDown className="size-4 text-muted-foreground" />
           </>
         ) : (
           <>
             <Avatar>
-              <AvatarFallback className="animate-pulse">
-                {getInitials('loading...')}
-              </AvatarFallback>
+              <AvatarFallback className="animate-pulse">{getInitials('loading...')}</AvatarFallback>
             </Avatar>
-            <div className="text-md leading-none">
+            <div className="leading-none">
               <div className="mb-1 h-4 w-20 animate-pulse rounded"></div>
               <div className="h-4 w-24 animate-pulse rounded text-sm"></div>
             </div>
           </>
         )}
-        <div
-          data-open={isOpen ? 'true' : undefined}
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 shadow-lg overflow-hidden
-            origin-top-right max-h-0 transition-all duration-150
-             data-open:max-h-screen w-full"
-        >
-          <div>
-            <Button
-              className="w-full justify-start"
-              size="sm"
-              variant="outline"
-              onClick={logout}
-            >
-              <IconLogout2 data-icon="inline-start" />
-              {t('logout')}
-            </Button>
-          </div>
+      </button>
+
+      {user && isOpen ? (
+        <div className="absolute right-0 z-20 mt-2 min-w-56 overflow-hidden rounded-3xl border border-border/70 bg-popover p-2 shadow-lg">
+          <Button type="button" variant="ghost" className="w-full justify-start" onClick={logout}>
+            <IconLogout2 data-icon="inline-start" />
+            {t('logout')}
+          </Button>
         </div>
-      </a>
-    </>
+      ) : null}
+    </div>
   )
 }
 

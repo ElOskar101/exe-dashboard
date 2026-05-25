@@ -3,11 +3,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from '@/features/auth'
 import Layout from '@/components/layout/layout'
 
-const Home = lazy(() => import('@/features/home/pages/home'))
+const ExecutionsPage = lazy(() => import('@/features/executions/pages/executions-page'))
+const ExecutionDetailPage = lazy(() => import('@/features/executions/pages/execution-detail-page'))
 const NotFound = lazy(() => import('@/pages/not-found.tsx'))
-const UnderConstruction = lazy(
-  () => import('@/features/auth/pages/under-construction'),
-)
+const UnderConstruction = lazy(() => import('@/features/auth/pages/under-construction'))
 
 export const AppRouter = () => {
   return (
@@ -24,7 +23,8 @@ export const AppRouter = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Home />} />
+            <Route index element={<ExecutionsPage />} />
+            <Route path="execution/:id" element={<ExecutionDetailPage />} />
           </Route>
         </Routes>
       </Suspense>

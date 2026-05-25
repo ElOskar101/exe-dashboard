@@ -1,0 +1,227 @@
+{
+  "page": {
+    "title": "Create execution",
+    "description": "Build the POST /executions payload step by step and submit it when everything is ready."
+  },
+  "steps": {
+    "stepCounter": "Step {{current}} of {{total}}",
+    "complete": "Complete",
+    "inProgress": "In progress",
+    "upNext": "Up next",
+    "bot": {
+      "title": "Bot",
+      "description": "Capture the execution context, bot credentials, and endpoint for this execution."
+    },
+    "patients": {
+      "title": "Patients",
+      "description": "Add one or more patients to the execution payload."
+    },
+    "config": {
+      "title": "Execution config",
+      "description": "Choose the runtime settings that complete the payload."
+    },
+    "review": {
+      "title": "Review & submit",
+      "description": "Confirm the payload preview before posting it to the API."
+    }
+  },
+  "sections": {
+    "bot": {
+      "legend": "Bot details",
+      "description": "These values are submitted directly inside the bot block."
+    },
+    "patients": {
+      "legend": "Patients",
+      "description": "Import patients from a selected CC execution day.",
+      "patientTitle": "Patient {{index}}",
+      "patientDescription": "Every patient row becomes one item in execution.patients."
+    },
+    "config": {
+      "legend": "Execution settings",
+      "description": "These fields complete the execution and config sections of the request body.",
+      "modeDescription": "Choose how this execution should run.",
+      "verificationDescription": "Select the verification type to send to the API.",
+      "flagsLegend": "Config flags",
+      "flagsDescription": "Enable only the options needed for this run.",
+      "inNetworkDescription": "Sets config.in-network to true when this execution should stay in network.",
+      "shortFormDescription": "Sets config.shortForm to true when the short form should be used.",
+      "claimsFormDescription": "Sets config.claimsForm to true when the claims form should be included."
+    }
+  },
+  "fields": {
+    "project": "Project",
+    "client": "Client",
+    "clinic": "Clinic",
+    "botName": "Bot name",
+    "url": "Portal URL",
+    "username": "Username",
+    "password": "Password",
+    "botOtherInformation": "Bot other information",
+    "patientName": "Patient name",
+    "patientLastName": "Patient last name",
+    "memberId": "Member ID",
+    "patientDob": "Patient date of birth",
+    "policyHolderName": "Policy holder name",
+    "policyHolderLastName": "Policy holder last name",
+    "policyHolderDob": "Policy holder date of birth",
+    "relationship": "Relationship",
+    "zipCode": "ZIP code",
+    "patientClinic": "Patient clinic",
+    "filenames": "Filenames",
+    "patientOtherInformation": "Patient other information",
+    "otherConfig": "Other config",
+    "execution": "Execution",
+    "numberOfThreads": "Number of threads",
+    "workers": "Workers",
+    "retries": "Retries",
+    "mode": "Mode",
+    "verificationType": "Verification type",
+    "inNetwork": "In network",
+    "shortForm": "Short form",
+    "claimsForm": "Claims form"
+  },
+  "placeholders": {
+    "project": "liberty",
+    "client": "Search clients by name",
+    "clinic": "Select a clinic",
+    "botName": "Eligibility Runner",
+    "url": "https://carrier.example.com",
+    "username": "qa.operator",
+    "password": "Enter the bot password",
+    "patientName": "Jane",
+    "patientLastName": "Doe",
+    "memberId": "123456789",
+    "policyHolderName": "Jane",
+    "policyHolderLastName": "Doe",
+    "relationship": "self",
+    "zipCode": "90001",
+    "patientClinic": "Downtown Clinic",
+    "filenames": "jane-doe.pdf",
+    "numberOfThreads": "4",
+    "execution": "Select an execution day",
+    "workers": "2",
+    "retries": "1"
+  },
+  "options": {
+    "modeParallel": "Parallel",
+    "modeStandard": "Standard",
+    "verificationElg": "ELG",
+    "verificationFbd": "FBD"
+  },
+  "buttons": {
+    "back": "Back",
+    "next": "Next",
+    "submit": "Create execution",
+    "submitting": "Creating execution...",
+    "addPatient": "Add patient",
+    "getPatients": "Get patients",
+    "gettingPatients": "Getting patients...",
+    "removePatient": "Remove patient",
+    "startOver": "Create another execution"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "customerHasNoClinics": "The selected client has no clinics available.",
+    "validUrl": "Enter a valid URL.",
+    "validDate": "Enter a valid date.",
+    "validJsonObject": "Enter a valid JSON object.",
+    "positiveNumber": "Enter a whole number greater than zero.",
+    "nonNegativeNumber": "Enter a whole number of zero or greater.",
+    "userRequired": "Wait for the signed-in user to load before submitting.",
+    "selectMode": "Choose an execution mode.",
+    "selectVerificationType": "Choose a verification type.",
+    "addPatient": "Add at least one patient before continuing.",
+    "patientListTitle": "Patient list is incomplete",
+    "patientDetailsTitle": "Patient details are incomplete",
+    "patientDetailsDescription": "Fill the missing imported fields before creating the execution: {{fields}}.",
+    "executionDaysTitle": "Execution days could not be loaded",
+    "importPatientsTitle": "Patients could not be imported"
+  },
+  "help": {
+    "customerMinCharacters": "Type at least 2 characters to search for a client.",
+    "searchingCustomers": "Searching clients...",
+    "noCustomersFound": "No clients matched your search.",
+    "selected": "Selected",
+    "selectClientFirst": "Select a client to load its clinics.",
+    "loadingClinics": "Loading clinics for the selected client...",
+    "loadClinicsError": "The selected client's clinics could not be loaded.",
+    "selectClinic": "Choose one of the clinics available for this client.",
+    "noImportedPatients": "Select an execution day and get patients to continue.",
+    "importedPatients": "Imported patients: {{count}}"
+  },
+  "review": {
+    "botTitle": "Bot payload",
+    "patientsTitle": "Patient payload",
+    "configTitle": "Execution payload",
+    "payloadTitle": "Payload preview",
+    "payloadDescription": "This is the exact body the wizard will send to POST /executions.",
+    "memberIdLabel": "Member ID: {{value}}",
+    "dateOfBirthLabel": "Date of birth: {{value}}",
+    "flagsTitle": "Enabled flags",
+    "emptyValue": "Not filled",
+    "noFlags": "No flags enabled",
+    "noPatients": "No patients added yet."
+  },
+  "submit": {
+    "errorTitle": "Execution could not be created",
+    "errorDescription": "The request failed. Review the payload and try again."
+  },
+  "success": {
+    "title": "Execution created",
+    "description": "The execution was posted successfully and the response is ready to review.",
+    "alertTitle": "Submission complete",
+    "alertDescription": "You can start another execution right away without leaving this page.",
+    "executionId": "Execution ID",
+    "status": "Status",
+    "createdAt": "Created at",
+    "jobId": "Job ID"
+  },
+  "sidebar": {
+    "title": "Executions",
+    "createExecution": "Create execution",
+    "loadErrorTitle": "Executions could not be loaded",
+    "loadErrorDescription": "Try again to refresh the executions list.",
+    "retry": "Retry",
+    "empty": "No executions yet.",
+    "deleteAction": "Delete {{execution}}",
+    "deleteTitle": "Delete execution?",
+    "deleteDescription": "This deletes {{execution}} when it is not running.",
+    "cancelDelete": "Cancel",
+    "confirmDelete": "Delete",
+    "deleting": "Deleting..."
+  },
+  "detail": {
+    "title": "Execution logs",
+    "missingIdTitle": "Execution ID is required",
+    "statusUnknown": "Unknown",
+    "loadErrorTitle": "Execution details could not be loaded",
+    "loadErrorDescription": "The realtime log connection is still active, so logs will appear here if the worker sends them.",
+    "debugButton": "Debug",
+    "debugTitle": "Execution debug details",
+    "debugDescription": "Inspect the raw execution payload and the current client-side runtime snapshot for this execution.",
+    "debugEmptyValue": "None",
+    "rawExecutionTitle": "Raw execution JSON",
+    "snapshotTitle": "Client runtime snapshot",
+    "snapshotDescription": "Includes the latest status, websocket state, and log buffering details known by the page.",
+    "debugFields": {
+      "status": "Status",
+      "connection": "Realtime connection",
+      "logLines": "Loaded log lines",
+      "partialChunk": "Buffered partial chunk"
+    },
+    "stopExecution": "Stop execution",
+    "stopping": "Stopping...",
+    "stopErrorTitle": "Execution could not be stopped",
+    "stopErrorDescription": "The stop request failed. Check whether the execution is still running and try again.",
+    "logsTitle": "Execution commands",
+    "logsDescription": "Realtime command output for this execution.",
+    "emptyLine": "Empty line",
+    "noLogsTitle": "Waiting for logs",
+    "noLogsDescription": "Command output will appear here as soon as it is available.",
+    "connection": {
+      "connecting": "Connecting",
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
+  }
+}
