@@ -82,10 +82,6 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.project, emptyValue)}</dd>
-            </div>
-            <div>
               <dt className="text-sm text-muted-foreground">{t('fields.client')}</dt>
               <dd className="mt-1 font-medium">{getDisplayValue(draft.context.clientName, emptyValue)}</dd>
             </div>
@@ -98,12 +94,12 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.botName, emptyValue)}</dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.username')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.username, emptyValue)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.password')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.password, emptyValue)}</dd>
+              <dt className="text-sm text-muted-foreground">
+                {t('fields.username')} / {t('fields.password')}
+              </dt>
+              <dd className="mt-1 font-medium">
+                {getDisplayValue(draft.bot.username, emptyValue)} / {getDisplayValue(draft.bot.password, emptyValue)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.url')}</dt>
@@ -142,7 +138,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         </div>
 
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-          <dl className="grid gap-3 sm:grid-cols-2">
+          <dl className="grid gap-3 sm:grid-cols-3">
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.workers')}</dt>
               <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.workers, emptyValue)}</dd>
@@ -150,6 +146,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
               <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.retries, emptyValue)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
+              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.project, emptyValue)}</dd>
             </div>
           </dl>
         </div>
