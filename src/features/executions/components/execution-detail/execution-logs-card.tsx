@@ -89,8 +89,8 @@ export function ExecutionLogsCard({
               {t('detail.reportTab')}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="logs" className="min-h-0">
-            <ScrollArea className="h-[calc(100vh-16rem)] min-h-96 rounded-2xl border border-border">
+          <TabsContent value="logs" className="min-h-0 ">
+            <ScrollArea className="h-[calc(100vh-16rem)] bg-background min-h-96 rounded-2xl border border-border">
               <div className="p-4">
                 <ExecutionLogList isLoading={isLoading} logLines={logLines} />
               </div>
