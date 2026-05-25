@@ -54,6 +54,21 @@ describe('ccc.service', () => {
     expect(cccClient.get).toHaveBeenCalledWith('v2/customers/customer-1')
   })
 
+  it('getCustomerById falls back to an empty clinic list when the API shape is invalid', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: {
+        _id: 'customer-1',
+        clientName: 'Legacy Dental Care',
+        isActive: true,
+        clinic: null,
+      },
+    })
+
+    const response = await getCustomerById('customer-1')
+
+    expect(response.data.clinic).toEqual([])
+  })
+
   it('getClinicExecutionDays requests execution days for the selected clinic', async () => {
     vi.mocked(cccClient.get).mockResolvedValueOnce({
       data: [
@@ -68,6 +83,18 @@ describe('ccc.service', () => {
     await getClinicExecutionDays('clinic-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/clinic-1/days')
+  })
+
+  it('getClinicExecutionDays ignores invalid execution day payloads', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: {
+        _id: 'day-1',
+      },
+    })
+
+    const response = await getClinicExecutionDays('clinic-1')
+
+    expect(response.data).toEqual([])
   })
 
   it('getClinicBots requests clinic bots for the selected clinic', async () => {
@@ -99,6 +126,18 @@ describe('ccc.service', () => {
     await getClinicBots('clinic-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/clinics/clinic-1/clinic-bots')
+  })
+
+  it('getClinicBots ignores invalid clinic bot payloads', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: {
+        _id: 'clinic-bot-1',
+      },
+    })
+
+    const response = await getClinicBots('clinic-1')
+
+    expect(response.data).toEqual([])
   })
 
   it('getCcExecution requests the selected CC execution', async () => {
