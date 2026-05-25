@@ -1,4 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
+import { APP_CONFIG } from '@/app.config'
 
 export const stripTrailingSlash = (value?: string) => value?.replace(/\/+$/, '')
 
@@ -14,7 +15,7 @@ export const ensurePathSuffix = (value: string | undefined, suffix: string) => {
 }
 
 const cccClient = axios.create({
-  baseURL: ensurePathSuffix(import.meta.env.VITE_API_URL, '/api'),
+  baseURL: ensurePathSuffix(APP_CONFIG.cccApiUrl, '/api'),
   adapter: 'fetch',
 })
 export const exeClient = axios.create({

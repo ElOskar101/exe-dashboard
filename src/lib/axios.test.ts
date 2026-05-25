@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ensurePathSuffix, stripTrailingSlash } from './axios'
+import cccClient, { ensurePathSuffix, stripTrailingSlash } from './axios'
 
 describe('axios URL helpers', () => {
   it('strips trailing slashes from configured URLs', () => {
@@ -16,5 +16,9 @@ describe('axios URL helpers', () => {
     expect(ensurePathSuffix('https://carrier.dentalautomation.ai/api', '/api')).toBe(
       'https://carrier.dentalautomation.ai/api',
     )
+  })
+
+  it('uses the configured dev Carrier API URL for the CCC client', () => {
+    expect(cccClient.defaults.baseURL).toBe('https://dev-carrier.dentalautomation.ai/api')
   })
 })
