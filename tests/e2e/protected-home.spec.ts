@@ -74,6 +74,40 @@ async function stubProtectedRouteDependencies(page: Page) {
     })
   })
 
+  await page.route('**/api/v2/clinics/**/clinic-bots', async (route) => {
+    await route.fulfill({
+      json: [
+        {
+          _id: 'clinic-bot-1',
+          status: {
+            _id: 'clinic-bot-status-1',
+            description: 'Active',
+          },
+          username: 'qa.operator',
+          password: 'encrypted-secret',
+          bot: {
+            _id: 'bot-1',
+            botName: 'Eligibility Runner',
+            isActive: true,
+            status: {
+              _id: 'bot-status-1',
+              description: 'Developed',
+            },
+            type: 'ELG',
+            urlLogin: 'https://carrier.example.com',
+          },
+        },
+      ],
+    })
+  })
+
+  await page.route('**/api/clinicbots/decrypt/**', async (route) => {
+    await route.fulfill({
+      body: '"super-secret"',
+      contentType: 'text/plain',
+    })
+  })
+
   await page.route('**/api/v2/executions/**', async (route) => {
     const url = new URL(route.request().url())
 
@@ -174,16 +208,23 @@ async function importPatientsFromCc(page: Page) {
 async function completeBotStep(
   page: Page,
   {
+    clinicBotName = 'Eligibility Runner',
     botName = 'Eligibility Runner',
     portalUrl = 'https://carrier.example.com',
     username = 'qa.operator',
     password = 'super-secret',
   } = {},
 ) {
+  const passwordInput = page.getByRole('textbox', { name: 'Password' })
+
+  await page.getByRole('combobox', { name: 'Select bot' }).click()
+  await page.getByRole('option', { name: clinicBotName }).click()
+  await expect(passwordInput).toBeEnabled()
+  await expect(passwordInput).toHaveValue('super-secret')
   await page.getByLabel('Bot name').fill(botName)
   await page.getByLabel('Portal URL').fill(portalUrl)
   await page.getByLabel('Username').fill(username)
-  await page.getByLabel('Password').fill(password)
+  await passwordInput.fill(password)
   await page.getByRole('button', { name: 'Next' }).click()
 }
 
@@ -216,7 +257,9 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL('/')
     await expect(page.getByRole('main').getByText('Create execution')).toBeVisible()
     await expect(
-      page.getByText('Build the POST /executions payload step by step and submit it when everything is ready.'),
+      page.getByText(
+        'Import patients, choose the clinic bot details, configure the run, and submit when everything is ready.',
+      ),
     ).toBeVisible()
   })
 
@@ -236,19 +279,19 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.getByRole('button', { name: 'Get patients' })).toBeVisible()
+    await expect(page.getByText('Select a client and clinic in the patients step before choosing a bot.')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
     await expect(page.getByText('This field is required.').first()).toBeVisible()
-    await expect(page.getByLabel('Bot name')).toBeVisible()
+    await expect(page.getByLabel('Client')).toBeVisible()
 
-    await page.getByLabel('Bot name').fill('Eligibility Runner')
-    await page.getByLabel('Portal URL').fill('https://carrier.example.com')
-    await page.getByLabel('Username').fill('qa.operator')
-    await page.getByLabel('Password').fill('super-secret')
+    await selectCustomerAndClinic(page)
+    await importPatientsFromCc(page)
     await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByText('Select a clinic bot to load its default execution settings.')).toBeVisible()
 
-    await expect(page.getByText('Select an execution day and get patients to continue.')).toBeVisible()
+    await completeBotStep(page)
+    await expect(page.getByLabel('Workers')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
 
@@ -326,10 +369,10 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
-    await completeBotStep(page)
     await selectCustomerAndClinic(page)
     await importPatientsFromCc(page)
     await page.getByRole('button', { name: 'Next' }).click()
+    await completeBotStep(page)
 
     await page.getByLabel('Workers').fill('4')
     await page.getByLabel('Retries').fill('2')
@@ -428,15 +471,15 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
+    await selectCustomerAndClinic(page)
+    await importPatientsFromCc(page)
+    await page.getByRole('button', { name: 'Next' }).click()
     await completeBotStep(page, {
       botName: 'Retry Bot',
       portalUrl: 'https://retry.example.com',
       username: 'retry.user',
       password: 'retry-secret',
     })
-    await selectCustomerAndClinic(page)
-    await importPatientsFromCc(page)
-    await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Workers').fill('2')
     await page.getByRole('button', { name: 'Next' }).click()
