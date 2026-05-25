@@ -345,7 +345,7 @@ test.describe('protected executions route', () => {
       createdBy: 'e2e-user',
       client: 'customer-1',
       clinic: 'clinic-1',
-      execution: 'day-1',
+      execution: '2026-04-27',
       botName: 'Eligibility Runner',
       meta: {
         bot: {
