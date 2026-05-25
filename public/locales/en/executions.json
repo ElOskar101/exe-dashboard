@@ -157,7 +157,8 @@
     "dateOfBirthLabel": "Date of birth: {{value}}",
     "flagsTitle": "Enabled flags",
     "emptyValue": "Not filled",
-    "noFlags": "No flags enabled"
+    "noFlags": "No flags enabled",
+    "noPatients": "No patients added yet."
   },
   "submit": {
     "errorTitle": "Execution could not be created",
@@ -189,6 +190,7 @@
   },
   "detail": {
     "title": "Execution logs",
+    "missingIdTitle": "Execution ID is required",
     "statusUnknown": "Unknown",
     "loadErrorTitle": "Execution details could not be loaded",
     "loadErrorDescription": "The realtime log connection is still active, so logs will appear here if the worker sends them.",

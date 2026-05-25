@@ -74,6 +74,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
 }
 
 export default function ExecutionDetailPage() {
+  const { t } = useTranslation('executions')
   const { id } = useParams()
 
   if (!id) {
@@ -81,7 +82,7 @@ export default function ExecutionDetailPage() {
       <div className="py-6">
         <Alert>
           <IconAlertCircle />
-          <AlertTitle>Execution id is required</AlertTitle>
+          <AlertTitle>{t('detail.missingIdTitle')}</AlertTitle>
         </Alert>
       </div>
     )

@@ -131,7 +131,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               ))
             ) : (
               <div className="rounded-2xl border border-border/70 bg-muted/40 p-3">
-                <p className="font-medium text-muted-foreground">No patients got</p>
+                <p className="font-medium text-muted-foreground">{t('review.noPatients')}</p>
               </div>
             )}
           </div>

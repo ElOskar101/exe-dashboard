@@ -1,6 +1,9 @@
 import { EXECUTION_STATUSES, type ExecutionStatus, type IExecution } from '../model/execution.interface'
 
 const executionStatusSet = new Set<string>(EXECUTION_STATUSES)
+const legacyExecutionStatusMap: Record<string, ExecutionStatus> = {
+  process: 'running',
+}
 
 export const isExecutionStatus = (status: string): status is ExecutionStatus => {
   return executionStatusSet.has(status)
@@ -12,6 +15,10 @@ export const getExecutionLabel = (execution: IExecution) => {
 
 export const normalizeExecutionStatus = (status?: string | null): ExecutionStatus => {
   const normalizedStatus = status?.toLowerCase()
+
+  if (normalizedStatus && normalizedStatus in legacyExecutionStatusMap) {
+    return legacyExecutionStatusMap[normalizedStatus]
+  }
 
   return normalizedStatus && isExecutionStatus(normalizedStatus) ? normalizedStatus : 'unknown'
 }
