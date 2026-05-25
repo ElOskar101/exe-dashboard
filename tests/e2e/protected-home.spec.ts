@@ -444,7 +444,7 @@ test.describe('protected executions route', () => {
 
     await expect(page.getByText('Execution API is unavailable.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Create execution' })).toBeVisible()
-    await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('Jane Doe', { exact: true }).first()).toBeVisible()
     await expect(page.getByText('"workers": 2')).toBeVisible()
   })
 })
