@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
 import { IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
@@ -18,7 +19,6 @@ interface ExecutionLogsCardProps {
   isStopping: boolean
   logLines: ExecutionLogLine[]
   onStopExecution: () => void
-  partial: string
   rawExecutionJson: string
 }
 
@@ -30,10 +30,10 @@ export function ExecutionLogsCard({
   isStopping,
   logLines,
   onStopExecution,
-  partial,
   rawExecutionJson,
 }: ExecutionLogsCardProps) {
   const { t } = useTranslation('executions')
+  const isStatusLoading = isLoading && currentStatus == null
 
   return (
     <Card className="min-h-0 flex-1">
@@ -43,15 +43,19 @@ export function ExecutionLogsCard({
             <CardTitle className="flex items-center gap-2">
               <IconTerminal2 />
               {t('detail.logsTitle')}
-              <Badge variant={getStatusBadgeVariant(currentStatus)}>{currentStatus ?? t('detail.statusUnknown')}</Badge>
+              {isStatusLoading ? (
+                <Skeleton aria-hidden="true" className="h-6 w-24 rounded-full" />
+              ) : (
+                <Badge variant={getStatusBadgeVariant(currentStatus)}>
+                  {currentStatus ?? t('detail.statusUnknown')}
+                </Badge>
+              )}
             </CardTitle>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ExecutionDebugSheet
               connectionState={connectionState}
               currentStatus={currentStatus}
-              logLineCount={logLines.length}
-              partial={partial}
               rawExecutionJson={rawExecutionJson}
             />
             {canStopExecution ? (

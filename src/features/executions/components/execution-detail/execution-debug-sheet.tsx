@@ -10,18 +10,10 @@ import { getConnectionBadgeVariant, getStatusBadgeVariant } from './execution-de
 interface ExecutionDebugSheetProps {
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
-  logLineCount: number
-  partial: string
   rawExecutionJson: string
 }
 
-export function ExecutionDebugSheet({
-  connectionState,
-  currentStatus,
-  logLineCount,
-  partial,
-  rawExecutionJson,
-}: ExecutionDebugSheetProps) {
+export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecutionJson }: ExecutionDebugSheetProps) {
   const { t } = useTranslation('executions')
 
   return (
@@ -47,16 +39,6 @@ export function ExecutionDebugSheet({
                 className="max-w-full justify-center truncate"
               >
                 {t(`detail.connection.${connectionState}`)}
-              </Badge>
-            </DebugField>
-            <DebugField label={t('detail.debugFields.logLines')}>
-              <Badge variant="outline" className="max-w-full justify-center truncate">
-                {logLineCount}
-              </Badge>
-            </DebugField>
-            <DebugField label={t('detail.debugFields.partialChunk')}>
-              <Badge variant={partial ? 'secondary' : 'outline'} className="max-w-full justify-center truncate">
-                {partial || t('detail.debugEmptyValue')}
               </Badge>
             </DebugField>
           </div>

@@ -67,7 +67,6 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         isStopping={stopMutation.isPending}
         logLines={logLines}
         onStopExecution={() => stopMutation.mutate(executionId)}
-        partial={realtimeLogs.partial}
         rawExecutionJson={rawExecutionJson}
       />
     </div>
