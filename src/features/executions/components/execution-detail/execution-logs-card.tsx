@@ -86,10 +86,10 @@ export function ExecutionLogsCard({
       <CardContent className="flex min-h-0 flex-1 flex-col">
         <Tabs defaultValue="logs" className="min-h-0 flex-1">
           <TabsList variant="line" aria-label={t('detail.contentTabsLabel')}>
-            <TabsTrigger value="logs" disabled={!showReport}>
-              {t('detail.historyTab')}
+            <TabsTrigger value="logs">{t('detail.historyTab')}</TabsTrigger>
+            <TabsTrigger value="report" disabled={!showReport}>
+              {t('detail.reportTab')}
             </TabsTrigger>
-            <TabsTrigger value="report">{t('detail.reportTab')}</TabsTrigger>
           </TabsList>
           <TabsContent value="logs" className="min-h-0">
             <ScrollArea className="h-[calc(100vh-16rem)] min-h-96 rounded-2xl border border-border">
