@@ -5,6 +5,7 @@ import type {
   ExecutionPatient,
   ExecutionWizardDraft,
 } from '../../model/execution-create'
+import { createDefaultBotOtherInformation } from '../../lib/execution-wizard-payload'
 
 interface ReviewStepProps {
   draft: ExecutionWizardDraft
@@ -52,7 +53,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password,
-        otherInformation: {},
+        otherInformation: createDefaultBotOtherInformation(),
       },
       patients: draft.execution.patients.map((patient) => ({
         patientName: patient.patientName.trim(),

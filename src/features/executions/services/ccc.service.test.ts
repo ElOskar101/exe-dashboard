@@ -123,12 +123,9 @@ describe('ccc.service', () => {
 
     const response = await decryptClinicBotPassword('clinic-bot-1')
 
-    expect(cccClient.get).toHaveBeenCalledWith(
-      'https://carriers.dentalautomation.ai/api/clinicbots/decrypt/clinic-bot-1',
-      {
-        responseType: 'text',
-      },
-    )
+    expect(cccClient.get).toHaveBeenCalledWith('clinicbots/decrypt/clinic-bot-1', {
+      responseType: 'text',
+    })
     expect(response.data).toBe('decrypted-password')
   })
 })

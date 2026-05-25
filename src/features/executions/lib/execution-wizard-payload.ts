@@ -1,5 +1,9 @@
 import type { ExecutionCreatePayload, ExecutionMetadata, ExecutionWizardDraft } from '../model/execution-create'
 
+export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({
+  specifyPayer: 'None',
+})
+
 const parseMetadata = (value: string): ExecutionMetadata | null => {
   try {
     const parsed = JSON.parse(value)
@@ -55,7 +59,7 @@ export const buildExecutionPayload = (
         targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password,
-        otherInformation: {},
+        otherInformation: createDefaultBotOtherInformation(),
       },
       patients: draft.execution.patients.map((patient, index) => ({
         patientName: patient.patientName.trim(),
