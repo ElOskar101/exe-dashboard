@@ -58,7 +58,7 @@ export const buildExecutionPayload = (
         botName: draft.bot.botName.trim(),
         targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
-        password: draft.bot.password,
+        password: draft.bot.password.trim(),
         otherInformation: createDefaultBotOtherInformation(),
       },
       patients: draft.execution.patients.map((patient, index) => ({
