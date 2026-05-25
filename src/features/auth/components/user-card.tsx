@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { APP_CONFIG } from '@/app.config'
 import { useContext, useState, type FocusEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconChevronDown, IconLogout2 } from '@tabler/icons-react'
@@ -50,10 +51,7 @@ function UserCard() {
           <>
             <Avatar>
               {user.urlImage && (
-                <AvatarImage
-                  src={import.meta.env.VITE_PICTURES_URL + '/pictures/' + user.urlImage}
-                  alt={user.username || ''}
-                />
+                <AvatarImage src={APP_CONFIG.cccApiUrl + '/pictures/' + user.urlImage} alt={user.username || ''} />
               )}
               <AvatarFallback>{getInitials(user.username || '')}</AvatarFallback>
             </Avatar>
