@@ -75,7 +75,6 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         canStopExecution={canStopExecution}
         connectionState={realtimeLogs.connectionState}
         currentStatus={currentStatus}
-        executionId={reportExecutionId}
         isLoading={executionQuery.isLoading}
         isReportError={reportQuery.isError}
         isReportLoading={!showReport || reportQuery.isLoading}

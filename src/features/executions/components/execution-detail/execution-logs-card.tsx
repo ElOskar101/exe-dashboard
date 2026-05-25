@@ -17,7 +17,6 @@ interface ExecutionLogsCardProps {
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
-  executionId: string
   isLoading: boolean
   isReportError: boolean
   isReportLoading: boolean
@@ -33,7 +32,6 @@ export function ExecutionLogsCard({
   canStopExecution,
   connectionState,
   currentStatus,
-  executionId,
   isLoading,
   isReportError,
   isReportLoading,
@@ -99,12 +97,7 @@ export function ExecutionLogsCard({
             </ScrollArea>
           </TabsContent>
           <TabsContent value="report" className="min-h-0">
-            <ExecutionReportPanel
-              executionId={executionId}
-              isError={isReportError}
-              isLoading={isReportLoading}
-              reportHtml={reportHtml}
-            />
+            <ExecutionReportPanel isError={isReportError} isLoading={isReportLoading} reportHtml={reportHtml} />
           </TabsContent>
         </Tabs>
       </CardContent>
