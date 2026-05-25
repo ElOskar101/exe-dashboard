@@ -93,7 +93,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
 
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <div className="flex flex-col gap-6">
+      <div className="min-w-0 flex flex-col gap-6">
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -171,14 +171,16 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             </div>
             <div className="sm:col-span-2">
               <dt className="text-sm text-muted-foreground">{t('fields.execution')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.execution, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">
+                {getDisplayValue(draft.execution.executionName || draft.execution.execution, emptyValue)}
+              </dd>
             </div>
           </dl>
         </div>
       </div>
 
-      <div className="flex max-h-[calc(100vh-14rem)] min-h-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
-        <pre className="min-h-0 flex-1 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
+      <div className="flex max-h-[calc(100vh-14rem)] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
+        <pre className="min-h-0 min-w-0 flex-1 overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-muted/70 p-4 text-xs leading-6">
           {JSON.stringify(reviewPayload, null, 2)}
         </pre>
       </div>

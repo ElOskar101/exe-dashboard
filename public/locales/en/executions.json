@@ -32,7 +32,7 @@
     },
     "patients": {
       "legend": "Patients",
-      "description": "Add each patient manually. Bulk import is intentionally out of scope for this first version.",
+      "description": "Import patients from a selected CC execution day.",
       "patientTitle": "Patient {{index}}",
       "patientDescription": "Every patient row becomes one item in execution.patients."
     },
@@ -98,7 +98,7 @@
     "patientClinic": "Downtown Clinic",
     "filenames": "jane-doe.pdf",
     "numberOfThreads": "4",
-    "execution": "Daily eligibility",
+    "execution": "Select an execution day",
     "workers": "2",
     "retries": "1"
   },
@@ -114,6 +114,8 @@
     "submit": "Create execution",
     "submitting": "Creating execution...",
     "addPatient": "Add patient",
+    "getPatients": "Get patients",
+    "gettingPatients": "Getting patients...",
     "removePatient": "Remove patient",
     "startOver": "Create another execution"
   },
@@ -129,7 +131,9 @@
     "selectMode": "Choose an execution mode.",
     "selectVerificationType": "Choose a verification type.",
     "addPatient": "Add at least one patient before continuing.",
-    "patientListTitle": "Patient list is incomplete"
+    "patientListTitle": "Patient list is incomplete",
+    "executionDaysTitle": "Execution days could not be loaded",
+    "importPatientsTitle": "Patients could not be imported"
   },
   "help": {
     "customerMinCharacters": "Type at least 2 characters to search for a client.",
@@ -139,7 +143,9 @@
     "selectClientFirst": "Select a client to load its clinics.",
     "loadingClinics": "Loading clinics for the selected client...",
     "loadClinicsError": "The selected client's clinics could not be loaded.",
-    "selectClinic": "Choose one of the clinics available for this client."
+    "selectClinic": "Choose one of the clinics available for this client.",
+    "noImportedPatients": "Select an execution day and get patients to continue.",
+    "importedPatients": "Imported patients: {{count}}"
   },
   "review": {
     "botTitle": "Bot payload",

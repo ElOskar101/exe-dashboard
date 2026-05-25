@@ -2,18 +2,17 @@ import type { TFunction } from 'i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { IconAlertCircle, IconPlus, IconTrash } from '@tabler/icons-react'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { IconAlertCircle, IconDownload, IconLoader2, IconTrash } from '@tabler/icons-react'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
 import type { StepErrors } from '../../lib/execution-wizard-validation'
-import type { ExecutionPatient, ExecutionVerificationType, ExecutionWizardDraft } from '../../model/execution-create'
+import type { ExecutionPatient, ExecutionWizardDraft } from '../../model/execution-create'
 import { CustomerSearchField } from './customer-search-field'
 
 interface PatientsStepProps {
   context: ExecutionWizardDraft['context']
   execution: ExecutionWizardDraft['execution']['execution']
+  executionName: ExecutionWizardDraft['execution']['executionName']
   patients: ExecutionPatient[]
   contextErrors: StepErrors['context']
   errors: StepErrors['patients']
@@ -25,21 +24,27 @@ interface PatientsStepProps {
   clinicOptions: ReturnType<typeof useExecutionWizard>['clinicOptions']
   isLoadingClinics: ReturnType<typeof useExecutionWizard>['isLoadingClinics']
   hasSelectedCustomerWithoutClinics: ReturnType<typeof useExecutionWizard>['hasSelectedCustomerWithoutClinics']
+  executionDayOptions: ReturnType<typeof useExecutionWizard>['executionDayOptions']
+  isLoadingExecutionDays: ReturnType<typeof useExecutionWizard>['isLoadingExecutionDays']
+  executionDaysError: ReturnType<typeof useExecutionWizard>['executionDaysError']
+  isImportingPatients: ReturnType<typeof useExecutionWizard>['isImportingPatients']
+  importPatientsError: ReturnType<typeof useExecutionWizard>['importPatientsError']
   onCustomerSearchChange: ReturnType<typeof useExecutionWizard>['updateCustomerSearch']
   onCustomerClear: ReturnType<typeof useExecutionWizard>['clearCustomerSelection']
   onCustomerSelect: ReturnType<typeof useExecutionWizard>['selectCustomer']
   onClinicSelect: ReturnType<typeof useExecutionWizard>['selectClinic']
-  onExecutionChange: ReturnType<typeof useExecutionWizard>['updateExecution']
-  onPatientChange: ReturnType<typeof useExecutionWizard>['updatePatientField']
-  onVerificationTypeChange: ReturnType<typeof useExecutionWizard>['updatePatientVerificationType']
-  onAddPatient: ReturnType<typeof useExecutionWizard>['addPatient']
+  onExecutionDaySelect: ReturnType<typeof useExecutionWizard>['selectExecutionDay']
+  onImportPatients: ReturnType<typeof useExecutionWizard>['importPatients']
   onRemovePatient: ReturnType<typeof useExecutionWizard>['removePatient']
   t: TFunction<'executions'>
 }
 
+const getDisplayValue = (value: string, emptyValue: string) => value.trim() || emptyValue
+
 export function PatientsStep({
   context,
   execution,
+  executionName,
   patients,
   contextErrors,
   errors,
@@ -51,21 +56,26 @@ export function PatientsStep({
   clinicOptions,
   isLoadingClinics,
   hasSelectedCustomerWithoutClinics,
+  executionDayOptions,
+  isLoadingExecutionDays,
+  executionDaysError,
+  isImportingPatients,
+  importPatientsError,
   onCustomerSearchChange,
   onCustomerClear,
   onCustomerSelect,
   onClinicSelect,
-  onExecutionChange,
-  onPatientChange,
-  onVerificationTypeChange,
-  onAddPatient,
+  onExecutionDaySelect,
+  onImportPatients,
   onRemovePatient,
   t,
 }: PatientsStepProps) {
+  const emptyValue = t('review.emptyValue')
+
   return (
     <FieldSet>
       <FieldGroup>
-        <FieldGroup className="md:grid md:grid-cols-3">
+        <FieldGroup className="md:grid md:grid-cols-4">
           <Field data-invalid={showErrors && Boolean(contextErrors.client)}>
             <FieldLabel htmlFor="client">{t('fields.client')}</FieldLabel>
             <CustomerSearchField
@@ -104,11 +114,13 @@ export function PatientsStep({
                 <SelectValue placeholder={t('placeholders.clinic')}>{context.clinicName || undefined}</SelectValue>
               </SelectTrigger>
               <SelectContent align="start">
-                {clinicOptions.map((clinic) => (
-                  <SelectItem key={clinic._id} value={clinic._id}>
-                    {clinic.clinicName}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {clinicOptions.map((clinic) => (
+                    <SelectItem key={clinic._id} value={clinic._id}>
+                      {clinic.clinicName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
             <FieldError>{showErrors ? contextErrors.clinic : null}</FieldError>
@@ -116,14 +128,69 @@ export function PatientsStep({
 
           <Field>
             <FieldLabel htmlFor="execution">{t('fields.execution')}</FieldLabel>
-            <Input
-              id="execution"
+            <Select
               value={execution}
-              onChange={(event) => onExecutionChange(event.target.value)}
-              placeholder={t('placeholders.execution')}
-            />
+              onValueChange={(value) => onExecutionDaySelect(value ?? '')}
+              disabled={
+                !context.clinic.trim() ||
+                isLoadingExecutionDays ||
+                Boolean(executionDaysError) ||
+                executionDayOptions.length === 0
+              }
+            >
+              <SelectTrigger id="execution" className="w-full">
+                <SelectValue placeholder={t('placeholders.execution')}>
+                  {executionName || execution || undefined}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup>
+                  {executionDayOptions.map((day) => (
+                    <SelectItem key={day._id} value={day._id}>
+                      {day.sheetName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel aria-hidden="true" className="invisible">
+              {t('buttons.getPatients')}
+            </FieldLabel>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onImportPatients}
+              disabled={!execution || isImportingPatients}
+              className="w-full"
+            >
+              {isImportingPatients ? (
+                <IconLoader2 data-icon="inline-start" />
+              ) : (
+                <IconDownload data-icon="inline-start" />
+              )}
+              {isImportingPatients ? t('buttons.gettingPatients') : t('buttons.getPatients')}
+            </Button>
           </Field>
         </FieldGroup>
+
+        {executionDaysError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.executionDaysTitle')}</AlertTitle>
+            <AlertDescription>{executionDaysError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {importPatientsError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.importPatientsTitle')}</AlertTitle>
+            <AlertDescription>{importPatientsError}</AlertDescription>
+          </Alert>
+        ) : null}
 
         {errors.form && showErrors ? (
           <Alert variant="destructive">
@@ -133,201 +200,94 @@ export function PatientsStep({
           </Alert>
         ) : null}
 
-        {patients.map((patient, index) => {
-          const rowErrors = errors.rows[index] || {}
+        {patients.length === 0 ? (
+          <div className="rounded-3xl border border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
+            {t('help.noImportedPatients')}
+          </div>
+        ) : null}
 
-          return (
-            <div key={`patient-${index}`} className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-medium">
-                  {t('sections.patients.patientTitle', {
-                    index: index + 1,
-                  })}
-                </p>
-                <Button
-                  variant="ghost"
-                  type="button"
-                  onClick={() => onRemovePatient(index)}
-                  aria-label={t('buttons.removePatient')}
-                >
-                  <IconTrash data-icon="inline-start" />
-                  {t('buttons.removePatient')}
-                </Button>
-              </div>
+        {patients.length > 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t('help.importedPatients', {
+              count: patients.length,
+            })}
+          </p>
+        ) : null}
 
-              <FieldGroup className="mt-4 md:grid md:grid-cols-3">
-                <Field data-invalid={showErrors && Boolean(rowErrors.patientName)}>
-                  <FieldLabel htmlFor={`patientName-${index}`}>{t('fields.patientName')}</FieldLabel>
-                  <Input
-                    id={`patientName-${index}`}
-                    value={patient.patientName}
-                    onChange={(event) => onPatientChange(index, 'patientName', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.patientName)}
-                    placeholder={t('placeholders.patientName')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.patientName : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.patientLastName)}>
-                  <FieldLabel htmlFor={`patientLastName-${index}`}>{t('fields.patientLastName')}</FieldLabel>
-                  <Input
-                    id={`patientLastName-${index}`}
-                    value={patient.patientLastName}
-                    onChange={(event) => onPatientChange(index, 'patientLastName', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.patientLastName)}
-                    placeholder={t('placeholders.patientLastName')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.patientLastName : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.patientMemberId)}>
-                  <FieldLabel htmlFor={`patientMemberId-${index}`}>{t('fields.memberId')}</FieldLabel>
-                  <Input
-                    id={`patientMemberId-${index}`}
-                    value={patient.patientMemberId}
-                    onChange={(event) => onPatientChange(index, 'patientMemberId', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.patientMemberId)}
-                    placeholder={t('placeholders.memberId')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.patientMemberId : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.patientDob)}>
-                  <FieldLabel htmlFor={`patientDob-${index}`}>{t('fields.patientDob')}</FieldLabel>
-                  <Input
-                    id={`patientDob-${index}`}
-                    type="date"
-                    value={patient.patientDob}
-                    onChange={(event) => onPatientChange(index, 'patientDob', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.patientDob)}
-                  />
-                  <FieldError>{showErrors ? rowErrors.patientDob : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.policyHolderName)}>
-                  <FieldLabel htmlFor={`policyHolderName-${index}`}>{t('fields.policyHolderName')}</FieldLabel>
-                  <Input
-                    id={`policyHolderName-${index}`}
-                    value={patient.policyHolderName}
-                    onChange={(event) => onPatientChange(index, 'policyHolderName', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.policyHolderName)}
-                    placeholder={t('placeholders.policyHolderName')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.policyHolderName : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.policyHolderLastName)}>
-                  <FieldLabel htmlFor={`policyHolderLastName-${index}`}>{t('fields.policyHolderLastName')}</FieldLabel>
-                  <Input
-                    id={`policyHolderLastName-${index}`}
-                    value={patient.policyHolderLastName}
-                    onChange={(event) => onPatientChange(index, 'policyHolderLastName', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.policyHolderLastName)}
-                    placeholder={t('placeholders.policyHolderLastName')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.policyHolderLastName : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.policyHolderDob)}>
-                  <FieldLabel htmlFor={`policyHolderDob-${index}`}>{t('fields.policyHolderDob')}</FieldLabel>
-                  <Input
-                    id={`policyHolderDob-${index}`}
-                    type="date"
-                    value={patient.policyHolderDob}
-                    onChange={(event) => onPatientChange(index, 'policyHolderDob', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.policyHolderDob)}
-                  />
-                  <FieldError>{showErrors ? rowErrors.policyHolderDob : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.relationship)}>
-                  <FieldLabel htmlFor={`relationship-${index}`}>{t('fields.relationship')}</FieldLabel>
-                  <Input
-                    id={`relationship-${index}`}
-                    value={patient.relationship}
-                    onChange={(event) => onPatientChange(index, 'relationship', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.relationship)}
-                    placeholder={t('placeholders.relationship')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.relationship : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.zipCode)}>
-                  <FieldLabel htmlFor={`zipCode-${index}`}>{t('fields.zipCode')}</FieldLabel>
-                  <Input
-                    id={`zipCode-${index}`}
-                    value={patient.zipCode}
-                    onChange={(event) => onPatientChange(index, 'zipCode', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.zipCode)}
-                    placeholder={t('placeholders.zipCode')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.zipCode : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.clinic)}>
-                  <FieldLabel htmlFor={`patientClinic-${index}`}>{t('fields.patientClinic')}</FieldLabel>
-                  <Input
-                    id={`patientClinic-${index}`}
-                    value={patient.clinic}
-                    onChange={(event) => onPatientChange(index, 'clinic', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.clinic)}
-                    placeholder={t('placeholders.patientClinic')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.clinic : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.filenames)}>
-                  <FieldLabel htmlFor={`filenames-${index}`}>{t('fields.filenames')}</FieldLabel>
-                  <Input
-                    id={`filenames-${index}`}
-                    value={patient.filenames}
-                    onChange={(event) => onPatientChange(index, 'filenames', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.filenames)}
-                    placeholder={t('placeholders.filenames')}
-                  />
-                  <FieldError>{showErrors ? rowErrors.filenames : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.verificationType)}>
-                  <FieldLabel>{t('fields.verificationType')}</FieldLabel>
-                  <ToggleGroup
-                    multiple={false}
-                    variant="outline"
-                    value={patient.verificationType ? [patient.verificationType] : []}
-                    onValueChange={(value) =>
-                      onVerificationTypeChange(index, (value[0] ?? '') as ExecutionVerificationType | '')
-                    }
-                    aria-label={t('fields.verificationType')}
-                  >
-                    <ToggleGroupItem value="ELG">{t('options.verificationElg')}</ToggleGroupItem>
-                    <ToggleGroupItem value="FBD">{t('options.verificationFbd')}</ToggleGroupItem>
-                  </ToggleGroup>
-                  <FieldError>{showErrors ? rowErrors.verificationType : null}</FieldError>
-                </Field>
-
-                <Field data-invalid={showErrors && Boolean(rowErrors.otherInformation)} className="md:col-span-3">
-                  <FieldLabel htmlFor={`patientOtherInformation-${index}`}>
-                    {t('fields.patientOtherInformation')}
-                  </FieldLabel>
-                  <textarea
-                    id={`patientOtherInformation-${index}`}
-                    value={patient.otherInformation}
-                    onChange={(event) => onPatientChange(index, 'otherInformation', event.target.value)}
-                    aria-invalid={showErrors && Boolean(rowErrors.otherInformation)}
-                    className="min-h-28 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-sm transition-[color,box-shadow,background-color] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
-                    spellCheck={false}
-                  />
-                  <FieldError>{showErrors ? rowErrors.otherInformation : null}</FieldError>
-                </Field>
-              </FieldGroup>
+        {patients.map((patient, index) => (
+          <div
+            key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
+            className="rounded-3xl border border-border/70 bg-muted/20 p-4"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-medium">
+                {t('sections.patients.patientTitle', {
+                  index: index + 1,
+                })}
+              </p>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => onRemovePatient(index)}
+                aria-label={t('buttons.removePatient')}
+              >
+                <IconTrash data-icon="inline-start" />
+                {t('buttons.removePatient')}
+              </Button>
             </div>
-          )
-        })}
 
-        <Button type="button" variant="outline" onClick={onAddPatient}>
-          <IconPlus data-icon="inline-start" />
-          {t('buttons.addPatient')}
-        </Button>
+            <dl className="mt-4 grid gap-3 md:grid-cols-3">
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientLastName, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderName, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderLastName, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderDob, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.zipCode, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
+                <dd className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
+                <dd className="mt-1 font-medium">{patient.verificationType || emptyValue}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
+                <dd className="mt-1 break-words font-medium">{getDisplayValue(patient.filenames, emptyValue)}</dd>
+              </div>
+            </dl>
+          </div>
+        ))}
       </FieldGroup>
     </FieldSet>
   )

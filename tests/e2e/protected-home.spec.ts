@@ -73,6 +73,85 @@ async function stubProtectedRouteDependencies(page: Page) {
       },
     })
   })
+
+  await page.route('**/api/v2/executions/**', async (route) => {
+    const url = new URL(route.request().url())
+
+    if (url.pathname.endsWith('/api/v2/executions/clinic-1/days')) {
+      await route.fulfill({
+        json: [
+          {
+            _id: 'day-1',
+            sheetName: '2026-04-27',
+            trashed: false,
+          },
+          {
+            _id: 'day-trashed',
+            sheetName: '2026-05-09',
+            trashed: true,
+          },
+        ],
+      })
+      return
+    }
+
+    if (url.pathname.endsWith('/api/v2/executions/day-1')) {
+      await route.fulfill({
+        json: {
+          _id: 'day-1',
+          sheetName: '2026-04-27',
+          rows: [
+            {
+              _id: 'row-1',
+              cells: [
+                { key: 'practice', value: 'Downtown Clinic' },
+                { key: 'memberid', value: '111111' },
+                { key: 'subscriber_zip_code', value: '90001' },
+                { key: 'subscriber_first_name', value: 'Jane' },
+                { key: 'subscriber_last_name', value: 'Doe' },
+                { key: 'subscriber_dob', value: '01/01/1980' },
+                { key: 'patient_first_name', value: 'Jane' },
+                { key: 'patient_last_name', value: 'Doe' },
+                { key: 'patient_dob', value: '01/01/1990' },
+                { key: 'relationship_to_subscriber', value: 'Self' },
+                { key: 'type_of_verification', value: 'ELG' },
+                { key: 'files_s_name', value: 'jane-doe.pdf' },
+              ],
+            },
+            {
+              _id: 'row-2',
+              cells: [
+                { key: 'practice', value: 'Downtown Clinic' },
+                { key: 'memberid', value: '222222' },
+                { key: 'subscriber_zip_code', value: '90002' },
+                { key: 'subscriber_first_name', value: 'Janet' },
+                { key: 'subscriber_last_name', value: 'Doe' },
+                { key: 'subscriber_dob', value: '02/02/1980' },
+                { key: 'patient_first_name', value: 'John' },
+                { key: 'patient_last_name', value: 'Doe' },
+                { key: 'patient_dob', value: '02/02/1992' },
+                { key: 'relationship_to_subscriber', value: 'Child' },
+                { key: 'type_of_verification', value: 'FBD' },
+                { key: 'files_s_name', value: 'john-doe.pdf' },
+              ],
+            },
+            {
+              _id: 'row-blank',
+              cells: [
+                { key: 'patient_first_name', value: 'EMPTY' },
+                { key: 'patient_last_name', value: ' ' },
+                { key: 'memberid', value: 'Empty' },
+              ],
+            },
+          ],
+          trashed: false,
+        },
+      })
+      return
+    }
+
+    await route.fallback()
+  })
 }
 
 async function selectCustomerAndClinic(page: Page) {
@@ -80,6 +159,16 @@ async function selectCustomerAndClinic(page: Page) {
   await page.getByRole('button', { name: /Legacy Dental Care/ }).click()
   await page.getByRole('combobox', { name: 'Clinic' }).click()
   await page.getByRole('option', { name: 'Downtown Clinic' }).click()
+}
+
+async function importPatientsFromCc(page: Page) {
+  await page.getByRole('combobox', { name: 'Execution' }).click()
+  await page.getByRole('option', { name: '2026-04-27' }).click()
+  await expect(page.getByRole('option', { name: '2026-05-09' })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Get patients' }).click()
+  await expect(page.getByText('Imported patients: 2')).toBeVisible()
+  await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('John', { exact: true }).first()).toBeVisible()
 }
 
 async function completeBotStep(
@@ -147,7 +236,7 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.getByLabel('Patient name')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Get patients' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
     await expect(page.getByText('This field is required.').first()).toBeVisible()
@@ -159,7 +248,7 @@ test.describe('protected executions route', () => {
     await page.getByLabel('Password').fill('super-secret')
     await page.getByRole('button', { name: 'Next' }).click()
 
-    await expect(page.getByLabel('Patient name')).toBeVisible()
+    await expect(page.getByText('Select an execution day and get patients to continue.')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
 
@@ -239,16 +328,7 @@ test.describe('protected executions route', () => {
 
     await completeBotStep(page)
     await selectCustomerAndClinic(page)
-
-    await page.getByLabel('Patient name').fill('Jane Doe')
-    await page.getByLabel('Member ID').fill('111111')
-    await page.getByLabel('Patient date of birth').fill('1990-01-01')
-    await page.getByRole('button', { name: 'Add patient' }).click()
-    await page.getByLabel('Patient name').nth(1).fill('John Doe')
-    await page.getByLabel('Member ID').nth(1).fill('222222')
-    await page.getByLabel('Patient date of birth').nth(1).fill('1992-02-02')
-    await page.getByRole('button', { name: 'ELG' }).first().click()
-    await page.getByRole('button', { name: 'FBD' }).nth(1).click()
+    await importPatientsFromCc(page)
     await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Workers').fill('4')
@@ -265,6 +345,7 @@ test.describe('protected executions route', () => {
       createdBy: 'e2e-user',
       client: 'customer-1',
       clinic: 'clinic-1',
+      execution: 'day-1',
       botName: 'Eligibility Runner',
       meta: {
         bot: {
@@ -278,38 +359,34 @@ test.describe('protected executions route', () => {
         },
         patients: [
           {
-            patientName: 'Jane Doe',
-            patientLastName: '',
+            patientName: 'Jane',
+            patientLastName: 'Doe',
             patientMemberId: '111111',
-            patientDob: '1990-01-01',
-            policyHolderName: '',
-            policyHolderLastName: '',
-            policyHolderDob: '',
-            relationship: '',
-            zipCode: '',
-            clinic: '',
+            patientDob: '01/01/1990',
+            policyHolderName: 'Jane',
+            policyHolderLastName: 'Doe',
+            policyHolderDob: '01/01/1980',
+            relationship: 'Self',
+            zipCode: '90001',
+            clinic: 'Downtown Clinic',
             verificationType: 'elg',
-            filenames: '',
-            otherInformation: {
-              plan: '',
-            },
+            filenames: 'jane-doe.pdf',
+            otherInformation: {},
           },
           {
-            patientName: 'John Doe',
-            patientLastName: '',
+            patientName: 'John',
+            patientLastName: 'Doe',
             patientMemberId: '222222',
-            patientDob: '1992-02-02',
-            policyHolderName: '',
-            policyHolderLastName: '',
-            policyHolderDob: '',
-            relationship: '',
-            zipCode: '',
-            clinic: '',
+            patientDob: '02/02/1992',
+            policyHolderName: 'Janet',
+            policyHolderLastName: 'Doe',
+            policyHolderDob: '02/02/1980',
+            relationship: 'Child',
+            zipCode: '90002',
+            clinic: 'Downtown Clinic',
             verificationType: 'fbd',
-            filenames: '',
-            otherInformation: {
-              plan: '',
-            },
+            filenames: 'john-doe.pdf',
+            otherInformation: {},
           },
         ],
         config: {
@@ -358,11 +435,7 @@ test.describe('protected executions route', () => {
       password: 'retry-secret',
     })
     await selectCustomerAndClinic(page)
-
-    await page.getByLabel('Patient name').fill('Retry Patient')
-    await page.getByLabel('Member ID').fill('999999')
-    await page.getByLabel('Patient date of birth').fill('1988-03-03')
-    await page.getByRole('button', { name: 'FBD' }).click()
+    await importPatientsFromCc(page)
     await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Workers').fill('2')
@@ -371,7 +444,7 @@ test.describe('protected executions route', () => {
 
     await expect(page.getByText('Execution API is unavailable.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Create execution' })).toBeVisible()
-    await expect(page.getByText('Retry Patient', { exact: true })).toBeVisible()
+    await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
     await expect(page.getByText('"workers": 2')).toBeVisible()
   })
 })

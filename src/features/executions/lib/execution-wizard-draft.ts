@@ -33,7 +33,8 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
   },
   execution: {
     execution: '',
-    patients: [createEmptyPatient()],
+    executionName: '',
+    patients: [],
     workers: '2',
     retries: '1',
     config: '{}',

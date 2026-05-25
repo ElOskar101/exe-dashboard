@@ -1,15 +1,22 @@
 import { useContext, useMemo, useState, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
 import type { TFunction } from 'i18next'
 import { createExecution } from '../services/execution.service'
 import { getExecutionRequestErrorMessage } from '../services/execution-errors'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
-import { createEmptyDraft, createEmptyPatient } from '../lib/execution-wizard-draft'
+import { createEmptyDraft } from '../lib/execution-wizard-draft'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
-import type { ExecutionPatient, ExecutionVerificationType, ExecutionWizardDraft } from '../model/execution-create'
-import { getCustomerById, searchCustomers, type CustomerSearchItem } from '../services/ccc.service'
+import { mapCcExecutionRowsToPatients } from '../lib/cc-execution-patients'
+import type { ExecutionWizardDraft } from '../model/execution-create'
+import {
+  getCcExecution,
+  getClinicExecutionDays,
+  getCustomerById,
+  searchCustomers,
+  type CustomerSearchItem,
+} from '../services/ccc.service'
 
 export type ExecutionWizardStepKey = 'bot' | 'patients' | 'config' | 'review'
 
@@ -61,7 +68,37 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     enabled: draft.context.client.trim().length > 0,
   })
 
+  const clinicExecutionDaysQuery = useQuery({
+    queryKey: ['clinic-execution-days', draft.context.clinic],
+    queryFn: async () => {
+      const response = await getClinicExecutionDays(draft.context.clinic)
+
+      return response.data
+    },
+    enabled: draft.context.clinic.trim().length > 0,
+  })
+
+  const importPatientsMutation = useMutation({
+    mutationFn: async (executionId: string) => {
+      const response = await getCcExecution(executionId)
+
+      return response.data
+    },
+    onSuccess: (execution) => {
+      const patients = mapCcExecutionRowsToPatients(execution.rows)
+
+      setDraft((previousDraft) => ({
+        ...previousDraft,
+        execution: {
+          ...previousDraft.execution,
+          patients: previousDraft.execution.execution === execution._id ? patients : previousDraft.execution.patients,
+        },
+      }))
+    },
+  })
+
   const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
+  const executionDayOptions = (clinicExecutionDaysQuery.data ?? []).filter((day) => !day.trashed)
   const hasSelectedCustomerWithoutClinics =
     draft.context.client.trim().length > 0 && selectedCustomerQuery.status === 'success' && clinicOptions.length === 0
 
@@ -101,6 +138,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const updateCustomerSearch = (value: string) => {
+    importPatientsMutation.reset()
     startTransition(() => {
       setDraft((previousDraft) => ({
         ...previousDraft,
@@ -111,11 +149,18 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
           clinic: '',
           clinicName: '',
         },
+        execution: {
+          ...previousDraft.execution,
+          execution: '',
+          executionName: '',
+          patients: [],
+        },
       }))
     })
   }
 
   const clearCustomerSelection = () => {
+    importPatientsMutation.reset()
     setDraft((previousDraft) => ({
       ...previousDraft,
       context: {
@@ -124,10 +169,17 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         clinic: '',
         clinicName: '',
       },
+      execution: {
+        ...previousDraft.execution,
+        execution: '',
+        executionName: '',
+        patients: [],
+      },
     }))
   }
 
   const selectCustomer = (customer: CustomerSearchItem) => {
+    importPatientsMutation.reset()
     setDraft((previousDraft) => {
       if (previousDraft.context.client === customer._id) {
         return {
@@ -137,6 +189,12 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
             client: '',
             clinic: '',
             clinicName: '',
+          },
+          execution: {
+            ...previousDraft.execution,
+            execution: '',
+            executionName: '',
+            patients: [],
           },
         }
       }
@@ -150,11 +208,18 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
           clinic: '',
           clinicName: '',
         },
+        execution: {
+          ...previousDraft.execution,
+          execution: '',
+          executionName: '',
+          patients: [],
+        },
       }
     })
   }
 
   const selectClinic = (clinicId: string) => {
+    importPatientsMutation.reset()
     const selectedClinic = clinicOptions.find((clinic) => clinic._id === clinicId)
 
     setDraft((previousDraft) => ({
@@ -163,6 +228,12 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         ...previousDraft.context,
         clinic: clinicId,
         clinicName: selectedClinic?.clinicName ?? '',
+      },
+      execution: {
+        ...previousDraft.execution,
+        execution: '',
+        executionName: '',
+        patients: [],
       },
     }))
   }
@@ -173,41 +244,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       bot: {
         ...previousDraft.bot,
         [field]: value,
-      },
-    }))
-  }
-
-  const updatePatientField = (index: number, field: keyof ExecutionPatient, value: string) => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      execution: {
-        ...previousDraft.execution,
-        patients: previousDraft.execution.patients.map((patient, patientIndex) =>
-          patientIndex === index ? { ...patient, [field]: value } : patient,
-        ),
-      },
-    }))
-  }
-
-  const addPatient = () => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      execution: {
-        ...previousDraft.execution,
-        patients: [...previousDraft.execution.patients, createEmptyPatient()],
-      },
-    }))
-  }
-
-  const removePatient = (index: number) => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      execution: {
-        ...previousDraft.execution,
-        patients:
-          previousDraft.execution.patients.length === 1
-            ? [createEmptyPatient()]
-            : previousDraft.execution.patients.filter((_, patientIndex) => patientIndex !== index),
       },
     }))
   }
@@ -232,12 +268,17 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const updateExecution = (value: string) => {
+  const selectExecutionDay = (executionDayId: string) => {
+    importPatientsMutation.reset()
+    const selectedDay = executionDayOptions.find((day) => day._id === executionDayId)
+
     setDraft((previousDraft) => ({
       ...previousDraft,
       execution: {
         ...previousDraft.execution,
-        execution: value,
+        execution: executionDayId,
+        executionName: selectedDay?.sheetName ?? '',
+        patients: [],
       },
     }))
   }
@@ -252,14 +293,22 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
-  const updatePatientVerificationType = (index: number, value: ExecutionVerificationType | '') => {
+  const importPatients = () => {
+    const executionId = draft.execution.execution.trim()
+
+    if (!executionId) {
+      return
+    }
+
+    importPatientsMutation.mutate(executionId)
+  }
+
+  const removePatient = (index: number) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
       execution: {
         ...previousDraft.execution,
-        patients: previousDraft.execution.patients.map((patient, patientIndex) =>
-          patientIndex === index ? { ...patient, verificationType: value } : patient,
-        ),
+        patients: previousDraft.execution.patients.filter((_, patientIndex) => patientIndex !== index),
       },
     }))
   }
@@ -341,6 +390,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     clinicOptions,
     isLoadingClinics: selectedCustomerQuery.isFetching,
     hasSelectedCustomerWithoutClinics,
+    executionDayOptions,
+    isLoadingExecutionDays: clinicExecutionDaysQuery.isFetching,
+    executionDaysError: clinicExecutionDaysQuery.error instanceof Error ? clinicExecutionDaysQuery.error.message : null,
+    isImportingPatients: importPatientsMutation.isPending,
+    importPatientsError: importPatientsMutation.error instanceof Error ? importPatientsMutation.error.message : null,
     handleStepChange,
     updateContextField,
     updateCustomerSearch,
@@ -348,13 +402,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     selectCustomer,
     selectClinic,
     updateBotField,
-    updatePatientField,
-    updatePatientVerificationType,
-    addPatient,
-    removePatient,
     updateWorkers,
     updateRetries,
-    updateExecution,
+    selectExecutionDay,
+    importPatients,
+    removePatient,
     updateConfig,
     handleNextStep,
     handlePreviousStep,

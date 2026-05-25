@@ -21,14 +21,6 @@ interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
 }
 
-const isDateStringValid = (value: string) => {
-  if (!value) {
-    return false
-  }
-
-  return !Number.isNaN(Date.parse(value))
-}
-
 export const hasErrors = (errors: Record<string, string | undefined>) => {
   return Object.values(errors).some(Boolean)
 }
@@ -87,14 +79,6 @@ export const getExecutionWizardValidationErrors = (
 
   const patients = draft.execution.patients.map((patient) => {
     const rowErrors: StepErrors['patients']['rows'][number] = {}
-
-    if (patient.patientDob.trim() && !isDateStringValid(patient.patientDob)) {
-      rowErrors.patientDob = t('validation.validDate')
-    }
-
-    if (patient.policyHolderDob.trim() && !isDateStringValid(patient.policyHolderDob)) {
-      rowErrors.policyHolderDob = t('validation.validDate')
-    }
 
     if (!isJsonObjectStringValid(patient.otherInformation)) {
       rowErrors.otherInformation = t('validation.validJsonObject')

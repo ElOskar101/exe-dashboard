@@ -26,6 +26,29 @@ export interface CustomerDetailsResponse {
   clinic: CustomerClinic[]
 }
 
+export interface ClinicExecutionDay {
+  _id: string
+  sheetName: string
+  trashed: boolean
+}
+
+export interface CcExecutionCell {
+  key: string
+  value: string
+}
+
+export interface CcExecutionRow {
+  _id: string
+  cells: CcExecutionCell[]
+}
+
+export interface CcExecutionResponse {
+  _id: string
+  sheetName: string
+  rows: CcExecutionRow[]
+  trashed: boolean
+}
+
 export const searchCustomers = (clientName: string) => {
   return cccClient.get<CustomerSearchResponse>('/api/v2/customers', {
     params: {
@@ -36,4 +59,12 @@ export const searchCustomers = (clientName: string) => {
 
 export const getCustomerById = (customerId: string) => {
   return cccClient.get<CustomerDetailsResponse>(`/api/v2/customers/${customerId}`)
+}
+
+export const getClinicExecutionDays = (clinicId: string) => {
+  return cccClient.get<ClinicExecutionDay[]>(`/api/v2/executions/${clinicId}/days`)
+}
+
+export const getCcExecution = (executionId: string) => {
+  return cccClient.get<CcExecutionResponse>(`/api/v2/executions/${executionId}`)
 }

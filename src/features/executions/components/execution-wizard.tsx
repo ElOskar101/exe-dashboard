@@ -49,6 +49,7 @@ export default function ExecutionWizard() {
             <PatientsStep
               context={wizard.draft.context}
               execution={wizard.draft.execution.execution}
+              executionName={wizard.draft.execution.executionName}
               patients={wizard.draft.execution.patients}
               contextErrors={wizard.validationErrors.context}
               errors={wizard.validationErrors.patients}
@@ -60,14 +61,17 @@ export default function ExecutionWizard() {
               clinicOptions={wizard.clinicOptions}
               isLoadingClinics={wizard.isLoadingClinics}
               hasSelectedCustomerWithoutClinics={wizard.hasSelectedCustomerWithoutClinics}
+              executionDayOptions={wizard.executionDayOptions}
+              isLoadingExecutionDays={wizard.isLoadingExecutionDays}
+              executionDaysError={wizard.executionDaysError}
+              isImportingPatients={wizard.isImportingPatients}
+              importPatientsError={wizard.importPatientsError}
               onCustomerSearchChange={wizard.updateCustomerSearch}
               onCustomerClear={wizard.clearCustomerSelection}
               onCustomerSelect={wizard.selectCustomer}
               onClinicSelect={wizard.selectClinic}
-              onExecutionChange={wizard.updateExecution}
-              onPatientChange={wizard.updatePatientField}
-              onVerificationTypeChange={wizard.updatePatientVerificationType}
-              onAddPatient={wizard.addPatient}
+              onExecutionDaySelect={wizard.selectExecutionDay}
+              onImportPatients={wizard.importPatients}
               onRemovePatient={wizard.removePatient}
               t={t}
             />

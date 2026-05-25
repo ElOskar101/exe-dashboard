@@ -74,6 +74,7 @@ export interface ExecutionWizardDraft {
   bot: ExecutionBot
   execution: {
     execution: string
+    executionName: string
     patients: ExecutionPatient[]
     workers: string
     retries: string
