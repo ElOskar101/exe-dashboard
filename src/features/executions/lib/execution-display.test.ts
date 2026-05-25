@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getExecutionLabel, isExecutionRunning, normalizeExecutionStatus } from './execution-display'
+import {
+  getExecutionLabel,
+  isExecutionRunning,
+  normalizeExecutionStatus,
+  updateExecutionStatus,
+} from './execution-display'
 import { IExecution } from '../model/execution.interface'
 
 const createExecution = (execution: Partial<IExecution>): IExecution => ({
@@ -54,5 +59,18 @@ describe('execution display helpers', () => {
     expect(isExecutionRunning(null)).toBe(false)
     expect(normalizeExecutionStatus(null)).toBe('unknown')
     expect(normalizeExecutionStatus('not-real')).toBe('unknown')
+  })
+
+  it('applies realtime status updates only to the matching execution', () => {
+    const executions = [
+      createExecution({ status: 'queued' }),
+      createExecution({ _id: 'execution-2', status: 'running' }),
+    ]
+
+    expect(updateExecutionStatus(executions, 'execution-123456789', 'COMPLETED')).toEqual([
+      createExecution({ status: 'completed' }),
+      createExecution({ _id: 'execution-2', status: 'running' }),
+    ])
+    expect(updateExecutionStatus(executions, 'missing', 'completed')).toBe(executions)
   })
 })

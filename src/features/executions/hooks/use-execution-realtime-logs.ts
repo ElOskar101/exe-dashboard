@@ -108,7 +108,6 @@ export const useExecutionRealtimeLogs = (executionId: string) => {
       socket.off('execution:logs:history', handleHistory)
       socket.off('logs', handleLog)
       socket.off('status', handleStatus)
-      socket.disconnect()
     }
   })
 

@@ -28,6 +28,7 @@ import {
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
 import { deleteExecution, getExecutions } from '../services/execution.service'
 import {
   getExecutionLabel,
@@ -52,6 +53,7 @@ export function ExecutionsSidebar() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
+  useExecutionStatusUpdates()
   const executionsQuery = useQuery({
     queryKey: EXECUTIONS_QUERY_KEY,
     queryFn: async () => {
