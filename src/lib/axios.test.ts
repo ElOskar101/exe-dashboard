@@ -23,6 +23,6 @@ describe('axios URL helpers', () => {
   })
 
   it('uses the configured EXE API URL for the EXE client', () => {
-    expect(exeClient.defaults.baseURL).toBe('https://api.controlcentralcarrier.com/api/v1')
+    expect(exeClient.defaults.baseURL).toBe('/execution-api')
   })
 })
