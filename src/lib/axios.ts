@@ -22,6 +22,10 @@ export const exeClient = axios.create({
   baseURL: stripTrailingSlash(APP_CONFIG.exeApiUrl),
   adapter: 'fetch',
 })
+export const exeReportsClient = axios.create({
+  baseURL: stripTrailingSlash(APP_CONFIG.exeReportsUrl),
+  adapter: 'fetch',
+})
 
 const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem('token')
@@ -32,5 +36,6 @@ const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
 
 cccClient.interceptors.request.use(applyDefaultHeaders)
 exeClient.interceptors.request.use(applyDefaultHeaders)
+exeReportsClient.interceptors.request.use(applyDefaultHeaders)
 
 export default cccClient

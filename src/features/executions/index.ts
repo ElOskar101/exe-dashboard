@@ -2,6 +2,7 @@ export {
   createExecution,
   deleteExecution,
   getExecutionById,
+  getExecutionReportHtml,
   getExecutions,
   stopExecution,
   updateExecution,

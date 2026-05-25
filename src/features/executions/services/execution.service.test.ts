@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { exeClient } from '@/lib/axios'
+import { exeClient, exeReportsClient } from '@/lib/axios'
 import {
   createExecution,
   deleteExecution,
   getExecutionById,
+  getExecutionReportHtml,
   getExecutions,
   stopExecution,
   updateExecution,
@@ -16,6 +17,9 @@ vi.mock('@/lib/axios', () => ({
     get: vi.fn(),
     patch: vi.fn(),
     post: vi.fn(),
+  },
+  exeReportsClient: {
+    get: vi.fn(),
   },
 }))
 
@@ -47,6 +51,7 @@ describe('execution.service', () => {
     vi.mocked(exeClient.get).mockReset()
     vi.mocked(exeClient.patch).mockReset()
     vi.mocked(exeClient.post).mockReset()
+    vi.mocked(exeReportsClient.get).mockReset()
   })
 
   it('getExecutions requests the executions list', async () => {
@@ -71,6 +76,14 @@ describe('execution.service', () => {
     await getExecutionById('exe-1')
 
     expect(exeClient.get).toHaveBeenCalledWith('executions/exe-1')
+  })
+
+  it('getExecutionReportHtml requests the execution HTML report', async () => {
+    vi.mocked(exeReportsClient.get).mockResolvedValueOnce({ data: '<html></html>' })
+
+    await getExecutionReportHtml('exe-1')
+
+    expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/index.html')
   })
 
   it('updateExecution patches the selected execution', async () => {

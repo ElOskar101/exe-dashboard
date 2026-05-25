@@ -5,10 +5,10 @@ import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
-import { getExecutionById, stopExecution } from '../services/execution.service'
+import { getExecutionById, getExecutionReportHtml, stopExecution } from '../services/execution.service'
 import { createExecutionLogLinesFromHistory } from '../lib/execution-log-buffer'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
-import { isExecutionRunning } from '../lib/execution-display'
+import { isExecutionFailed, isExecutionRunning, isExecutionSuccessful } from '../lib/execution-display'
 
 function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const { t } = useTranslation('executions')
@@ -39,6 +39,17 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const logLines = realtimeLogs.lines.length > 0 ? realtimeLogs.lines : fallbackLines
   const currentStatus = realtimeLogs.status ?? executionQuery.data?.status
   const canStopExecution = isExecutionRunning(currentStatus)
+  const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
+  const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
+  const reportQuery = useQuery({
+    queryKey: ['execution-report', reportExecutionId],
+    queryFn: async () => {
+      const response = await getExecutionReportHtml(reportExecutionId)
+
+      return response.data
+    },
+    enabled: showReport,
+  })
   const rawExecutionJson = useMemo(() => JSON.stringify(executionQuery.data ?? null, null, 2), [executionQuery.data])
 
   return (
@@ -60,14 +71,20 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       ) : null}
 
       <ExecutionLogsCard
+        key={showReport ? 'report' : 'history'}
         canStopExecution={canStopExecution}
         connectionState={realtimeLogs.connectionState}
         currentStatus={currentStatus}
+        executionId={reportExecutionId}
         isLoading={executionQuery.isLoading}
+        isReportError={reportQuery.isError}
+        isReportLoading={reportQuery.isLoading}
         isStopping={stopMutation.isPending}
         logLines={logLines}
         onStopExecution={() => stopMutation.mutate(executionId)}
         rawExecutionJson={rawExecutionJson}
+        reportHtml={reportQuery.data}
+        showReport={showReport}
       />
     </div>
   )

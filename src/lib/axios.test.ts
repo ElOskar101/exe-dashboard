@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import cccClient, { ensurePathSuffix, exeClient, stripTrailingSlash } from './axios'
+import cccClient, { ensurePathSuffix, exeClient, exeReportsClient, stripTrailingSlash } from './axios'
 
 describe('axios URL helpers', () => {
   it('strips trailing slashes from configured URLs', () => {
@@ -24,5 +24,9 @@ describe('axios URL helpers', () => {
 
   it('uses the configured EXE API URL for the EXE client', () => {
     expect(exeClient.defaults.baseURL).toBe('/execution-api')
+  })
+
+  it('uses the configured reports proxy URL for the reports client', () => {
+    expect(exeReportsClient.defaults.baseURL).toBe('/execution-reports')
   })
 })
