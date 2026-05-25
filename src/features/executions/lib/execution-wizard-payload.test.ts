@@ -10,12 +10,14 @@ describe('buildExecutionPayload', () => {
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Legacy Dental Care'
+    draft.bot.clinicBotId = 'clinic-bot-1'
     draft.execution.execution = 'execution-day-id-1'
     draft.execution.executionName = 'Daily eligibility'
     draft.bot.botName = 'Eligibility Runner'
-    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.bot.verificationType = 'FBD'
     draft.execution.config = '{ "parallel": true }'
     draft.execution.patients = [
       {
@@ -48,9 +50,7 @@ describe('buildExecutionPayload', () => {
           targetUrl: 'https://carrier.example.com',
           username: 'operator',
           password: 'secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
+          otherInformation: {},
         },
         patients: [
           {
@@ -88,18 +88,15 @@ describe('buildExecutionPayload', () => {
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Legacy Dental Care'
+    draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.botName = 'Eligibility Runner'
-    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
 
     expect(buildExecutionPayload(draft, '')).toBeNull()
 
-    draft.bot.otherInformation = '[]'
-
-    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
-
-    draft.bot.otherInformation = '{ "specifyPayer": "None" }'
     draft.execution.config = '[]'
 
     expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
@@ -112,10 +109,12 @@ describe('buildExecutionPayload', () => {
     draft.context.clientName = 'Sunshine Dental'
     draft.context.clinic = 'clinic-id-9'
     draft.context.clinicName = 'Main Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.botName = 'Eligibility Runner'
-    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
 
     expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
       createdBy: 'user-id-7',
@@ -131,10 +130,12 @@ describe('buildExecutionPayload', () => {
     draft.context.clientName = 'Sunshine Dental'
     draft.context.clinic = 'clinic-id-9'
     draft.context.clinicName = 'Main Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.botName = 'Eligibility Runner'
-    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
 
     expect(buildExecutionPayload(draft, 'user-id-7')).not.toHaveProperty('execution')
   })
@@ -147,10 +148,12 @@ describe('buildExecutionPayload', () => {
     draft.context.clinic = 'clinic-id-9'
     draft.context.clinicName = 'Main Clinic'
     draft.execution.execution = 'legacy-execution-value'
+    draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.botName = 'Eligibility Runner'
-    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
 
     expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
       execution: 'legacy-execution-value',

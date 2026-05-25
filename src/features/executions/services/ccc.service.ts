@@ -1,4 +1,5 @@
 import cccClient from '@/lib/axios'
+import type { ExecutionVerificationType } from '../model/execution-create'
 
 export interface CustomerSearchItem {
   _id: string
@@ -17,6 +18,28 @@ export interface CustomerSearchResponse {
 export interface CustomerClinic {
   _id: string
   clinicName: string
+}
+
+export interface ClinicBotStatus {
+  _id: string
+  description: string
+}
+
+export interface ClinicBotDefinition {
+  _id: string
+  botName: string
+  isActive: boolean
+  status: ClinicBotStatus
+  type: ExecutionVerificationType
+  urlLogin: string
+}
+
+export interface ClinicBotRecord {
+  _id: string
+  status: ClinicBotStatus
+  username: string
+  password: string
+  bot: ClinicBotDefinition
 }
 
 export interface CustomerDetailsResponse {
@@ -63,6 +86,10 @@ export const getCustomerById = (customerId: string) => {
 
 export const getClinicExecutionDays = (clinicId: string) => {
   return cccClient.get<ClinicExecutionDay[]>(`v2/executions/${clinicId}/days`)
+}
+
+export const getClinicBots = (clinicId: string) => {
+  return cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
 }
 
 export const getCcExecution = (executionId: string) => {

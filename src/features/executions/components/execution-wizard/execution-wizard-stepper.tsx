@@ -18,10 +18,10 @@ export function ExecutionWizardStepper({
   t,
 }: ExecutionWizardStepperProps) {
   return (
-    <ol className="grid gap-3 md:grid-cols-4">
+    <ol className={cn('grid gap-3', steps.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-4')}>
       {steps.map((step, index) => {
         const isActiveStep = currentStep === index
-        const hasIncompleteStepInfo = index < 3 && !stepValidity[index]
+        const hasIncompleteStepInfo = index < steps.length - 1 && !stepValidity[index]
 
         return (
           <li key={step}>

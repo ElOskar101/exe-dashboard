@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator'
 import { IconArrowLeft, IconArrowRight, IconLoader2, IconSend2 } from '@tabler/icons-react'
 import { executionWizardSteps, useExecutionWizard } from '../hooks/use-execution-wizard'
-import { BotStep } from './execution-wizard/bot-step'
 import { ConfigStep } from './execution-wizard/config-step'
 import { ExecutionSubmitErrorAlert } from './execution-wizard/execution-submit-error-alert'
 import { ExecutionWizardStepper } from './execution-wizard/execution-wizard-stepper'
@@ -36,17 +35,8 @@ export default function ExecutionWizard() {
 
         <div className="flex flex-col gap-6">
           {wizard.currentStep === 0 ? (
-            <BotStep
-              bot={wizard.draft.bot}
-              errors={wizard.validationErrors.bot}
-              showErrors={wizard.showErrors.bot}
-              onFieldChange={wizard.updateBotField}
-              t={t}
-            />
-          ) : null}
-
-          {wizard.currentStep === 1 ? (
             <PatientsStep
+              bot={wizard.draft.bot}
               context={wizard.draft.context}
               execution={wizard.draft.execution.execution}
               executionName={wizard.draft.execution.executionName}
@@ -61,6 +51,10 @@ export default function ExecutionWizard() {
               clinicOptions={wizard.clinicOptions}
               isLoadingClinics={wizard.isLoadingClinics}
               hasSelectedCustomerWithoutClinics={wizard.hasSelectedCustomerWithoutClinics}
+              clinicBotOptions={wizard.clinicBotOptions}
+              isLoadingClinicBots={wizard.isLoadingClinicBots}
+              clinicBotsError={wizard.clinicBotsError}
+              hasSelectedClinicWithoutActiveBots={wizard.hasSelectedClinicWithoutActiveBots}
               executionDayOptions={wizard.executionDayOptions}
               isLoadingExecutionDays={wizard.isLoadingExecutionDays}
               executionDaysError={wizard.executionDaysError}
@@ -70,6 +64,7 @@ export default function ExecutionWizard() {
               onCustomerClear={wizard.clearCustomerSelection}
               onCustomerSelect={wizard.selectCustomer}
               onClinicSelect={wizard.selectClinic}
+              onClinicBotSelect={wizard.selectClinicBot}
               onExecutionDaySelect={wizard.selectExecutionDay}
               onImportPatients={wizard.importPatients}
               onRemovePatient={wizard.removePatient}
@@ -77,7 +72,7 @@ export default function ExecutionWizard() {
             />
           ) : null}
 
-          {wizard.currentStep === 2 ? (
+          {wizard.currentStep === 1 ? (
             <ConfigStep
               draft={wizard.draft}
               contextErrors={wizard.validationErrors.context}
@@ -91,7 +86,7 @@ export default function ExecutionWizard() {
             />
           ) : null}
 
-          {wizard.currentStep === 3 ? <ReviewStep draft={wizard.draft} payload={wizard.payloadPreview} t={t} /> : null}
+          {wizard.currentStep === 2 ? <ReviewStep draft={wizard.draft} payload={wizard.payloadPreview} t={t} /> : null}
         </div>
       </CardContent>
       <CardFooter className="justify-between border-t border-border">

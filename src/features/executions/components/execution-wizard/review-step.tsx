@@ -49,10 +49,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
     meta: {
       bot: {
         botName: draft.bot.botName.trim(),
-        targetUrl: draft.bot.url.trim(),
+        targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password,
-        otherInformation: draft.bot.otherInformation,
+        otherInformation: {},
       },
       patients: draft.execution.patients.map((patient) => ({
         patientName: patient.patientName.trim(),
@@ -103,7 +103,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.url')}</dt>
-              <dd className="mt-1 break-all font-medium">{getDisplayValue(draft.bot.url, emptyValue)}</dd>
+              <dd className="mt-1 break-all font-medium">{getDisplayValue(draft.bot.targetUrl, emptyValue)}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.execution')}</dt>

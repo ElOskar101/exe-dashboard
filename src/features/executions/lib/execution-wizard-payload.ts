@@ -25,8 +25,9 @@ export const buildExecutionPayload = (
     !draft.context.clientName.trim() ||
     !draft.context.clinic.trim() ||
     !draft.context.clinicName.trim() ||
+    !draft.bot.clinicBotId.trim() ||
     !draft.bot.botName.trim() ||
-    !draft.bot.url.trim() ||
+    !draft.bot.targetUrl.trim() ||
     !draft.bot.username.trim() ||
     !draft.bot.password.trim() ||
     !draft.execution.workers.trim() ||
@@ -35,11 +36,10 @@ export const buildExecutionPayload = (
     return null
   }
 
-  const botOtherInformation = parseMetadata(draft.bot.otherInformation)
   const patientOtherInformation = draft.execution.patients.map((patient) => parseMetadata(patient.otherInformation))
   const configMetadata = parseMetadata(draft.execution.config)
 
-  if (!botOtherInformation || patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
+  if (patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
     return null
   }
 
@@ -52,10 +52,10 @@ export const buildExecutionPayload = (
     meta: {
       bot: {
         botName: draft.bot.botName.trim(),
-        targetUrl: draft.bot.url.trim(),
+        targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password,
-        otherInformation: botOtherInformation,
+        otherInformation: {},
       },
       patients: draft.execution.patients.map((patient, index) => ({
         patientName: patient.patientName.trim(),

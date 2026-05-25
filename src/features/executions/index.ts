@@ -6,7 +6,7 @@ export {
   stopExecution,
   updateExecution,
 } from './services/execution.service'
-export { getCustomerById, searchCustomers } from './services/ccc.service'
+export { getClinicBots, getCustomerById, searchCustomers } from './services/ccc.service'
 export { default as ExecutionsPage } from './pages/executions-page'
 export type { ExecutionStatus, IExecution } from './model/execution.interface'
 export type { ExecutionUpdatePayload } from './services/execution.service'

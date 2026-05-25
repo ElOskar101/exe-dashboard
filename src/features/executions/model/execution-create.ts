@@ -1,9 +1,10 @@
 export interface ExecutionBot {
+  clinicBotId: string
   botName: string
-  url: string
+  targetUrl: string
   username: string
   password: string
-  otherInformation: string
+  verificationType: ExecutionVerificationType | ''
 }
 
 export interface ExecutionPatient {

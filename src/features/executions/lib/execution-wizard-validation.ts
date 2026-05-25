@@ -5,8 +5,8 @@ export type StepErrors = {
   context: Partial<Record<keyof ExecutionWizardDraft['context'], string>> & {
     createdBy?: string
   }
-  bot: Partial<Record<keyof ExecutionWizardDraft['bot'], string>>
   patients: {
+    bot?: string
     form?: string
     rows: Array<Partial<Record<keyof ExecutionPatient, string>>>
   }
@@ -19,6 +19,7 @@ export type StepErrors = {
 
 interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
+  hasSelectedClinicWithoutActiveBots?: boolean
 }
 
 const requiredPatientFields: Array<
@@ -57,45 +58,29 @@ export const getExecutionWizardValidationErrors = (
     context.clinic = t('validation.customerHasNoClinics')
   }
 
-  const bot: StepErrors['bot'] = {}
+  const patients: StepErrors['patients'] = {
+    rows: draft.execution.patients.map((patient) => {
+      const rowErrors: StepErrors['patients']['rows'][number] = {}
 
-  if (!draft.bot.botName.trim()) {
-    bot.botName = t('validation.required')
-  }
+      requiredPatientFields.forEach((field) => {
+        if (!patient[field].trim()) {
+          rowErrors[field] = t('validation.required')
+        }
+      })
 
-  if (!draft.bot.url.trim()) {
-    bot.url = t('validation.required')
-  } else if (!URL.canParse(draft.bot.url)) {
-    bot.url = t('validation.validUrl')
-  }
-
-  if (!draft.bot.username.trim()) {
-    bot.username = t('validation.required')
-  }
-
-  if (!draft.bot.password.trim()) {
-    bot.password = t('validation.required')
-  }
-
-  if (!isJsonObjectStringValid(draft.bot.otherInformation)) {
-    bot.otherInformation = t('validation.validJsonObject')
-  }
-
-  const patients = draft.execution.patients.map((patient) => {
-    const rowErrors: StepErrors['patients']['rows'][number] = {}
-
-    requiredPatientFields.forEach((field) => {
-      if (!patient[field].trim()) {
-        rowErrors[field] = t('validation.required')
+      if (!isJsonObjectStringValid(patient.otherInformation)) {
+        rowErrors.otherInformation = t('validation.validJsonObject')
       }
-    })
 
-    if (!isJsonObjectStringValid(patient.otherInformation)) {
-      rowErrors.otherInformation = t('validation.validJsonObject')
-    }
+      return rowErrors
+    }),
+  }
 
-    return rowErrors
-  })
+  if (draft.context.clinic.trim() && !draft.bot.clinicBotId.trim()) {
+    patients.bot = options.hasSelectedClinicWithoutActiveBots
+      ? t('validation.noActiveClinicBots')
+      : t('validation.required')
+  }
 
   const config: StepErrors['config'] = {}
 
@@ -117,10 +102,10 @@ export const getExecutionWizardValidationErrors = (
 
   return {
     context,
-    bot,
     patients: {
+      bot: patients.bot,
       form: draft.execution.patients.length === 0 ? t('validation.addPatient') : undefined,
-      rows: patients,
+      rows: patients.rows,
     },
     config,
   }

@@ -37,6 +37,34 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.config.config).toBe('validation.validJsonObject')
   })
 
+  it('requires a selected clinic bot after a clinic is chosen', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Downtown Clinic'
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
+
+    expect(errors.patients.bot).toBe('validation.required')
+  })
+
+  it('shows a dedicated clinic bot error when the selected clinic has no active bots', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Downtown Clinic'
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never, {
+      hasSelectedClinicWithoutActiveBots: true,
+    })
+
+    expect(errors.patients.bot).toBe('validation.noActiveClinicBots')
+  })
+
   it('requires core imported patient fields before allowing submission', () => {
     const draft = createEmptyDraft()
 
@@ -44,10 +72,12 @@ describe('getExecutionWizardValidationErrors', () => {
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Downtown Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.botName = 'Eligibility Runner'
-    draft.bot.url = 'https://carrier.example.com'
+    draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.username = 'operator'
     draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
     draft.execution.patients = [
       {
         patientName: 'Jane',
