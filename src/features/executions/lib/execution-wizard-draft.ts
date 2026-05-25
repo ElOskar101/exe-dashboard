@@ -25,11 +25,12 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
     clinicName: '',
   },
   bot: {
+    clinicBotId: '',
     botName: '',
-    url: '',
+    targetUrl: '',
     username: '',
     password: '',
-    otherInformation: '{\n  "specifyPayer": "None"\n}',
+    verificationType: '',
   },
   execution: {
     execution: '',

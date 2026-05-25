@@ -42,3 +42,26 @@ export const isExecutionPending = (status?: string | null) => {
 
   return normalizedStatus === 'queued' || normalizedStatus === 'running'
 }
+
+export const updateExecutionStatus = (
+  executions: IExecution[] | undefined,
+  executionId: string,
+  status: string,
+): IExecution[] | undefined => {
+  if (!executions) return executions
+
+  const normalizedStatus = normalizeExecutionStatus(status)
+  let updated = false
+  const nextExecutions = executions.map((execution) => {
+    if (execution._id !== executionId || execution.status === normalizedStatus) return execution
+
+    updated = true
+
+    return {
+      ...execution,
+      status: normalizedStatus,
+    }
+  })
+
+  return updated ? nextExecutions : executions
+}

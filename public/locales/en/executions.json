@@ -1,20 +1,20 @@
 {
   "page": {
     "title": "Create execution",
-    "description": "Build the POST /executions payload step by step and submit it when everything is ready."
+    "description": "Import patients, choose the clinic bot details, configure the run, and submit when everything is ready."
   },
   "steps": {
     "stepCounter": "Step {{current}} of {{total}}",
     "complete": "Complete",
     "inProgress": "In progress",
     "upNext": "Up next",
-    "bot": {
-      "title": "Bot",
-      "description": "Capture the execution context, bot credentials, and endpoint for this execution."
-    },
     "patients": {
       "title": "Patients",
-      "description": "Add one or more patients to the execution payload."
+      "description": "Select the client, clinic, and execution day, then import the patients for this run."
+    },
+    "bot": {
+      "title": "Bot",
+      "description": "Pick the clinic bot and update the execution bot fields before submission."
     },
     "config": {
       "title": "Execution config",
@@ -26,13 +26,9 @@
     }
   },
   "sections": {
-    "bot": {
-      "legend": "Bot details",
-      "description": "These values are submitted directly inside the bot block."
-    },
     "patients": {
       "legend": "Patients",
-      "description": "Import patients from a selected CC execution day.",
+      "description": "Choose a clinic bot and import patients from a selected CC execution day.",
       "patientTitle": "Patient {{index}}",
       "patientDescription": "Every patient row becomes one item in execution.patients."
     },
@@ -52,6 +48,7 @@
     "project": "Project",
     "client": "Client",
     "clinic": "Clinic",
+    "bot": "Select bot",
     "botName": "Bot name",
     "url": "Portal URL",
     "username": "Username",
@@ -84,10 +81,12 @@
     "project": "liberty",
     "client": "Search clients by name",
     "clinic": "Select a clinic",
+    "bot": "Select a bot",
     "botName": "Eligibility Runner",
     "url": "https://carrier.example.com",
     "username": "qa.operator",
     "password": "Enter the bot password",
+    "decryptingClinicBotPassword": "Decrypting password...",
     "patientName": "Jane",
     "patientLastName": "Doe",
     "memberId": "123456789",
@@ -116,6 +115,8 @@
     "addPatient": "Add patient",
     "getPatients": "Get patients",
     "gettingPatients": "Getting patients...",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "removePatient": "Remove patient",
     "startOver": "Create another execution"
   },
@@ -134,6 +135,9 @@
     "patientListTitle": "Patient list is incomplete",
     "patientDetailsTitle": "Patient details are incomplete",
     "patientDetailsDescription": "Fill the missing imported fields before creating the execution: {{fields}}.",
+    "clinicBotsTitle": "Clinic bots could not be loaded",
+    "noActiveClinicBots": "The selected clinic has no active bots available.",
+    "decryptClinicBotPasswordTitle": "Bot password could not be decrypted",
     "executionDaysTitle": "Execution days could not be loaded",
     "importPatientsTitle": "Patients could not be imported"
   },
@@ -142,10 +146,14 @@
     "searchingCustomers": "Searching clients...",
     "noCustomersFound": "No clients matched your search.",
     "selected": "Selected",
+    "selectClientAndClinicFirst": "Select a client and clinic in the patients step before choosing a bot.",
+    "selectBotToEdit": "Select a clinic bot to load its default execution settings.",
+    "decryptingClinicBotPassword": "Decrypting the selected clinic bot password.",
     "selectClientFirst": "Select a client to load its clinics.",
     "loadingClinics": "Loading clinics for the selected client...",
     "loadClinicsError": "The selected client's clinics could not be loaded.",
     "selectClinic": "Choose one of the clinics available for this client.",
+    "noActiveClinicBots": "This clinic has no active bots available. Choose a different clinic to continue.",
     "noImportedPatients": "Select an execution day and get patients to continue.",
     "importedPatients": "Imported patients: {{count}}"
   },

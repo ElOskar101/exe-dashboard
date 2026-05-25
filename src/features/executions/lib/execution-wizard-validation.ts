@@ -5,11 +5,11 @@ export type StepErrors = {
   context: Partial<Record<keyof ExecutionWizardDraft['context'], string>> & {
     createdBy?: string
   }
-  bot: Partial<Record<keyof ExecutionWizardDraft['bot'], string>>
   patients: {
     form?: string
     rows: Array<Partial<Record<keyof ExecutionPatient, string>>>
   }
+  bot: Partial<Record<'clinicBotId' | 'botName' | 'targetUrl' | 'username' | 'password', string>>
   config: {
     workers?: string
     retries?: string
@@ -19,6 +19,7 @@ export type StepErrors = {
 
 interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
+  hasSelectedClinicWithoutActiveBots?: boolean
 }
 
 const requiredPatientFields: Array<
@@ -57,45 +58,56 @@ export const getExecutionWizardValidationErrors = (
     context.clinic = t('validation.customerHasNoClinics')
   }
 
-  const bot: StepErrors['bot'] = {}
+  const patients: StepErrors['patients'] = {
+    rows: draft.execution.patients.map((patient) => {
+      const rowErrors: StepErrors['patients']['rows'][number] = {}
 
-  if (!draft.bot.botName.trim()) {
-    bot.botName = t('validation.required')
-  }
+      requiredPatientFields.forEach((field) => {
+        if (!patient[field].trim()) {
+          rowErrors[field] = t('validation.required')
+        }
+      })
 
-  if (!draft.bot.url.trim()) {
-    bot.url = t('validation.required')
-  } else if (!URL.canParse(draft.bot.url)) {
-    bot.url = t('validation.validUrl')
-  }
-
-  if (!draft.bot.username.trim()) {
-    bot.username = t('validation.required')
-  }
-
-  if (!draft.bot.password.trim()) {
-    bot.password = t('validation.required')
-  }
-
-  if (!isJsonObjectStringValid(draft.bot.otherInformation)) {
-    bot.otherInformation = t('validation.validJsonObject')
-  }
-
-  const patients = draft.execution.patients.map((patient) => {
-    const rowErrors: StepErrors['patients']['rows'][number] = {}
-
-    requiredPatientFields.forEach((field) => {
-      if (!patient[field].trim()) {
-        rowErrors[field] = t('validation.required')
+      if (!isJsonObjectStringValid(patient.otherInformation)) {
+        rowErrors.otherInformation = t('validation.validJsonObject')
       }
-    })
 
-    if (!isJsonObjectStringValid(patient.otherInformation)) {
-      rowErrors.otherInformation = t('validation.validJsonObject')
+      return rowErrors
+    }),
+  }
+
+  const bot: StepErrors['bot'] = {}
+  const hasSelectedClinic = draft.context.clinic.trim().length > 0
+  const hasSelectedClinicBot = draft.bot.clinicBotId.trim().length > 0
+  const hasEditableBotValues = [draft.bot.botName, draft.bot.targetUrl, draft.bot.username, draft.bot.password].some(
+    (value) => value.trim().length > 0,
+  )
+
+  if (hasSelectedClinic && !hasSelectedClinicBot) {
+    bot.clinicBotId = options.hasSelectedClinicWithoutActiveBots
+      ? t('validation.noActiveClinicBots')
+      : t('validation.required')
+  }
+
+  if (hasSelectedClinicBot || hasEditableBotValues) {
+    if (!draft.bot.botName.trim()) {
+      bot.botName = t('validation.required')
     }
 
-    return rowErrors
-  })
+    if (!draft.bot.targetUrl.trim()) {
+      bot.targetUrl = t('validation.required')
+    } else if (!isUrlValid(draft.bot.targetUrl)) {
+      bot.targetUrl = t('validation.validUrl')
+    }
+
+    if (!draft.bot.username.trim()) {
+      bot.username = t('validation.required')
+    }
+
+    if (!draft.bot.password.trim()) {
+      bot.password = t('validation.required')
+    }
+  }
 
   const config: StepErrors['config'] = {}
 
@@ -117,11 +129,11 @@ export const getExecutionWizardValidationErrors = (
 
   return {
     context,
-    bot,
     patients: {
       form: draft.execution.patients.length === 0 ? t('validation.addPatient') : undefined,
-      rows: patients,
+      rows: patients.rows,
     },
+    bot,
     config,
   }
 }
@@ -131,6 +143,16 @@ const isJsonObjectStringValid = (value: string) => {
     const parsed = JSON.parse(value)
 
     return Boolean(parsed) && !Array.isArray(parsed) && typeof parsed === 'object'
+  } catch {
+    return false
+  }
+}
+
+const isUrlValid = (value: string) => {
+  try {
+    const parsedUrl = new URL(value)
+
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'
   } catch {
     return false
   }

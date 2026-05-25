@@ -36,16 +36,6 @@ export default function ExecutionWizard() {
 
         <div className="flex flex-col gap-6">
           {wizard.currentStep === 0 ? (
-            <BotStep
-              bot={wizard.draft.bot}
-              errors={wizard.validationErrors.bot}
-              showErrors={wizard.showErrors.bot}
-              onFieldChange={wizard.updateBotField}
-              t={t}
-            />
-          ) : null}
-
-          {wizard.currentStep === 1 ? (
             <PatientsStep
               context={wizard.draft.context}
               execution={wizard.draft.execution.execution}
@@ -73,6 +63,24 @@ export default function ExecutionWizard() {
               onExecutionDaySelect={wizard.selectExecutionDay}
               onImportPatients={wizard.importPatients}
               onRemovePatient={wizard.removePatient}
+              t={t}
+            />
+          ) : null}
+
+          {wizard.currentStep === 1 ? (
+            <BotStep
+              bot={wizard.draft.bot}
+              context={wizard.draft.context}
+              errors={wizard.validationErrors.bot}
+              showErrors={wizard.showErrors.bot}
+              clinicBotOptions={wizard.clinicBotOptions}
+              isLoadingClinicBots={wizard.isLoadingClinicBots}
+              clinicBotsError={wizard.clinicBotsError}
+              isDecryptingClinicBotPassword={wizard.isDecryptingClinicBotPassword}
+              decryptClinicBotPasswordError={wizard.decryptClinicBotPasswordError}
+              hasSelectedClinicWithoutActiveBots={wizard.hasSelectedClinicWithoutActiveBots}
+              onClinicBotSelect={wizard.selectClinicBot}
+              onBotFieldChange={wizard.updateBotField}
               t={t}
             />
           ) : null}

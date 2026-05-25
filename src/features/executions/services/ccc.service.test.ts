@@ -1,6 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import cccClient from '@/lib/axios'
-import { getCcExecution, getClinicExecutionDays, getCustomerById, searchCustomers } from './ccc.service'
+import {
+  decryptClinicBotPassword,
+  getCcExecution,
+  getClinicBots,
+  getClinicExecutionDays,
+  getCustomerById,
+  searchCustomers,
+} from './ccc.service'
 
 vi.mock('@/lib/axios', () => ({
   default: {
@@ -63,6 +70,37 @@ describe('ccc.service', () => {
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/clinic-1/days')
   })
 
+  it('getClinicBots requests clinic bots for the selected clinic', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          _id: 'clinic-bot-1',
+          status: {
+            _id: 'status-1',
+            description: 'Active',
+          },
+          username: 'runner',
+          password: 'secret',
+          bot: {
+            _id: 'bot-1',
+            botName: 'Aetna',
+            isActive: true,
+            status: {
+              _id: 'bot-status-1',
+              description: 'Developed',
+            },
+            type: 'FBD',
+            urlLogin: 'https://carrier.example.com',
+          },
+        },
+      ],
+    })
+
+    await getClinicBots('clinic-1')
+
+    expect(cccClient.get).toHaveBeenCalledWith('v2/clinics/clinic-1/clinic-bots')
+  })
+
   it('getCcExecution requests the selected CC execution', async () => {
     vi.mocked(cccClient.get).mockResolvedValueOnce({
       data: {
@@ -76,5 +114,18 @@ describe('ccc.service', () => {
     await getCcExecution('day-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/day-1')
+  })
+
+  it('decryptClinicBotPassword requests the decrypted password as plain text', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: '"decrypted-password"',
+    })
+
+    const response = await decryptClinicBotPassword('clinic-bot-1')
+
+    expect(cccClient.get).toHaveBeenCalledWith('clinicbots/decrypt/clinic-bot-1', {
+      responseType: 'text',
+    })
+    expect(response.data).toBe('decrypted-password')
   })
 })
