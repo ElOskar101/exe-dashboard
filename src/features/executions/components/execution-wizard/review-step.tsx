@@ -36,31 +36,9 @@ const parseJsonObjectString = (value: string): ExecutionMetadata | string => {
   }
 }
 
-const getReviewPatientRows = (patients: ExecutionPatient[]): ExecutionPatient[] => {
-  return patients.length > 0
-    ? patients
-    : [
-        {
-          patientName: '',
-          patientLastName: '',
-          patientMemberId: '',
-          patientDob: '',
-          policyHolderName: '',
-          policyHolderLastName: '',
-          policyHolderDob: '',
-          relationship: '',
-          zipCode: '',
-          clinic: '',
-          verificationType: '',
-          filenames: '',
-          otherInformation: '',
-        },
-      ]
-}
-
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
-  const patients = getReviewPatientRows(draft.execution.patients)
+  const patients = draft.execution.patients
   const reviewPayload = payload ?? {
     project: draft.context.project.trim(),
     client: draft.context.client.trim(),
@@ -141,18 +119,24 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
 
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <div className="flex flex-col gap-3 max-h-48 overflow-y-auto">
-            {patients.map((patient, index) => (
-              <div
-                key={`${patient.patientMemberId}-${index}`}
-                className="grid grid-cols-5 gap-x-2 items-center gap-y-2 rounded-2xl border border-border/70 bg-muted/40 p-3"
-              >
-                <p className="truncate">{getPatientFullName(patient, emptyValue)}</p>
-                <p>{getDisplayValue(patient.patientDob, emptyValue)}</p>
-                <p>{getDisplayValue(patient.patientMemberId, emptyValue)}</p>
-                <p>{getDisplayValue(patient.relationship, emptyValue)}</p>
-                <p>{patient.verificationType || emptyValue}</p>
+            {patients.length > 0 ? (
+              patients.map((patient, index) => (
+                <div
+                  key={`${patient.patientMemberId}-${index}`}
+                  className="grid grid-cols-5 gap-x-2 items-center gap-y-2 rounded-2xl border border-border/70 bg-muted/40 p-3"
+                >
+                  <p className="truncate">{getPatientFullName(patient, emptyValue)}</p>
+                  <p>{getDisplayValue(patient.patientDob, emptyValue)}</p>
+                  <p>{getDisplayValue(patient.patientMemberId, emptyValue)}</p>
+                  <p>{getDisplayValue(patient.relationship, emptyValue)}</p>
+                  <p>{patient.verificationType || emptyValue}</p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-border/70 bg-muted/40 p-3">
+                <p className="font-medium text-muted-foreground">No patients got</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
