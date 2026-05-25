@@ -144,7 +144,9 @@ export function ExecutionsSidebar() {
                         tooltip={label}
                       >
                         <span className="flex min-w-0 items-center gap-2">
-                          <span>{label}</span>
+                          <span>
+                            {execution.playwrightProject} {label}
+                          </span>
                           <span
                             aria-label={status}
                             className={cn('size-2 shrink-0 rounded-full', getStatusDotClassName(status))}
