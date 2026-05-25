@@ -82,6 +82,22 @@ async function selectCustomerAndClinic(page: Page) {
   await page.getByRole('option', { name: 'Downtown Clinic' }).click()
 }
 
+async function completeBotStep(
+  page: Page,
+  {
+    botName = 'Eligibility Runner',
+    portalUrl = 'https://carrier.example.com',
+    username = 'qa.operator',
+    password = 'super-secret',
+  } = {},
+) {
+  await page.getByLabel('Bot name').fill(botName)
+  await page.getByLabel('Portal URL').fill(portalUrl)
+  await page.getByLabel('Username').fill(username)
+  await page.getByLabel('Password').fill(password)
+  await page.getByRole('button', { name: 'Next' }).click()
+}
+
 test.describe('protected executions route', () => {
   test('redirects anonymous users to login', async ({ page }) => {
     await page.route('https://auth.controlcentralcarrier.com/**', async (route) => {
@@ -109,7 +125,7 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await expect(page).toHaveURL('/')
-    await expect(page.getByText('Create execution')).toBeVisible()
+    await expect(page.getByRole('main').getByText('Create execution')).toBeVisible()
     await expect(
       page.getByText('Build the POST /executions payload step by step and submit it when everything is ready.'),
     ).toBeVisible()
@@ -221,22 +237,18 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
+    await completeBotStep(page)
     await selectCustomerAndClinic(page)
-    await page.getByLabel('Bot name').fill('Eligibility Runner')
-    await page.getByLabel('Portal URL').fill('https://carrier.example.com')
-    await page.getByLabel('Username').fill('qa.operator')
-    await page.getByLabel('Password').fill('super-secret')
-    await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Patient name').fill('Jane Doe')
     await page.getByLabel('Member ID').fill('111111')
-    await page.getByLabel('Date of birth').fill('1990-01-01')
+    await page.getByLabel('Patient date of birth').fill('1990-01-01')
     await page.getByRole('button', { name: 'Add patient' }).click()
     await page.getByLabel('Patient name').nth(1).fill('John Doe')
     await page.getByLabel('Member ID').nth(1).fill('222222')
-    await page.getByLabel('Date of birth').nth(1).fill('1992-02-02')
+    await page.getByLabel('Patient date of birth').nth(1).fill('1992-02-02')
     await page.getByRole('button', { name: 'ELG' }).first().click()
-    await page.getByRole('button', { name: 'FBD' }).click()
+    await page.getByRole('button', { name: 'FBD' }).nth(1).click()
     await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Workers').fill('4')
@@ -339,16 +351,17 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
+    await completeBotStep(page, {
+      botName: 'Retry Bot',
+      portalUrl: 'https://retry.example.com',
+      username: 'retry.user',
+      password: 'retry-secret',
+    })
     await selectCustomerAndClinic(page)
-    await page.getByLabel('Bot name').fill('Retry Bot')
-    await page.getByLabel('Portal URL').fill('https://retry.example.com')
-    await page.getByLabel('Username').fill('retry.user')
-    await page.getByLabel('Password').fill('retry-secret')
-    await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Patient name').fill('Retry Patient')
     await page.getByLabel('Member ID').fill('999999')
-    await page.getByLabel('Date of birth').fill('1988-03-03')
+    await page.getByLabel('Patient date of birth').fill('1988-03-03')
     await page.getByRole('button', { name: 'FBD' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
 

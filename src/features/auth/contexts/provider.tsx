@@ -14,6 +14,10 @@ export const AuthProvider = (props: { children: ReactNode }) => {
   const [user, setUser] = useState<IUser | null>(null)
 
   useMountEffect(() => {
+    if (!token) {
+      return
+    }
+
     const savedUserData = sessionStorage.getItem('me')
     if (savedUserData) {
       const user: IUser = JSON.parse(_base64Decode(savedUserData))
