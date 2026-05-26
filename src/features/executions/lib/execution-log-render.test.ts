@@ -158,4 +158,199 @@ describe('execution log render', () => {
       },
     ])
   })
+
+  it('removes prefixed metadata after leading ANSI controls', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\u001b[1A\u001b[2K[2026-05-26T20:11:26.668Z] [stdout] 1 failed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:11:26.668Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '\u001b[1A\u001b[2K1 failed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:11:26.668Z',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
+
+  it('removes prefixed metadata after terminal control and spacing tokens', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\r  \u001b7\u001b]0;playwright\u0007\u001b[1A\u001b[2K [2026-05-26T20:07:14.455Z] [stdout] 1 failed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:07:14.455Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '\r  \u001b7\u001b]0;playwright\u0007\u001b[1A\u001b[2K 1 failed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
+
+  it('removes repeated leading metadata wrappers from a single log line', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T20:07:14.455Z] [stdout] [2026-05-26T20:07:14.455Z] [stdout] completed',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'completed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('removes repeated leading metadata wrappers when timestamps differ but the stream matches', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T20:07:14.455Z] [stdout] [2026-05-26T20:08:14.455Z] [stdout] completed',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'completed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:08:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('preserves log payloads that start with a different stream metadata prefix', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message:
+          '[2026-05-26T20:07:14.455Z] [stdout] [2026-05-26T20:08:14.455Z] [stderr] app emitted structured metadata',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '[2026-05-26T20:08:14.455Z] [stderr] app emitted structured metadata',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('keeps metadata-like content inside a normalized history message', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T20:07:14.455Z] [stdout] debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('removes metadata wrappers decorated with ANSI styles', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\u001b[90m[2026-05-26T20:07:14.455Z]\u001b[0m \u001b[36m[stdout]\u001b[0m completed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:07:14.455Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'completed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('removes embedded metadata when it duplicates the line metadata', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: 'unrecognized terminal prefix [2026-05-26T20:07:14.455Z] [stdout] 1 failed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:07:14.455Z',
+      },
+      {
+        id: 'line-2',
+        message: 'debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+        stream: 'stderr',
+        timestamp: '2026-05-26T20:08:14.455Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'unrecognized terminal prefix 1 failed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+      {
+        type: 'text',
+        line: {
+          id: 'line-2',
+          message: 'debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+          stream: 'stderr',
+          timestamp: '2026-05-26T20:08:14.455Z',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
 })

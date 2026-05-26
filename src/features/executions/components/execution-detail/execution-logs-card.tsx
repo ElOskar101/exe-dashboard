@@ -264,10 +264,10 @@ export function ExecutionLogsCard({
   const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}:${latestLogLength}`)
 
   return (
-    <Card className="min-h-0 min-w-0 flex-1 gap-4">
+    <Card className="min-h-0 min-w-0 flex-1 gap-2">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex min-w-0 flex-col gap-1">
             <CardTitle className="flex items-center gap-2">
               <IconTerminal2 className="text-muted-foreground" />
               {title}

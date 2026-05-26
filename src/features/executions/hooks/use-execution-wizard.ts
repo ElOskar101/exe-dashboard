@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
 import type { TFunction } from 'i18next'
+import { toast } from 'sonner'
 import { createExecution } from '../services/execution.service'
 import { getExecutionRequestErrorMessage } from '../services/execution-errors'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
+import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
 import {
   type ClinicBotPasswordRequestState,
   createIdleClinicBotPasswordRequestState,
@@ -469,9 +471,17 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     )
 
     if (!payloadPreview || stepValidity.some((isStepValid) => !isStepValid)) {
+      const validationToastCopy = getExecutionWizardValidationToastCopy(validationErrors, t)
+
+      toast.warning(validationToastCopy?.title ?? t('validation.submitBlockedTitle'), {
+        id: 'execution-wizard-validation',
+        description: validationToastCopy?.description ?? t('validation.submitBlockedFallback'),
+      })
+
       return
     }
 
+    toast.dismiss('execution-wizard-validation')
     setIsSubmitting(true)
     setSubmitError(null)
 
