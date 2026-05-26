@@ -1,9 +1,15 @@
-import { memo, useMemo, type CSSProperties, type ReactNode } from 'react'
+import { memo, useMemo, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IconCircleDashed } from '@tabler/icons-react'
 import Anser from 'anser'
+import Prism from 'prismjs'
+import 'prismjs/components/prism-clike'
+import 'prismjs/components/prism-javascript'
+import 'prismjs/components/prism-typescript'
+import { Highlight, themes as prismThemes } from 'prism-react-renderer'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/hooks/use-theme'
 import { formatExecutionDateTime } from '../../lib/format-execution-date'
 import type { ExecutionLogLine, ExecutionLogStream } from '../../lib/execution-log-buffer'
 import { buildExecutionLogRenderItems, type ExecutionLogCodeFrameItem } from '../../lib/execution-log-render'
@@ -15,7 +21,9 @@ interface ExecutionLogListProps {
 
 export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps) {
   const { t } = useTranslation('executions')
+  const { theme } = useTheme()
   const renderItems = useMemo(() => buildExecutionLogRenderItems(logLines), [logLines])
+  const codeTheme = theme === 'dark' ? prismThemes.oneDark : prismThemes.github
 
   if (isLoading && logLines.length === 0) {
     return <ExecutionLogListSkeleton />
@@ -39,7 +47,7 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
     <div className="min-w-full w-max font-mono text-[13px] text-foreground">
       {renderItems.map((item) =>
         item.type === 'code-frame' ? (
-          <ExecutionCodeFrame key={item.id} item={item} />
+          <ExecutionCodeFrame key={item.id} item={item} codeTheme={codeTheme} />
         ) : (
           <ExecutionTextLine key={item.line.id} line={item.line} />
         ),
@@ -59,7 +67,13 @@ function ExecutionTextLine({ line }: { line: ExecutionLogLine }) {
   )
 }
 
-function ExecutionCodeFrame({ item }: { item: ExecutionLogCodeFrameItem }) {
+function ExecutionCodeFrame({
+  item,
+  codeTheme,
+}: {
+  item: ExecutionLogCodeFrameItem
+  codeTheme: (typeof prismThemes)['github']
+}) {
   const lineNumberWidth = `${Math.max(...item.lines.map((line) => line.lineNumber?.length ?? 0), 1)}ch`
 
   return (
@@ -92,7 +106,7 @@ function ExecutionCodeFrame({ item }: { item: ExecutionLogCodeFrameItem }) {
                   {line.kind === 'caret' ? (
                     <span className="text-rose-600 dark:text-rose-300">{line.content}</span>
                   ) : (
-                    <HighlightedCodeLine code={line.content} />
+                    <HighlightedCodeLine code={line.content} codeTheme={codeTheme} />
                   )}
                 </span>
               </div>
@@ -169,100 +183,24 @@ const AnsiLogMessage = memo(function AnsiLogMessage({ message }: { message: stri
   )
 })
 
-const CODE_KEYWORDS = new Set([
-  'async',
-  'await',
-  'break',
-  'case',
-  'catch',
-  'class',
-  'const',
-  'continue',
-  'default',
-  'else',
-  'export',
-  'false',
-  'finally',
-  'for',
-  'from',
-  'function',
-  'if',
-  'import',
-  'in',
-  'instanceof',
-  'let',
-  'new',
-  'null',
-  'return',
-  'switch',
-  'throw',
-  'true',
-  'try',
-  'typeof',
-  'undefined',
-  'var',
-  'while',
-]) as ReadonlySet<string>
+function HighlightedCodeLine({ code, codeTheme }: { code: string; codeTheme: (typeof prismThemes)['github'] }) {
+  return (
+    <Highlight code={code} language="typescript" prism={Prism} theme={codeTheme}>
+      {({ tokens, getTokenProps }) => (
+        <>
+          {tokens[0]?.map((token, index) => {
+            const tokenProps = getTokenProps({ token })
 
-const CODE_TOKEN_PATTERN =
-  /\/\/.*$|\/\*.*?\*\/|`(?:\\.|[^`])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:async|await|break|case|catch|class|const|continue|default|else|export|false|finally|for|from|function|if|import|in|instanceof|let|new|null|return|switch|throw|true|try|typeof|undefined|var|while)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*(?=\()|[()[\]{}.,;:+\-*/%=&|!<>?^~]+/g
-
-function HighlightedCodeLine({ code }: { code: string }) {
-  const matches = Array.from(code.matchAll(CODE_TOKEN_PATTERN))
-
-  if (matches.length === 0) {
-    return <>{code}</>
-  }
-
-  const parts: ReactNode[] = []
-  let lastIndex = 0
-
-  matches.forEach((match, index) => {
-    const value = match[0]
-    const start = match.index ?? 0
-
-    if (start > lastIndex) {
-      parts.push(code.slice(lastIndex, start))
-    }
-
-    parts.push(
-      <span key={`${value}-${index}`} className={getCodeTokenClassName(value)}>
-        {value}
-      </span>,
-    )
-
-    lastIndex = start + value.length
-  })
-
-  if (lastIndex < code.length) {
-    parts.push(code.slice(lastIndex))
-  }
-
-  return <>{parts}</>
-}
-
-function getCodeTokenClassName(value: string) {
-  if (value.startsWith('//') || value.startsWith('/*')) {
-    return 'text-stone-500 dark:text-slate-400'
-  }
-
-  if (value.startsWith("'") || value.startsWith('"') || value.startsWith('`')) {
-    return 'text-emerald-700 dark:text-emerald-300'
-  }
-
-  if (CODE_KEYWORDS.has(value)) {
-    return 'text-sky-700 dark:text-sky-300'
-  }
-
-  if (/^\d/.test(value)) {
-    return 'text-amber-700 dark:text-amber-300'
-  }
-
-  if (/^[A-Za-z_$]/.test(value)) {
-    return 'text-cyan-700 dark:text-cyan-300'
-  }
-
-  return 'text-muted-foreground'
+            return (
+              <span key={`${token.content}-${index}`} style={tokenProps.style}>
+                {tokenProps.children}
+              </span>
+            )
+          }) ?? code}
+        </>
+      )}
+    </Highlight>
+  )
 }
 
 function getTextDecorationLine(decorations: string[]): CSSProperties['textDecorationLine'] {
