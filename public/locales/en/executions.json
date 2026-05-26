@@ -225,6 +225,10 @@
       "partialChunk": "Buffered partial chunk"
     },
     "stopExecution": "Stop execution",
+    "stopTitle": "Stop execution?",
+    "stopDescription": "This asks the worker to stop the current execution. Logs may continue briefly while the stop request is processed.",
+    "cancelStop": "Cancel",
+    "confirmStop": "Stop execution",
     "stopping": "Stopping...",
     "stopErrorTitle": "Execution could not be stopped",
     "stopErrorDescription": "The stop request failed. Check whether the execution is still running and try again.",

@@ -11,6 +11,9 @@ export const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
   if (isExecutionSuccessful(normalizedStatus)) {
     return 'success'
   }
+  if (normalizedStatus === 'cancelled') {
+    return 'secondary'
+  }
   if (isExecutionFailed(normalizedStatus)) {
     return 'destructive'
   }
@@ -20,9 +23,16 @@ export const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
 }
 
 export const getStatusBadgeClassName = (status?: string | null) => {
-  return normalizeExecutionStatus(status) === 'running'
-    ? 'bg-blue-500 text-white dark:bg-blue-400 dark:text-slate-950'
-    : undefined
+  const normalizedStatus = normalizeExecutionStatus(status)
+
+  if (normalizedStatus === 'running') {
+    return 'bg-blue-500 text-white dark:bg-blue-400 dark:text-slate-950'
+  }
+  if (normalizedStatus === 'cancelled') {
+    return 'bg-slate-500 text-white dark:bg-slate-400 dark:text-slate-950'
+  }
+
+  return undefined
 }
 
 export const getConnectionBadgeVariant = (

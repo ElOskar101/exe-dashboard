@@ -1,4 +1,15 @@
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import {
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -298,19 +309,38 @@ export function ExecutionLogsCard({
               rawExecutionJson={rawExecutionJson}
             />
             {canStopExecution ? (
-              <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive"
-                disabled={isStopping}
-                onClick={onStopExecution}
-              >
-                {isStopping ? (
-                  <IconLoader2 className="animate-spin" data-icon="inline-start" />
-                ) : (
-                  <IconPlayerStop data-icon="inline-start" />
-                )}
-                {isStopping ? t('detail.stopping') : t('detail.stopExecution')}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      className="text-destructive hover:text-destructive"
+                      disabled={isStopping}
+                      type="button"
+                    >
+                      {isStopping ? (
+                        <IconLoader2 className="animate-spin" data-icon="inline-start" />
+                      ) : (
+                        <IconPlayerStop data-icon="inline-start" />
+                      )}
+                      {isStopping ? t('detail.stopping') : t('detail.stopExecution')}
+                    </Button>
+                  }
+                />
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('detail.stopTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('detail.stopDescription')}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isStopping}>{t('detail.cancelStop')}</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" disabled={isStopping} onClick={onStopExecution}>
+                      {isStopping ? <IconLoader2 className="animate-spin" data-icon="inline-start" /> : null}
+                      {isStopping ? t('detail.stopping') : t('detail.confirmStop')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             ) : null}
           </div>
         </div>
