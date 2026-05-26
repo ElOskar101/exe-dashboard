@@ -2,6 +2,27 @@ import { describe, expect, it } from 'vitest'
 import { buildExecutionLogRenderItems } from './execution-log-render'
 
 describe('execution log render', () => {
+  it('extracts timestamp and stream metadata from prefixed log lines', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T18:27:28.473Z] [system] Running: npx playwright test --project=liberty',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'Running: npx playwright test --project=liberty',
+          stream: 'system',
+          timestamp: '2026-05-26T18:27:28.473Z',
+        },
+      },
+    ])
+  })
+
   it('applies destructive tones to failed Playwright summaries and their detail lines', () => {
     const items = buildExecutionLogRenderItems([
       {
@@ -110,6 +131,28 @@ describe('execution log render', () => {
           id: 'line-1',
           message: 'Error: process exited unexpectedly',
           stream: 'stderr',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
+
+  it('uses prefixed stream metadata when deciding line tone', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T18:27:28.473Z] [stderr] Error: process exited unexpectedly',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'Error: process exited unexpectedly',
+          stream: 'stderr',
+          timestamp: '2026-05-26T18:27:28.473Z',
         },
         tone: 'destructive',
       },

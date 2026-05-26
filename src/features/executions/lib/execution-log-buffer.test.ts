@@ -99,6 +99,34 @@ describe('execution log buffer', () => {
     expect(hydratedState.partial).toBe('par')
   })
 
+  it('merges overlapping history snapshots on line boundaries', () => {
+    const state = createExecutionLogLinesFromHistory('first\nsecond\nthird\n')
+
+    const hydratedState = hydrateExecutionLogBufferState(state, 'second\nthird\nfourth\n')
+
+    expect(hydratedState.lines).toEqual([
+      { id: 'history-0', message: 'first' },
+      { id: 'history-1', message: 'second' },
+      { id: 'history-2', message: 'third' },
+      { id: 'history-3', message: 'fourth' },
+    ])
+    expect(hydratedState.partial).toBe('')
+  })
+
+  it('merges overlapping history snapshots when a partial line continues in the newer payload', () => {
+    const state = createExecutionLogLinesFromHistory('first\nsecond\nthi')
+
+    const hydratedState = hydrateExecutionLogBufferState(state, 'second\nthird\nfourth\n')
+
+    expect(hydratedState.lines).toEqual([
+      { id: 'history-0', message: 'first' },
+      { id: 'history-1', message: 'second' },
+      { id: 'history-2', message: 'third' },
+      { id: 'history-3', message: 'fourth' },
+    ])
+    expect(hydratedState.partial).toBe('')
+  })
+
   it('appends later live chunks onto the hydrated state', () => {
     const initialState = createExecutionLogLinesFromHistory('first\n')
     const hydratedState = hydrateExecutionLogBufferState(initialState, 'first\nsecond\nthird\n')

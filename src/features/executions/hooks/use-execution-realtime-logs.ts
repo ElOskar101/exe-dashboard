@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type SetStateAction } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState, type SetStateAction } from 'react'
 import { socket } from '@/lib/socket'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import {
@@ -59,19 +59,24 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
   const [buffer, setBuffer] = useState(() => createExecutionLogLinesFromHistory(historyContent))
   const [status, setStatus] = useState<ExecutionStatus | null>(null)
   const [connectionState, setConnectionState] = useState<ConnectionState>('connecting')
-  const hydratedBuffer = useMemo(() => hydrateExecutionLogBufferState(buffer, historyContent), [buffer, historyContent])
-  const bufferRef = useRef(hydratedBuffer)
-
-  useLayoutEffect(() => {
-    bufferRef.current = hydratedBuffer
-  }, [hydratedBuffer])
+  const appliedHistoryContentRef = useRef(historyContent)
 
   const updateBuffer = useCallback((updater: SetStateAction<ExecutionLogBufferState>) => {
-    const nextBuffer = resolveBufferUpdate(bufferRef.current, updater)
+    setBuffer((currentBuffer) => {
+      const nextBuffer = resolveBufferUpdate(currentBuffer, updater)
 
-    bufferRef.current = nextBuffer
-    setBuffer(nextBuffer)
+      return nextBuffer
+    })
   }, [])
+
+  useLayoutEffect(() => {
+    if (historyContent === appliedHistoryContentRef.current) {
+      return
+    }
+
+    appliedHistoryContentRef.current = historyContent
+    updateBuffer((currentBuffer) => hydrateExecutionLogBufferState(currentBuffer, historyContent))
+  }, [historyContent, updateBuffer])
 
   useMountEffect(() => {
     const handleConnect = () => {
@@ -86,6 +91,7 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
     const handleHistory = (payload: ExecutionLogsHistoryPayload) => {
       if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
 
+      appliedHistoryContentRef.current = payload.content
       updateBuffer((previousBuffer) => hydrateExecutionLogBufferState(previousBuffer, payload.content))
     }
 
@@ -137,10 +143,10 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
 
   return {
     connectionState,
-    lines: hydratedBuffer.lines,
-    partial: hydratedBuffer.partial,
-    partialStream: hydratedBuffer.partialStream,
-    partialTimestamp: hydratedBuffer.partialTimestamp,
+    lines: buffer.lines,
+    partial: buffer.partial,
+    partialStream: buffer.partialStream,
+    partialTimestamp: buffer.partialTimestamp,
     status,
   }
 }

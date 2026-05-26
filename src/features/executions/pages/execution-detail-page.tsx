@@ -58,6 +58,17 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
     [realtimeLogs.lines, realtimeLogs.partial, realtimeLogs.partialStream, realtimeLogs.partialTimestamp],
   )
   const rawExecutionJson = useMemo(() => JSON.stringify(executionQuery.data ?? null, null, 2), [executionQuery.data])
+  const executionSubtitle = useMemo(() => {
+    if (!executionQuery.data) return null
+
+    const botName = executionQuery.data.botName || executionQuery.data.bot || t('detail.subtitleUnknownBot')
+    const executionName = executionQuery.data.execution || executionId
+
+    return t('detail.subtitle', {
+      botName,
+      execution: executionName,
+    })
+  }, [executionId, executionQuery.data, t])
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
@@ -80,6 +91,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       <ExecutionDetailLogsSection
         connectionState={realtimeLogs.connectionState}
         currentStatus={realtimeLogs.status ?? executionQuery.data?.status}
+        executionSubtitle={executionSubtitle}
         execution={executionQuery.data}
         executionId={executionId}
         isLoading={executionQuery.isLoading}
@@ -97,6 +109,7 @@ interface ExecutionDetailLogsSectionProps {
   currentStatus?: string | null
   execution?: IExecution
   executionId: string
+  executionSubtitle: string | null
   isLoading: boolean
   isStopping: boolean
   logState: ExecutionLogBufferState
@@ -109,12 +122,14 @@ function ExecutionDetailLogsSection({
   currentStatus,
   execution,
   executionId,
+  executionSubtitle,
   isLoading,
   isStopping,
   logState,
   onStopExecution,
   rawExecutionJson,
 }: ExecutionDetailLogsSectionProps) {
+  const { t } = useTranslation('executions')
   const displayStatus = formatExecutionStatusLabel(currentStatus)
   const canStopExecution = isExecutionRunning(currentStatus)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
@@ -137,6 +152,7 @@ function ExecutionDetailLogsSection({
       canStopExecution={canStopExecution}
       connectionState={connectionState}
       currentStatus={displayStatus}
+      description={executionSubtitle}
       isLoading={isLoading}
       isReportError={reportQuery.isError}
       isReportLoading={!showReport || reportQuery.isLoading}
@@ -147,6 +163,7 @@ function ExecutionDetailLogsSection({
       reportBasePath={reportBasePath}
       reportHtml={reportQuery.data}
       showReport={showReport}
+      title={t('detail.title')}
     />
   )
 }

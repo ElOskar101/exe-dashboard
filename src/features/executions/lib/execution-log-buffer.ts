@@ -28,7 +28,7 @@ const splitLogChunk = (content: string) => {
   const normalizedContent = normalizeLogContent(content)
   const parts = normalizedContent.split('\n')
   const hasTrailingNewline = normalizedContent.endsWith('\n')
-  const completedLines = hasTrailingNewline ? parts.slice(0, -1) : parts.slice(0, -1)
+  const completedLines = parts.slice(0, -1)
   const partial = hasTrailingNewline ? '' : (parts.at(-1) ?? '')
 
   return { completedLines, partial }
@@ -42,6 +42,42 @@ const stringifyExecutionLogBufferState = (state: ExecutionLogBufferState) => {
   return `${state.lines.map((line) => line.message).join('\n')}\n${state.partial}`
 }
 
+const OVERLAP_SEPARATOR_CANDIDATES = ['\u0000', '\u0001', '\uFDD0', '\uFFFF']
+
+const buildPrefixTable = (content: string) => {
+  const prefixTable = Array<number>(content.length).fill(0)
+
+  for (let index = 1; index < content.length; index += 1) {
+    let matchedLength = prefixTable[index - 1] ?? 0
+
+    while (matchedLength > 0 && content[index] !== content[matchedLength]) {
+      matchedLength = prefixTable[matchedLength - 1] ?? 0
+    }
+
+    if (content[index] === content[matchedLength]) {
+      matchedLength += 1
+    }
+
+    prefixTable[index] = matchedLength
+  }
+
+  return prefixTable
+}
+
+const findExecutionLogContentOverlap = (leftContent: string, rightContent: string) => {
+  const separator = OVERLAP_SEPARATOR_CANDIDATES.find(
+    (candidate) => !leftContent.includes(candidate) && !rightContent.includes(candidate),
+  )
+
+  if (!separator) {
+    return 0
+  }
+
+  const prefixTable = buildPrefixTable(`${rightContent}${separator}${leftContent}`)
+
+  return Math.min(prefixTable.at(-1) ?? 0, leftContent.length, rightContent.length)
+}
+
 const mergeExecutionLogContents = (leftContent: string, rightContent: string) => {
   if (!leftContent) return rightContent
   if (!rightContent) return leftContent
@@ -49,16 +85,15 @@ const mergeExecutionLogContents = (leftContent: string, rightContent: string) =>
   if (leftContent.startsWith(rightContent)) return leftContent
   if (rightContent.startsWith(leftContent)) return rightContent
 
-  const maxOverlap = Math.min(leftContent.length, rightContent.length)
+  const leftToRightOverlap = findExecutionLogContentOverlap(leftContent, rightContent)
+  const rightToLeftOverlap = findExecutionLogContentOverlap(rightContent, leftContent)
 
-  for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
-    if (leftContent.endsWith(rightContent.slice(0, overlap))) {
-      return `${leftContent}${rightContent.slice(overlap)}`
-    }
+  if (leftToRightOverlap >= rightToLeftOverlap && leftToRightOverlap > 0) {
+    return `${leftContent}${rightContent.slice(leftToRightOverlap)}`
+  }
 
-    if (rightContent.endsWith(leftContent.slice(0, overlap))) {
-      return `${rightContent}${leftContent.slice(overlap)}`
-    }
+  if (rightToLeftOverlap > 0) {
+    return `${rightContent}${leftContent.slice(rightToLeftOverlap)}`
   }
 
   return rightContent.length >= leftContent.length ? rightContent : leftContent

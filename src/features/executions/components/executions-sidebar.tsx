@@ -34,6 +34,7 @@ import { deleteExecution, getExecutions } from '../services/execution.service'
 import {
   getExecutionLabel,
   isExecutionPending,
+  isExecutionRunning,
   isExecutionSuccessful,
   normalizeExecutionStatus,
 } from '../lib/execution-display'
@@ -142,10 +143,14 @@ export function ExecutionsSidebar() {
                         tooltip={label}
                       >
                         <span className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-                          <span
-                            aria-label={status}
-                            className={cn('size-2 shrink-0 rounded-full', getStatusDotClassName(status))}
-                          />
+                          {isExecutionRunning(status) ? (
+                            <IconLoader2 aria-label={status} className="size-3 shrink-0 animate-spin text-blue-500" />
+                          ) : (
+                            <span
+                              aria-label={status}
+                              className={cn('size-2 shrink-0 rounded-full', getStatusDotClassName(status))}
+                            />
+                          )}
                           <span className="truncate">
                             {execution.playwrightProject} {label}
                           </span>
