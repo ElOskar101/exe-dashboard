@@ -3,7 +3,7 @@ import type { ExecutionLogLine, ExecutionLogStream } from './execution-log-buffe
 const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|(?<content>.*)$/
 const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<content>.*)$/
 const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'g')
-const ANSI_OSC_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\][^\\u0007]*(?:\\u0007|\\u001b\\\\)`)
+const ANSI_OSC_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\][^\\u0007]*(?:\\u0007|\\u001b\\\\)`, 'g')
 const ANSI_SHORT_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}[ -~]`, 'g')
 const ANSI_SGR_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
 const INVISIBLE_LOG_PREFIX_TOKEN_PATTERN = new RegExp(
