@@ -305,16 +305,21 @@ export function ExecutionLogsCard({
               {t('detail.reportTab')}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="logs" className="min-h-0 ">
+          <TabsContent value="logs" className="min-h-0">
             <div className="relative">
-              <ScrollArea
-                className="h-[calc(100vh-16rem)] bg-background min-h-96 rounded-2xl border border-border"
-                viewportProps={logScroll.viewportProps}
-              >
-                <div className="p-4">
-                  <ExecutionLogList isLoading={isLoading} logLines={logLines} />
-                </div>
-              </ScrollArea>
+              <div className="overflow-hidden rounded-2xl border border-border bg-background">
+                <ScrollArea
+                  className="h-[calc(100vh-16rem)] min-h-96 bg-background"
+                  viewportProps={{
+                    ...logScroll.viewportProps,
+                    className: 'bg-background',
+                  }}
+                >
+                  <div className="overflow-x-auto p-4">
+                    <ExecutionLogList isLoading={isLoading} logLines={logLines} />
+                  </div>
+                </ScrollArea>
+              </div>
               {logScroll.canScrollToBottom ? (
                 <Button
                   className="absolute right-4 bottom-4 font-normal text-xs shadow-lg"
