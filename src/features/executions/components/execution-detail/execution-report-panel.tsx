@@ -4,7 +4,7 @@ import { IconAlertCircle } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const reportStorageShim = `
+const reportRuntimeShim = `
 <script>
 (() => {
   const storageState = { theme: 'light-mode' }
@@ -33,15 +33,42 @@ const reportStorageShim = `
     configurable: true,
     value: storage,
   })
+
+  document.addEventListener(
+    'click',
+    (event) => {
+      const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null
+
+      if (!(link instanceof HTMLAnchorElement)) {
+        return
+      }
+
+      const href = link.getAttribute('href')
+
+      if (!href || href === '#') {
+        return
+      }
+
+      event.preventDefault()
+
+      if (window.location.hash === href) {
+        window.dispatchEvent(new HashChangeEvent('hashchange'))
+        return
+      }
+
+      window.location.hash = href
+    },
+    true,
+  )
 })()
 </script>`
 
 const isolateReportHtml = (html: string) => {
   if (/<head(\s[^>]*)?>/i.test(html)) {
-    return html.replace(/<head(\s[^>]*)?>/i, (headTag) => `${headTag}${reportStorageShim}`)
+    return html.replace(/<head(\s[^>]*)?>/i, (headTag) => `${headTag}${reportRuntimeShim}`)
   }
 
-  return `${reportStorageShim}${html}`
+  return `${reportRuntimeShim}${html}`
 }
 
 interface ExecutionReportPanelProps {
