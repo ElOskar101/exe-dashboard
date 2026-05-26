@@ -40,8 +40,6 @@ import {
 import type { ExecutionStatus } from '../model/execution.interface'
 
 const EXECUTIONS_QUERY_KEY = ['executions'] as const
-const ACTIVE_SIDEBAR_BUTTON_CLASS_NAME =
-  'hover:bg-sidebar-primary/10 hover:text-sidebar-foreground data-active:bg-background data-active:text-sidebar-foreground data-active:hover:bg-background data-active:shadow-[inset_0_0_0_1px_var(--sidebar-border),0_1px_2px_rgb(15_23_42_/_0.05)]'
 
 const getStatusDotClassName = (status: ExecutionStatus) => {
   if (isExecutionSuccessful(status)) return 'bg-green-500'
@@ -86,7 +84,6 @@ export function ExecutionsSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              className={ACTIVE_SIDEBAR_BUTTON_CLASS_NAME}
               render={<Link to="/" />}
               isActive={!currentExecutionId}
               tooltip={t('sidebar.createExecution')}
@@ -139,7 +136,7 @@ export function ExecutionsSidebar() {
                   return (
                     <SidebarMenuItem key={execution._id}>
                       <SidebarMenuButton
-                        className={cn('h-auto min-w-0 py-2', ACTIVE_SIDEBAR_BUTTON_CLASS_NAME)}
+                        className="h-auto min-w-0 py-2"
                         render={<Link to={`/execution/${execution._id}`} />}
                         isActive={currentExecutionId === execution._id}
                         tooltip={label}
