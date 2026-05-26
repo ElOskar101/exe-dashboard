@@ -12,7 +12,11 @@ import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/use-theme'
 import { formatExecutionDateTime } from '../../lib/format-execution-date'
 import type { ExecutionLogLine, ExecutionLogStream } from '../../lib/execution-log-buffer'
-import { buildExecutionLogRenderItems, type ExecutionLogCodeFrameItem } from '../../lib/execution-log-render'
+import {
+  buildExecutionLogRenderItems,
+  type ExecutionLogCodeFrameItem,
+  type ExecutionLogTone,
+} from '../../lib/execution-log-render'
 
 interface ExecutionLogListProps {
   isLoading: boolean
@@ -49,18 +53,18 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
         item.type === 'code-frame' ? (
           <ExecutionCodeFrame key={item.id} item={item} codeTheme={codeTheme} />
         ) : (
-          <ExecutionTextLine key={item.line.id} line={item.line} />
+          <ExecutionTextLine key={item.line.id} line={item.line} tone={item.tone} />
         ),
       )}
     </div>
   )
 }
 
-function ExecutionTextLine({ line }: { line: ExecutionLogLine }) {
+function ExecutionTextLine({ line, tone }: { line: ExecutionLogLine; tone?: ExecutionLogTone }) {
   return (
     <div className="flex min-h-6 items-start gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-muted/40">
       <ExecutionLogMeta stream={line.stream} timestamp={line.timestamp} />
-      <span className="pr-3 whitespace-pre text-[13px] leading-6" style={{ tabSize: 2 }}>
+      <span className={cn('pr-3 whitespace-pre text-[13px] leading-6', getToneClassName(tone))} style={{ tabSize: 2 }}>
         <AnsiLogMessage message={line.message} />
       </span>
     </div>
@@ -152,6 +156,19 @@ function getStreamClassName(stream: ExecutionLogStream | undefined) {
       return 'text-sky-700 dark:text-sky-300'
     case 'stdout':
       return 'text-emerald-700 dark:text-emerald-300'
+    default:
+      return ''
+  }
+}
+
+function getToneClassName(tone: ExecutionLogTone | undefined) {
+  switch (tone) {
+    case 'destructive':
+      return 'text-rose-600 dark:text-rose-300'
+    case 'success':
+      return 'text-emerald-700 dark:text-emerald-300'
+    case 'warning':
+      return 'text-amber-700 dark:text-amber-300'
     default:
       return ''
   }

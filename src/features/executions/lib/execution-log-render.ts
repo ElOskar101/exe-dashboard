@@ -2,10 +2,18 @@ import type { ExecutionLogLine, ExecutionLogStream } from './execution-log-buffe
 
 const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|(?<content>.*)$/
 const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<content>.*)$/
+const ANSI_ESCAPE_PATTERN = /\u001b\[[0-9;?]*[ -/]*[@-~]/g
+const PLAYWRIGHT_DETAIL_LINE_PATTERN = /^\s*\[[^\]]+\]\s+›\s+.+$/
+const PLAYWRIGHT_FAILURE_SUMMARY_PATTERN = /^\s*\d+\s+(failed|did not run|interrupted|timed out)\b/i
+const PLAYWRIGHT_WARNING_SUMMARY_PATTERN = /^\s*\d+\s+(flaky|skipped)\b/i
+const PLAYWRIGHT_SUCCESS_SUMMARY_PATTERN = /^\s*\d+\s+passed\b/i
+
+export type ExecutionLogTone = 'destructive' | 'success' | 'warning'
 
 export interface ExecutionLogTextItem {
   type: 'text'
   line: ExecutionLogLine
+  tone?: ExecutionLogTone
 }
 
 export interface ExecutionLogCodeFrameParsedLine {
@@ -33,6 +41,7 @@ export function buildExecutionLogRenderItems(logLines: ExecutionLogLine[]): Exec
   let currentCodeFrameStream: ExecutionLogStream | undefined
   let currentCodeFrameTimestamp: string | undefined
   let currentCodeFrameId: string | undefined
+  let activePlaywrightTone: ExecutionLogTone | undefined
 
   const flushCodeFrame = () => {
     if (currentCodeFrameLines.length === 0 || !currentCodeFrameId) {
@@ -59,10 +68,17 @@ export function buildExecutionLogRenderItems(logLines: ExecutionLogLine[]): Exec
 
   for (const line of logLines) {
     const parsedCodeFrameLine = parseExecutionLogCodeFrameLine(line)
+    const tone = getExecutionLogTone(line, activePlaywrightTone)
+
+    if (tone.summaryTone) {
+      activePlaywrightTone = tone.summaryTone
+    } else if (!tone.isPlaywrightDetail) {
+      activePlaywrightTone = undefined
+    }
 
     if (!parsedCodeFrameLine) {
       flushCodeFrame()
-      items.push({ type: 'text', line })
+      items.push({ type: 'text', line, tone: tone.itemTone })
       continue
     }
 
@@ -109,4 +125,49 @@ export function parseExecutionLogCodeFrameLine(
   }
 
   return null
+}
+
+function getExecutionLogTone(
+  line: Pick<ExecutionLogLine, 'message' | 'stream'>,
+  activePlaywrightTone: ExecutionLogTone | undefined,
+) {
+  const normalizedMessage = stripAnsiControlSequences(line.message)
+  const summaryTone = getPlaywrightSummaryTone(normalizedMessage)
+  const isPlaywrightDetail =
+    activePlaywrightTone !== undefined && PLAYWRIGHT_DETAIL_LINE_PATTERN.test(normalizedMessage)
+  const itemTone = summaryTone ?? (isPlaywrightDetail ? activePlaywrightTone : undefined) ?? getStreamTone(line.stream)
+
+  return {
+    isPlaywrightDetail,
+    itemTone,
+    summaryTone,
+  }
+}
+
+function stripAnsiControlSequences(message: string) {
+  return message.replace(ANSI_ESCAPE_PATTERN, '')
+}
+
+function getPlaywrightSummaryTone(message: string): ExecutionLogTone | undefined {
+  if (PLAYWRIGHT_FAILURE_SUMMARY_PATTERN.test(message)) {
+    return 'destructive'
+  }
+
+  if (PLAYWRIGHT_WARNING_SUMMARY_PATTERN.test(message)) {
+    return 'warning'
+  }
+
+  if (PLAYWRIGHT_SUCCESS_SUMMARY_PATTERN.test(message)) {
+    return 'success'
+  }
+
+  return undefined
+}
+
+function getStreamTone(stream: ExecutionLogStream | undefined): ExecutionLogTone | undefined {
+  if (stream === 'stderr') {
+    return 'destructive'
+  }
+
+  return undefined
 }

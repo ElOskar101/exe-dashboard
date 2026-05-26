@@ -1,86 +1,117 @@
 import { describe, expect, it } from 'vitest'
-import { buildExecutionLogRenderItems, parseExecutionLogCodeFrameLine } from './execution-log-render'
+import { buildExecutionLogRenderItems } from './execution-log-render'
 
 describe('execution log render', () => {
-  it('parses playwright source code frame lines', () => {
-    expect(
-      parseExecutionLogCodeFrameLine({
-        id: 'line-1',
-        message: "> 35 |     expect(loginResult, 'message').toBe('success');",
-      }),
-    ).toEqual({
-      content: "     expect(loginResult, 'message').toBe('success');",
-      id: 'line-1',
-      indent: '',
-      isFocused: true,
-      kind: 'source',
-      lineNumber: '35',
-    })
-  })
-
-  it('parses caret indicator lines', () => {
-    expect(
-      parseExecutionLogCodeFrameLine({
-        id: 'line-2',
-        message: '   |     ^',
-      }),
-    ).toEqual({
-      content: '     ^',
-      id: 'line-2',
-      indent: '   ',
-      isFocused: false,
-      kind: 'caret',
-    })
-  })
-
-  it('groups consecutive code frame lines into a single render item', () => {
+  it('applies destructive tones to failed Playwright summaries and their detail lines', () => {
     const items = buildExecutionLogRenderItems([
-      { id: 'log-1', message: 'before snippet' },
-      { id: 'log-2', message: '34 |     console.info(`hello`);' },
-      { id: 'log-3', message: "> 35 |     expect(result).toBe('ok');", stream: 'stderr' },
-      { id: 'log-4', message: '   |     ^', stream: 'stderr', timestamp: '2026-05-26T20:00:00.000Z' },
-      { id: 'log-5', message: 'after snippet' },
+      {
+        id: 'line-1',
+        message: '\u001b[1A\u001b[2K1 failed',
+      },
+      {
+        id: 'line-2',
+        message:
+          '    [liberty-setup] › tests/carriers/Liberty-Dental-Plan/setup/auth.setup.spec.ts:8:5 › liberty login setup',
+      },
+      {
+        id: 'line-3',
+        message: '1 did not run',
+      },
     ])
 
     expect(items).toEqual([
       {
-        line: { id: 'log-1', message: 'before snippet' },
         type: 'text',
+        line: {
+          id: 'line-1',
+          message: '\u001b[1A\u001b[2K1 failed',
+        },
+        tone: 'destructive',
       },
       {
-        id: 'log-2',
-        lines: [
-          {
-            content: '     console.info(`hello`);',
-            id: 'log-2',
-            indent: '',
-            isFocused: false,
-            kind: 'source',
-            lineNumber: '34',
-          },
-          {
-            content: "     expect(result).toBe('ok');",
-            id: 'log-3',
-            indent: '',
-            isFocused: true,
-            kind: 'source',
-            lineNumber: '35',
-          },
-          {
-            content: '     ^',
-            id: 'log-4',
-            indent: '   ',
-            isFocused: false,
-            kind: 'caret',
-          },
-        ],
-        stream: undefined,
-        timestamp: undefined,
-        type: 'code-frame',
+        type: 'text',
+        line: {
+          id: 'line-2',
+          message:
+            '    [liberty-setup] › tests/carriers/Liberty-Dental-Plan/setup/auth.setup.spec.ts:8:5 › liberty login setup',
+        },
+        tone: 'destructive',
       },
       {
-        line: { id: 'log-5', message: 'after snippet' },
         type: 'text',
+        line: {
+          id: 'line-3',
+          message: '1 did not run',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
+
+  it('applies warning and success tones to Playwright summaries', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\u001b[1A\u001b[2K  1 flaky',
+      },
+      {
+        id: 'line-2',
+        message:
+          '    [liberty] › tests/carriers/Liberty-Dental-Plan/main.spec.ts:19:9 › Liberty-Dental-Plan › Search 2 - Ana Lopez',
+      },
+      {
+        id: 'line-3',
+        message: '  2 passed (45.9s)',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '\u001b[1A\u001b[2K  1 flaky',
+        },
+        tone: 'warning',
+      },
+      {
+        type: 'text',
+        line: {
+          id: 'line-2',
+          message:
+            '    [liberty] › tests/carriers/Liberty-Dental-Plan/main.spec.ts:19:9 › Liberty-Dental-Plan › Search 2 - Ana Lopez',
+        },
+        tone: 'warning',
+      },
+      {
+        type: 'text',
+        line: {
+          id: 'line-3',
+          message: '  2 passed (45.9s)',
+        },
+        tone: 'success',
+      },
+    ])
+  })
+
+  it('falls back to destructive tone for plain stderr lines', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: 'Error: process exited unexpectedly',
+        stream: 'stderr',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'Error: process exited unexpectedly',
+          stream: 'stderr',
+        },
+        tone: 'destructive',
       },
     ])
   })
