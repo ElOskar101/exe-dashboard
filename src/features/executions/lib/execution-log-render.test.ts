@@ -158,4 +158,91 @@ describe('execution log render', () => {
       },
     ])
   })
+
+  it('removes prefixed metadata after leading ANSI controls', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\u001b[1A\u001b[2K[2026-05-26T20:11:26.668Z] [stdout] 1 failed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:11:26.668Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '\u001b[1A\u001b[2K1 failed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:11:26.668Z',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
+
+  it('removes prefixed metadata after terminal control and spacing tokens', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\r  \u001b7\u001b]0;playwright\u0007\u001b[1A\u001b[2K [2026-05-26T20:07:14.455Z] [stdout] 1 failed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:07:14.455Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '\r  \u001b7\u001b]0;playwright\u0007\u001b[1A\u001b[2K 1 failed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
+
+  it('removes embedded metadata when it duplicates the line metadata', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: 'unrecognized terminal prefix [2026-05-26T20:07:14.455Z] [stdout] 1 failed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:07:14.455Z',
+      },
+      {
+        id: 'line-2',
+        message: 'debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+        stream: 'stderr',
+        timestamp: '2026-05-26T20:08:14.455Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'unrecognized terminal prefix 1 failed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+      {
+        type: 'text',
+        line: {
+          id: 'line-2',
+          message: 'debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+          stream: 'stderr',
+          timestamp: '2026-05-26T20:08:14.455Z',
+        },
+        tone: 'destructive',
+      },
+    ])
+  })
 })

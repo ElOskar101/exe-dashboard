@@ -2,9 +2,15 @@ import type { ExecutionLogLine, ExecutionLogStream } from './execution-log-buffe
 
 const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|(?<content>.*)$/
 const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<content>.*)$/
-const EXECUTION_LOG_PREFIX_PATTERN =
-  /^\[(?<timestamp>[^\]]+)\]\s+\[(?<stream>stdout|stderr|system)\](?:\s(?<message>.*))?$/
 const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'g')
+const ANSI_OSC_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\][^\\u0007]*(?:\\u0007|\\u001b\\\\)`)
+const ANSI_SHORT_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}[ -~]`, 'g')
+const LEADING_LOG_PREFIX_TOKEN_PATTERN = new RegExp(
+  `^(?:${ANSI_ESCAPE_PATTERN.source}|${ANSI_OSC_ESCAPE_PATTERN.source}|${ANSI_SHORT_ESCAPE_PATTERN.source}|[\\u0000-\\u001a\\u001c-\\u001f\\u007f]+|\\s+)`,
+)
+const EXECUTION_LOG_METADATA_PATTERN =
+  /^\[(?<timestamp>[^\]]+)\]\s+\[(?<stream>stdout|stderr|system)\](?:\s(?<message>.*))?$/i
+const EXECUTION_LOG_METADATA_SEARCH_PATTERN = /\[(?<timestamp>[^\]]+)\]\s+\[(?<stream>stdout|stderr|system)\](?:\s+|$)/i
 const PLAYWRIGHT_DETAIL_LINE_PATTERN = /^\s*\[[^\]]+\]\s+›\s+.+$/
 const PLAYWRIGHT_FAILURE_SUMMARY_PATTERN = /^\s*\d+\s+(failed|did not run|interrupted|timed out)\b/i
 const PLAYWRIGHT_WARNING_SUMMARY_PATTERN = /^\s*\d+\s+(flaky|skipped)\b/i
@@ -100,17 +106,117 @@ export function buildExecutionLogRenderItems(logLines: ExecutionLogLine[]): Exec
 }
 
 export function normalizeExecutionLogLine(line: ExecutionLogLine): ExecutionLogLine {
-  const prefixMatch = line.message.match(EXECUTION_LOG_PREFIX_PATTERN)
+  const prefix = readExecutionLogPrefix(line)
 
-  if (!prefixMatch?.groups) {
+  if (!prefix) {
     return line
   }
 
   return {
     ...line,
-    message: prefixMatch.groups.message ?? '',
-    stream: prefixMatch.groups.stream as ExecutionLogStream,
-    timestamp: prefixMatch.groups.timestamp ?? line.timestamp,
+    message: `${prefix.leadingContent}${prefix.message}`,
+    stream: prefix.stream,
+    timestamp: prefix.timestamp,
+  }
+}
+
+function readExecutionLogPrefix(line: ExecutionLogLine) {
+  const metadataPrefix = findExecutionLogMetadataPrefix(line)
+
+  if (!metadataPrefix) {
+    return null
+  }
+
+  return {
+    leadingContent: line.message.slice(0, metadataPrefix.index),
+    message: line.message.slice(metadataPrefix.endIndex),
+    stream: metadataPrefix.stream,
+    timestamp: metadataPrefix.timestamp,
+  }
+}
+
+function findExecutionLogMetadataPrefix(line: ExecutionLogLine) {
+  const directPrefix = readLeadingExecutionLogMetadataPrefix(line.message)
+
+  if (directPrefix) {
+    return directPrefix
+  }
+
+  const metadataMatch = line.message.match(EXECUTION_LOG_METADATA_SEARCH_PATTERN)
+
+  if (!metadataMatch?.groups || metadataMatch.index === undefined) {
+    return null
+  }
+
+  const stream = normalizeExecutionLogStream(metadataMatch.groups.stream)
+
+  if (!stream || !shouldStripEmbeddedExecutionLogMetadata(line, metadataMatch.groups.timestamp, stream)) {
+    return null
+  }
+
+  return {
+    index: metadataMatch.index,
+    endIndex: metadataMatch.index + metadataMatch[0].length,
+    stream,
+    timestamp: metadataMatch.groups.timestamp,
+  }
+}
+
+function readLeadingExecutionLogMetadataPrefix(message: string) {
+  let remainingMessage = message
+  let leadingContent = ''
+  let tokenMatch = remainingMessage.match(LEADING_LOG_PREFIX_TOKEN_PATTERN)
+
+  while (tokenMatch?.[0]) {
+    leadingContent += tokenMatch[0]
+    remainingMessage = remainingMessage.slice(tokenMatch[0].length)
+    tokenMatch = remainingMessage.match(LEADING_LOG_PREFIX_TOKEN_PATTERN)
+  }
+
+  const metadataMatch = remainingMessage.match(EXECUTION_LOG_METADATA_PATTERN)
+
+  if (!metadataMatch?.groups) {
+    return null
+  }
+
+  const stream = normalizeExecutionLogStream(metadataMatch.groups.stream)
+
+  if (!stream) {
+    return null
+  }
+
+  return {
+    index: leadingContent.length,
+    endIndex: message.length - (metadataMatch.groups.message ?? '').length,
+    stream,
+    timestamp: metadataMatch.groups.timestamp,
+  }
+}
+
+function shouldStripEmbeddedExecutionLogMetadata(
+  line: Pick<ExecutionLogLine, 'stream' | 'timestamp'>,
+  timestamp: string,
+  stream: ExecutionLogStream,
+) {
+  return timestampsMatch(line.timestamp, timestamp) || line.stream === stream
+}
+
+function timestampsMatch(leftTimestamp: string | undefined, rightTimestamp: string) {
+  if (!leftTimestamp) {
+    return false
+  }
+
+  return leftTimestamp === rightTimestamp || Date.parse(leftTimestamp) === Date.parse(rightTimestamp)
+}
+
+function normalizeExecutionLogStream(stream: string | undefined): ExecutionLogStream | null {
+  switch (stream?.toLowerCase()) {
+    case 'stderr':
+    case 'stdout':
+    case 'system':
+      return stream.toLowerCase() as ExecutionLogStream
+    default:
+      return null
   }
 }
 
@@ -163,7 +269,23 @@ function getExecutionLogTone(
 }
 
 function stripAnsiControlSequences(message: string) {
-  return message.replace(ANSI_ESCAPE_PATTERN, '')
+  return message
+    .replace(ANSI_OSC_ESCAPE_PATTERN, '')
+    .replace(ANSI_ESCAPE_PATTERN, '')
+    .replace(ANSI_SHORT_ESCAPE_PATTERN, '')
+    .split('')
+    .filter((character) => !isTerminalControlCharacter(character))
+    .join('')
+}
+
+function isTerminalControlCharacter(character: string) {
+  const characterCode = character.charCodeAt(0)
+
+  return (
+    characterCode === 0x7f ||
+    (characterCode >= 0x00 && characterCode <= 0x1a) ||
+    (characterCode >= 0x1c && characterCode <= 0x1f)
+  )
 }
 
 function getPlaywrightSummaryTone(message: string): ExecutionLogTone | undefined {
