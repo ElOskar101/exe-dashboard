@@ -2,7 +2,7 @@ import type { ExecutionLogLine, ExecutionLogStream } from './execution-log-buffe
 
 const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|(?<content>.*)$/
 const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<content>.*)$/
-const ANSI_ESCAPE_PATTERN = /\u001b\[[0-9;?]*[ -/]*[@-~]/g
+const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'g')
 const PLAYWRIGHT_DETAIL_LINE_PATTERN = /^\s*\[[^\]]+\]\s+›\s+.+$/
 const PLAYWRIGHT_FAILURE_SUMMARY_PATTERN = /^\s*\d+\s+(failed|did not run|interrupted|timed out)\b/i
 const PLAYWRIGHT_WARNING_SUMMARY_PATTERN = /^\s*\d+\s+(flaky|skipped)\b/i

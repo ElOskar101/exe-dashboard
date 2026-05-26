@@ -48,7 +48,7 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
   }
 
   return (
-    <div className="min-w-full w-max font-mono text-[13px] text-foreground">
+    <div className="min-w-0 w-full font-mono text-[13px] text-foreground">
       {renderItems.map((item) =>
         item.type === 'code-frame' ? (
           <ExecutionCodeFrame key={item.id} item={item} codeTheme={codeTheme} />
@@ -62,9 +62,15 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
 
 function ExecutionTextLine({ line, tone }: { line: ExecutionLogLine; tone?: ExecutionLogTone }) {
   return (
-    <div className="flex min-h-6 items-start gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-muted/40">
+    <div className="flex min-h-6 min-w-0 items-start gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-muted/40">
       <ExecutionLogMeta stream={line.stream} timestamp={line.timestamp} />
-      <span className={cn('pr-3 whitespace-pre text-[13px] leading-6', getToneClassName(tone))} style={{ tabSize: 2 }}>
+      <span
+        className={cn(
+          'min-w-0 flex-1 pr-3 whitespace-pre-wrap text-[13px] leading-6 [overflow-wrap:anywhere]',
+          getToneClassName(tone),
+        )}
+        style={{ tabSize: 2 }}
+      >
         <AnsiLogMessage message={line.message} />
       </span>
     </div>
@@ -81,13 +87,13 @@ function ExecutionCodeFrame({
   const lineNumberWidth = `${Math.max(...item.lines.map((line) => line.lineNumber?.length ?? 0), 1)}ch`
 
   return (
-    <div className="rounded-xl border border-border/80 bg-muted/30 px-2 py-2">
-      <div className="flex items-start gap-2">
+    <div className="min-w-0 rounded-xl border border-border/80 bg-muted/30 px-2 py-2">
+      <div className="flex min-w-0 items-start gap-2">
         <ExecutionLogMeta stream={item.stream} timestamp={item.timestamp} />
-        <div className="overflow-x-auto">
-          <div className="min-w-full whitespace-pre text-[13px] leading-6" style={{ tabSize: 2 }}>
+        <div className="min-w-0 flex-1">
+          <div className="min-w-0 whitespace-pre-wrap text-[13px] leading-6" style={{ tabSize: 2 }}>
             {item.lines.map((line) => (
-              <div key={line.id} className="flex items-start">
+              <div key={line.id} className="flex min-w-0 items-start">
                 <span
                   className={cn(
                     'mr-2 w-[1ch] shrink-0 text-center text-muted-foreground',
@@ -102,7 +108,7 @@ function ExecutionCodeFrame({
                 <span className="mx-2 shrink-0 text-muted-foreground">|</span>
                 <span
                   className={cn(
-                    'pr-3',
+                    'min-w-0 flex-1 pr-3 [overflow-wrap:anywhere]',
                     line.kind === 'caret' && 'text-rose-600 dark:text-rose-300',
                     line.isFocused && line.kind === 'source' && 'bg-amber-500/10',
                   )}

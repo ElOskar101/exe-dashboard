@@ -69,7 +69,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const rawExecutionJson = useMemo(() => JSON.stringify(executionQuery.data ?? null, null, 2), [executionQuery.data])
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className="flex min-w-0 flex-1 flex-col gap-6">
       {executionQuery.isError ? (
         <Alert>
           <IconAlertCircle />

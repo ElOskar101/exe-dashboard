@@ -259,7 +259,7 @@ export function ExecutionLogsCard({
   const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}`)
 
   return (
-    <Card className="min-h-0 flex-1 gap-4">
+    <Card className="min-h-0 min-w-0 flex-1 gap-4">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-2">
@@ -297,25 +297,25 @@ export function ExecutionLogsCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col">
-        <Tabs defaultValue="logs" className="min-h-0 flex-1">
+      <CardContent className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <Tabs defaultValue="logs" className="min-h-0 min-w-0 flex-1">
           <TabsList variant="line" aria-label={t('detail.contentTabsLabel')}>
             <TabsTrigger value="logs">{t('detail.historyTab')}</TabsTrigger>
             <TabsTrigger value="report" disabled={!showReport}>
               {t('detail.reportTab')}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="logs" className="min-h-0">
-            <div className="relative">
-              <div className="overflow-hidden rounded-2xl border border-border bg-background">
+          <TabsContent value="logs" className="min-h-0 min-w-0">
+            <div className="relative min-w-0">
+              <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-background">
                 <ScrollArea
-                  className="h-[calc(100vh-16rem)] min-h-96 bg-background"
+                  className="h-[calc(100vh-16rem)] min-h-96 min-w-0 bg-background"
                   viewportProps={{
                     ...logScroll.viewportProps,
                     className: 'bg-background',
                   }}
                 >
-                  <div className="overflow-x-auto p-4">
+                  <div className="max-w-full p-4">
                     <ExecutionLogList isLoading={isLoading} logLines={logLines} />
                   </div>
                 </ScrollArea>
@@ -334,7 +334,7 @@ export function ExecutionLogsCard({
               ) : null}
             </div>
           </TabsContent>
-          <TabsContent value="report" className="min-h-0">
+          <TabsContent value="report" className="min-h-0 min-w-0">
             <ExecutionReportPanel
               isError={isReportError}
               isLoading={isReportLoading}
