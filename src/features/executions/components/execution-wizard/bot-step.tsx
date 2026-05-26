@@ -57,6 +57,13 @@ export function BotStep({
   return (
     <FieldSet>
       <FieldGroup>
+        {!hasSelectedContext ? (
+          <Alert>
+            <IconAlertCircle />
+            <AlertDescription>{t('help.selectClientAndClinicFirst')}</AlertDescription>
+          </Alert>
+        ) : null}
+
         {clinicBotsError ? (
           <Alert variant="destructive">
             <IconAlertCircle />
@@ -78,6 +85,17 @@ export function BotStep({
             <IconAlertCircle />
             <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
             <AlertDescription>{decryptClinicBotPasswordError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {hasSelectedContext &&
+        !selectedClinicBotId.trim().length &&
+        !isLoadingClinicBots &&
+        !hasSelectedClinicWithoutActiveBots &&
+        !clinicBotsError ? (
+          <Alert>
+            <IconAlertCircle />
+            <AlertDescription>{t('help.selectBotToEdit')}</AlertDescription>
           </Alert>
         ) : null}
 

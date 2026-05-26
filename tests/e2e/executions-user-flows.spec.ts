@@ -337,6 +337,8 @@ test.describe('execution user flows', () => {
     await page.goto('/execution/execution-1')
 
     await page.getByRole('button', { name: 'Stop execution' }).click()
+    await expect(page.getByText('Stop execution?')).toBeVisible()
+    await page.getByRole('button', { name: 'Stop execution', exact: true }).click()
 
     await expect(page.getByText('Cancelled')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Stop execution' })).not.toBeVisible()
@@ -354,9 +356,11 @@ test.describe('execution user flows', () => {
 
     await page.goto('/execution/execution-1')
     await page.getByRole('button', { name: 'Stop execution' }).click()
+    await expect(page.getByText('Stop execution?')).toBeVisible()
+    await page.getByRole('button', { name: 'Stop execution', exact: true }).click()
 
     await expect(page.getByText('Execution could not be stopped')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Stop execution' })).toBeVisible()
+    await expect(page.getByLabel('Stop execution?').getByRole('button', { name: 'Stop execution' })).toBeVisible()
   })
 
   test('displays the report for a completed execution', async ({ page, request }) => {
