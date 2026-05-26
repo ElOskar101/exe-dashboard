@@ -5,6 +5,10 @@ const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<conte
 const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'g')
 const ANSI_OSC_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\][^\\u0007]*(?:\\u0007|\\u001b\\\\)`)
 const ANSI_SHORT_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}[ -~]`, 'g')
+const ANSI_SGR_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
+const INVISIBLE_LOG_PREFIX_TOKEN_PATTERN = new RegExp(
+  `^(?:${ANSI_ESCAPE_PATTERN.source}|${ANSI_OSC_ESCAPE_PATTERN.source}|${ANSI_SHORT_ESCAPE_PATTERN.source}|[\\u0000-\\u001a\\u001c-\\u001f\\u007f]+)`,
+)
 const LEADING_LOG_PREFIX_TOKEN_PATTERN = new RegExp(
   `^(?:${ANSI_ESCAPE_PATTERN.source}|${ANSI_OSC_ESCAPE_PATTERN.source}|${ANSI_SHORT_ESCAPE_PATTERN.source}|[\\u0000-\\u001a\\u001c-\\u001f\\u007f]+|\\s+)`,
 )
@@ -106,18 +110,32 @@ export function buildExecutionLogRenderItems(logLines: ExecutionLogLine[]): Exec
 }
 
 export function normalizeExecutionLogLine(line: ExecutionLogLine): ExecutionLogLine {
-  const prefix = readExecutionLogPrefix(line)
+  let prefix = readExecutionLogPrefix(line)
 
   if (!prefix) {
     return line
   }
 
-  return {
+  let normalizedLine = {
     ...line,
     message: `${prefix.leadingContent}${prefix.message}`,
     stream: prefix.stream,
     timestamp: prefix.timestamp,
   }
+
+  prefix = readLeadingExecutionLogPrefix(normalizedLine)
+
+  while (prefix && executionLogMetadataMatches(normalizedLine, prefix)) {
+    normalizedLine = {
+      ...normalizedLine,
+      message: `${prefix.leadingContent}${prefix.message}`,
+      stream: prefix.stream,
+      timestamp: prefix.timestamp,
+    }
+    prefix = readLeadingExecutionLogPrefix(normalizedLine)
+  }
+
+  return normalizedLine
 }
 
 function readExecutionLogPrefix(line: ExecutionLogLine) {
@@ -128,7 +146,22 @@ function readExecutionLogPrefix(line: ExecutionLogLine) {
   }
 
   return {
-    leadingContent: line.message.slice(0, metadataPrefix.index),
+    leadingContent: metadataPrefix.leadingContent ?? line.message.slice(0, metadataPrefix.index),
+    message: line.message.slice(metadataPrefix.endIndex),
+    stream: metadataPrefix.stream,
+    timestamp: metadataPrefix.timestamp,
+  }
+}
+
+function readLeadingExecutionLogPrefix(line: ExecutionLogLine) {
+  const metadataPrefix = readLeadingExecutionLogMetadataPrefix(line.message)
+
+  if (!metadataPrefix) {
+    return null
+  }
+
+  return {
+    leadingContent: metadataPrefix.leadingContent ?? line.message.slice(0, metadataPrefix.index),
     message: line.message.slice(metadataPrefix.endIndex),
     stream: metadataPrefix.stream,
     timestamp: metadataPrefix.timestamp,
@@ -175,22 +208,67 @@ function readLeadingExecutionLogMetadataPrefix(message: string) {
 
   const metadataMatch = remainingMessage.match(EXECUTION_LOG_METADATA_PATTERN)
 
-  if (!metadataMatch?.groups) {
+  if (metadataMatch?.groups) {
+    const stream = normalizeExecutionLogStream(metadataMatch.groups.stream)
+
+    if (!stream) {
+      return null
+    }
+
+    return {
+      index: leadingContent.length,
+      endIndex: message.length - (metadataMatch.groups.message ?? '').length,
+      stream,
+      timestamp: metadataMatch.groups.timestamp,
+    }
+  }
+
+  const visibleMessage = stripAnsiControlSequences(remainingMessage)
+  const decoratedMetadataMatch = visibleMessage.match(EXECUTION_LOG_METADATA_PATTERN)
+
+  if (!decoratedMetadataMatch?.groups || visibleMessage === remainingMessage) {
     return null
   }
 
-  const stream = normalizeExecutionLogStream(metadataMatch.groups.stream)
+  const stream = normalizeExecutionLogStream(decoratedMetadataMatch.groups.stream)
 
   if (!stream) {
     return null
   }
 
+  const visiblePrefixLength = visibleMessage.length - (decoratedMetadataMatch.groups.message ?? '').length
+  const rawPrefixLength = findRawIndexAfterVisibleContent(remainingMessage, visiblePrefixLength)
+
+  if (rawPrefixLength === null) {
+    return null
+  }
+
   return {
     index: leadingContent.length,
-    endIndex: message.length - (metadataMatch.groups.message ?? '').length,
+    endIndex: leadingContent.length + rawPrefixLength,
+    leadingContent: leadingContent.replace(ANSI_SGR_ESCAPE_PATTERN, ''),
     stream,
-    timestamp: metadataMatch.groups.timestamp,
+    timestamp: decoratedMetadataMatch.groups.timestamp,
   }
+}
+
+function findRawIndexAfterVisibleContent(content: string, visibleLength: number) {
+  let rawIndex = 0
+  let remainingVisibleLength = visibleLength
+
+  while (rawIndex < content.length && remainingVisibleLength > 0) {
+    const invisibleToken = content.slice(rawIndex).match(INVISIBLE_LOG_PREFIX_TOKEN_PATTERN)
+
+    if (invisibleToken?.[0]) {
+      rawIndex += invisibleToken[0].length
+      continue
+    }
+
+    rawIndex += 1
+    remainingVisibleLength -= 1
+  }
+
+  return remainingVisibleLength === 0 ? rawIndex : null
 }
 
 function shouldStripEmbeddedExecutionLogMetadata(
@@ -199,6 +277,13 @@ function shouldStripEmbeddedExecutionLogMetadata(
   stream: ExecutionLogStream,
 ) {
   return timestampsMatch(line.timestamp, timestamp) || line.stream === stream
+}
+
+function executionLogMetadataMatches(
+  line: Pick<ExecutionLogLine, 'stream' | 'timestamp'>,
+  prefix: Pick<ExecutionLogLine, 'stream' | 'timestamp'>,
+) {
+  return line.stream === prefix.stream && timestampsMatch(line.timestamp, prefix.timestamp ?? '')
 }
 
 function timestampsMatch(leftTimestamp: string | undefined, rightTimestamp: string) {

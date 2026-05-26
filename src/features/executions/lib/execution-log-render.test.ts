@@ -207,6 +207,93 @@ describe('execution log render', () => {
     ])
   })
 
+  it('removes repeated leading metadata wrappers from a single log line', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T20:07:14.455Z] [stdout] [2026-05-26T20:07:14.455Z] [stdout] completed',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'completed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('preserves log payloads that start with different metadata', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message:
+          '[2026-05-26T20:07:14.455Z] [stdout] [2026-05-26T20:08:14.455Z] [stderr] app emitted structured metadata',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: '[2026-05-26T20:08:14.455Z] [stderr] app emitted structured metadata',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('keeps metadata-like content inside a normalized history message', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T20:07:14.455Z] [stdout] debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'debug payload [2026-05-26T20:07:14.455Z] [stdout] should stay',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('removes metadata wrappers decorated with ANSI styles', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '\u001b[90m[2026-05-26T20:07:14.455Z]\u001b[0m \u001b[36m[stdout]\u001b[0m completed',
+        stream: 'stdout',
+        timestamp: '2026-05-26T20:07:14.455Z',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'completed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:07:14.455Z',
+        },
+      },
+    ])
+  })
+
   it('removes embedded metadata when it duplicates the line metadata', () => {
     const items = buildExecutionLogRenderItems([
       {

@@ -199,7 +199,7 @@ export function ExecutionsSidebar() {
                           <AlertDialogTrigger
                             render={
                               <SidebarMenuAction
-                                className="hover:bg-sidebar-accent/60 right-2 opacity-0 peer-hover/menu-button:opacity-100 hover:opacity-100 aria-expanded:opacity-100"
+                                className="right-2 !top-1/2 !-translate-y-1/2 opacity-0 hover:bg-sidebar-accent/60 hover:opacity-100 aria-expanded:opacity-100 peer-hover/menu-button:opacity-100"
                                 aria-label={t('sidebar.deleteAction', {
                                   execution: label,
                                 })}
