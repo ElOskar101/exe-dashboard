@@ -97,4 +97,15 @@ describe('execution-clinic-bots', () => {
       verificationType: 'FBD',
     })
   })
+
+  it('can swap in the decrypted password without changing the rest of the mapped bot fields', () => {
+    expect(mapClinicBotToExecutionBot(createClinicBot(), 'decrypted-secret')).toEqual({
+      clinicBotId: 'clinic-bot-1',
+      botName: 'Aetna',
+      targetUrl: 'https://carrier.example.com',
+      username: 'runner',
+      password: 'decrypted-secret',
+      verificationType: 'FBD',
+    })
+  })
 })

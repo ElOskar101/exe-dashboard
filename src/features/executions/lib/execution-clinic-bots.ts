@@ -18,13 +18,13 @@ export const getSelectableClinicBots = (clinicBots: Array<Partial<ClinicBotRecor
     .sort((leftBot, rightBot) => leftBot.bot.botName.localeCompare(rightBot.bot.botName))
 }
 
-export const mapClinicBotToExecutionBot = (clinicBot: ClinicBotRecord): ExecutionBot => {
+export const mapClinicBotToExecutionBot = (clinicBot: ClinicBotRecord, password = clinicBot.password): ExecutionBot => {
   return {
     clinicBotId: clinicBot._id,
     botName: clinicBot.bot.botName,
     targetUrl: clinicBot.bot.urlLogin,
     username: clinicBot.username,
-    password: clinicBot.password,
+    password,
     verificationType: clinicBot.bot.type,
   }
 }

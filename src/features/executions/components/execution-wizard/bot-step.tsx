@@ -47,6 +47,7 @@ export function BotStep({
     clinicBotOptions.find((clinicBot) => clinicBot._id === bot.clinicBotId)?.bot.botName ?? ''
   const isBotFormEnabled =
     hasSelectedContext && bot.clinicBotId.trim().length > 0 && !hasSelectedClinicWithoutActiveBots && !clinicBotsError
+  const isBotFieldInputEnabled = isBotFormEnabled && !isDecryptingClinicBotPassword
 
   return (
     <FieldSet>
@@ -132,7 +133,7 @@ export function BotStep({
               id="botName"
               value={bot.botName}
               onChange={(event) => onBotFieldChange('botName', event.target.value)}
-              disabled={!isBotFormEnabled}
+              disabled={!isBotFieldInputEnabled}
               aria-invalid={showErrors && Boolean(errors.botName)}
               placeholder={t('placeholders.botName')}
             />
@@ -146,7 +147,7 @@ export function BotStep({
               type="url"
               value={bot.targetUrl}
               onChange={(event) => onBotFieldChange('targetUrl', event.target.value)}
-              disabled={!isBotFormEnabled}
+              disabled={!isBotFieldInputEnabled}
               aria-invalid={showErrors && Boolean(errors.targetUrl)}
               placeholder={t('placeholders.url')}
             />
@@ -160,7 +161,7 @@ export function BotStep({
               autoComplete="username"
               value={bot.username}
               onChange={(event) => onBotFieldChange('username', event.target.value)}
-              disabled={!isBotFormEnabled}
+              disabled={!isBotFieldInputEnabled}
               aria-invalid={showErrors && Boolean(errors.username)}
               placeholder={t('placeholders.username')}
             />
@@ -176,7 +177,7 @@ export function BotStep({
                 autoComplete="current-password"
                 value={bot.password}
                 onChange={(event) => onBotFieldChange('password', event.target.value)}
-                disabled={!isBotFormEnabled || isDecryptingClinicBotPassword}
+                disabled={!isBotFieldInputEnabled}
                 aria-invalid={showErrors && Boolean(errors.password)}
                 placeholder={
                   isDecryptingClinicBotPassword
@@ -190,7 +191,7 @@ export function BotStep({
                 variant="ghost"
                 className="absolute top-1/2 right-1 h-7 min-w-7 -translate-y-1/2 rounded-full px-0"
                 onClick={() => setIsPasswordVisible((previousValue) => !previousValue)}
-                disabled={!isBotFormEnabled || isDecryptingClinicBotPassword}
+                disabled={!isBotFieldInputEnabled}
                 aria-label={isPasswordVisible ? t('buttons.hidePassword') : t('buttons.showPassword')}
               >
                 {isPasswordVisible ? <IconEyeOff /> : <IconEye />}

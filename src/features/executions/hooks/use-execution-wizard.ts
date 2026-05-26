@@ -26,6 +26,7 @@ import {
   getClinicExecutionDays,
   getCustomerById,
   searchCustomers,
+  type ClinicBotRecord,
   type CustomerSearchItem,
 } from '../services/ccc.service'
 
@@ -40,6 +41,11 @@ const createEmptyBotSelection = (): ExecutionWizardDraft['bot'] => ({
   username: '',
   password: '',
   verificationType: '',
+})
+
+export const createPendingBotSelection = (clinicBotId: string): ExecutionWizardDraft['bot'] => ({
+  ...createEmptyBotSelection(),
+  clinicBotId,
 })
 
 const createEmptyExecutionSelection = (previousExecution: ExecutionWizardDraft['execution']) => ({
@@ -145,26 +151,30 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     },
   })
 
+  interface DecryptClinicBotPasswordMutationVariables {
+    clinicBotId: string
+    requestId: string
+    selectedClinicBot: ClinicBotRecord
+  }
+
   const decryptClinicBotPasswordMutation = useMutation({
-    mutationFn: async ({ clinicBotId, requestId }: { clinicBotId: string; requestId: string }) => {
+    mutationFn: async ({ clinicBotId, requestId, selectedClinicBot }: DecryptClinicBotPasswordMutationVariables) => {
       const response = await decryptClinicBotPassword(clinicBotId)
 
       return {
         clinicBotId,
         password: response.data,
         requestId,
+        selectedClinicBot,
       }
     },
-    onSuccess: ({ clinicBotId, password, requestId }) => {
+    onSuccess: ({ clinicBotId, password, requestId, selectedClinicBot }) => {
       const currentRequest = decryptClinicBotPasswordRequestRef.current
 
       if (currentRequest.clinicBotId === clinicBotId && currentRequest.requestId === requestId) {
         setDraft((previousDraft) => ({
           ...previousDraft,
-          bot: {
-            ...previousDraft.bot,
-            password,
-          },
+          bot: mapClinicBotToExecutionBot(selectedClinicBot, password),
         }))
       }
 
@@ -330,14 +340,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }
 
     const requestId = crypto.randomUUID()
-    const request = { clinicBotId, requestId }
+    const request = { clinicBotId, requestId, selectedClinicBot }
 
     setDraft((previousDraft) => ({
       ...previousDraft,
-      bot: {
-        ...mapClinicBotToExecutionBot(selectedClinicBot),
-        password: '',
-      },
+      bot: createPendingBotSelection(clinicBotId),
     }))
 
     setDecryptClinicBotPasswordRequest(createPendingClinicBotPasswordRequestState(request))

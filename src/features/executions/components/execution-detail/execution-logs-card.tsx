@@ -305,7 +305,7 @@ export function ExecutionLogsCard({
               {t('detail.reportTab')}
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="logs" className="min-h-0 min-w-0">
+          <TabsContent keepMounted value="logs" className="min-h-0 min-w-0">
             <div className="relative min-w-0">
               <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-background">
                 <ScrollArea
