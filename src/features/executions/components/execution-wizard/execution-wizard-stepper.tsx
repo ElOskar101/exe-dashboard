@@ -31,7 +31,7 @@ export function ExecutionWizardStepper({
               onClick={() => onStepChange(index)}
               className={cn(
                 'relative flex h-full w-full flex-col rounded-3xl border border-border/70 bg-muted/20 p-4 text-left transition-[background-color,border-color,box-shadow] outline-none hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
-                isActiveStep && 'border-primary/50 bg-card shadow-sm ring-2 ring-primary/20 hover:bg-card',
+                isActiveStep && 'text-primary shadow-sm hover:bg-card',
               )}
             >
               {hasIncompleteStepInfo ? (
