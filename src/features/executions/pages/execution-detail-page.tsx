@@ -8,7 +8,20 @@ import { ExecutionLogsCard } from '../components/execution-detail/execution-logs
 import { getExecutionById, getExecutionReportHtml, stopExecution } from '../services/execution.service'
 import { createExecutionLogLinesFromHistory } from '../lib/execution-log-buffer'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
-import { isExecutionFailed, isExecutionRunning, isExecutionSuccessful } from '../lib/execution-display'
+import {
+  isExecutionFailed,
+  isExecutionRunning,
+  isExecutionSuccessful,
+  normalizeExecutionStatus,
+} from '../lib/execution-display'
+
+const formatExecutionStatusLabel = (status?: string | null) => {
+  if (!status) return status
+
+  const normalizedStatus = normalizeExecutionStatus(status)
+
+  return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1)
+}
 
 function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const { t } = useTranslation('executions')
@@ -38,6 +51,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   )
   const logLines = realtimeLogs.lines.length > 0 ? realtimeLogs.lines : fallbackLines
   const currentStatus = realtimeLogs.status ?? executionQuery.data?.status
+  const displayStatus = formatExecutionStatusLabel(currentStatus)
   const canStopExecution = isExecutionRunning(currentStatus)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
@@ -74,7 +88,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         key={showReport ? 'finished' : 'unfinished'}
         canStopExecution={canStopExecution}
         connectionState={realtimeLogs.connectionState}
-        currentStatus={currentStatus}
+        currentStatus={displayStatus}
         isLoading={executionQuery.isLoading}
         isReportError={reportQuery.isError}
         isReportLoading={!showReport || reportQuery.isLoading}

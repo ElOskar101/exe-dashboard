@@ -223,6 +223,7 @@
     "stopErrorDescription": "The stop request failed. Check whether the execution is still running and try again.",
     "logsTitle": "Execution commands",
     "logsDescription": "Realtime command output for this execution.",
+    "scrollToBottom": "Scroll to bottom",
     "contentTabsLabel": "Execution results",
     "reportTab": "Report",
     "historyTab": "Logs",
