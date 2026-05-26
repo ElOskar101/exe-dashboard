@@ -228,7 +228,28 @@ describe('execution log render', () => {
     ])
   })
 
-  it('preserves log payloads that start with different metadata', () => {
+  it('removes repeated leading metadata wrappers when timestamps differ but the stream matches', () => {
+    const items = buildExecutionLogRenderItems([
+      {
+        id: 'line-1',
+        message: '[2026-05-26T20:07:14.455Z] [stdout] [2026-05-26T20:08:14.455Z] [stdout] completed',
+      },
+    ])
+
+    expect(items).toEqual([
+      {
+        type: 'text',
+        line: {
+          id: 'line-1',
+          message: 'completed',
+          stream: 'stdout',
+          timestamp: '2026-05-26T20:08:14.455Z',
+        },
+      },
+    ])
+  })
+
+  it('preserves log payloads that start with a different stream metadata prefix', () => {
     const items = buildExecutionLogRenderItems([
       {
         id: 'line-1',

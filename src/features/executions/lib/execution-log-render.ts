@@ -125,7 +125,7 @@ export function normalizeExecutionLogLine(line: ExecutionLogLine): ExecutionLogL
 
   prefix = readLeadingExecutionLogPrefix(normalizedLine)
 
-  while (prefix && executionLogMetadataMatches(normalizedLine, prefix)) {
+  while (prefix && shouldStripRepeatedLeadingExecutionLogPrefix(normalizedLine, prefix)) {
     normalizedLine = {
       ...normalizedLine,
       message: `${prefix.leadingContent}${prefix.message}`,
@@ -279,11 +279,11 @@ function shouldStripEmbeddedExecutionLogMetadata(
   return timestampsMatch(line.timestamp, timestamp) || line.stream === stream
 }
 
-function executionLogMetadataMatches(
-  line: Pick<ExecutionLogLine, 'stream' | 'timestamp'>,
-  prefix: Pick<ExecutionLogLine, 'stream' | 'timestamp'>,
+function shouldStripRepeatedLeadingExecutionLogPrefix(
+  line: Pick<ExecutionLogLine, 'stream'>,
+  prefix: Pick<ExecutionLogLine, 'stream'>,
 ) {
-  return line.stream === prefix.stream && timestampsMatch(line.timestamp, prefix.timestamp ?? '')
+  return line.stream === prefix.stream
 }
 
 function timestampsMatch(leftTimestamp: string | undefined, rightTimestamp: string) {
