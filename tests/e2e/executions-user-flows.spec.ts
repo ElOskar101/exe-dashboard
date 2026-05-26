@@ -1,0 +1,457 @@
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+import { loadEnv } from 'vite'
+
+const e2eEnv = loadEnv('e2e', process.cwd(), '')
+const authLoginUrl = process.env.E2E_AUTH_LOGIN_URL || e2eEnv.E2E_AUTH_LOGIN_URL
+const username = process.env.E2E_TEST_USERNAME || e2eEnv.E2E_TEST_USERNAME
+const password = process.env.E2E_TEST_PASSWORD || e2eEnv.E2E_TEST_PASSWORD
+
+const canLogin = Boolean(authLoginUrl && username && password)
+
+interface ExecutionFixture {
+  _id: string
+  createdBy: string
+  playwrightProject: string
+  status: 'queued' | 'running' | 'completed' | 'cancelled' | 'failed' | 'process'
+  client: string
+  clinic: string
+  execution: string
+  botName: string
+  createdAt: string
+  updatedAt: string
+  jobId: string
+  playwrightExecutionId: string
+  logs?: string
+}
+
+const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFixture => ({
+  _id: 'execution-1',
+  createdBy: 'e2e-user',
+  playwrightProject: 'chromium',
+  status: 'completed',
+  client: 'customer-1',
+  clinic: 'clinic-1',
+  execution: 'Daily eligibility',
+  botName: 'Eligibility Runner',
+  createdAt: '2026-05-25T14:00:00.000Z',
+  updatedAt: '2026-05-25T14:10:00.000Z',
+  jobId: 'job-1',
+  playwrightExecutionId: 'report-1',
+  ...overrides,
+})
+
+async function login(request: APIRequestContext) {
+  const response = await request.post(authLoginUrl, {
+    data: {
+      username,
+      password,
+    },
+  })
+
+  expect(response.ok()).toBeTruthy()
+
+  const body = (await response.json()) as { token?: string }
+  expect(body.token).toBeTruthy()
+
+  return body.token as string
+}
+
+async function prepareAuthenticatedPage(page: Page, request: APIRequestContext) {
+  test.skip(
+    !canLogin,
+    'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
+  )
+
+  const token = await login(request)
+
+  await page.route('**/users/me', async (route) => {
+    await route.fulfill({
+      json: {
+        _id: 'e2e-user',
+        username: 'e2e',
+        fullName: 'E2E Test User',
+        area: 'QA',
+        roles: [{ name: 'admin', permission: [] }],
+      },
+    })
+  })
+  await page.addInitScript((accessToken) => {
+    window.localStorage.setItem('token', accessToken)
+  }, token)
+}
+
+async function stubExecutionList(page: Page, getExecutions: () => ExecutionFixture[]) {
+  await page.route('**/execution-api/executions', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback()
+      return
+    }
+
+    await route.fulfill({ json: getExecutions() })
+  })
+}
+
+async function stubExecutionDetails(page: Page, executionId: string, getExecution: () => ExecutionFixture) {
+  await page.route(`**/execution-api/executions/${executionId}`, async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback()
+      return
+    }
+
+    await route.fulfill({ json: getExecution() })
+  })
+}
+
+async function stubWizardDependencies(page: Page, incompletePatient = false) {
+  await page.route('**/api/v2/customers**', async (route) => {
+    const url = new URL(route.request().url())
+
+    if (url.pathname.endsWith('/api/v2/customers/customer-1')) {
+      await route.fulfill({
+        json: {
+          _id: 'customer-1',
+          clientName: 'Legacy Dental Care',
+          isActive: true,
+          clinic: [{ _id: 'clinic-1', clinicName: 'Downtown Clinic' }],
+        },
+      })
+      return
+    }
+
+    await route.fulfill({
+      json: {
+        totalDocs: 1,
+        totalPages: 1,
+        customers: [{ _id: 'customer-1', clientName: 'Legacy Dental Care', isActive: true }],
+      },
+    })
+  })
+  await page.route('**/api/v2/clinics/**/clinic-bots', async (route) => {
+    await route.fulfill({
+      json: [
+        {
+          _id: 'clinic-bot-1',
+          status: { _id: 'status-1', description: 'Active' },
+          username: 'qa.operator',
+          password: 'encrypted',
+          bot: {
+            _id: 'bot-1',
+            botName: 'Eligibility Runner',
+            isActive: true,
+            status: { _id: 'bot-status-1', description: 'Developed' },
+            type: 'ELG',
+            urlLogin: 'https://carrier.example.com',
+          },
+        },
+      ],
+    })
+  })
+  await page.route('**/api/clinicbots/decrypt/**', async (route) => {
+    await route.fulfill({ body: '"super-secret"', contentType: 'text/plain' })
+  })
+  await page.route('**/api/v2/executions/**', async (route) => {
+    const url = new URL(route.request().url())
+
+    if (url.pathname.endsWith('/api/v2/executions/clinic-1/days')) {
+      await route.fulfill({ json: [{ _id: 'day-1', sheetName: '2026-04-27', trashed: false }] })
+      return
+    }
+
+    if (url.pathname.endsWith('/api/v2/executions/day-1')) {
+      await route.fulfill({
+        json: {
+          _id: 'day-1',
+          sheetName: '2026-04-27',
+          rows: [
+            {
+              _id: 'row-1',
+              cells: [
+                { key: 'patient_first_name', value: incompletePatient ? '' : 'Jane' },
+                { key: 'patient_last_name', value: 'Doe' },
+                { key: 'memberid', value: '111111' },
+                { key: 'patient_dob', value: '01/01/1990' },
+                { key: 'subscriber_first_name', value: 'Jane' },
+                { key: 'subscriber_last_name', value: 'Doe' },
+                { key: 'subscriber_dob', value: '01/01/1980' },
+                { key: 'relationship_to_subscriber', value: 'Self' },
+                { key: 'subscriber_zip_code', value: '90001' },
+                { key: 'practice', value: 'Downtown Clinic' },
+                { key: 'type_of_verification', value: 'ELG' },
+                { key: 'files_s_name', value: 'jane-doe.pdf' },
+              ],
+            },
+          ],
+        },
+      })
+      return
+    }
+
+    await route.fallback()
+  })
+}
+
+async function selectExecutionPatients(page: Page) {
+  await page.getByLabel('Client').fill('Legacy')
+  await page.getByRole('button', { name: /Legacy Dental Care/ }).click()
+  await page.getByRole('combobox', { name: 'Clinic' }).click()
+  await page.getByRole('option', { name: 'Downtown Clinic' }).click()
+  await page.getByRole('combobox', { name: 'Execution' }).click()
+  await page.getByRole('option', { name: '2026-04-27' }).click()
+  await page.getByRole('button', { name: 'Get patients' }).click()
+}
+
+test.describe('execution user flows', () => {
+  test('shows the empty execution history state', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    await stubExecutionList(page, () => [])
+
+    await page.goto('/')
+
+    await expect(page.getByText('No executions yet.')).toBeVisible()
+  })
+
+  test('loads execution history and opens an execution detail page', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({ status: 'queued' })
+
+    await stubExecutionList(page, () => [
+      execution,
+      createExecution({ _id: 'execution-2', execution: 'Claims check', status: 'running' }),
+    ])
+    await stubExecutionDetails(page, execution._id, () => execution)
+
+    await page.goto('/')
+
+    await expect(page.getByText('chromium Daily eligibility')).toBeVisible()
+    await expect(page.getByLabel('queued')).toBeVisible()
+    await expect(page.getByLabel('running')).toBeVisible()
+    await page.getByText('chromium Daily eligibility').click()
+
+    await expect(page).toHaveURL('/execution/execution-1')
+    await expect(page.getByText('Execution details')).toBeVisible()
+  })
+
+  test('shows an executions load error and retries successfully', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    let shouldSucceed = false
+
+    await page.route('**/execution-api/executions', async (route) => {
+      if (!shouldSucceed) {
+        await route.fulfill({ status: 500, json: { message: 'Unable to load executions.' } })
+        return
+      }
+
+      await route.fulfill({ json: [createExecution()] })
+    })
+
+    await page.goto('/')
+
+    await expect(page.getByText('Executions could not be loaded')).toBeVisible({ timeout: 15_000 })
+    shouldSucceed = true
+    await page.getByRole('button', { name: 'Retry' }).click()
+    await expect(page.getByText('chromium Daily eligibility')).toBeVisible()
+  })
+
+  test('cancels deleting an execution from the sidebar', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    let deleteRequested = false
+
+    await stubExecutionList(page, () => [createExecution()])
+    await page.route('**/execution-api/executions/execution-1', async (route) => {
+      if (route.request().method() === 'DELETE') {
+        deleteRequested = true
+      }
+
+      await route.fulfill({ json: createExecution() })
+    })
+
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Delete Daily eligibility' }).click({ force: true })
+    await expect(page.getByText('Delete execution?')).toBeVisible()
+    await page.getByRole('button', { name: 'Cancel' }).click()
+
+    await expect(page.getByText('chromium Daily eligibility')).toBeVisible()
+    expect(deleteRequested).toBe(false)
+  })
+
+  test('deletes the selected execution and returns to create execution', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    let executions = [createExecution()]
+    let deletedExecutionId: string | null = null
+
+    await stubExecutionList(page, () => executions)
+    await stubExecutionDetails(page, 'execution-1', () => executions[0])
+    await page.route('**/execution-api/executions/execution-1', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.fallback()
+        return
+      }
+
+      deletedExecutionId = 'execution-1'
+      executions = []
+      await route.fulfill({ json: createExecution() })
+    })
+
+    await page.goto('/execution/execution-1')
+
+    await page.getByRole('button', { name: 'Delete Daily eligibility' }).click({ force: true })
+    await page.getByRole('button', { name: 'Delete', exact: true }).click()
+
+    await expect(page).toHaveURL('/')
+    await expect(page.getByText('No executions yet.')).toBeVisible()
+    expect(deletedExecutionId).toBe('execution-1')
+  })
+
+  test('shows execution details with historical logs and debug payload', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({
+      status: 'running',
+      logs: 'Starting carrier login\nLoading patient Jane Doe\n',
+    })
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+
+    await page.goto('/execution/execution-1')
+
+    await expect(page.getByText('Eligibility Runner - Daily eligibility')).toBeVisible()
+    await expect(page.getByText('Running')).toBeVisible()
+    await expect(page.getByText('Starting carrier login')).toBeVisible()
+    await page.getByRole('button', { name: 'Debug' }).click()
+    await expect(page.getByText('Execution debug details')).toBeVisible()
+    await expect(page.getByText('"jobId": "job-1"')).toBeVisible()
+  })
+
+  test('stops a running execution', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({ status: 'running' })
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+    await page.route('**/execution-api/executions/execution-1/stop', async (route) => {
+      execution.status = 'cancelled'
+      await route.fulfill({ json: execution })
+    })
+
+    await page.goto('/execution/execution-1')
+
+    await page.getByRole('button', { name: 'Stop execution' }).click()
+
+    await expect(page.getByText('Cancelled')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Stop execution' })).not.toBeVisible()
+  })
+
+  test('shows an error when stopping an execution fails', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({ status: 'running' })
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+    await page.route('**/execution-api/executions/execution-1/stop', async (route) => {
+      await route.fulfill({ status: 409, json: { message: 'Cannot stop execution.' } })
+    })
+
+    await page.goto('/execution/execution-1')
+    await page.getByRole('button', { name: 'Stop execution' }).click()
+
+    await expect(page.getByText('Execution could not be stopped')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Stop execution' })).toBeVisible()
+  })
+
+  test('displays the report for a completed execution', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution()
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+    await page.route('**/execution-reports/report-1/index.html', async (route) => {
+      await route.fulfill({
+        contentType: 'text/html',
+        body: '<!doctype html><html><body><h1>Completed report</h1><p>Jane Doe passed.</p></body></html>',
+      })
+    })
+
+    await page.goto('/execution/execution-1')
+    await page.getByRole('tab', { name: 'Report' }).click()
+
+    await expect(page.getByTitle('Execution report')).toBeVisible()
+    await expect(page.frameLocator('iframe[title="Execution report"]').getByText('Completed report')).toBeVisible()
+  })
+
+  test('shows a report error when a completed execution report is unavailable', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution()
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+    await page.route('**/execution-reports/report-1/index.html', async (route) => {
+      await route.fulfill({ status: 404, body: 'Missing report' })
+    })
+
+    await page.goto('/execution/execution-1')
+    await page.getByRole('tab', { name: 'Report' }).click()
+
+    await expect(page.getByText('Execution report could not be loaded')).toBeVisible({ timeout: 15_000 })
+  })
+
+  test('keeps the logs view available when execution details fail to load', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+
+    await stubExecutionList(page, () => [createExecution()])
+    await page.route('**/execution-api/executions/execution-1', async (route) => {
+      await route.fulfill({ status: 500, json: { message: 'Unavailable' } })
+    })
+
+    await page.goto('/execution/execution-1')
+
+    await expect(page.getByText('Execution details could not be loaded')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Waiting for logs')).toBeVisible()
+  })
+
+  test('blocks submission when no patients have been imported', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    await stubExecutionList(page, () => [])
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Create execution' }).click()
+
+    await expect(page.getByText(/Add at least one patient before continuing/)).toBeVisible()
+  })
+
+  test('shows incomplete imported patient validation before submission', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    await stubExecutionList(page, () => [])
+    await stubWizardDependencies(page, true)
+
+    await page.goto('/')
+    await selectExecutionPatients(page)
+    await expect(page.getByText('Imported patients: 1')).toBeVisible()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Back' }).click()
+
+    await expect(page.getByText('Patient details are incomplete')).toBeVisible()
+    await expect(
+      page.getByText('Fill the missing imported fields before creating the execution: Patient name.'),
+    ).toBeVisible()
+  })
+
+  test('surfaces invalid configuration before submission', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    await stubExecutionList(page, () => [])
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByLabel('Other config').fill('[]')
+    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Create execution' }).click()
+
+    await expect(page.getByText(/Other config/)).toBeVisible()
+    await page.getByRole('button', { name: 'Back' }).click()
+    await expect(page.getByText('Enter a valid JSON object.')).toBeVisible()
+  })
+})
