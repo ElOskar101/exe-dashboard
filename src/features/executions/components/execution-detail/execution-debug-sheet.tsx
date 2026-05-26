@@ -46,7 +46,7 @@ export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecuti
           <div className="mt-6 flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <h3 className="font-medium">{t('detail.rawExecutionTitle')}</h3>
-              <pre className="max-h-96 overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
+              <pre className="max-h-[20lh] overflow-auto rounded-2xl bg-muted/70 p-4 text-xs leading-6">
                 {rawExecutionJson}
               </pre>
             </div>

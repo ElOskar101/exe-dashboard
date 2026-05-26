@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { IconArrowBarToDown, IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
+import { IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
 import { isExecutionRunning } from '../../lib/execution-display'
@@ -232,6 +232,7 @@ interface ExecutionLogsCardProps {
   logLines: ExecutionLogLine[]
   onStopExecution: () => void
   rawExecutionJson: string
+  reportBasePath: string
   reportHtml?: string
   showReport: boolean
 }
@@ -247,6 +248,7 @@ export function ExecutionLogsCard({
   logLines,
   onStopExecution,
   rawExecutionJson,
+  reportBasePath,
   reportHtml,
   showReport,
 }: ExecutionLogsCardProps) {
@@ -328,7 +330,12 @@ export function ExecutionLogsCard({
             </div>
           </TabsContent>
           <TabsContent value="report" className="min-h-0">
-            <ExecutionReportPanel isError={isReportError} isLoading={isReportLoading} reportHtml={reportHtml} />
+            <ExecutionReportPanel
+              isError={isReportError}
+              isLoading={isReportLoading}
+              reportBasePath={reportBasePath}
+              reportHtml={reportHtml}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

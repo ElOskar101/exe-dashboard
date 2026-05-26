@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { APP_CONFIG } from '@/app.config'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
 import { getExecutionById, getExecutionReportHtml, stopExecution } from '../services/execution.service'
@@ -55,6 +56,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const canStopExecution = isExecutionRunning(currentStatus)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
+  const reportBasePath = `${APP_CONFIG.exeReportsUrl}/${reportExecutionId}`
   const reportQuery = useQuery({
     queryKey: ['execution-report', reportExecutionId],
     queryFn: async () => {
@@ -96,6 +98,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         logLines={logLines}
         onStopExecution={() => stopMutation.mutate(executionId)}
         rawExecutionJson={rawExecutionJson}
+        reportBasePath={reportBasePath}
         reportHtml={reportQuery.data}
         showReport={showReport}
       />
