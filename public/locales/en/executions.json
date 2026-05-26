@@ -199,7 +199,9 @@
     "deleting": "Deleting..."
   },
   "detail": {
-    "title": "Execution logs",
+    "title": "Execution details",
+    "subtitle": "{{botName}} - {{execution}}",
+    "subtitleUnknownBot": "Unknown bot",
     "missingIdTitle": "Execution ID is required",
     "statusUnknown": "Unknown",
     "loadErrorTitle": "Execution details could not be loaded",

@@ -2,6 +2,8 @@ import type { ExecutionLogLine, ExecutionLogStream } from './execution-log-buffe
 
 const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|(?<content>.*)$/
 const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<content>.*)$/
+const EXECUTION_LOG_PREFIX_PATTERN =
+  /^\[(?<timestamp>[^\]]+)\]\s+\[(?<stream>stdout|stderr|system)\](?:\s(?<message>.*))?$/
 const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'g')
 const PLAYWRIGHT_DETAIL_LINE_PATTERN = /^\s*\[[^\]]+\]\s+›\s+.+$/
 const PLAYWRIGHT_FAILURE_SUMMARY_PATTERN = /^\s*\d+\s+(failed|did not run|interrupted|timed out)\b/i
@@ -66,7 +68,8 @@ export function buildExecutionLogRenderItems(logLines: ExecutionLogLine[]): Exec
     currentCodeFrameId = undefined
   }
 
-  for (const line of logLines) {
+  for (const rawLine of logLines) {
+    const line = normalizeExecutionLogLine(rawLine)
     const parsedCodeFrameLine = parseExecutionLogCodeFrameLine(line)
     const tone = getExecutionLogTone(line, activePlaywrightTone)
 
@@ -94,6 +97,21 @@ export function buildExecutionLogRenderItems(logLines: ExecutionLogLine[]): Exec
   flushCodeFrame()
 
   return items
+}
+
+export function normalizeExecutionLogLine(line: ExecutionLogLine): ExecutionLogLine {
+  const prefixMatch = line.message.match(EXECUTION_LOG_PREFIX_PATTERN)
+
+  if (!prefixMatch?.groups) {
+    return line
+  }
+
+  return {
+    ...line,
+    message: prefixMatch.groups.message ?? '',
+    stream: prefixMatch.groups.stream as ExecutionLogStream,
+    timestamp: prefixMatch.groups.timestamp ?? line.timestamp,
+  }
 }
 
 export function parseExecutionLogCodeFrameLine(

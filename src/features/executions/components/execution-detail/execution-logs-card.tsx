@@ -12,7 +12,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -225,6 +225,7 @@ interface ExecutionLogsCardProps {
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
+  description: string | null
   isLoading: boolean
   isReportError: boolean
   isReportLoading: boolean
@@ -235,12 +236,14 @@ interface ExecutionLogsCardProps {
   reportBasePath: string
   reportHtml?: string
   showReport: boolean
+  title: string
 }
 
 export function ExecutionLogsCard({
   canStopExecution,
   connectionState,
   currentStatus,
+  description,
   isLoading,
   isReportError,
   isReportLoading,
@@ -251,21 +254,23 @@ export function ExecutionLogsCard({
   reportBasePath,
   reportHtml,
   showReport,
+  title,
 }: ExecutionLogsCardProps) {
   const { t } = useTranslation('executions')
   const isStatusLoading = isLoading && currentStatus == null
   const isCurrentExecutionRunning = isExecutionRunning(currentStatus)
   const latestLogId = logLines.at(-1)?.id ?? 'empty'
-  const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}`)
+  const latestLogLength = logLines.at(-1)?.message.length ?? 0
+  const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}:${latestLogLength}`)
 
   return (
     <Card className="min-h-0 min-w-0 flex-1 gap-4">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 flex-col gap-2">
             <CardTitle className="flex items-center gap-2">
-              <IconTerminal2 />
-              {t('detail.logsTitle')}
+              <IconTerminal2 className="text-muted-foreground" />
+              {title}
               {isStatusLoading ? (
                 <Skeleton aria-hidden="true" className="h-6 w-24 rounded-full" />
               ) : (
@@ -277,6 +282,11 @@ export function ExecutionLogsCard({
                 </Badge>
               )}
             </CardTitle>
+            {isLoading ? (
+              <Skeleton aria-hidden="true" className="h-5 w-56 rounded-md" />
+            ) : description ? (
+              <CardDescription>{description}</CardDescription>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ExecutionDebugSheet

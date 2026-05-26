@@ -39,7 +39,7 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
         <div className="flex size-10 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground">
           <IconCircleDashed />
         </div>
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="font-medium text-foreground">{t('detail.noLogsTitle')}</p>
           <p className="text-sm text-muted-foreground">{t('detail.noLogsDescription')}</p>
         </div>
@@ -62,7 +62,7 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
 
 function ExecutionTextLine({ line, tone }: { line: ExecutionLogLine; tone?: ExecutionLogTone }) {
   return (
-    <div className="flex min-h-6 min-w-0 items-start gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-muted/40">
+    <div className="flex min-h-6 min-w-0 items-baseline gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-muted/40">
       <ExecutionLogMeta stream={line.stream} timestamp={line.timestamp} />
       <span
         className={cn(
@@ -88,7 +88,7 @@ function ExecutionCodeFrame({
 
   return (
     <div className="min-w-0 rounded-xl border border-border/80 bg-muted/30 px-2 py-2">
-      <div className="flex min-w-0 items-start gap-2">
+      <div className="flex min-w-0 items-baseline gap-2">
         <ExecutionLogMeta stream={item.stream} timestamp={item.timestamp} />
         <div className="min-w-0 flex-1">
           <div className="min-w-0 whitespace-pre-wrap text-[13px] leading-6" style={{ tabSize: 2 }}>
@@ -134,23 +134,20 @@ function ExecutionLogMeta({ stream, timestamp }: { stream?: ExecutionLogStream; 
   }
 
   return (
-    <>
+    <div className="flex shrink-0 items-baseline gap-2 leading-6">
       {timestamp ? (
-        <span className="shrink-0 select-none pt-0.5 text-[11px] text-muted-foreground">
+        <span className="shrink-0 select-none text-[11px] text-muted-foreground">
           {formatExecutionDateTime(timestamp)}
         </span>
       ) : null}
       {stream ? (
         <span
-          className={cn(
-            'shrink-0 pt-0.5 text-[10px] font-semibold tracking-[0.18em] uppercase',
-            getStreamClassName(stream),
-          )}
+          className={cn('shrink-0 text-[10px] font-semibold tracking-[0.18em] uppercase', getStreamClassName(stream))}
         >
           {stream}
         </span>
       ) : null}
-    </>
+    </div>
   )
 }
 
@@ -238,21 +235,30 @@ function getTextDecorationLine(decorations: string[]): CSSProperties['textDecora
   return textDecorations.join(' ') as CSSProperties['textDecorationLine']
 }
 
-const LOG_SKELETON_ROWS = [
-  { messageWidth: 'w-72', timestampWidth: 'w-32', streamWidth: 'w-16' },
-  { messageWidth: 'w-96', timestampWidth: 'w-28', streamWidth: 'w-20' },
-  { messageWidth: 'w-80', timestampWidth: 'w-36', streamWidth: 'w-14' },
-  { messageWidth: 'w-64', timestampWidth: 'w-24', streamWidth: 'w-16' },
+const LOG_SKELETON_ROW_WIDTHS = [
+  'w-[78%]',
+  'w-[92%]',
+  'w-[86%]',
+  'w-[64%]',
+  'w-[88%]',
+  'w-[72%]',
+  'w-[95%]',
+  'w-[68%]',
+  'w-[84%]',
+  'w-[90%]',
+  'w-[76%]',
+  'w-[82%]',
+  'w-[70%]',
+  'w-[94%]',
+  'w-[66%]',
 ] as const
 
 function ExecutionLogListSkeleton() {
   return (
-    <div aria-hidden="true" className="space-y-2 font-mono">
-      {LOG_SKELETON_ROWS.map((row, index) => (
-        <div key={index} className="flex min-h-6 items-center gap-4 rounded-lg px-3 py-2">
-          <Skeleton className={cn('h-3 rounded-full', row.timestampWidth)} />
-          <Skeleton className={cn('h-3 rounded-full', row.streamWidth)} />
-          <Skeleton className={cn('h-3 rounded-full', row.messageWidth)} />
+    <div aria-hidden="true" className="flex flex-col gap-2 font-mono">
+      {LOG_SKELETON_ROW_WIDTHS.map((rowWidth, index) => (
+        <div key={index} className="flex min-h-6 items-center rounded-lg px-2 py-0.5">
+          <Skeleton className={cn('h-4 max-w-full rounded-full', rowWidth)} />
         </div>
       ))}
     </div>

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   appendExecutionLogChunk,
+  createExecutionLogDisplayLines,
   createExecutionLogBufferState,
   createExecutionLogLinesFromHistory,
+  hydrateExecutionLogBufferState,
   shouldHandleExecutionEvent,
 } from './execution-log-buffer'
 
@@ -42,6 +44,8 @@ describe('execution log buffer', () => {
 
     expect(firstState.lines).toEqual([])
     expect(firstState.partial).toBe('run pn')
+    expect(firstState.partialStream).toBe('stdout')
+    expect(firstState.partialTimestamp).toBe('2026-05-22T14:10:00.000Z')
     expect(nextState.lines).toEqual([
       {
         id: 'chunk-0',
@@ -57,6 +61,115 @@ describe('execution log buffer', () => {
       },
     ])
     expect(nextState.partial).toBe('partial')
+    expect(nextState.partialStream).toBe('stdout')
+    expect(nextState.partialTimestamp).toBe('2026-05-22T14:10:01.000Z')
+  })
+
+  it('hydrates history without dropping newer live chunks', () => {
+    const seededState = createExecutionLogLinesFromHistory('first\nsec')
+    const liveState = appendExecutionLogChunk({
+      state: seededState,
+      message: 'ond\nthird',
+      sourceId: 'chunk',
+      stream: 'stdout',
+      timestamp: '2026-05-22T14:10:01.000Z',
+    })
+
+    const hydratedState = hydrateExecutionLogBufferState(liveState, 'first\nsecond\n')
+
+    expect(hydratedState).toEqual(liveState)
+  })
+
+  it('hydrates the buffer when history is more complete than the current state', () => {
+    const state = appendExecutionLogChunk({
+      state: createExecutionLogLinesFromHistory('first\n'),
+      message: 'second\n',
+      sourceId: 'chunk',
+      stream: 'stdout',
+      timestamp: '2026-05-22T14:10:01.000Z',
+    })
+
+    const hydratedState = hydrateExecutionLogBufferState(state, 'first\nsecond\nthird\npar')
+
+    expect(hydratedState.lines).toEqual([
+      { id: 'history-0', message: 'first' },
+      { id: 'history-1', message: 'second' },
+      { id: 'history-2', message: 'third' },
+    ])
+    expect(hydratedState.partial).toBe('par')
+  })
+
+  it('merges overlapping history snapshots on line boundaries', () => {
+    const state = createExecutionLogLinesFromHistory('first\nsecond\nthird\n')
+
+    const hydratedState = hydrateExecutionLogBufferState(state, 'second\nthird\nfourth\n')
+
+    expect(hydratedState.lines).toEqual([
+      { id: 'history-0', message: 'first' },
+      { id: 'history-1', message: 'second' },
+      { id: 'history-2', message: 'third' },
+      { id: 'history-3', message: 'fourth' },
+    ])
+    expect(hydratedState.partial).toBe('')
+  })
+
+  it('merges overlapping history snapshots when a partial line continues in the newer payload', () => {
+    const state = createExecutionLogLinesFromHistory('first\nsecond\nthi')
+
+    const hydratedState = hydrateExecutionLogBufferState(state, 'second\nthird\nfourth\n')
+
+    expect(hydratedState.lines).toEqual([
+      { id: 'history-0', message: 'first' },
+      { id: 'history-1', message: 'second' },
+      { id: 'history-2', message: 'third' },
+      { id: 'history-3', message: 'fourth' },
+    ])
+    expect(hydratedState.partial).toBe('')
+  })
+
+  it('appends later live chunks onto the hydrated state', () => {
+    const initialState = createExecutionLogLinesFromHistory('first\n')
+    const hydratedState = hydrateExecutionLogBufferState(initialState, 'first\nsecond\nthird\n')
+    const nextState = appendExecutionLogChunk({
+      state: hydratedState,
+      message: 'fourth\n',
+      sourceId: 'chunk',
+      stream: 'stdout',
+      timestamp: '2026-05-22T14:10:02.000Z',
+    })
+
+    expect(nextState.lines).toEqual([
+      { id: 'history-0', message: 'first' },
+      { id: 'history-1', message: 'second' },
+      { id: 'history-2', message: 'third' },
+      {
+        id: 'chunk-3',
+        message: 'fourth',
+        stream: 'stdout',
+        timestamp: '2026-05-22T14:10:02.000Z',
+      },
+    ])
+    expect(nextState.partial).toBe('')
+  })
+
+  it('includes the active partial line in the display output', () => {
+    const state = appendExecutionLogChunk({
+      state: createExecutionLogLinesFromHistory('first\n'),
+      message: 'second',
+      sourceId: 'chunk',
+      stream: 'stderr',
+      timestamp: '2026-05-22T14:10:01.000Z',
+    })
+
+    expect(createExecutionLogDisplayLines(state)).toEqual([
+      { id: 'history-0', message: 'first' },
+      {
+        id: 'partial-1',
+        message: 'second',
+        stream: 'stderr',
+        timestamp: '2026-05-22T14:10:01.000Z',
+      },
+    ])
   })
 
   it('filters events by execution id', () => {
