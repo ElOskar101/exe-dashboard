@@ -28,6 +28,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar'
+import { useCurrentTime } from '@/hooks/use-current-time'
 import { cn } from '@/lib/utils'
 import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
 import { deleteExecution, getExecutions } from '../services/execution.service'
@@ -54,12 +55,12 @@ const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
   numeric: 'auto',
 })
 
-const getRelativeCreatedAt = (createdAt: string) => {
+const getRelativeCreatedAt = (createdAt: string, currentTime: number) => {
   const createdAtTime = new Date(createdAt).getTime()
 
   if (Number.isNaN(createdAtTime)) return null
 
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - createdAtTime) / 1000))
+  const elapsedSeconds = Math.max(0, Math.floor((currentTime - createdAtTime) / 1000))
   const relativeUnit = RELATIVE_TIME_UNITS.find(({ seconds }) => elapsedSeconds >= seconds)
 
   if (!relativeUnit) return relativeTimeFormatter.format(0, 'second')
@@ -80,6 +81,7 @@ export function ExecutionsSidebar() {
   const { id: currentExecutionId } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const currentTime = useCurrentTime()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
   useExecutionStatusUpdates()
   const executionsQuery = useQuery({
@@ -157,7 +159,7 @@ export function ExecutionsSidebar() {
               <SidebarMenu>
                 {executions.map((execution) => {
                   const label = getExecutionLabel(execution)
-                  const createdAtAgo = getRelativeCreatedAt(execution.createdAt)
+                  const createdAtAgo = getRelativeCreatedAt(execution.createdAt, currentTime)
                   const status = normalizeExecutionStatus(execution.status)
                   const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
