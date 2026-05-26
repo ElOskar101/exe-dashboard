@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type SetStateAction } from 'react'
 import { socket } from '@/lib/socket'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import {
   appendExecutionLogChunk,
-  createExecutionLogBufferState,
+  type ExecutionLogBufferState,
   createExecutionLogLinesFromHistory,
+  hydrateExecutionLogBufferState,
   shouldHandleExecutionEvent,
   type ExecutionLogStream,
 } from '../lib/execution-log-buffer'
@@ -44,10 +45,33 @@ const leaveExecutionRoom = (executionId: string) => {
   socket.emit('execution:leave', { executionId })
 }
 
-export const useExecutionRealtimeLogs = (executionId: string) => {
-  const [buffer, setBuffer] = useState(() => createExecutionLogBufferState())
+interface UseExecutionRealtimeLogsOptions {
+  historyContent?: string
+}
+
+const resolveBufferUpdate = (
+  currentBuffer: ExecutionLogBufferState,
+  updater: SetStateAction<ExecutionLogBufferState>,
+) => (typeof updater === 'function' ? updater(currentBuffer) : updater)
+
+export const useExecutionRealtimeLogs = (executionId: string, options: UseExecutionRealtimeLogsOptions = {}) => {
+  const { historyContent = '' } = options
+  const [buffer, setBuffer] = useState(() => createExecutionLogLinesFromHistory(historyContent))
   const [status, setStatus] = useState<ExecutionStatus | null>(null)
   const [connectionState, setConnectionState] = useState<ConnectionState>('connecting')
+  const hydratedBuffer = useMemo(() => hydrateExecutionLogBufferState(buffer, historyContent), [buffer, historyContent])
+  const bufferRef = useRef(hydratedBuffer)
+
+  useLayoutEffect(() => {
+    bufferRef.current = hydratedBuffer
+  }, [hydratedBuffer])
+
+  const updateBuffer = useCallback((updater: SetStateAction<ExecutionLogBufferState>) => {
+    const nextBuffer = resolveBufferUpdate(bufferRef.current, updater)
+
+    bufferRef.current = nextBuffer
+    setBuffer(nextBuffer)
+  }, [])
 
   useMountEffect(() => {
     const handleConnect = () => {
@@ -62,13 +86,13 @@ export const useExecutionRealtimeLogs = (executionId: string) => {
     const handleHistory = (payload: ExecutionLogsHistoryPayload) => {
       if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
 
-      setBuffer(createExecutionLogLinesFromHistory(payload.content))
+      updateBuffer((previousBuffer) => hydrateExecutionLogBufferState(previousBuffer, payload.content))
     }
 
     const handleLog = (payload: ExecutionLogPayload) => {
       if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
 
-      setBuffer((previousBuffer) =>
+      updateBuffer((previousBuffer) =>
         appendExecutionLogChunk({
           state: previousBuffer,
           message: payload.message,
@@ -113,8 +137,10 @@ export const useExecutionRealtimeLogs = (executionId: string) => {
 
   return {
     connectionState,
-    lines: buffer.lines,
-    partial: buffer.partial,
+    lines: hydratedBuffer.lines,
+    partial: hydratedBuffer.partial,
+    partialStream: hydratedBuffer.partialStream,
+    partialTimestamp: hydratedBuffer.partialTimestamp,
     status,
   }
 }

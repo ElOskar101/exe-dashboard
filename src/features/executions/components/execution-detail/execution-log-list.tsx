@@ -39,7 +39,7 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
         <div className="flex size-10 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground">
           <IconCircleDashed />
         </div>
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <p className="font-medium text-foreground">{t('detail.noLogsTitle')}</p>
           <p className="text-sm text-muted-foreground">{t('detail.noLogsDescription')}</p>
         </div>
@@ -238,21 +238,30 @@ function getTextDecorationLine(decorations: string[]): CSSProperties['textDecora
   return textDecorations.join(' ') as CSSProperties['textDecorationLine']
 }
 
-const LOG_SKELETON_ROWS = [
-  { messageWidth: 'w-72', timestampWidth: 'w-32', streamWidth: 'w-16' },
-  { messageWidth: 'w-96', timestampWidth: 'w-28', streamWidth: 'w-20' },
-  { messageWidth: 'w-80', timestampWidth: 'w-36', streamWidth: 'w-14' },
-  { messageWidth: 'w-64', timestampWidth: 'w-24', streamWidth: 'w-16' },
+const LOG_SKELETON_ROW_WIDTHS = [
+  'w-[78%]',
+  'w-[92%]',
+  'w-[86%]',
+  'w-[64%]',
+  'w-[88%]',
+  'w-[72%]',
+  'w-[95%]',
+  'w-[68%]',
+  'w-[84%]',
+  'w-[90%]',
+  'w-[76%]',
+  'w-[82%]',
+  'w-[70%]',
+  'w-[94%]',
+  'w-[66%]',
 ] as const
 
 function ExecutionLogListSkeleton() {
   return (
-    <div aria-hidden="true" className="space-y-2 font-mono">
-      {LOG_SKELETON_ROWS.map((row, index) => (
-        <div key={index} className="flex min-h-6 items-center gap-4 rounded-lg px-3 py-2">
-          <Skeleton className={cn('h-3 rounded-full', row.timestampWidth)} />
-          <Skeleton className={cn('h-3 rounded-full', row.streamWidth)} />
-          <Skeleton className={cn('h-3 rounded-full', row.messageWidth)} />
+    <div aria-hidden="true" className="flex flex-col gap-2 font-mono">
+      {LOG_SKELETON_ROW_WIDTHS.map((rowWidth, index) => (
+        <div key={index} className="flex min-h-6 items-center rounded-lg px-2 py-0.5">
+          <Skeleton className={cn('h-4 max-w-full rounded-full', rowWidth)} />
         </div>
       ))}
     </div>

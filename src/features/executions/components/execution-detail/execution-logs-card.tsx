@@ -256,7 +256,8 @@ export function ExecutionLogsCard({
   const isStatusLoading = isLoading && currentStatus == null
   const isCurrentExecutionRunning = isExecutionRunning(currentStatus)
   const latestLogId = logLines.at(-1)?.id ?? 'empty'
-  const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}`)
+  const latestLogLength = logLines.at(-1)?.message.length ?? 0
+  const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}:${latestLogLength}`)
 
   return (
     <Card className="min-h-0 min-w-0 flex-1 gap-4">
