@@ -91,15 +91,9 @@ function ExecutionCodeFrame({ item }: { item: ExecutionLogCodeFrameItem }) {
                   )}
                 >
                   {line.kind === 'caret' ? (
-                    <span className="text-rose-600 dark:text-rose-300">
-                      {line.indent}
-                      {line.content}
-                    </span>
+                    <span className="text-rose-600 dark:text-rose-300">{line.content}</span>
                   ) : (
-                    <>
-                      {line.indent}
-                      <HighlightedCodeLine code={line.content} />
-                    </>
+                    <HighlightedCodeLine code={line.content} />
                   )}
                 </span>
               </div>

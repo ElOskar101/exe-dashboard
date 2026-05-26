@@ -1,7 +1,7 @@
 import type { ExecutionLogLine, ExecutionLogStream } from './execution-log-buffer'
 
-const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|\s?(?<content>.*)$/
-const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|\s?(?<content>\^.*)$/
+const CODE_FRAME_SOURCE_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*(?<lineNumber>\d+)\s*\|(?<content>.*)$/
+const CODE_FRAME_CARET_LINE_PATTERN = /^(?<indent>\s*)(?<marker>>)?\s*\|(?<content>.*)$/
 
 export interface ExecutionLogTextItem {
   type: 'text'
@@ -98,7 +98,7 @@ export function parseExecutionLogCodeFrameLine(
 
   const caretMatch = line.message.match(CODE_FRAME_CARET_LINE_PATTERN)
 
-  if (caretMatch?.groups) {
+  if (caretMatch?.groups && (caretMatch.groups.content ?? '').trimStart().startsWith('^')) {
     return {
       content: caretMatch.groups.content ?? '',
       id: line.id,

@@ -6,10 +6,10 @@ describe('execution log render', () => {
     expect(
       parseExecutionLogCodeFrameLine({
         id: 'line-1',
-        message: "> 35 | expect(loginResult, 'message').toBe('success');",
+        message: "> 35 |     expect(loginResult, 'message').toBe('success');",
       }),
     ).toEqual({
-      content: "expect(loginResult, 'message').toBe('success');",
+      content: "     expect(loginResult, 'message').toBe('success');",
       id: 'line-1',
       indent: '',
       isFocused: true,
@@ -22,10 +22,10 @@ describe('execution log render', () => {
     expect(
       parseExecutionLogCodeFrameLine({
         id: 'line-2',
-        message: '   | ^',
+        message: '   |     ^',
       }),
     ).toEqual({
-      content: '^',
+      content: '     ^',
       id: 'line-2',
       indent: '   ',
       isFocused: false,
@@ -36,9 +36,9 @@ describe('execution log render', () => {
   it('groups consecutive code frame lines into a single render item', () => {
     const items = buildExecutionLogRenderItems([
       { id: 'log-1', message: 'before snippet' },
-      { id: 'log-2', message: '34 | console.info(`hello`);' },
-      { id: 'log-3', message: "> 35 | expect(result).toBe('ok');", stream: 'stderr' },
-      { id: 'log-4', message: '   | ^', stream: 'stderr', timestamp: '2026-05-26T20:00:00.000Z' },
+      { id: 'log-2', message: '34 |     console.info(`hello`);' },
+      { id: 'log-3', message: "> 35 |     expect(result).toBe('ok');", stream: 'stderr' },
+      { id: 'log-4', message: '   |     ^', stream: 'stderr', timestamp: '2026-05-26T20:00:00.000Z' },
       { id: 'log-5', message: 'after snippet' },
     ])
 
@@ -51,7 +51,7 @@ describe('execution log render', () => {
         id: 'log-2',
         lines: [
           {
-            content: 'console.info(`hello`);',
+            content: '     console.info(`hello`);',
             id: 'log-2',
             indent: '',
             isFocused: false,
@@ -59,7 +59,7 @@ describe('execution log render', () => {
             lineNumber: '34',
           },
           {
-            content: "expect(result).toBe('ok');",
+            content: "     expect(result).toBe('ok');",
             id: 'log-3',
             indent: '',
             isFocused: true,
@@ -67,7 +67,7 @@ describe('execution log render', () => {
             lineNumber: '35',
           },
           {
-            content: '^',
+            content: '     ^',
             id: 'log-4',
             indent: '   ',
             isFocused: false,
