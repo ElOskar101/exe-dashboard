@@ -256,11 +256,6 @@ test.describe('protected executions route', () => {
 
     await expect(page).toHaveURL('/')
     await expect(page.getByRole('main').getByText('Create execution')).toBeVisible()
-    await expect(
-      page.getByText(
-        'Import patients, choose the clinic bot details, configure the run, and submit when everything is ready.',
-      ),
-    ).toBeVisible()
   })
 
   test('validates invalid steps while navigating and supports back navigation', async ({ page, request }) => {

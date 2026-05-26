@@ -19,7 +19,6 @@ export default function ExecutionWizard() {
     <Card className="mx-auto w-full max-w-5xl">
       <CardHeader>
         <CardTitle>{t('page.title')}</CardTitle>
-        <CardDescription>{t('page.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <ExecutionWizardStepper
