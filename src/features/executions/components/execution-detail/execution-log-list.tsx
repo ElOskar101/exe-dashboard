@@ -16,13 +16,12 @@ interface ExecutionLogListProps {
 export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps) {
   const { t } = useTranslation('executions')
   const renderItems = useMemo(() => buildExecutionLogRenderItems(logLines), [logLines])
-  const hasRenderableLogs = useMemo(() => logLines.some((line) => hasRenderableLogMessage(line.message)), [logLines])
 
   if (isLoading && logLines.length === 0) {
     return <ExecutionLogListSkeleton />
   }
 
-  if (!hasRenderableLogs) {
+  if (logLines.length === 0) {
     return (
       <div className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-8 text-center">
         <div className="flex size-10 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground">
@@ -129,10 +128,6 @@ function ExecutionLogMeta({ stream, timestamp }: { stream?: ExecutionLogStream; 
       ) : null}
     </>
   )
-}
-
-function hasRenderableLogMessage(message: string) {
-  return Anser.ansiToText(message).length > 0
 }
 
 function getStreamClassName(stream: ExecutionLogStream | undefined) {
