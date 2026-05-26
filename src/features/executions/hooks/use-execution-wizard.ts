@@ -57,6 +57,37 @@ const createEmptyExecutionSelection = (previousExecution: ExecutionWizardDraft['
   patients: [],
 })
 
+const emptyDraft = createEmptyDraft()
+
+const isPatientsStepDirty = (draft: ExecutionWizardDraft) => {
+  return (
+    draft.context.clientName !== emptyDraft.context.clientName ||
+    draft.context.client !== emptyDraft.context.client ||
+    draft.context.clinic !== emptyDraft.context.clinic ||
+    draft.execution.execution !== emptyDraft.execution.execution ||
+    draft.execution.patients.length !== emptyDraft.execution.patients.length
+  )
+}
+
+const isBotStepDirty = (draft: ExecutionWizardDraft) => {
+  return (
+    draft.bot.clinicBotId !== emptyDraft.bot.clinicBotId ||
+    draft.bot.botName !== emptyDraft.bot.botName ||
+    draft.bot.targetUrl !== emptyDraft.bot.targetUrl ||
+    draft.bot.username !== emptyDraft.bot.username ||
+    draft.bot.password !== emptyDraft.bot.password
+  )
+}
+
+const isConfigStepDirty = (draft: ExecutionWizardDraft) => {
+  return (
+    draft.context.project !== emptyDraft.context.project ||
+    draft.execution.workers !== emptyDraft.execution.workers ||
+    draft.execution.retries !== emptyDraft.execution.retries ||
+    draft.execution.config !== emptyDraft.execution.config
+  )
+}
+
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -226,6 +257,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     !validationErrors.context.createdBy && !validationErrors.context.project && !hasErrors(validationErrors.config),
     true,
   ]
+  const stepIsDirty = [isPatientsStepDirty(draft), isBotStepDirty(draft), isConfigStepDirty(draft), false]
+  const stepNeedsAttention = stepValidity.map(
+    (isStepValid, index) =>
+      index < executionWizardSteps.length - 1 && !isStepValid && (stepIsDirty[index] || attemptedSteps[index]),
+  )
 
   const showErrors = {
     patients: Boolean(attemptedSteps[0]),
@@ -503,6 +539,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     validationErrors,
     payloadPreview,
     stepValidity,
+    stepNeedsAttention,
     showErrors,
     isSubmitting,
     submitError,

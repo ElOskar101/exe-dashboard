@@ -52,14 +52,6 @@ export function BotStep({
   return (
     <FieldSet>
       <FieldGroup>
-        {!hasSelectedContext ? (
-          <Alert>
-            <IconAlertCircle />
-            <AlertTitle>{t('steps.bot.title')}</AlertTitle>
-            <AlertDescription>{t('help.selectClientAndClinicFirst')}</AlertDescription>
-          </Alert>
-        ) : null}
-
         {clinicBotsError ? (
           <Alert variant="destructive">
             <IconAlertCircle />
@@ -82,20 +74,6 @@ export function BotStep({
             <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
             <AlertDescription>{decryptClinicBotPasswordError}</AlertDescription>
           </Alert>
-        ) : null}
-
-        {isDecryptingClinicBotPassword ? (
-          <Alert>
-            <IconLoader2 className="animate-spin" />
-            <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
-            <AlertDescription>{t('help.decryptingClinicBotPassword')}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {hasSelectedContext && !bot.clinicBotId.trim() && !hasSelectedClinicWithoutActiveBots && !clinicBotsError ? (
-          <div className="rounded-3xl border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
-            {t('help.selectBotToEdit')}
-          </div>
         ) : null}
 
         <FieldGroup className="md:grid md:grid-cols-2">

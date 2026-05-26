@@ -5,7 +5,7 @@ import type { ExecutionWizardStepKey, useExecutionWizard } from '../../hooks/use
 interface ExecutionWizardStepperProps {
   steps: ExecutionWizardStepKey[]
   currentStep: number
-  stepValidity: boolean[]
+  stepNeedsAttention: boolean[]
   onStepChange: ReturnType<typeof useExecutionWizard>['handleStepChange']
   t: TFunction<'executions'>
 }
@@ -13,7 +13,7 @@ interface ExecutionWizardStepperProps {
 export function ExecutionWizardStepper({
   steps,
   currentStep,
-  stepValidity,
+  stepNeedsAttention,
   onStepChange,
   t,
 }: ExecutionWizardStepperProps) {
@@ -21,7 +21,7 @@ export function ExecutionWizardStepper({
     <ol className={cn('grid gap-3', steps.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-4')}>
       {steps.map((step, index) => {
         const isActiveStep = currentStep === index
-        const hasIncompleteStepInfo = index < steps.length - 1 && !stepValidity[index]
+        const hasIncompleteStepInfo = stepNeedsAttention[index]
 
         return (
           <li key={step}>
@@ -31,7 +31,7 @@ export function ExecutionWizardStepper({
               onClick={() => onStepChange(index)}
               className={cn(
                 'relative flex h-full w-full flex-col rounded-3xl border border-border/70 bg-muted/20 p-4 text-left transition-[background-color,border-color,box-shadow] outline-none hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
-                isActiveStep && 'text-primary shadow-sm hover:bg-card',
+                isActiveStep && 'text-orange-600 shadow-sm hover:bg-card',
               )}
             >
               {hasIncompleteStepInfo ? (

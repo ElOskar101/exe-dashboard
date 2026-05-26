@@ -25,7 +25,7 @@ export default function ExecutionWizard() {
         <ExecutionWizardStepper
           steps={executionWizardSteps}
           currentStep={wizard.currentStep}
-          stepValidity={wizard.stepValidity}
+          stepNeedsAttention={wizard.stepNeedsAttention}
           onStepChange={wizard.handleStepChange}
           t={t}
         />
