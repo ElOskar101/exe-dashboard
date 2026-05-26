@@ -57,7 +57,7 @@
     "patientName": "Patient name",
     "patientLastName": "Patient last name",
     "memberId": "Member ID",
-    "patientDob": "Patient date of birth",
+    "patientDob": "DOB",
     "policyHolderName": "Policy holder name",
     "policyHolderLastName": "Policy holder last name",
     "policyHolderDob": "Policy holder date of birth",

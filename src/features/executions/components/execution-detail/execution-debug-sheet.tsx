@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { cn } from '@/lib/utils'
 import { IconBug } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
-import { getConnectionBadgeVariant, getStatusBadgeVariant } from './execution-detail-badges'
+import { getConnectionBadgeVariant, getStatusBadgeClassName, getStatusBadgeVariant } from './execution-detail-badges'
 
 interface ExecutionDebugSheetProps {
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
@@ -29,7 +30,10 @@ export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecuti
         <div className="min-h-0 flex-1 overflow-auto px-6 pb-6">
           <div className="grid grid-cols-2 gap-3">
             <DebugField label={t('detail.debugFields.status')}>
-              <Badge variant={getStatusBadgeVariant(currentStatus)} className="max-w-full justify-center truncate">
+              <Badge
+                variant={getStatusBadgeVariant(currentStatus)}
+                className={cn(getStatusBadgeClassName(currentStatus), 'max-w-full justify-center truncate')}
+              >
                 {currentStatus ?? t('detail.statusUnknown')}
               </Badge>
             </DebugField>

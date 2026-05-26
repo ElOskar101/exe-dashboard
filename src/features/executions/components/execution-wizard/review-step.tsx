@@ -115,27 +115,35 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           </dl>
         </div>
 
-        <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-          <div className="flex flex-col gap-3 max-h-48 overflow-y-auto">
-            {patients.length > 0 ? (
-              patients.map((patient, index) => (
-                <div
-                  key={`${patient.patientMemberId}-${index}`}
-                  className="grid grid-cols-5 gap-x-2 items-center gap-y-2 rounded-2xl border border-border/70 bg-muted/40 p-3"
-                >
-                  <p className="truncate">{getPatientFullName(patient, emptyValue)}</p>
-                  <p>{getDisplayValue(patient.patientDob, emptyValue)}</p>
-                  <p>{getDisplayValue(patient.patientMemberId, emptyValue)}</p>
-                  <p>{getDisplayValue(patient.relationship, emptyValue)}</p>
-                  <p>{patient.verificationType || emptyValue}</p>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-border/70 bg-muted/40 p-3">
-                <p className="font-medium text-muted-foreground">{t('review.noPatients')}</p>
-              </div>
-            )}
-          </div>
+        <div className="max-h-48 overflow-auto rounded-2xl border border-border/70 bg-muted/40">
+          {patients.length > 0 ? (
+            <table className="w-full min-w-[40rem] text-left text-sm">
+              <thead className="sticky top-0 bg-muted/70">
+                <tr className="border-b border-border/70">
+                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientName')}</th>
+                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientDob')}</th>
+                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.memberId')}</th>
+                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.relationship')}</th>
+                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.verificationType')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patients.map((patient, index) => (
+                  <tr key={`${patient.patientMemberId}-${index}`} className="border-b border-border/50 last:border-b-0">
+                    <td className="px-3 py-2 font-medium">{getPatientFullName(patient, emptyValue)}</td>
+                    <td className="px-3 py-2">{getDisplayValue(patient.patientDob, emptyValue)}</td>
+                    <td className="px-3 py-2">{getDisplayValue(patient.patientMemberId, emptyValue)}</td>
+                    <td className="px-3 py-2">{getDisplayValue(patient.relationship, emptyValue)}</td>
+                    <td className="px-3 py-2">{patient.verificationType || emptyValue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="p-3">
+              <p className="font-medium text-muted-foreground">{t('review.noPatients')}</p>
+            </div>
+          )}
         </div>
 
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">

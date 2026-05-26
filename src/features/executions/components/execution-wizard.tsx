@@ -74,6 +74,7 @@ export default function ExecutionWizard() {
               errors={wizard.validationErrors.bot}
               showErrors={wizard.showErrors.bot}
               clinicBotOptions={wizard.clinicBotOptions}
+              selectedClinicBotId={wizard.selectedClinicBotId}
               isLoadingClinicBots={wizard.isLoadingClinicBots}
               clinicBotsError={wizard.clinicBotsError}
               isDecryptingClinicBotPassword={wizard.isDecryptingClinicBotPassword}

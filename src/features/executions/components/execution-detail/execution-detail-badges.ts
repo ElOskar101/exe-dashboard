@@ -19,6 +19,12 @@ export const getStatusBadgeVariant = (status?: string | null): BadgeVariant => {
   return 'secondary'
 }
 
+export const getStatusBadgeClassName = (status?: string | null) => {
+  return normalizeExecutionStatus(status) === 'running'
+    ? 'bg-blue-500 text-white dark:bg-blue-400 dark:text-slate-950'
+    : undefined
+}
+
 export const getConnectionBadgeVariant = (
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState'],
 ): BadgeVariant => {

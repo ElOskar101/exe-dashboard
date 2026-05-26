@@ -85,6 +85,22 @@ describe('getExecutionWizardValidationErrors', () => {
     })
   })
 
+  it('waits for password decryption to finish before validating editable bot fields', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Downtown Clinic'
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never, {
+      selectedClinicBotId: 'clinic-bot-1',
+      isDecryptingClinicBotPassword: true,
+    })
+
+    expect(errors.bot).toEqual({})
+  })
+
   it('requires core imported patient fields before allowing submission', () => {
     const draft = createEmptyDraft()
 

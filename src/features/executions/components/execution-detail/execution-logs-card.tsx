@@ -20,7 +20,7 @@ import { IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabl
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
 import { isExecutionRunning } from '../../lib/execution-display'
-import { getStatusBadgeVariant } from './execution-detail-badges'
+import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-detail-badges'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
 import { ExecutionReportPanel } from './execution-report-panel'
@@ -274,7 +274,10 @@ export function ExecutionLogsCard({
               {isStatusLoading ? (
                 <Skeleton aria-hidden="true" className="h-6 w-24 rounded-full" />
               ) : (
-                <Badge variant={getStatusBadgeVariant(currentStatus)}>
+                <Badge
+                  variant={getStatusBadgeVariant(currentStatus)}
+                  className={getStatusBadgeClassName(currentStatus)}
+                >
                   {currentStatus ?? t('detail.statusUnknown')}
                   {isCurrentExecutionRunning ? (
                     <IconLoader2 aria-hidden="true" className="animate-spin" data-icon="inline-end" />
@@ -295,7 +298,12 @@ export function ExecutionLogsCard({
               rawExecutionJson={rawExecutionJson}
             />
             {canStopExecution ? (
-              <Button variant="destructive" disabled={isStopping} onClick={onStopExecution}>
+              <Button
+                variant="outline"
+                className="text-destructive hover:text-destructive"
+                disabled={isStopping}
+                onClick={onStopExecution}
+              >
                 {isStopping ? (
                   <IconLoader2 className="animate-spin" data-icon="inline-start" />
                 ) : (

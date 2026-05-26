@@ -45,11 +45,6 @@ const createEmptyBotSelection = (): ExecutionWizardDraft['bot'] => ({
   verificationType: '',
 })
 
-export const createPendingBotSelection = (clinicBotId: string): ExecutionWizardDraft['bot'] => ({
-  ...createEmptyBotSelection(),
-  clinicBotId,
-})
-
 const createEmptyExecutionSelection = (previousExecution: ExecutionWizardDraft['execution']) => ({
   ...previousExecution,
   execution: '',
@@ -233,9 +228,13 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     draft.context.client.trim().length > 0 && selectedCustomerQuery.status === 'success' && clinicOptions.length === 0
   const hasSelectedClinicWithoutActiveBots =
     draft.context.clinic.trim().length > 0 && clinicBotsQuery.status === 'success' && clinicBotOptions.length === 0
+  const selectedClinicBotId =
+    decryptClinicBotPasswordRequest.status === 'idle'
+      ? draft.bot.clinicBotId
+      : decryptClinicBotPasswordRequest.clinicBotId
   const decryptClinicBotPasswordStatus = getClinicBotPasswordRequestStatus(
     decryptClinicBotPasswordRequest,
-    draft.bot.clinicBotId,
+    selectedClinicBotId,
   )
 
   const validationErrors = useMemo(
@@ -243,8 +242,18 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       getExecutionWizardValidationErrors(draft, createdBy, t, {
         hasSelectedCustomerWithoutClinics,
         hasSelectedClinicWithoutActiveBots,
+        selectedClinicBotId,
+        isDecryptingClinicBotPassword: decryptClinicBotPasswordStatus.isPending,
       }),
-    [createdBy, draft, hasSelectedClinicWithoutActiveBots, hasSelectedCustomerWithoutClinics, t],
+    [
+      createdBy,
+      decryptClinicBotPasswordStatus.isPending,
+      draft,
+      hasSelectedClinicWithoutActiveBots,
+      hasSelectedCustomerWithoutClinics,
+      selectedClinicBotId,
+      t,
+    ],
   )
   const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
 
@@ -253,7 +262,10 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       !validationErrors.context.clinic &&
       !validationErrors.patients.form &&
       validationErrors.patients.rows.every((row) => !hasErrors(row)),
-    !validationErrors.context.client && !validationErrors.context.clinic && !hasErrors(validationErrors.bot),
+    !validationErrors.context.client &&
+      !validationErrors.context.clinic &&
+      !hasErrors(validationErrors.bot) &&
+      !decryptClinicBotPasswordStatus.isPending,
     !validationErrors.context.createdBy && !validationErrors.context.project && !hasErrors(validationErrors.config),
     true,
   ]
@@ -382,7 +394,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
     setDraft((previousDraft) => ({
       ...previousDraft,
-      bot: createPendingBotSelection(clinicBotId),
+      bot: createEmptyBotSelection(),
     }))
 
     setDecryptClinicBotPasswordRequest(createPendingClinicBotPasswordRequestState(request))
@@ -552,6 +564,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     isLoadingClinics: selectedCustomerQuery.isFetching,
     hasSelectedCustomerWithoutClinics,
     clinicBotOptions,
+    selectedClinicBotId,
     isLoadingClinicBots: clinicBotsQuery.isFetching,
     clinicBotsError: clinicBotsQuery.error instanceof Error ? clinicBotsQuery.error.message : null,
     isDecryptingClinicBotPassword: decryptClinicBotPasswordStatus.isPending,

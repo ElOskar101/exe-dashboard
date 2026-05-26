@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { IconAlertCircle, IconEye, IconEyeOff, IconLoader2 } from '@tabler/icons-react'
+import { IconAlertCircle, IconEye, IconEyeOff } from '@tabler/icons-react'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
 import type { StepErrors } from '../../lib/execution-wizard-validation'
 import type { ExecutionWizardDraft } from '../../model/execution-create'
@@ -16,6 +16,7 @@ interface BotStepProps {
   errors: StepErrors['bot']
   showErrors: boolean
   clinicBotOptions: ReturnType<typeof useExecutionWizard>['clinicBotOptions']
+  selectedClinicBotId: ReturnType<typeof useExecutionWizard>['selectedClinicBotId']
   isLoadingClinicBots: ReturnType<typeof useExecutionWizard>['isLoadingClinicBots']
   clinicBotsError: ReturnType<typeof useExecutionWizard>['clinicBotsError']
   isDecryptingClinicBotPassword: ReturnType<typeof useExecutionWizard>['isDecryptingClinicBotPassword']
@@ -32,6 +33,7 @@ export function BotStep({
   errors,
   showErrors,
   clinicBotOptions,
+  selectedClinicBotId,
   isLoadingClinicBots,
   clinicBotsError,
   isDecryptingClinicBotPassword,
@@ -44,9 +46,12 @@ export function BotStep({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const hasSelectedContext = context.client.trim().length > 0 && context.clinic.trim().length > 0
   const selectedClinicBotName =
-    clinicBotOptions.find((clinicBot) => clinicBot._id === bot.clinicBotId)?.bot.botName ?? ''
+    clinicBotOptions.find((clinicBot) => clinicBot._id === selectedClinicBotId)?.bot.botName ?? ''
   const isBotFormEnabled =
-    hasSelectedContext && bot.clinicBotId.trim().length > 0 && !hasSelectedClinicWithoutActiveBots && !clinicBotsError
+    hasSelectedContext &&
+    selectedClinicBotId.trim().length > 0 &&
+    !hasSelectedClinicWithoutActiveBots &&
+    !clinicBotsError
   const isBotFieldInputEnabled = isBotFormEnabled && !isDecryptingClinicBotPassword
 
   return (
@@ -80,7 +85,7 @@ export function BotStep({
           <Field data-invalid={showErrors && Boolean(errors.clinicBotId)}>
             <FieldLabel htmlFor="clinicBot">{t('fields.bot')}</FieldLabel>
             <Select
-              value={bot.clinicBotId}
+              value={selectedClinicBotId}
               onValueChange={(value) => onClinicBotSelect(value ?? '')}
               disabled={
                 !hasSelectedContext ||
