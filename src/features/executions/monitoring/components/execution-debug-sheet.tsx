@@ -16,16 +16,17 @@ interface ExecutionDebugSheetProps {
 
 export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecutionJson }: ExecutionDebugSheetProps) {
   const { t } = useTranslation('executions')
+  const debugButtonLabel = t('detail.debugButton')
 
   return (
     <Sheet>
       <SheetTrigger
-        render={
-          <Button aria-label="Debug" type="button" variant="outline" size="icon">
-            <IconBug aria-hidden="true" />
-          </Button>
-        }
-      />
+        aria-label={debugButtonLabel}
+        render={<Button type="button" variant="outline" size="icon" title={debugButtonLabel} />}
+      >
+        <IconBug aria-hidden="true" />
+        <span className="sr-only">{debugButtonLabel}</span>
+      </SheetTrigger>
       <SheetContent className="w-full sm:max-w-2xl">
         <SheetHeader>
           <SheetTitle>{t('detail.debugTitle')}</SheetTitle>
