@@ -52,7 +52,7 @@ export interface ExecutionCreatePayload {
       policyHolderDob: string
       relationship: string
       zipCode: string
-      clinic: string
+      clinic?: string
       verificationType: Lowercase<ExecutionVerificationType> | ''
       filenames: string
       otherInformation: ExecutionMetadata

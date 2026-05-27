@@ -31,9 +31,11 @@ import { IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabl
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
 import { isExecutionRunning } from '../../lib/execution-display'
+import type { ExecutionRerunSummary } from '../../lib/execution-rerun'
 import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-detail-badges'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
+import { ExecutionRerunDialog } from './execution-rerun-dialog'
 import { ExecutionReportPanel } from './execution-report-panel'
 
 const LOG_SCROLL_BOTTOM_THRESHOLD = 24
@@ -233,37 +235,49 @@ const useExecutionLogScroll = (contentVersion: string) => {
 }
 
 interface ExecutionLogsCardProps {
+  canRerunExecution: boolean
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
   description: string | null
   isLoading: boolean
+  missingRerunFields: string[]
   isReportError: boolean
   isReportLoading: boolean
+  isRerunning: boolean
+  isRerunAvailable: boolean
   isStopping: boolean
   logLines: ExecutionLogLine[]
+  onRerunExecution: () => void
   onStopExecution: () => void
   rawExecutionJson: string
   reportBasePath: string
   reportHtml?: string
+  rerunSummary: ExecutionRerunSummary | null
   showReport: boolean
   title: string
 }
 
 export function ExecutionLogsCard({
+  canRerunExecution,
   canStopExecution,
   connectionState,
   currentStatus,
   description,
   isLoading,
+  missingRerunFields,
   isReportError,
   isReportLoading,
+  isRerunning,
+  isRerunAvailable,
   isStopping,
   logLines,
+  onRerunExecution,
   onStopExecution,
   rawExecutionJson,
   reportBasePath,
   reportHtml,
+  rerunSummary,
   showReport,
   title,
 }: ExecutionLogsCardProps) {
@@ -308,6 +322,16 @@ export function ExecutionLogsCard({
               currentStatus={currentStatus}
               rawExecutionJson={rawExecutionJson}
             />
+            {canRerunExecution && rerunSummary ? (
+              <ExecutionRerunDialog
+                currentStatus={currentStatus}
+                isRerunAvailable={isRerunAvailable}
+                isRerunning={isRerunning}
+                missingRerunFields={missingRerunFields}
+                onConfirm={onRerunExecution}
+                rerunSummary={rerunSummary}
+              />
+            ) : null}
             {canStopExecution ? (
               <AlertDialog>
                 <AlertDialogTrigger

@@ -161,4 +161,47 @@ describe('buildExecutionPayload', () => {
       execution: 'legacy-execution-value',
     })
   })
+
+  it('omits patient clinic from the payload when it is blank', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'client-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Legacy Dental Care'
+    draft.bot.clinicBotId = 'clinic-bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
+    draft.execution.patients = [
+      {
+        patientName: 'Ana',
+        patientLastName: 'Lopez',
+        patientMemberId: 'A10001',
+        patientDob: '1985-03-10',
+        policyHolderName: 'Ana',
+        policyHolderLastName: 'Lopez',
+        policyHolderDob: '1985-03-10',
+        relationship: 'self',
+        zipCode: '90001',
+        clinic: '',
+        verificationType: 'ELG',
+        filenames: 'ana-lopez.pdf',
+        otherInformation: '{}',
+      },
+    ]
+
+    expect(buildExecutionPayload(draft, 'user-1')).toMatchObject({
+      meta: {
+        patients: [
+          {
+            patientName: 'Ana',
+          },
+        ],
+      },
+    })
+    expect(buildExecutionPayload(draft, 'user-1')?.meta.patients[0]).not.toHaveProperty('clinic')
+  })
 })

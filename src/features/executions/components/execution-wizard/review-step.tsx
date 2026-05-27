@@ -65,7 +65,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         policyHolderDob: patient.policyHolderDob,
         relationship: patient.relationship.trim(),
         zipCode: patient.zipCode.trim(),
-        clinic: patient.clinic.trim(),
+        ...(patient.clinic.trim() ? { clinic: patient.clinic.trim() } : {}),
         verificationType: patient.verificationType.toLowerCase(),
         filenames: patient.filenames.trim(),
         otherInformation: patient.otherInformation,

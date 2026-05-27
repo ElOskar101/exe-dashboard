@@ -22,7 +22,70 @@ interface ExecutionFixture {
   jobId: string
   playwrightExecutionId: string
   logs?: string
+  meta?: {
+    bot: {
+      botName: string
+      targetUrl: string
+      username: string
+      password: string
+      otherInformation: Record<string, unknown>
+    }
+    patients: Array<{
+      patientName: string
+      patientLastName: string
+      patientMemberId: string
+      patientDob: string
+      policyHolderName: string
+      policyHolderLastName: string
+      policyHolderDob: string
+      relationship: string
+      zipCode: string
+      clinic: string
+      verificationType: string
+      filenames: string
+      otherInformation: Record<string, unknown>
+    }>
+    config: Record<string, unknown>
+    rv: Record<string, never>
+    workers: number
+    retries: number
+  }
 }
+
+const createExecutionMeta = (): NonNullable<ExecutionFixture['meta']> => ({
+  bot: {
+    botName: 'Eligibility Runner',
+    targetUrl: 'https://carrier.example.com',
+    username: 'qa.operator',
+    password: 'super-secret',
+    otherInformation: {
+      specifyPayer: 'None',
+    },
+  },
+  patients: [
+    {
+      patientName: 'Jane',
+      patientLastName: 'Doe',
+      patientMemberId: '111111',
+      patientDob: '01/01/1990',
+      policyHolderName: 'Jane',
+      policyHolderLastName: 'Doe',
+      policyHolderDob: '01/01/1980',
+      relationship: 'Self',
+      zipCode: '90001',
+      clinic: 'Downtown Clinic',
+      verificationType: 'elg',
+      filenames: 'jane-doe.pdf',
+      otherInformation: {},
+    },
+  ],
+  config: {
+    parallel: true,
+  },
+  rv: {},
+  workers: 4,
+  retries: 2,
+})
 
 const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFixture => ({
   _id: 'execution-1',
@@ -37,6 +100,7 @@ const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFi
   updatedAt: '2026-05-25T14:10:00.000Z',
   jobId: 'job-1',
   playwrightExecutionId: 'report-1',
+  meta: createExecutionMeta(),
   ...overrides,
 })
 
@@ -321,6 +385,70 @@ test.describe('execution user flows', () => {
     await page.getByRole('button', { name: 'Debug' }).click()
     await expect(page.getByText('Execution debug details')).toBeVisible()
     await expect(page.getByText('"jobId": "job-1"')).toBeVisible()
+  })
+
+  test('re-runs a finished execution after confirmation', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const originalExecution = createExecution()
+    let recreatedPayload: unknown = null
+
+    await stubExecutionList(page, () => [originalExecution])
+    await page.route('**/execution-api/executions/execution-1', async (route) => {
+      if (route.request().method() !== 'GET') {
+        await route.fallback()
+        return
+      }
+
+      await route.fulfill({ json: originalExecution })
+    })
+    await page.route('**/execution-api/executions/execution-2', async (route) => {
+      await route.fulfill({
+        json: createExecution({
+          _id: 'execution-2',
+          execution: 'Daily eligibility rerun',
+          jobId: 'job-2',
+          playwrightExecutionId: 'report-2',
+          status: 'queued',
+        }),
+      })
+    })
+    await page.route('**/execution-api/executions', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback()
+        return
+      }
+
+      recreatedPayload = route.request().postDataJSON()
+
+      await route.fulfill({
+        json: createExecution({
+          _id: 'execution-2',
+          execution: 'Daily eligibility rerun',
+          jobId: 'job-2',
+          playwrightExecutionId: 'report-2',
+          status: 'queued',
+        }),
+      })
+    })
+
+    await page.goto('/execution/execution-1')
+
+    await page.getByRole('button', { name: 'Re-run execution' }).click()
+    await expect(page.getByText('Re-run this execution?')).toBeVisible()
+    await expect(page.getByText('Execution summary')).toBeVisible()
+    await expect(page.getByText('Patients')).toBeVisible()
+    await page.getByRole('button', { name: 'Create rerun' }).click()
+
+    await expect(page).toHaveURL('/execution/execution-2')
+    expect(recreatedPayload).toEqual({
+      project: 'chromium',
+      createdBy: 'e2e-user',
+      client: 'customer-1',
+      clinic: 'clinic-1',
+      execution: 'Daily eligibility',
+      botName: 'Eligibility Runner',
+      meta: createExecutionMeta(),
+    })
   })
 
   test('stops a running execution', async ({ page, request }) => {

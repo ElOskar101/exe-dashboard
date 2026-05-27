@@ -6,9 +6,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { APP_CONFIG } from '@/app.config'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
+import { useExecutionRerun } from '../hooks/use-execution-rerun'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
-import { getExecutionById, getExecutionReportHtml, stopExecution } from '../services/execution.service'
 import { createExecutionLogDisplayLines, type ExecutionLogBufferState } from '../lib/execution-log-buffer'
+import type { ExecutionRerunSummary } from '../lib/execution-rerun'
+import { getExecutionById, getExecutionReportHtml, stopExecution } from '../services/execution.service'
 import {
   isExecutionFailed,
   isExecutionRunning,
@@ -69,6 +71,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       execution: executionName,
     })
   }, [executionId, executionQuery.data, t])
+  const rerun = useExecutionRerun(executionQuery.data)
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
@@ -88,46 +91,72 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         </Alert>
       ) : null}
 
+      {rerun.rerunErrorMessage ? (
+        <Alert variant="destructive">
+          <IconAlertCircle />
+          <AlertTitle>{t('detail.rerunErrorTitle')}</AlertTitle>
+          <AlertDescription>{rerun.rerunErrorMessage}</AlertDescription>
+        </Alert>
+      ) : null}
+
       <ExecutionDetailLogsSection
+        canRerunExecution={Boolean(executionQuery.data)}
         connectionState={realtimeLogs.connectionState}
         currentStatus={realtimeLogs.status ?? executionQuery.data?.status}
         executionSubtitle={executionSubtitle}
         execution={executionQuery.data}
         executionId={executionId}
         isLoading={executionQuery.isLoading}
+        missingRerunFields={rerun.missingRerunFields}
+        isRerunAvailable={rerun.isRerunAvailable}
+        isRerunning={rerun.isRerunning}
         isStopping={stopMutation.isPending}
         logState={logState}
+        onRerunExecution={rerun.triggerRerun}
         onStopExecution={() => stopMutation.mutate(executionId)}
         rawExecutionJson={rawExecutionJson}
+        rerunSummary={rerun.rerunSummary}
       />
     </div>
   )
 }
 
 interface ExecutionDetailLogsSectionProps {
+  canRerunExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
   execution?: IExecution
   executionId: string
   executionSubtitle: string | null
   isLoading: boolean
+  missingRerunFields: string[]
+  isRerunAvailable: boolean
+  isRerunning: boolean
   isStopping: boolean
   logState: ExecutionLogBufferState
+  onRerunExecution: () => void
   onStopExecution: () => void
   rawExecutionJson: string
+  rerunSummary: ExecutionRerunSummary | null
 }
 
 function ExecutionDetailLogsSection({
+  canRerunExecution,
   connectionState,
   currentStatus,
   execution,
   executionId,
   executionSubtitle,
   isLoading,
+  missingRerunFields,
+  isRerunAvailable,
+  isRerunning,
   isStopping,
   logState,
+  onRerunExecution,
   onStopExecution,
   rawExecutionJson,
+  rerunSummary,
 }: ExecutionDetailLogsSectionProps) {
   const { t } = useTranslation('executions')
   const displayStatus = formatExecutionStatusLabel(currentStatus)
@@ -148,6 +177,7 @@ function ExecutionDetailLogsSection({
 
   return (
     <ExecutionLogsCard
+      canRerunExecution={canRerunExecution && showReport}
       key={showReport ? 'finished' : 'unfinished'}
       canStopExecution={canStopExecution}
       connectionState={connectionState}
@@ -156,12 +186,17 @@ function ExecutionDetailLogsSection({
       isLoading={isLoading}
       isReportError={reportQuery.isError}
       isReportLoading={!showReport || reportQuery.isLoading}
+      missingRerunFields={missingRerunFields}
+      isRerunAvailable={isRerunAvailable}
+      isRerunning={isRerunning}
       isStopping={isStopping}
       logLines={logLines}
+      onRerunExecution={onRerunExecution}
       onStopExecution={onStopExecution}
       rawExecutionJson={rawExecutionJson}
       reportBasePath={reportBasePath}
       reportHtml={reportQuery.data}
+      rerunSummary={rerunSummary}
       showReport={showReport}
       title={t('detail.title')}
     />

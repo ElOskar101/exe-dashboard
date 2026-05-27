@@ -71,7 +71,7 @@ export const buildExecutionPayload = (
         policyHolderDob: patient.policyHolderDob,
         relationship: patient.relationship.trim(),
         zipCode: patient.zipCode.trim(),
-        clinic: patient.clinic.trim(),
+        ...(patient.clinic.trim() ? { clinic: patient.clinic.trim() } : {}),
         verificationType: patient.verificationType.toLowerCase() as Lowercase<typeof patient.verificationType>,
         filenames: patient.filenames.trim(),
         otherInformation: patientOtherInformation[index] ?? {},
