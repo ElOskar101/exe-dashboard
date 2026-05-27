@@ -2,6 +2,7 @@ export {
   getExecutionLabel,
   isExecutionFailed,
   isExecutionPending,
+  isExecutionPaused,
   isExecutionRunning,
   isExecutionStatus,
   isExecutionSuccessful,
@@ -18,6 +19,8 @@ export {
   getExecutionById,
   getExecutionReportHtml,
   getExecutions,
+  pauseExecution,
+  resumeExecution,
   stopExecution,
   updateExecution,
 } from './services/execution.service'

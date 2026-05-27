@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   getExecutionLabel,
+  isExecutionPaused,
   isExecutionRunning,
   normalizeExecutionStatus,
   updateExecutionStatus,
@@ -51,11 +52,14 @@ describe('execution display helpers', () => {
   it('normalizes status and only treats running as stoppable', () => {
     expect(normalizeExecutionStatus('RUNNING')).toBe('running')
     expect(normalizeExecutionStatus('process')).toBe('running')
+    expect(normalizeExecutionStatus('PAUSED')).toBe('paused')
     expect(isExecutionRunning('running')).toBe(true)
     expect(isExecutionRunning('RUNNING')).toBe(true)
     expect(isExecutionRunning('process')).toBe(true)
     expect(isExecutionRunning('queued')).toBe(false)
     expect(isExecutionRunning('completed')).toBe(false)
+    expect(isExecutionPaused('paused')).toBe(true)
+    expect(isExecutionPaused('running')).toBe(false)
     expect(isExecutionRunning(null)).toBe(false)
     expect(normalizeExecutionStatus(null)).toBe('unknown')
     expect(normalizeExecutionStatus('not-real')).toBe('unknown')

@@ -28,6 +28,9 @@ export const getStatusBadgeClassName = (status?: string | null) => {
   if (normalizedStatus === 'running') {
     return 'bg-blue-500 text-white dark:bg-blue-400 dark:text-slate-950'
   }
+  if (normalizedStatus === 'paused') {
+    return 'bg-amber-500 text-white dark:bg-amber-400 dark:text-slate-950'
+  }
   if (normalizedStatus === 'cancelled') {
     return 'bg-slate-500 text-white dark:bg-slate-400 dark:text-slate-950'
   }

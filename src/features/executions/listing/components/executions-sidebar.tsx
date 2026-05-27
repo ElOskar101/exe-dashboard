@@ -91,7 +91,9 @@ export function ExecutionsSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="sticky-top">{t('sidebar.title')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="sticky top-0 bg-sidebar! z-30 rounded-none">
+            {t('sidebar.title')}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             {executionsQuery.isLoading ? (
               <div className="flex flex-col gap-1">

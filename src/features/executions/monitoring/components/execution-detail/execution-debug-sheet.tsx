@@ -19,9 +19,8 @@ export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecuti
 
   return (
     <Sheet>
-      <SheetTrigger render={<Button variant="outline" size="sm" />}>
+      <SheetTrigger render={<Button variant="outline" size="icon" />}>
         <IconBug data-icon="inline-start" />
-        {t('detail.debugButton')}
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-2xl">
         <SheetHeader>

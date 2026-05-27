@@ -31,3 +31,11 @@ export const deleteExecution = (executionId: string) => {
 export const stopExecution = (executionId: string) => {
   return exeClient.post<Execution>(`executions/${executionId}/stop`)
 }
+
+export const pauseExecution = (executionId: string) => {
+  return exeClient.post<Execution>(`executions/${executionId}/pause`)
+}
+
+export const resumeExecution = (executionId: string) => {
+  return exeClient.post<Execution>(`executions/${executionId}/resume`)
+}
