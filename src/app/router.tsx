@@ -3,8 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from '@/features/auth'
 import Layout from '@/components/layout/layout'
 
-const ExecutionsPage = lazy(() => import('@/features/executions/pages/executions-page'))
-const ExecutionDetailPage = lazy(() => import('@/features/executions/pages/execution-detail-page'))
+const ExecutionCreatePage = lazy(() =>
+  import('@/features/executions/creation').then((module) => ({ default: module.ExecutionCreatePage })),
+)
+const ExecutionDetailPage = lazy(() =>
+  import('@/features/executions/monitoring').then((module) => ({ default: module.ExecutionDetailPage })),
+)
 const NotFound = lazy(() => import('@/pages/not-found.tsx'))
 const UnderConstruction = lazy(() => import('@/features/auth/pages/under-construction'))
 
@@ -23,7 +27,7 @@ export const AppRouter = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<ExecutionsPage />} />
+            <Route index element={<ExecutionCreatePage />} />
             <Route path="execution/:id" element={<ExecutionDetailPage />} />
           </Route>
         </Routes>

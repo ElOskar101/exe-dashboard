@@ -1,47 +1,54 @@
-export interface IUserRol {
-  _id: string
-  name: string
-  permission: Array<{
-    _id: string
-    name: string
-    description: string
-  }>
-}
+import { z } from 'zod'
 
-export interface IUser {
-  twoFactor: {
-    isEnabled: boolean
-    secret: string
-  }
-  recovering: {
-    code: string
-  }
-  recoveringCode: string
-  _id: string
-  fullName: string
-  username: string
-  studioAccess: boolean
-  urlImage: string
-  qaEmail: string
-  email: string
-  roles: IUserRol[]
-  devices: string[]
-  settings: {
-    _id: string
-    theme: string
-    skypeNotification: boolean
-    emailNotification: boolean
-    silentNotification: boolean
-    autoDarkMode: boolean
-    startAutoMode: string
-    endAutoMode: string
-    createdAt: string
-    updatedAt: string
-  }
-  area: string
-  pushNotificationsSettings: string[]
-  createdAt: string
-  updatedAt: string
-  lastLogin: string
-  loginCounter: number
-}
+export const userPermissionSchema = z.object({
+  _id: z.string(),
+  name: z.string(),
+  description: z.string(),
+})
+
+export const userRoleSchema = z.object({
+  _id: z.string(),
+  name: z.string(),
+  permission: z.array(userPermissionSchema),
+})
+
+export const userSchema = z.object({
+  twoFactor: z.object({
+    isEnabled: z.boolean(),
+    secret: z.string(),
+  }),
+  recovering: z.object({
+    code: z.string(),
+  }),
+  recoveringCode: z.string(),
+  _id: z.string(),
+  fullName: z.string(),
+  username: z.string(),
+  studioAccess: z.boolean(),
+  urlImage: z.string(),
+  qaEmail: z.string(),
+  email: z.string(),
+  roles: z.array(userRoleSchema),
+  devices: z.array(z.string()),
+  settings: z.object({
+    _id: z.string(),
+    theme: z.string(),
+    skypeNotification: z.boolean(),
+    emailNotification: z.boolean(),
+    silentNotification: z.boolean(),
+    autoDarkMode: z.boolean(),
+    startAutoMode: z.string(),
+    endAutoMode: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  }),
+  area: z.string(),
+  pushNotificationsSettings: z.array(z.string()),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  lastLogin: z.string(),
+  loginCounter: z.number(),
+})
+
+export type IUserRol = z.infer<typeof userRoleSchema>
+export type IUser = z.infer<typeof userSchema>

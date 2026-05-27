@@ -195,7 +195,7 @@ async function selectCustomerAndClinic(page: Page) {
   await page.getByRole('option', { name: 'Downtown Clinic' }).click()
 }
 
-async function importPatientsFromCc(page: Page) {
+async function importPatientsFromCCC(page: Page) {
   await page.getByRole('combobox', { name: 'Execution' }).click()
   await page.getByRole('option', { name: '2026-04-27' }).click()
   await expect(page.getByRole('option', { name: '2026-05-09' })).not.toBeVisible()
@@ -281,7 +281,7 @@ test.describe('protected executions route', () => {
     await expect(page.getByLabel('Client')).toBeVisible()
 
     await selectCustomerAndClinic(page)
-    await importPatientsFromCc(page)
+    await importPatientsFromCCC(page)
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByText('Select a clinic bot to load its default execution settings.')).toBeVisible()
 
@@ -365,7 +365,7 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await selectCustomerAndClinic(page)
-    await importPatientsFromCc(page)
+    await importPatientsFromCCC(page)
     await page.getByRole('button', { name: 'Next' }).click()
     await completeBotStep(page)
 
@@ -467,7 +467,7 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await selectCustomerAndClinic(page)
-    await importPatientsFromCc(page)
+    await importPatientsFromCCC(page)
     await page.getByRole('button', { name: 'Next' }).click()
     await completeBotStep(page, {
       botName: 'Retry Bot',

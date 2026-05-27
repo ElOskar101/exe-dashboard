@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { _base64Decode, _base64Encode } from '@/utils/common'
 import { getUserData } from '../services/auth.service'
+import { userSchema } from '../models/user.interface'
 import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
 import { IUser } from '../models/user.interface'
@@ -28,7 +29,14 @@ const getStoredUser = () => {
   }
 
   try {
-    return JSON.parse(_base64Decode(savedUserData)) as IUser
+    const parsedUser = userSchema.safeParse(JSON.parse(_base64Decode(savedUserData)))
+
+    if (parsedUser.success) {
+      return parsedUser.data
+    }
+
+    sessionStorage.removeItem('me')
+    return null
   } catch {
     sessionStorage.removeItem('me')
     return null
