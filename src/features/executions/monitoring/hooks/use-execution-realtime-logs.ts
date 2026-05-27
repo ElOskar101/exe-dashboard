@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState, type SetStateAction } from 'react'
 import { socket } from '@/lib/socket'
 import { useMountEffect } from '@/hooks/use-mount-effect'
+import { normalizeExecutionStatus, type ExecutionStatus } from '@/features/executions/shared'
 import {
   appendExecutionLogChunk,
   type ExecutionLogBufferState,
@@ -9,8 +10,6 @@ import {
   shouldHandleExecutionEvent,
   type ExecutionLogStream,
 } from '../lib/execution-log-buffer'
-import { normalizeExecutionStatus } from '../lib/execution-display'
-import type { ExecutionStatus } from '../model/execution.interface'
 
 type ConnectionState = 'connecting' | 'connected' | 'disconnected'
 

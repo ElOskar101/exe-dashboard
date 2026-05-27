@@ -1,7 +1,7 @@
 import Header from './header.tsx'
 import { Outlet } from 'react-router-dom'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { ExecutionsSidebar } from '@/features/executions/components/executions-sidebar'
+import { ExecutionsSidebar } from '@/features/executions/listing'
 
 function Layout() {
   return (

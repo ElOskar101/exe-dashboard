@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { socket } from '@/lib/socket'
-import { updateExecutionStatus } from '../lib/execution-display'
-import type { IExecution } from '../model/execution.interface'
+import { updateExecutionStatus, type IExecution } from '@/features/executions/shared'
 
 interface ExecutionStatusPayload {
   executionId: string

@@ -4,20 +4,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { APP_CONFIG } from '@/app.config'
+import {
+  getExecutionById,
+  getExecutionReportHtml,
+  isExecutionFailed,
+  isExecutionRunning,
+  isExecutionSuccessful,
+  normalizeExecutionStatus,
+  stopExecution,
+  type IExecution,
+} from '@/features/executions/shared'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
 import { useExecutionRerun } from '../hooks/use-execution-rerun'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import { createExecutionLogDisplayLines, type ExecutionLogBufferState } from '../lib/execution-log-buffer'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
-import { getExecutionById, getExecutionReportHtml, stopExecution } from '../services/execution.service'
-import {
-  isExecutionFailed,
-  isExecutionRunning,
-  isExecutionSuccessful,
-  normalizeExecutionStatus,
-} from '../lib/execution-display'
-import type { IExecution } from '../model/execution.interface'
 
 const formatExecutionStatusLabel = (status?: string | null) => {
   if (!status) return status

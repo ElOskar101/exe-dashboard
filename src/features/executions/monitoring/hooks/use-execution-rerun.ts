@@ -2,10 +2,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { createExecution, getExecutionRequestErrorMessage, type IExecution } from '@/features/executions/shared'
 import { getExecutionRerunSummary, prepareExecutionRerun } from '../lib/execution-rerun'
-import type { IExecution } from '../model/execution.interface'
-import { getExecutionRequestErrorMessage } from '../services/execution-errors'
-import { createExecution } from '../services/execution.service'
 
 export const useExecutionRerun = (execution?: IExecution) => {
   const { t } = useTranslation('executions')

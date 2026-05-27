@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { isExecutionFailed, isExecutionSuccessful, normalizeExecutionStatus } from '@/features/executions/shared'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
-import { isExecutionFailed, isExecutionSuccessful, normalizeExecutionStatus } from '../../lib/execution-display'
 
 type BadgeVariant = ComponentProps<typeof Badge>['variant']
 

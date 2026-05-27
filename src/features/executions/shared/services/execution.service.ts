@@ -1,6 +1,6 @@
 import { exeClient, exeReportsClient } from '@/lib/axios'
-import { IExecution } from '../model/execution.interface'
-import { ExecutionCreatePayload } from '../model/execution-create'
+import type { ExecutionCreatePayload } from '@/features/executions/creation'
+import type { IExecution } from '../model/execution.interface'
 
 export type ExecutionUpdatePayload = Partial<Omit<IExecution, '_id'>>
 

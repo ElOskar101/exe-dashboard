@@ -2,9 +2,8 @@ import type { TFunction } from 'i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { formatExecutionDateTime, type IExecution } from '@/features/executions/shared'
 import { IconCheck, IconRefresh, IconRocket } from '@tabler/icons-react'
-import { formatExecutionDateTime } from '../../lib/format-execution-date'
-import type { IExecution } from '../../model/execution.interface'
 
 interface ExecutionSuccessCardProps {
   execution: IExecution

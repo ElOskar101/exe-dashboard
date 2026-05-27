@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { IExecution } from '../model/execution.interface'
+import type { IExecution } from '@/features/executions/shared'
 import { buildExecutionRerunPayload, getExecutionRerunSummary, prepareExecutionRerun } from './execution-rerun'
 
 const createExecution = (overrides: Partial<IExecution> = {}): IExecution => ({

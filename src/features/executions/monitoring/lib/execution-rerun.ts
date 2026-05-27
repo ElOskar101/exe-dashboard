@@ -1,5 +1,5 @@
-import type { ExecutionCreatePayload, ExecutionMetadata } from '../model/execution-create'
-import type { IExecution } from '../model/execution.interface'
+import type { ExecutionCreatePayload, ExecutionMetadata } from '@/features/executions/creation'
+import type { IExecution } from '@/features/executions/shared'
 
 export interface ExecutionRerunSummary {
   botName: string

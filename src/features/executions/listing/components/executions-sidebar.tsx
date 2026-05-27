@@ -30,16 +30,17 @@ import {
 } from '@/components/ui/sidebar'
 import { useCurrentTime } from '@/hooks/use-current-time'
 import { cn } from '@/lib/utils'
-import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
-import { deleteExecution, getExecutions } from '../services/execution.service'
 import {
+  deleteExecution,
   getExecutionLabel,
+  getExecutions,
   isExecutionPending,
   isExecutionRunning,
   isExecutionSuccessful,
   normalizeExecutionStatus,
-} from '../lib/execution-display'
-import type { ExecutionStatus } from '../model/execution.interface'
+  type ExecutionStatus,
+} from '@/features/executions/shared'
+import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
 
 const EXECUTIONS_QUERY_KEY = ['executions'] as const
 const RELATIVE_TIME_UNITS = [

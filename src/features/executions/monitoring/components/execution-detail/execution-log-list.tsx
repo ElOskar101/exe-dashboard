@@ -10,7 +10,7 @@ import 'prismjs/components/prism-typescript'
 import { Highlight, themes as prismThemes } from 'prism-react-renderer'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/use-theme'
-import { formatExecutionDateTime } from '../../lib/format-execution-date'
+import { formatExecutionDateTime } from '@/features/executions/shared'
 import type { ExecutionLogLine, ExecutionLogStream } from '../../lib/execution-log-buffer'
 import {
   buildExecutionLogRenderItems,

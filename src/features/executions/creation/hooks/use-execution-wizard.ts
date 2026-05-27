@@ -2,10 +2,9 @@ import { useContext, useMemo, useRef, useState, startTransition, type SetStateAc
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
+import { createExecution, getExecutionRequestErrorMessage } from '@/features/executions/shared'
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
-import { createExecution } from '../services/execution.service'
-import { getExecutionRequestErrorMessage } from '../services/execution-errors'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
 import {
