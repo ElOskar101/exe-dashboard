@@ -1,18 +1,11 @@
 import type { ExecutionBot } from '../model/execution-create'
 import type { ClinicBotRecord } from '../services/ccc.service'
 
-export const isClinicBotSelectable = (
-  clinicBot: Partial<ClinicBotRecord> | null | undefined,
-): clinicBot is ClinicBotRecord => {
-  return (
-    Boolean(clinicBot?._id) &&
-    clinicBot?.status?.description === 'Active' &&
-    clinicBot?.bot?.isActive === true &&
-    typeof clinicBot.bot.botName === 'string'
-  )
+export const isClinicBotSelectable = (clinicBot: ClinicBotRecord) => {
+  return clinicBot.status.description === 'Active' && clinicBot.bot.isActive
 }
 
-export const getSelectableClinicBots = (clinicBots: Array<Partial<ClinicBotRecord> | null | undefined>) => {
+export const getSelectableClinicBots = (clinicBots: ClinicBotRecord[]) => {
   return clinicBots
     .filter(isClinicBotSelectable)
     .sort((leftBot, rightBot) => leftBot.bot.botName.localeCompare(rightBot.bot.botName))

@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
+import { isExecutionMetadataStringValid } from './execution-metadata'
 
 export type StepErrors = {
   context: Partial<Record<keyof ExecutionWizardDraft['context'], string>> & {
@@ -70,7 +71,7 @@ export const getExecutionWizardValidationErrors = (
         }
       })
 
-      if (!isJsonObjectStringValid(patient.otherInformation)) {
+      if (!isExecutionMetadataStringValid(patient.otherInformation)) {
         rowErrors.otherInformation = t('validation.validJsonObject')
       }
 
@@ -126,7 +127,7 @@ export const getExecutionWizardValidationErrors = (
     config.retries = t('validation.nonNegativeNumber')
   }
 
-  if (!isJsonObjectStringValid(draft.execution.config)) {
+  if (!isExecutionMetadataStringValid(draft.execution.config)) {
     config.config = t('validation.validJsonObject')
   }
 
@@ -138,16 +139,6 @@ export const getExecutionWizardValidationErrors = (
     },
     bot,
     config,
-  }
-}
-
-const isJsonObjectStringValid = (value: string) => {
-  try {
-    const parsed = JSON.parse(value)
-
-    return Boolean(parsed) && !Array.isArray(parsed) && typeof parsed === 'object'
-  } catch {
-    return false
   }
 }
 

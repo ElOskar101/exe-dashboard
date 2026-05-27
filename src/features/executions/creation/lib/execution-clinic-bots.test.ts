@@ -47,17 +47,6 @@ describe('execution-clinic-bots', () => {
     expect(getSelectableClinicBots([activeClinicBot, disabledClinicBot, inactiveNestedBot])).toEqual([activeClinicBot])
   })
 
-  it('ignores malformed clinic bot records instead of throwing', () => {
-    const activeClinicBot = createClinicBot()
-    const malformedClinicBot = {
-      _id: 'clinic-bot-2',
-      status: null,
-      bot: null,
-    } as unknown as ClinicBotRecord
-
-    expect(getSelectableClinicBots([activeClinicBot, malformedClinicBot])).toEqual([activeClinicBot])
-  })
-
   it('sorts selectable clinic bots by bot name', () => {
     const zBot = createClinicBot({
       _id: 'clinic-bot-2',

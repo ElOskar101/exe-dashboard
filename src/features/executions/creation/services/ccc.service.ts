@@ -72,27 +72,6 @@ export interface CcExecutionResponse {
   trashed: boolean
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null
-}
-
-const isCustomerClinic = (value: unknown): value is CustomerClinic => {
-  return isRecord(value) && typeof value._id === 'string' && typeof value.clinicName === 'string'
-}
-
-const isClinicExecutionDay = (value: unknown): value is ClinicExecutionDay => {
-  return (
-    isRecord(value) &&
-    typeof value._id === 'string' &&
-    typeof value.sheetName === 'string' &&
-    typeof value.trashed === 'boolean'
-  )
-}
-
-const isClinicBotRecord = (value: unknown): value is ClinicBotRecord => {
-  return isRecord(value) && typeof value._id === 'string'
-}
-
 export const searchCustomers = (clientName: string) => {
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
@@ -101,35 +80,14 @@ export const searchCustomers = (clientName: string) => {
   })
 }
 
-export const getCustomerById = async (customerId: string) => {
-  const response = await cccClient.get<CustomerDetailsResponse>(`v2/customers/${customerId}`)
+export const getCustomerById = (customerId: string) =>
+  cccClient.get<CustomerDetailsResponse>(`v2/customers/${customerId}`)
 
-  return {
-    ...response,
-    data: {
-      ...response.data,
-      clinic: Array.isArray(response.data?.clinic) ? response.data.clinic.filter(isCustomerClinic) : [],
-    },
-  }
-}
+export const getClinicExecutionDays = (clinicId: string) =>
+  cccClient.get<ClinicExecutionDay[]>(`v2/executions/${clinicId}/days`)
 
-export const getClinicExecutionDays = async (clinicId: string) => {
-  const response = await cccClient.get<ClinicExecutionDay[]>(`v2/executions/${clinicId}/days`)
-
-  return {
-    ...response,
-    data: Array.isArray(response.data) ? response.data.filter(isClinicExecutionDay) : [],
-  }
-}
-
-export const getClinicBots = async (clinicId: string) => {
-  const response = await cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
-
-  return {
-    ...response,
-    data: Array.isArray(response.data) ? response.data.filter(isClinicBotRecord) : [],
-  }
-}
+export const getClinicBots = (clinicId: string) =>
+  cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
 
 export const decryptClinicBotPassword = async (clinicBotId: string) => {
   const response = await cccClient.get<string>(`clinicbots/decrypt/${clinicBotId}`, {

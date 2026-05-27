@@ -1,22 +1,9 @@
 import type { ExecutionCreatePayload, ExecutionMetadata, ExecutionWizardDraft } from '../model/execution-create'
+import { parseExecutionMetadata } from './execution-metadata'
 
 export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({
   specifyPayer: 'None',
 })
-
-const parseMetadata = (value: string): ExecutionMetadata | null => {
-  try {
-    const parsed = JSON.parse(value)
-
-    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
-      return null
-    }
-
-    return parsed as ExecutionMetadata
-  } catch {
-    return null
-  }
-}
 
 export const buildExecutionPayload = (
   draft: ExecutionWizardDraft,
@@ -40,8 +27,10 @@ export const buildExecutionPayload = (
     return null
   }
 
-  const patientOtherInformation = draft.execution.patients.map((patient) => parseMetadata(patient.otherInformation))
-  const configMetadata = parseMetadata(draft.execution.config)
+  const patientOtherInformation = draft.execution.patients.map((patient) =>
+    parseExecutionMetadata(patient.otherInformation),
+  )
+  const configMetadata = parseExecutionMetadata(draft.execution.config)
 
   if (patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
     return null

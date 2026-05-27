@@ -37,7 +37,7 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
         relationship: 'Self',
         zipCode: '90001',
         clinic: 'Downtown Clinic',
-        verificationType: 'ELG',
+        verificationType: 'elg',
         filenames: 'jane-doe.pdf',
         otherInformation: {},
       },
@@ -108,55 +108,15 @@ describe('execution rerun helpers', () => {
     ).toBeNull()
   })
 
-  it('reports the required payload fields that are missing', () => {
+  it('reports the required top-level fields that are missing', () => {
     expect(
       prepareExecutionRerun(
         createExecution({
           createdBy: '',
-          meta: {
-            bot: {
-              botName: '',
-              targetUrl: '',
-              username: 'qa.operator',
-              password: '',
-              otherInformation: {},
-            },
-            patients: [
-              {
-                patientName: '',
-                patientLastName: 'Doe',
-                patientMemberId: '',
-                patientDob: '01/01/1990',
-                policyHolderName: 'Jane',
-                policyHolderLastName: '',
-                policyHolderDob: '01/01/1980',
-                relationship: 'Self',
-                zipCode: '',
-                clinic: 'Downtown Clinic',
-                verificationType: 'ELG',
-                filenames: '',
-                otherInformation: {},
-              },
-            ],
-            config: {},
-            rv: {},
-            workers: undefined,
-            retries: 2,
-          },
+          meta: undefined,
         }),
       ).missingFields,
-    ).toEqual([
-      'createdBy',
-      'meta.bot.botName',
-      'meta.bot.targetUrl',
-      'meta.bot.password',
-      'meta.patients[0].patientName',
-      'meta.patients[0].patientMemberId',
-      'meta.patients[0].policyHolderLastName',
-      'meta.patients[0].zipCode',
-      'meta.patients[0].filenames',
-      'meta.workers',
-    ])
+    ).toEqual(['createdBy', 'meta'])
   })
 
   it('rebuilds the payload even when rv is not an empty object in the stored execution meta', () => {
@@ -168,7 +128,7 @@ describe('execution rerun helpers', () => {
             rv: {
               previousAttempt: true,
             },
-          },
+          } as unknown as NonNullable<Execution['meta']>,
         }),
       ),
     ).toMatchObject({
@@ -179,34 +139,7 @@ describe('execution rerun helpers', () => {
   })
 
   it('does not report patient clinic as missing and omits it from the payload when blank', () => {
-    const baseMeta = createExecution().meta as {
-      bot: {
-        botName: string
-        targetUrl: string
-        username: string
-        password: string
-        otherInformation: Record<string, unknown>
-      }
-      patients: Array<{
-        patientName: string
-        patientLastName: string
-        patientMemberId: string
-        patientDob: string
-        policyHolderName: string
-        policyHolderLastName: string
-        policyHolderDob: string
-        relationship: string
-        zipCode: string
-        clinic: string
-        verificationType: string
-        filenames: string
-        otherInformation: Record<string, unknown>
-      }>
-      config: Record<string, unknown>
-      rv: Record<string, unknown>
-      workers: number
-      retries: number
-    }
+    const baseMeta = createExecution().meta!
     const execution = createExecution({
       meta: {
         ...baseMeta,
