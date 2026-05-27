@@ -15,11 +15,11 @@ describe('execution control actions', () => {
     })
   })
 
-  it('allows paused executions to be resumed', () => {
+  it('allows paused executions to be resumed and stopped', () => {
     expect(getExecutionControlAvailability('paused')).toEqual({
       canPauseExecution: false,
       canResumeExecution: true,
-      canStopExecution: false,
+      canStopExecution: true,
     })
   })
 

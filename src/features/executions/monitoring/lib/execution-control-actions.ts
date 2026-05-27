@@ -7,6 +7,6 @@ export const getExecutionControlAvailability = (status?: string | null) => {
   return {
     canPauseExecution,
     canResumeExecution,
-    canStopExecution: canPauseExecution,
+    canStopExecution: canPauseExecution || canResumeExecution,
   }
 }
