@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { socket } from '@/lib/socket'
 import { updateExecutionStatus, type Execution } from '@/features/executions/shared'
+import { shouldInvalidateExecutionsOnConnect } from '../lib/execution-status-updates'
 
 interface ExecutionStatusPayload {
   executionId: string
@@ -12,9 +13,25 @@ const EXECUTIONS_QUERY_KEY = ['executions'] as const
 
 export const useExecutionStatusUpdates = () => {
   const queryClient = useQueryClient()
+  const hadCachedExecutionsAtMount = Boolean(
+    queryClient.getQueryState<Execution[]>(EXECUTIONS_QUERY_KEY)?.dataUpdatedAt,
+  )
 
   useMountEffect(() => {
+    let isInitialConnect = true
+
     const handleConnect = () => {
+      const shouldInvalidate = shouldInvalidateExecutionsOnConnect({
+        hadCachedExecutionsAtMount,
+        isInitialConnect,
+      })
+
+      isInitialConnect = false
+
+      if (!shouldInvalidate) {
+        return
+      }
+
       void queryClient.invalidateQueries({ queryKey: EXECUTIONS_QUERY_KEY })
     }
 
