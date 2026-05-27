@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -29,6 +29,7 @@ import {
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar'
 import { useCurrentTime } from '@/hooks/use-current-time'
+import { useMountEffect } from '@/hooks/use-mount-effect'
 import { cn } from '@/lib/utils'
 import {
   deleteExecution,
@@ -41,6 +42,7 @@ import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates
 import { getRelativeCreatedAt, getStatusDotClassName } from '../lib/execution-sidebar-display'
 
 const EXECUTIONS_QUERY_KEY = ['executions'] as const
+const MIN_REFRESH_SPIN_DURATION_MS = 1000
 
 export function ExecutionsSidebar() {
   const { t } = useTranslation('executions')
@@ -49,6 +51,8 @@ export function ExecutionsSidebar() {
   const queryClient = useQueryClient()
   const currentTime = useCurrentTime()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
+  const [isRefreshSpinning, setIsRefreshSpinning] = useState(false)
+  const refreshSpinnerTimeoutId = useRef<number | null>(null)
   useExecutionStatusUpdates()
   const executionsQuery = useQuery({
     queryKey: EXECUTIONS_QUERY_KEY,
@@ -72,6 +76,39 @@ export function ExecutionsSidebar() {
   const pendingDeleteId = deleteMutation.variables
   const executions = executionsQuery.data ?? []
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
+
+  useMountEffect(() => {
+    return () => {
+      if (refreshSpinnerTimeoutId.current !== null) {
+        window.clearTimeout(refreshSpinnerTimeoutId.current)
+      }
+    }
+  })
+
+  const handleRefresh = async () => {
+    if (executionsQuery.isFetching || isRefreshSpinning) {
+      return
+    }
+
+    const refreshStartedAt = Date.now()
+    setIsRefreshSpinning(true)
+
+    try {
+      await executionsQuery.refetch()
+    } finally {
+      const elapsed = Date.now() - refreshStartedAt
+      const remainingDuration = Math.max(MIN_REFRESH_SPIN_DURATION_MS - elapsed, 0)
+
+      if (refreshSpinnerTimeoutId.current !== null) {
+        window.clearTimeout(refreshSpinnerTimeoutId.current)
+      }
+
+      refreshSpinnerTimeoutId.current = window.setTimeout(() => {
+        refreshSpinnerTimeoutId.current = null
+        setIsRefreshSpinning(false)
+      }, remainingDuration)
+    }
+  }
 
   return (
     <Sidebar collapsible="none">
@@ -99,11 +136,14 @@ export function ExecutionsSidebar() {
               variant="ghost"
               size="icon-xs"
               className="mr-3 size-6 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:not-aria-[haspopup]:translate-y-0"
-              disabled={executionsQuery.isFetching}
-              onClick={() => void executionsQuery.refetch()}
+              disabled={executionsQuery.isFetching || isRefreshSpinning}
+              onClick={() => void handleRefresh()}
             >
               <IconRefresh
-                className={cn('size-3.5', executionsQuery.isFetching && 'animate-spin [animation-direction:reverse]')}
+                className={cn(
+                  'size-3.5',
+                  (executionsQuery.isFetching || isRefreshSpinning) && 'animate-spin [animation-direction:reverse]',
+                )}
               />
             </Button>
           </div>
