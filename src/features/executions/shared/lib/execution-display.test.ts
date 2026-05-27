@@ -5,9 +5,9 @@ import {
   normalizeExecutionStatus,
   updateExecutionStatus,
 } from './execution-display'
-import { IExecution } from '../model/execution.interface'
+import type { Execution } from '../model/execution'
 
-const createExecution = (execution: Partial<IExecution>): IExecution => ({
+const createExecution = (execution: Partial<Execution>): Execution => ({
   _id: 'execution-123456789',
   createdBy: 'user-1',
   playwrightProject: 'project-a',

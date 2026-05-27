@@ -12,7 +12,7 @@ import {
   isExecutionSuccessful,
   normalizeExecutionStatus,
   stopExecution,
-  type IExecution,
+  type Execution,
 } from '@/features/executions/shared'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
@@ -127,7 +127,7 @@ interface ExecutionDetailLogsSectionProps {
   canRerunExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
-  execution?: IExecution
+  execution?: Execution
   executionId: string
   executionSubtitle: string | null
   isLoading: boolean

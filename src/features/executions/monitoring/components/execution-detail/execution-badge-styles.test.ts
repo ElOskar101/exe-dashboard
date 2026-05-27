@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-detail-badges'
+import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 
 describe('execution detail badge variants', () => {
   it('renders running executions with the blue badge override', () => {

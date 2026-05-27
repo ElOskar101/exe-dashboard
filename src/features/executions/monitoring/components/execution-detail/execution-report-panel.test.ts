@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isolateReportHtml, resolveExecutionReportBaseUrl } from './execution-report-html'
+import { isolateReportHtml, resolveExecutionReportBaseUrl } from './execution-report-html-utils'
 
 describe('execution-report-panel helpers', () => {
   it('builds an absolute trailing-slash report base URL', () => {

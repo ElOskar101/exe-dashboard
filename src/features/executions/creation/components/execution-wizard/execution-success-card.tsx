@@ -2,11 +2,11 @@ import type { TFunction } from 'i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatExecutionDateTime, type IExecution } from '@/features/executions/shared'
+import { formatExecutionDateTime, type Execution } from '@/features/executions/shared'
 import { IconCheck, IconRefresh, IconRocket } from '@tabler/icons-react'
 
 interface ExecutionSuccessCardProps {
-  execution: IExecution
+  execution: Execution
   onReset: () => void
   t: TFunction<'executions'>
 }

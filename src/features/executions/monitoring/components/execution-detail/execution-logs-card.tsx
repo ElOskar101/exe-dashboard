@@ -32,7 +32,7 @@ import { IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabl
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
 import type { ExecutionRerunSummary } from '../../lib/execution-rerun'
-import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-detail-badges'
+import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
 import { ExecutionRerunDialog } from './execution-rerun-dialog'

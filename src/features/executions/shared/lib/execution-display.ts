@@ -1,4 +1,4 @@
-import { EXECUTION_STATUSES, type ExecutionStatus, type IExecution } from '../model/execution.interface'
+import { EXECUTION_STATUSES, type Execution, type ExecutionStatus } from '../model/execution'
 
 const executionStatusSet = new Set<string>(EXECUTION_STATUSES)
 const legacyExecutionStatusMap: Record<string, ExecutionStatus> = {
@@ -9,7 +9,7 @@ export const isExecutionStatus = (status: string): status is ExecutionStatus => 
   return executionStatusSet.has(status)
 }
 
-export const getExecutionLabel = (execution: IExecution) => {
+export const getExecutionLabel = (execution: Execution) => {
   return execution.execution || execution.botName || execution.playwrightProject || `${execution._id.slice(0, 8)}...`
 }
 
@@ -44,10 +44,10 @@ export const isExecutionPending = (status?: string | null) => {
 }
 
 export const updateExecutionStatus = (
-  executions: IExecution[] | undefined,
+  executions: Execution[] | undefined,
   executionId: string,
   status: string,
-): IExecution[] | undefined => {
+): Execution[] | undefined => {
   if (!executions) return executions
 
   const normalizedStatus = normalizeExecutionStatus(status)

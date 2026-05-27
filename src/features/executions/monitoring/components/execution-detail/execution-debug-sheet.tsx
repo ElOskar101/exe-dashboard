@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { cn } from '@/lib/utils'
 import { IconBug } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
-import { getConnectionBadgeVariant, getStatusBadgeClassName, getStatusBadgeVariant } from './execution-detail-badges'
+import { getConnectionBadgeVariant, getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 
 interface ExecutionDebugSheetProps {
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']

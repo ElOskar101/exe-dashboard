@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { socket } from '@/lib/socket'
-import { updateExecutionStatus, type IExecution } from '@/features/executions/shared'
+import { updateExecutionStatus, type Execution } from '@/features/executions/shared'
 
 interface ExecutionStatusPayload {
   executionId: string
@@ -19,7 +19,7 @@ export const useExecutionStatusUpdates = () => {
     }
 
     const handleStatus = (payload: ExecutionStatusPayload) => {
-      queryClient.setQueryData<IExecution[]>(EXECUTIONS_QUERY_KEY, (executions) =>
+      queryClient.setQueryData<Execution[]>(EXECUTIONS_QUERY_KEY, (executions) =>
         updateExecutionStatus(executions, payload.executionId, payload.status),
       )
     }

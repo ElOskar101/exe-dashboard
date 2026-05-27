@@ -3,13 +3,12 @@ export type ExecutionRuntimeStatus = ExecutionStatus | 'process'
 
 export const EXECUTION_STATUSES = ['queued', 'running', 'completed', 'unknown', 'cancelled', 'failed'] as const
 
-export interface IExecution {
+export interface Execution {
   _id: string
   createdBy: string
   playwrightProject: string
   status: ExecutionRuntimeStatus
   notes?: string[]
-  note?: string[]
   attachments?: unknown[]
   client: string
   clinic: string

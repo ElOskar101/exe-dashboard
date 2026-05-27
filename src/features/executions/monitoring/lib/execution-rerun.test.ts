@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { IExecution } from '@/features/executions/shared'
+import type { Execution } from '@/features/executions/shared'
 import { buildExecutionRerunPayload, getExecutionRerunSummary, prepareExecutionRerun } from './execution-rerun'
 
-const createExecution = (overrides: Partial<IExecution> = {}): IExecution => ({
+const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-1',
   createdBy: 'user-1',
   playwrightProject: 'liberty',

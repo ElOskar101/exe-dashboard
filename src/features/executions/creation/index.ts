@@ -7,7 +7,7 @@ export type {
   ExecutionVerificationType,
   ExecutionWizardDraft,
 } from './model/execution-create'
-export { default as ExecutionsPage } from './pages/executions-page'
+export { default as ExecutionCreatePage } from './pages/execution-create-page'
 export { getClinicBots, getCustomerById, searchCustomers } from './services/ccc.service'
 export type {
   CcExecutionResponse,

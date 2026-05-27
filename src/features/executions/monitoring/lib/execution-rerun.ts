@@ -1,5 +1,5 @@
 import type { ExecutionCreatePayload, ExecutionMetadata } from '@/features/executions/creation'
-import type { IExecution } from '@/features/executions/shared'
+import type { Execution } from '@/features/executions/shared'
 
 export interface ExecutionRerunSummary {
   botName: string
@@ -189,7 +189,7 @@ const getRerunMetaPayload = (meta: unknown, missingFields: string[]): ExecutionC
   }
 }
 
-export const prepareExecutionRerun = (execution: IExecution): ExecutionRerunPreparation => {
+export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPreparation => {
   const missingFields: string[] = []
   const project = getRequiredString(execution.playwrightProject, 'project', missingFields)
   const createdBy = getRequiredString(execution.createdBy, 'createdBy', missingFields)
@@ -220,12 +220,12 @@ export const prepareExecutionRerun = (execution: IExecution): ExecutionRerunPrep
   }
 }
 
-export const buildExecutionRerunPayload = (execution: IExecution): ExecutionCreatePayload | null => {
+export const buildExecutionRerunPayload = (execution: Execution): ExecutionCreatePayload | null => {
   return prepareExecutionRerun(execution).payload
 }
 
 export const getExecutionRerunSummary = (
-  execution: IExecution,
+  execution: Execution,
   payload?: ExecutionCreatePayload | null,
 ): ExecutionRerunSummary => {
   return {

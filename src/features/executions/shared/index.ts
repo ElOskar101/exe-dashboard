@@ -8,9 +8,9 @@ export {
   normalizeExecutionStatus,
   updateExecutionStatus,
 } from './lib/execution-display'
-export { formatExecutionDateTime } from './lib/format-execution-date'
-export { EXECUTION_STATUSES } from './model/execution.interface'
-export type { ExecutionRuntimeStatus, ExecutionStatus, IExecution } from './model/execution.interface'
+export { formatExecutionDateTime } from './lib/format-execution-date-time'
+export { EXECUTION_STATUSES } from './model/execution'
+export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'
 export {
   createExecution,

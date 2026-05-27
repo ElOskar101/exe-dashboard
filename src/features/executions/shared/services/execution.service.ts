@@ -1,19 +1,19 @@
 import { exeClient, exeReportsClient } from '@/lib/axios'
 import type { ExecutionCreatePayload } from '@/features/executions/creation'
-import type { IExecution } from '../model/execution.interface'
+import type { Execution } from '../model/execution'
 
-export type ExecutionUpdatePayload = Partial<Omit<IExecution, '_id'>>
+export type ExecutionUpdatePayload = Partial<Omit<Execution, '_id'>>
 
 export const getExecutions = () => {
-  return exeClient.get<IExecution[]>('executions')
+  return exeClient.get<Execution[]>('executions')
 }
 
 export const createExecution = (data: ExecutionCreatePayload) => {
-  return exeClient.post<IExecution>('executions', data)
+  return exeClient.post<Execution>('executions', data)
 }
 
 export const getExecutionById = (executionId: string) => {
-  return exeClient.get<IExecution>(`executions/${executionId}`)
+  return exeClient.get<Execution>(`executions/${executionId}`)
 }
 
 export const getExecutionReportHtml = (executionId: string) => {
@@ -21,13 +21,13 @@ export const getExecutionReportHtml = (executionId: string) => {
 }
 
 export const updateExecution = (executionId: string, data: ExecutionUpdatePayload) => {
-  return exeClient.patch<IExecution>(`executions/${executionId}`, data)
+  return exeClient.patch<Execution>(`executions/${executionId}`, data)
 }
 
 export const deleteExecution = (executionId: string) => {
-  return exeClient.delete<IExecution>(`executions/${executionId}`)
+  return exeClient.delete<Execution>(`executions/${executionId}`)
 }
 
 export const stopExecution = (executionId: string) => {
-  return exeClient.post<IExecution>(`executions/${executionId}/stop`)
+  return exeClient.post<Execution>(`executions/${executionId}/stop`)
 }

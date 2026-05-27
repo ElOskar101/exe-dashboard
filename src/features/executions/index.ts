@@ -1,4 +1,4 @@
-export { ExecutionWizard, ExecutionsPage, getClinicBots, getCustomerById, searchCustomers } from './creation'
+export { ExecutionCreatePage, ExecutionWizard, getClinicBots, getCustomerById, searchCustomers } from './creation'
 export type {
   CcExecutionResponse,
   ClinicBotDefinition,
@@ -37,4 +37,4 @@ export {
   updateExecution,
   updateExecutionStatus,
 } from './shared'
-export type { ExecutionRuntimeStatus, ExecutionStatus, ExecutionUpdatePayload, IExecution } from './shared'
+export type { Execution, ExecutionRuntimeStatus, ExecutionStatus, ExecutionUpdatePayload } from './shared'

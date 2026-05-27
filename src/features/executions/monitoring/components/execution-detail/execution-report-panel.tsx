@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { isolateReportHtml, resolveExecutionReportBaseUrl } from './execution-report-html'
+import { isolateReportHtml, resolveExecutionReportBaseUrl } from './execution-report-html-utils'
 
 interface ExecutionReportPanelProps {
   isError: boolean
