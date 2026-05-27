@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/use-theme'
 import { formatExecutionDateTime } from '@/features/executions/shared'
 import type { ExecutionLogLine, ExecutionLogStream } from '../../lib/execution-log-buffer'
+import { getStreamClassName, getTextDecorationLine, getToneClassName } from '../../lib/execution-log-list-styles'
 import {
   buildExecutionLogRenderItems,
   type ExecutionLogCodeFrameItem,
@@ -151,32 +152,6 @@ function ExecutionLogMeta({ stream, timestamp }: { stream?: ExecutionLogStream; 
   )
 }
 
-function getStreamClassName(stream: ExecutionLogStream | undefined) {
-  switch (stream) {
-    case 'stderr':
-      return 'text-rose-600 dark:text-rose-300'
-    case 'system':
-      return 'text-sky-700 dark:text-sky-300'
-    case 'stdout':
-      return 'text-emerald-700 dark:text-emerald-300'
-    default:
-      return ''
-  }
-}
-
-function getToneClassName(tone: ExecutionLogTone | undefined) {
-  switch (tone) {
-    case 'destructive':
-      return 'text-rose-600 dark:text-rose-300'
-    case 'success':
-      return 'text-emerald-700 dark:text-emerald-300'
-    case 'warning':
-      return 'text-amber-700 dark:text-amber-300'
-    default:
-      return ''
-  }
-}
-
 const AnsiLogMessage = memo(function AnsiLogMessage({ message }: { message: string }) {
   const parts = Anser.ansiToJson(message, { remove_empty: true })
 
@@ -221,18 +196,6 @@ function HighlightedCodeLine({ code, codeTheme }: { code: string; codeTheme: (ty
       )}
     </Highlight>
   )
-}
-
-function getTextDecorationLine(decorations: string[]): CSSProperties['textDecorationLine'] {
-  const textDecorations = decorations.filter(
-    (decoration) => decoration === 'underline' || decoration === 'strikethrough',
-  )
-
-  if (textDecorations.length === 0) {
-    return undefined
-  }
-
-  return textDecorations.join(' ') as CSSProperties['textDecorationLine']
 }
 
 const LOG_SKELETON_ROW_WIDTHS = [

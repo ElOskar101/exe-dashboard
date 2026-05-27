@@ -17,6 +17,13 @@ import {
 } from '../lib/clinic-bot-password-request'
 import { getSelectableClinicBots, mapClinicBotToExecutionBot } from '../lib/execution-clinic-bots'
 import { createEmptyDraft } from '../lib/execution-wizard-draft'
+import {
+  createEmptyBotSelection,
+  createEmptyExecutionSelection,
+  isBotStepDirty,
+  isConfigStepDirty,
+  isPatientsStepDirty,
+} from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
 import { mapCcExecutionRowsToPatients } from '../lib/cc-execution-patients'
 import type { ExecutionWizardDraft } from '../model/execution-create'
@@ -34,53 +41,6 @@ import {
 export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
 
 export const executionWizardSteps: ExecutionWizardStepKey[] = ['patients', 'bot', 'config', 'review']
-
-const createEmptyBotSelection = (): ExecutionWizardDraft['bot'] => ({
-  clinicBotId: '',
-  botName: '',
-  targetUrl: '',
-  username: '',
-  password: '',
-  verificationType: '',
-})
-
-const createEmptyExecutionSelection = (previousExecution: ExecutionWizardDraft['execution']) => ({
-  ...previousExecution,
-  execution: '',
-  executionName: '',
-  patients: [],
-})
-
-const emptyDraft = createEmptyDraft()
-
-const isPatientsStepDirty = (draft: ExecutionWizardDraft) => {
-  return (
-    draft.context.clientName !== emptyDraft.context.clientName ||
-    draft.context.client !== emptyDraft.context.client ||
-    draft.context.clinic !== emptyDraft.context.clinic ||
-    draft.execution.execution !== emptyDraft.execution.execution ||
-    draft.execution.patients.length !== emptyDraft.execution.patients.length
-  )
-}
-
-const isBotStepDirty = (draft: ExecutionWizardDraft) => {
-  return (
-    draft.bot.clinicBotId !== emptyDraft.bot.clinicBotId ||
-    draft.bot.botName !== emptyDraft.bot.botName ||
-    draft.bot.targetUrl !== emptyDraft.bot.targetUrl ||
-    draft.bot.username !== emptyDraft.bot.username ||
-    draft.bot.password !== emptyDraft.bot.password
-  )
-}
-
-const isConfigStepDirty = (draft: ExecutionWizardDraft) => {
-  return (
-    draft.context.project !== emptyDraft.context.project ||
-    draft.execution.workers !== emptyDraft.execution.workers ||
-    draft.execution.retries !== emptyDraft.execution.retries ||
-    draft.execution.config !== emptyDraft.execution.config
-  )
-}
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()

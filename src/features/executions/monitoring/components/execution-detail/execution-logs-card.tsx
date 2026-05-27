@@ -31,20 +31,13 @@ import { isExecutionRunning } from '@/features/executions/shared'
 import { IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
+import { getCanScrollToBottom, getIsScrolledToBottom } from '../../lib/execution-log-scroll'
 import type { ExecutionRerunSummary } from '../../lib/execution-rerun'
 import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
 import { ExecutionRerunDialog } from './execution-rerun-dialog'
 import { ExecutionReportPanel } from './execution-report-panel'
-
-const LOG_SCROLL_BOTTOM_THRESHOLD = 24
-
-const getCanScrollToBottom = (viewport: HTMLDivElement) =>
-  viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop > LOG_SCROLL_BOTTOM_THRESHOLD
-
-const getIsScrolledToBottom = (viewport: HTMLDivElement) =>
-  viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= LOG_SCROLL_BOTTOM_THRESHOLD
 
 type LogScrollBehavior = 'auto' | 'smooth'
 

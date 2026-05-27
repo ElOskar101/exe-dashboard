@@ -10,6 +10,7 @@ import {
   shouldHandleExecutionEvent,
   type ExecutionLogStream,
 } from '../lib/execution-log-buffer'
+import { joinExecutionRoom, leaveExecutionRoom, resolveBufferUpdate } from '../lib/execution-realtime-log-utils'
 
 type ConnectionState = 'connecting' | 'connected' | 'disconnected'
 
@@ -36,22 +37,9 @@ interface ExecutionStatusPayload {
   timestamp: string
 }
 
-const joinExecutionRoom = (executionId: string) => {
-  socket.emit('execution:join', { executionId })
-}
-
-const leaveExecutionRoom = (executionId: string) => {
-  socket.emit('execution:leave', { executionId })
-}
-
 interface UseExecutionRealtimeLogsOptions {
   historyContent?: string
 }
-
-const resolveBufferUpdate = (
-  currentBuffer: ExecutionLogBufferState,
-  updater: SetStateAction<ExecutionLogBufferState>,
-) => (typeof updater === 'function' ? updater(currentBuffer) : updater)
 
 export const useExecutionRealtimeLogs = (executionId: string, options: UseExecutionRealtimeLogsOptions = {}) => {
   const { historyContent = '' } = options

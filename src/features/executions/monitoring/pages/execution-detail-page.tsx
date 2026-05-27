@@ -10,7 +10,6 @@ import {
   isExecutionFailed,
   isExecutionRunning,
   isExecutionSuccessful,
-  normalizeExecutionStatus,
   stopExecution,
   type Execution,
 } from '@/features/executions/shared'
@@ -18,16 +17,9 @@ import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
 import { useExecutionRerun } from '../hooks/use-execution-rerun'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
+import { formatExecutionStatusLabel } from '../lib/execution-detail-display'
 import { createExecutionLogDisplayLines, type ExecutionLogBufferState } from '../lib/execution-log-buffer'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
-
-const formatExecutionStatusLabel = (status?: string | null) => {
-  if (!status) return status
-
-  const normalizedStatus = normalizeExecutionStatus(status)
-
-  return normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1)
-}
 
 function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const { t } = useTranslation('executions')

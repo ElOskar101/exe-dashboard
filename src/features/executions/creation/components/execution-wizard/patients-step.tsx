@@ -5,6 +5,7 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/component
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IconAlertCircle, IconDownload, IconLoader2, IconTrash } from '@tabler/icons-react'
 import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
+import { getExecutionWizardDisplayValue } from '../../lib/execution-wizard-display'
 import { hasErrors, type StepErrors } from '../../lib/execution-wizard-validation'
 import type { ExecutionPatient, ExecutionWizardDraft } from '../../model/execution-create'
 import { CustomerSearchField } from './customer-search-field'
@@ -38,8 +39,6 @@ interface PatientsStepProps {
   onRemovePatient: ReturnType<typeof useExecutionWizard>['removePatient']
   t: TFunction<'executions'>
 }
-
-const getDisplayValue = (value: string, emptyValue: string) => value.trim() || emptyValue
 
 const patientErrorFieldKeys = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob'] as const
 
@@ -258,45 +257,63 @@ export function PatientsStep({
                     <dl className="mt-4 grid gap-3 md:grid-cols-3">
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientName, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.patientName, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientLastName, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.patientLastName, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientMemberId, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.patientDob, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderName, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.policyHolderName, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
                         <dd className="mt-1 font-medium">
-                          {getDisplayValue(patient.policyHolderLastName, emptyValue)}
+                          {getExecutionWizardDisplayValue(patient.policyHolderLastName, emptyValue)}
                         </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.policyHolderDob, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.policyHolderDob, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.relationship, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.relationship, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.zipCode, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.zipCode, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
-                        <dd className="mt-1 font-medium">{getDisplayValue(patient.clinic, emptyValue)}</dd>
+                        <dd className="mt-1 font-medium">
+                          {getExecutionWizardDisplayValue(patient.clinic, emptyValue)}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
@@ -305,7 +322,7 @@ export function PatientsStep({
                       <div>
                         <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
                         <dd className="mt-1 break-words font-medium">
-                          {getDisplayValue(patient.filenames, emptyValue)}
+                          {getExecutionWizardDisplayValue(patient.filenames, emptyValue)}
                         </dd>
                       </div>
                     </dl>

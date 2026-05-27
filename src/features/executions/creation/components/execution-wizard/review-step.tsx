@@ -1,40 +1,16 @@
 import type { TFunction } from 'i18next'
-import type {
-  ExecutionCreatePayload,
-  ExecutionMetadata,
-  ExecutionPatient,
-  ExecutionWizardDraft,
-} from '../../model/execution-create'
+import type { ExecutionCreatePayload, ExecutionWizardDraft } from '../../model/execution-create'
 import { createDefaultBotOtherInformation } from '../../lib/execution-wizard-payload'
+import {
+  getExecutionWizardDisplayValue,
+  getExecutionWizardPatientFullName,
+  parseExecutionMetadataString,
+} from '../../lib/execution-wizard-display'
 
 interface ReviewStepProps {
   draft: ExecutionWizardDraft
   payload: ExecutionCreatePayload | null
   t: TFunction<'executions'>
-}
-
-const getDisplayValue = (value: string, emptyValue: string) => {
-  return value.trim() || emptyValue
-}
-
-const getPatientFullName = (patient: ExecutionPatient, emptyValue: string) => {
-  const fullName = [patient.patientName.trim(), patient.patientLastName.trim()].filter(Boolean).join(' ')
-
-  return fullName || emptyValue
-}
-
-const parseJsonObjectString = (value: string): ExecutionMetadata | string => {
-  try {
-    const parsed = JSON.parse(value)
-
-    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
-      return value
-    }
-
-    return parsed as ExecutionMetadata
-  } catch {
-    return value
-  }
 }
 
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
@@ -70,7 +46,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         filenames: patient.filenames.trim(),
         otherInformation: patient.otherInformation,
       })),
-      config: parseJsonObjectString(draft.execution.config),
+      config: parseExecutionMetadataString(draft.execution.config),
       rv: {},
       workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
       retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
@@ -84,32 +60,39 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.client')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.clientName, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">
+                {getExecutionWizardDisplayValue(draft.context.clientName, emptyValue)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.clinic')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.clinicName, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">
+                {getExecutionWizardDisplayValue(draft.context.clinicName, emptyValue)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.botName')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.bot.botName, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">{getExecutionWizardDisplayValue(draft.bot.botName, emptyValue)}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">
                 {t('fields.username')} / {t('fields.password')}
               </dt>
               <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.bot.username, emptyValue)} / {getDisplayValue(draft.bot.password, emptyValue)}
+                {getExecutionWizardDisplayValue(draft.bot.username, emptyValue)} /{' '}
+                {getExecutionWizardDisplayValue(draft.bot.password, emptyValue)}
               </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.url')}</dt>
-              <dd className="mt-1 break-all font-medium">{getDisplayValue(draft.bot.targetUrl, emptyValue)}</dd>
+              <dd className="mt-1 break-all font-medium">
+                {getExecutionWizardDisplayValue(draft.bot.targetUrl, emptyValue)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.execution')}</dt>
               <dd className="mt-1 font-medium">
-                {getDisplayValue(draft.execution.executionName || draft.execution.execution, emptyValue)}
+                {getExecutionWizardDisplayValue(draft.execution.executionName || draft.execution.execution, emptyValue)}
               </dd>
             </div>
           </dl>
@@ -130,10 +113,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               <tbody>
                 {patients.map((patient, index) => (
                   <tr key={`${patient.patientMemberId}-${index}`} className="border-b border-border/50 last:border-b-0">
-                    <td className="px-3 py-2 font-medium">{getPatientFullName(patient, emptyValue)}</td>
-                    <td className="px-3 py-2">{getDisplayValue(patient.patientDob, emptyValue)}</td>
-                    <td className="px-3 py-2">{getDisplayValue(patient.patientMemberId, emptyValue)}</td>
-                    <td className="px-3 py-2">{getDisplayValue(patient.relationship, emptyValue)}</td>
+                    <td className="px-3 py-2 font-medium">{getExecutionWizardPatientFullName(patient, emptyValue)}</td>
+                    <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</td>
+                    <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}</td>
+                    <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.relationship, emptyValue)}</td>
                     <td className="px-3 py-2">{patient.verificationType || emptyValue}</td>
                   </tr>
                 ))}
@@ -150,15 +133,19 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           <dl className="grid gap-3 sm:grid-cols-3">
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.workers')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.workers, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">
+                {getExecutionWizardDisplayValue(draft.execution.workers, emptyValue)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.execution.retries, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">
+                {getExecutionWizardDisplayValue(draft.execution.retries, emptyValue)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
-              <dd className="mt-1 font-medium">{getDisplayValue(draft.context.project, emptyValue)}</dd>
+              <dd className="mt-1 font-medium">{getExecutionWizardDisplayValue(draft.context.project, emptyValue)}</dd>
             </div>
           </dl>
         </div>
