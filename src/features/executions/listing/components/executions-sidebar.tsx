@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { IconAlertCircle, IconLoader2, IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconAlertCircle, IconLoader2, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -91,9 +91,22 @@ export function ExecutionsSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="sticky top-0 bg-sidebar! z-30 rounded-none">
-            {t('sidebar.title')}
-          </SidebarGroupLabel>
+          <div className="sticky top-0 z-30 flex items-center justify-between rounded-none bg-sidebar">
+            <SidebarGroupLabel className="rounded-none bg-transparent px-3">{t('sidebar.title')}</SidebarGroupLabel>
+            <Button
+              aria-label={t('sidebar.retry')}
+              title={t('sidebar.retry')}
+              variant="ghost"
+              size="icon-xs"
+              className="mr-3 size-6 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:not-aria-[haspopup]:translate-y-0"
+              disabled={executionsQuery.isFetching}
+              onClick={() => void executionsQuery.refetch()}
+            >
+              <IconRefresh
+                className={cn('size-3.5', executionsQuery.isFetching && 'animate-spin [animation-direction:reverse]')}
+              />
+            </Button>
+          </div>
           <SidebarGroupContent>
             {executionsQuery.isLoading ? (
               <div className="flex flex-col gap-1">
