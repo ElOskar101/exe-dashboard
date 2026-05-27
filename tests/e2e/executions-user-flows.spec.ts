@@ -433,11 +433,11 @@ test.describe('execution user flows', () => {
 
     await page.goto('/execution/execution-1')
 
-    await page.getByRole('button', { name: 'Re-run execution' }).click()
+    await page.getByRole('button', { name: /^Re-run$/ }).click()
     await expect(page.getByText('Re-run this execution?')).toBeVisible()
     await expect(page.getByText('Execution summary')).toBeVisible()
     await expect(page.getByText('Patients')).toBeVisible()
-    await page.getByRole('button', { name: 'Create rerun' }).click()
+    await page.getByRole('button', { name: /^Confirm Re-run$/ }).click()
 
     await expect(page).toHaveURL('/execution/execution-2')
     expect(recreatedPayload).toEqual({
