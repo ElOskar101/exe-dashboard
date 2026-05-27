@@ -36,10 +36,10 @@ import {
   IconPlayerStop,
   IconTerminal2,
 } from '@tabler/icons-react'
-import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
-import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
-import { getCanScrollToBottom, getIsScrolledToBottom } from '../../lib/execution-log-scroll'
-import type { ExecutionRerunSummary } from '../../lib/execution-rerun'
+import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
+import type { ExecutionLogLine } from '../lib/execution-log-buffer'
+import { getCanScrollToBottom, getIsScrolledToBottom } from '../lib/execution-log-scroll'
+import type { ExecutionRerunSummary } from '../lib/execution-rerun'
 import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'

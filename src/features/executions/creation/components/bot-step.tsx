@@ -6,9 +6,9 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/component
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IconAlertCircle, IconEye, IconEyeOff } from '@tabler/icons-react'
-import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
-import type { StepErrors } from '../../lib/execution-wizard-validation'
-import type { ExecutionWizardDraft } from '../../model/execution-create'
+import type { useExecutionWizard } from '../hooks/use-execution-wizard'
+import type { StepErrors } from '../lib/execution-wizard-validation'
+import type { ExecutionWizardDraft } from '../model/execution-create'
 
 interface BotStepProps {
   bot: ExecutionWizardDraft['bot']

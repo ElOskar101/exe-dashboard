@@ -1,11 +1,11 @@
 import type { TFunction } from 'i18next'
-import type { ExecutionCreatePayload, ExecutionWizardDraft } from '../../model/execution-create'
-import { createDefaultBotOtherInformation } from '../../lib/execution-wizard-payload'
+import type { ExecutionCreatePayload, ExecutionWizardDraft } from '../model/execution-create'
+import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
 import {
   getExecutionWizardDisplayValue,
   getExecutionWizardPatientFullName,
   parseExecutionMetadataString,
-} from '../../lib/execution-wizard-display'
+} from '../lib/execution-wizard-display'
 
 interface ReviewStepProps {
   draft: ExecutionWizardDraft

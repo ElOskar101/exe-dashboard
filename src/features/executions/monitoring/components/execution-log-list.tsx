@@ -11,13 +11,13 @@ import { Highlight, themes as prismThemes } from 'prism-react-renderer'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/hooks/use-theme'
 import { formatExecutionDateTime } from '@/features/executions/shared'
-import type { ExecutionLogLine, ExecutionLogStream } from '../../lib/execution-log-buffer'
-import { getStreamClassName, getTextDecorationLine, getToneClassName } from '../../lib/execution-log-list-styles'
+import type { ExecutionLogLine, ExecutionLogStream } from '../lib/execution-log-buffer'
+import { getStreamClassName, getTextDecorationLine, getToneClassName } from '../lib/execution-log-list-styles'
 import {
   buildExecutionLogRenderItems,
   type ExecutionLogCodeFrameItem,
   type ExecutionLogTone,
-} from '../../lib/execution-log-render'
+} from '../lib/execution-log-render'
 
 interface ExecutionLogListProps {
   isLoading: boolean

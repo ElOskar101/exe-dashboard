@@ -16,7 +16,7 @@ import {
   type ExecutionRuntimeStatus,
 } from '@/features/executions/shared'
 import { IconAlertCircle } from '@tabler/icons-react'
-import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
+import { ExecutionLogsCard } from '../components/execution-logs-card'
 import { useExecutionRerun } from '../hooks/use-execution-rerun'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import { getExecutionControlAvailability } from '../lib/execution-control-actions'

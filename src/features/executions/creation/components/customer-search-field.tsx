@@ -2,7 +2,7 @@ import { useState, type Dispatch, type FocusEvent } from 'react'
 import { IconCheck, IconLoader2, IconSearch } from '@tabler/icons-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import type { CustomerSearchItem } from '../../services/ccc.service'
+import type { CustomerSearchItem } from '../services/ccc.service'
 
 interface CustomerSearchFieldProps {
   id: string

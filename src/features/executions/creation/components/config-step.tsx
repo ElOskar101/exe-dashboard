@@ -1,9 +1,9 @@
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import type { TFunction } from 'i18next'
-import type { useExecutionWizard } from '../../hooks/use-execution-wizard'
-import type { StepErrors } from '../../lib/execution-wizard-validation'
-import type { ExecutionWizardDraft } from '../../model/execution-create'
+import type { useExecutionWizard } from '../hooks/use-execution-wizard'
+import type { StepErrors } from '../lib/execution-wizard-validation'
+import type { ExecutionWizardDraft } from '../model/execution-create'
 
 interface ConfigStepProps {
   draft: ExecutionWizardDraft

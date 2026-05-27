@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { IconBug } from '@tabler/icons-react'
-import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
+import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import { getConnectionBadgeVariant, getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 
 interface ExecutionDebugSheetProps {
@@ -19,9 +19,13 @@ export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecuti
 
   return (
     <Sheet>
-      <SheetTrigger render={<Button variant="outline" size="icon" />}>
-        <IconBug data-icon="inline-start" />
-      </SheetTrigger>
+      <SheetTrigger
+        render={
+          <Button aria-label="Debug" type="button" variant="outline" size="icon">
+            <IconBug aria-hidden="true" />
+          </Button>
+        }
+      />
       <SheetContent className="w-full sm:max-w-2xl">
         <SheetHeader>
           <SheetTitle>{t('detail.debugTitle')}</SheetTitle>

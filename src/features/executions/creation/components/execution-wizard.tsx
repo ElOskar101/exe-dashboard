@@ -4,12 +4,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Separator } from '@/components/ui/separator'
 import { IconArrowLeft, IconArrowRight, IconLoader2, IconSend2 } from '@tabler/icons-react'
 import { executionWizardSteps, useExecutionWizard } from '../hooks/use-execution-wizard'
-import { BotStep } from './execution-wizard/bot-step'
-import { ConfigStep } from './execution-wizard/config-step'
-import { ExecutionSubmitErrorAlert } from './execution-wizard/execution-submit-error-alert'
-import { ExecutionWizardStepper } from './execution-wizard/execution-wizard-stepper'
-import { PatientsStep } from './execution-wizard/patients-step'
-import { ReviewStep } from './execution-wizard/review-step'
+import { BotStep } from './bot-step'
+import { ConfigStep } from './config-step'
+import { ExecutionSubmitErrorAlert } from './execution-submit-error-alert'
+import { ExecutionWizardStepper } from './execution-wizard-stepper'
+import { PatientsStep } from './patients-step'
+import { ReviewStep } from './review-step'
 
 export default function ExecutionWizard() {
   const { t } = useTranslation('executions')
