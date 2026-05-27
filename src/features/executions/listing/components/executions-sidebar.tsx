@@ -94,8 +94,8 @@ export function ExecutionsSidebar() {
           <div className="sticky top-0 z-30 flex items-center justify-between rounded-none bg-sidebar">
             <SidebarGroupLabel className="rounded-none bg-transparent px-3">{t('sidebar.title')}</SidebarGroupLabel>
             <Button
-              aria-label={t('sidebar.retry')}
-              title={t('sidebar.retry')}
+              aria-label={t('sidebar.refreshList')}
+              title={t('sidebar.refreshList')}
               variant="ghost"
               size="icon-xs"
               className="mr-3 size-6 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:not-aria-[haspopup]:translate-y-0"

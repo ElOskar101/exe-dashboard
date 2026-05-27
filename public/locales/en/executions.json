@@ -194,6 +194,7 @@
     "createExecution": "Create execution",
     "loadErrorTitle": "Executions could not be loaded",
     "loadErrorDescription": "Try again to refresh the executions list.",
+    "refreshList": "Refresh executions",
     "retry": "Retry",
     "empty": "No executions yet.",
     "deleteAction": "Delete {{execution}}",
