@@ -151,7 +151,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         </div>
       </div>
 
-      <div className="flex max-h-[calc(100vh-20rem)] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
+      <div className="flex max-h-96 min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
         <pre className="min-h-0 min-w-0 flex-1 overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-muted/70 p-4 text-xs leading-6">
           {JSON.stringify(reviewPayload, null, 2)}
         </pre>

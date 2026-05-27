@@ -31,11 +31,11 @@ export function ExecutionWizardStepper({
               onClick={() => onStepChange(index)}
               className={cn(
                 'relative flex h-full w-full flex-col rounded-3xl border border-border/70 bg-muted/20 p-4 text-left transition-[background-color,border-color,box-shadow] outline-none hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30',
-                isActiveStep && 'text-orange-600 shadow-sm hover:bg-card',
+                isActiveStep && 'shadow-sm ring-secondary ring-2 bg-card/40 hover:bg-card/40',
               )}
             >
               {hasIncompleteStepInfo ? (
-                <span aria-hidden="true" className="absolute top-4 right-4 size-2.5 rounded-full bg-orange-500" />
+                <span aria-hidden="true" className="absolute top-4 right-4 size-2.5 rounded-full bg-destructive" />
               ) : null}
               <span className="pr-5 font-medium">{t(`steps.${step}.title`)}</span>
               <span className="mt-1 text-xs text-muted-foreground">
