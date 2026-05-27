@@ -10,7 +10,7 @@ export type {
 export { default as ExecutionCreatePage } from './pages/execution-create-page'
 export { getClinicBots, getCustomerById, searchCustomers } from './services/ccc.service'
 export type {
-  CcExecutionResponse,
+  CCCExecutionResponse,
   ClinicBotDefinition,
   ClinicBotRecord,
   ClinicBotStatus,

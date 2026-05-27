@@ -1,6 +1,6 @@
 export { ExecutionCreatePage, ExecutionWizard, getClinicBots, getCustomerById, searchCustomers } from './creation'
 export type {
-  CcExecutionResponse,
+  CCCExecutionResponse,
   ClinicBotDefinition,
   ClinicBotRecord,
   ClinicBotStatus,

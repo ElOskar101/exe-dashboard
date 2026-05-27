@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import cccClient from '@/lib/axios'
 import {
   decryptClinicBotPassword,
-  getCcExecution,
+  getCCCExecution,
   getClinicBots,
   getClinicExecutionDays,
   getCustomerById,
@@ -101,7 +101,7 @@ describe('ccc.service', () => {
     expect(cccClient.get).toHaveBeenCalledWith('v2/clinics/clinic-1/clinic-bots')
   })
 
-  it('getCcExecution requests the selected CC execution', async () => {
+  it('getCCCExecution requests the selected CC execution', async () => {
     vi.mocked(cccClient.get).mockResolvedValueOnce({
       data: {
         _id: 'day-1',
@@ -111,7 +111,7 @@ describe('ccc.service', () => {
       },
     })
 
-    await getCcExecution('day-1')
+    await getCCCExecution('day-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/day-1')
   })

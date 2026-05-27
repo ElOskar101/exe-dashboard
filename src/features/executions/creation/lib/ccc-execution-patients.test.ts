@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { mapCcExecutionRowsToPatients } from './cc-execution-patients'
+import { mapCCCExecutionRowsToPatients } from './ccc-execution-patients'
 
-describe('mapCcExecutionRowsToPatients', () => {
+describe('mapCCCExecutionRowsToPatients', () => {
   it('maps known CC cells into execution patients', () => {
     expect(
-      mapCcExecutionRowsToPatients([
+      mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
           cells: [
@@ -44,7 +44,7 @@ describe('mapCcExecutionRowsToPatients', () => {
 
   it('converts empty placeholders and unsupported verification types to blank values', () => {
     expect(
-      mapCcExecutionRowsToPatients([
+      mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
           cells: [
@@ -67,7 +67,7 @@ describe('mapCcExecutionRowsToPatients', () => {
 
   it('skips blank rows after placeholder cleanup', () => {
     expect(
-      mapCcExecutionRowsToPatients([
+      mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
           cells: [
@@ -82,7 +82,7 @@ describe('mapCcExecutionRowsToPatients', () => {
 
   it('drops unmapped cells and keeps raw date strings', () => {
     expect(
-      mapCcExecutionRowsToPatients([
+      mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
           cells: [

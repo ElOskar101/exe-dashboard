@@ -1,5 +1,5 @@
 import type { ExecutionPatient, ExecutionVerificationType } from '../model/execution-create'
-import type { CcExecutionRow } from '../services/ccc.service'
+import type { CCCExecutionRow } from '../services/ccc.service'
 
 const placeholderValues = new Set(['empty'])
 
@@ -19,7 +19,7 @@ const hasImportablePatientData = (patient: ExecutionPatient) => {
   return Object.entries(patient).some(([key, value]) => key !== 'otherInformation' && value.trim().length > 0)
 }
 
-export const mapCcExecutionRowsToPatients = (rows: CcExecutionRow[]): ExecutionPatient[] => {
+export const mapCCCExecutionRowsToPatients = (rows: CCCExecutionRow[]): ExecutionPatient[] => {
   return rows.flatMap((row) => {
     const cellsByKey = new Map(row.cells.map((cell) => [cell.key, cell.value]))
     const patient: ExecutionPatient = {

@@ -25,11 +25,11 @@ import {
   isPatientsStepDirty,
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
-import { mapCcExecutionRowsToPatients } from '../lib/cc-execution-patients'
+import { mapCCCExecutionRowsToPatients } from '../lib/ccc-execution-patients'
 import type { ExecutionWizardDraft } from '../model/execution-create'
 import {
   decryptClinicBotPassword,
-  getCcExecution,
+  getCCCExecution,
   getClinicBots,
   getClinicExecutionDays,
   getCustomerById,
@@ -121,12 +121,12 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
   const importPatientsMutation = useMutation({
     mutationFn: async (executionId: string) => {
-      const response = await getCcExecution(executionId)
+      const response = await getCCCExecution(executionId)
 
       return response.data
     },
     onSuccess: (execution) => {
-      const patients = mapCcExecutionRowsToPatients(execution.rows)
+      const patients = mapCCCExecutionRowsToPatients(execution.rows)
 
       setDraft((previousDraft) => ({
         ...previousDraft,

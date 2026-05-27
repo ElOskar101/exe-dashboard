@@ -55,20 +55,20 @@ export interface ClinicExecutionDay {
   trashed: boolean
 }
 
-export interface CcExecutionCell {
+export interface CCCExecutionCell {
   key: string
   value: string
 }
 
-export interface CcExecutionRow {
+export interface CCCExecutionRow {
   _id: string
-  cells: CcExecutionCell[]
+  cells: CCCExecutionCell[]
 }
 
-export interface CcExecutionResponse {
+export interface CCCExecutionResponse {
   _id: string
   sheetName: string
-  rows: CcExecutionRow[]
+  rows: CCCExecutionRow[]
   trashed: boolean
 }
 
@@ -100,8 +100,8 @@ export const decryptClinicBotPassword = async (clinicBotId: string) => {
   }
 }
 
-export const getCcExecution = (executionId: string) => {
-  return cccClient.get<CcExecutionResponse>(`v2/executions/${executionId}`)
+export const getCCCExecution = (executionId: string) => {
+  return cccClient.get<CCCExecutionResponse>(`v2/executions/${executionId}`)
 }
 
 const normalizeDecryptedPassword = (value: string) => {
