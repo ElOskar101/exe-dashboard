@@ -34,6 +34,7 @@ export const getRelativeCreatedAt = (createdAt: string, currentTime: number) => 
 export const getStatusDotClassName = (status: ExecutionStatus) => {
   if (isExecutionSuccessful(status)) return 'bg-green-500'
   if (normalizeExecutionStatus(status) === 'cancelled') return 'bg-slate-500'
+  if (normalizeExecutionStatus(status) === 'paused') return 'bg-amber-500'
   if (isExecutionPending(status)) return 'bg-blue-500'
 
   return 'bg-red-500'

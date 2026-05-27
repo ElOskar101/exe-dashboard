@@ -1,9 +1,17 @@
 import type { ExecutionCreatePayload } from '../../creation/model/execution-create'
 
-export type ExecutionStatus = 'queued' | 'running' | 'completed' | 'unknown' | 'cancelled' | 'failed'
+export type ExecutionStatus = 'queued' | 'running' | 'paused' | 'completed' | 'unknown' | 'cancelled' | 'failed'
 export type ExecutionRuntimeStatus = ExecutionStatus | 'process'
 
-export const EXECUTION_STATUSES = ['queued', 'running', 'completed', 'unknown', 'cancelled', 'failed'] as const
+export const EXECUTION_STATUSES = [
+  'queued',
+  'running',
+  'paused',
+  'completed',
+  'unknown',
+  'cancelled',
+  'failed',
+] as const
 
 export interface Execution {
   _id: string

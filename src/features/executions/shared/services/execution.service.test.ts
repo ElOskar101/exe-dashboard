@@ -6,6 +6,8 @@ import {
   getExecutionById,
   getExecutionReportHtml,
   getExecutions,
+  pauseExecution,
+  resumeExecution,
   stopExecution,
   updateExecution,
 } from './execution.service'
@@ -112,5 +114,21 @@ describe('execution.service', () => {
     await stopExecution('exe-1')
 
     expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/stop')
+  })
+
+  it('pauseExecution posts to the execution pause endpoint', async () => {
+    vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
+
+    await pauseExecution('exe-1')
+
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/pause')
+  })
+
+  it('resumeExecution posts to the execution resume endpoint', async () => {
+    vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
+
+    await resumeExecution('exe-1')
+
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/resume')
   })
 })

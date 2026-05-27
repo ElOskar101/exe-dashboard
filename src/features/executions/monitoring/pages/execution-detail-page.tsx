@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
@@ -8,15 +8,18 @@ import {
   getExecutionById,
   getExecutionReportHtml,
   isExecutionFailed,
-  isExecutionRunning,
   isExecutionSuccessful,
+  pauseExecution,
+  resumeExecution,
   stopExecution,
   type Execution,
+  type ExecutionRuntimeStatus,
 } from '@/features/executions/shared'
 import { IconAlertCircle } from '@tabler/icons-react'
-import { ExecutionLogsCard } from '../components/execution-detail/execution-logs-card'
+import { ExecutionLogsCard } from '../components/execution-logs-card'
 import { useExecutionRerun } from '../hooks/use-execution-rerun'
 import { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
+import { getExecutionControlAvailability } from '../lib/execution-control-actions'
 import { formatExecutionStatusLabel } from '../lib/execution-detail-display'
 import { createExecutionLogDisplayLines, type ExecutionLogBufferState } from '../lib/execution-log-buffer'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
@@ -24,6 +27,7 @@ import type { ExecutionRerunSummary } from '../lib/execution-rerun'
 function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const { t } = useTranslation('executions')
   const queryClient = useQueryClient()
+  const [controlStatus, setControlStatus] = useState<ExecutionRuntimeStatus | null>(null)
   const executionQuery = useQuery({
     queryKey: ['execution', executionId],
     queryFn: async () => {
@@ -38,6 +42,28 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   const stopMutation = useMutation({
     mutationFn: stopExecution,
     onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['execution', executionId] }),
+        queryClient.invalidateQueries({ queryKey: ['executions'] }),
+      ])
+    },
+  })
+  const pauseMutation = useMutation({
+    mutationFn: pauseExecution,
+    onSuccess: async (response) => {
+      setControlStatus(response.data.status)
+      queryClient.setQueryData(['execution', executionId], response.data)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['execution', executionId] }),
+        queryClient.invalidateQueries({ queryKey: ['executions'] }),
+      ])
+    },
+  })
+  const resumeMutation = useMutation({
+    mutationFn: resumeExecution,
+    onSuccess: async (response) => {
+      setControlStatus(response.data.status)
+      queryClient.setQueryData(['execution', executionId], response.data)
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['execution', executionId] }),
         queryClient.invalidateQueries({ queryKey: ['executions'] }),
@@ -65,6 +91,10 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       execution: executionName,
     })
   }, [executionId, executionQuery.data, t])
+  const currentStatus =
+    isExecutionSuccessful(realtimeLogs.status) || isExecutionFailed(realtimeLogs.status)
+      ? realtimeLogs.status
+      : (controlStatus ?? realtimeLogs.status ?? executionQuery.data?.status)
   const rerun = useExecutionRerun(executionQuery.data)
 
   return (
@@ -85,6 +115,22 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         </Alert>
       ) : null}
 
+      {pauseMutation.isError ? (
+        <Alert variant="destructive">
+          <IconAlertCircle />
+          <AlertTitle>{t('detail.pauseErrorTitle')}</AlertTitle>
+          <AlertDescription>{t('detail.pauseErrorDescription')}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {resumeMutation.isError ? (
+        <Alert variant="destructive">
+          <IconAlertCircle />
+          <AlertTitle>{t('detail.resumeErrorTitle')}</AlertTitle>
+          <AlertDescription>{t('detail.resumeErrorDescription')}</AlertDescription>
+        </Alert>
+      ) : null}
+
       {rerun.rerunErrorMessage ? (
         <Alert variant="destructive">
           <IconAlertCircle />
@@ -96,7 +142,7 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
       <ExecutionDetailLogsSection
         canRerunExecution={Boolean(executionQuery.data)}
         connectionState={realtimeLogs.connectionState}
-        currentStatus={realtimeLogs.status ?? executionQuery.data?.status}
+        currentStatus={currentStatus}
         executionSubtitle={executionSubtitle}
         execution={executionQuery.data}
         executionId={executionId}
@@ -104,9 +150,13 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         missingRerunFields={rerun.missingRerunFields}
         isRerunAvailable={rerun.isRerunAvailable}
         isRerunning={rerun.isRerunning}
+        isPausing={pauseMutation.isPending}
+        isResuming={resumeMutation.isPending}
         isStopping={stopMutation.isPending}
         logState={logState}
+        onPauseExecution={() => pauseMutation.mutate(executionId)}
         onRerunExecution={rerun.triggerRerun}
+        onResumeExecution={() => resumeMutation.mutate(executionId)}
         onStopExecution={() => stopMutation.mutate(executionId)}
         rawExecutionJson={rawExecutionJson}
         rerunSummary={rerun.rerunSummary}
@@ -126,9 +176,13 @@ interface ExecutionDetailLogsSectionProps {
   missingRerunFields: string[]
   isRerunAvailable: boolean
   isRerunning: boolean
+  isPausing: boolean
+  isResuming: boolean
   isStopping: boolean
   logState: ExecutionLogBufferState
+  onPauseExecution: () => void
   onRerunExecution: () => void
+  onResumeExecution: () => void
   onStopExecution: () => void
   rawExecutionJson: string
   rerunSummary: ExecutionRerunSummary | null
@@ -145,16 +199,20 @@ function ExecutionDetailLogsSection({
   missingRerunFields,
   isRerunAvailable,
   isRerunning,
+  isPausing,
+  isResuming,
   isStopping,
   logState,
+  onPauseExecution,
   onRerunExecution,
+  onResumeExecution,
   onStopExecution,
   rawExecutionJson,
   rerunSummary,
 }: ExecutionDetailLogsSectionProps) {
   const { t } = useTranslation('executions')
   const displayStatus = formatExecutionStatusLabel(currentStatus)
-  const canStopExecution = isExecutionRunning(currentStatus)
+  const { canPauseExecution, canResumeExecution, canStopExecution } = getExecutionControlAvailability(currentStatus)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = execution?.playwrightExecutionId || executionId
   const reportBasePath = `${APP_CONFIG.exeReportsUrl}/${reportExecutionId}`
@@ -172,6 +230,8 @@ function ExecutionDetailLogsSection({
   return (
     <ExecutionLogsCard
       canRerunExecution={canRerunExecution && showReport}
+      canPauseExecution={canPauseExecution}
+      canResumeExecution={canResumeExecution}
       key={showReport ? 'finished' : 'unfinished'}
       canStopExecution={canStopExecution}
       connectionState={connectionState}
@@ -180,12 +240,16 @@ function ExecutionDetailLogsSection({
       isLoading={isLoading}
       isReportError={reportQuery.isError}
       isReportLoading={!showReport || reportQuery.isLoading}
+      isPausing={isPausing}
       missingRerunFields={missingRerunFields}
+      isResuming={isResuming}
       isRerunAvailable={isRerunAvailable}
       isRerunning={isRerunning}
       isStopping={isStopping}
       logLines={logLines}
+      onPauseExecution={onPauseExecution}
       onRerunExecution={onRerunExecution}
+      onResumeExecution={onResumeExecution}
       onStopExecution={onStopExecution}
       rawExecutionJson={rawExecutionJson}
       reportBasePath={reportBasePath}

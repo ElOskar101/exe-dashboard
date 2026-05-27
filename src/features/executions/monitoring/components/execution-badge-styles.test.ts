@@ -13,6 +13,11 @@ describe('execution detail badge variants', () => {
     expect(getStatusBadgeClassName('cancelled')).toBe('bg-slate-500 text-white dark:bg-slate-400 dark:text-slate-950')
   })
 
+  it('renders paused executions with an amber badge override', () => {
+    expect(getStatusBadgeVariant('paused')).toBe('secondary')
+    expect(getStatusBadgeClassName('paused')).toBe('bg-amber-500 text-white dark:bg-amber-400 dark:text-slate-950')
+  })
+
   it('keeps queued executions on the secondary variant', () => {
     expect(getStatusBadgeVariant('queued')).toBe('secondary')
     expect(getStatusBadgeClassName('queued')).toBeUndefined()

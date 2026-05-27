@@ -27,6 +27,10 @@ export const isExecutionRunning = (status?: string | null) => {
   return normalizeExecutionStatus(status) === 'running'
 }
 
+export const isExecutionPaused = (status?: string | null) => {
+  return normalizeExecutionStatus(status) === 'paused'
+}
+
 export const isExecutionSuccessful = (status?: string | null) => {
   return normalizeExecutionStatus(status) === 'completed'
 }

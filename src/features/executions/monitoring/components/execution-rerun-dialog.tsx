@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { IconLoader2, IconPlayerPlay } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import type { ExecutionRerunSummary } from '../../lib/execution-rerun'
+import type { ExecutionRerunSummary } from '../lib/execution-rerun'
 
 interface ExecutionRerunDialogProps {
   currentStatus?: string | null

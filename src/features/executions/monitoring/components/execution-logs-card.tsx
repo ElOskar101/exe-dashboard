@@ -28,11 +28,18 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { isExecutionRunning } from '@/features/executions/shared'
-import { IconArrowDown, IconLoader2, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
-import type { useExecutionRealtimeLogs } from '../../hooks/use-execution-realtime-logs'
-import type { ExecutionLogLine } from '../../lib/execution-log-buffer'
-import { getCanScrollToBottom, getIsScrolledToBottom } from '../../lib/execution-log-scroll'
-import type { ExecutionRerunSummary } from '../../lib/execution-rerun'
+import {
+  IconArrowDown,
+  IconLoader2,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconTerminal2,
+} from '@tabler/icons-react'
+import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
+import type { ExecutionLogLine } from '../lib/execution-log-buffer'
+import { getCanScrollToBottom, getIsScrolledToBottom } from '../lib/execution-log-scroll'
+import type { ExecutionRerunSummary } from '../lib/execution-rerun'
 import { getStatusBadgeClassName, getStatusBadgeVariant } from './execution-badge-styles'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
@@ -228,20 +235,26 @@ const useExecutionLogScroll = (contentVersion: string) => {
 }
 
 interface ExecutionLogsCardProps {
+  canPauseExecution: boolean
   canRerunExecution: boolean
+  canResumeExecution: boolean
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
   description: string | null
   isLoading: boolean
   missingRerunFields: string[]
+  isPausing: boolean
   isReportError: boolean
   isReportLoading: boolean
+  isResuming: boolean
   isRerunning: boolean
   isRerunAvailable: boolean
   isStopping: boolean
   logLines: ExecutionLogLine[]
+  onPauseExecution: () => void
   onRerunExecution: () => void
+  onResumeExecution: () => void
   onStopExecution: () => void
   rawExecutionJson: string
   reportBasePath: string
@@ -252,20 +265,26 @@ interface ExecutionLogsCardProps {
 }
 
 export function ExecutionLogsCard({
+  canPauseExecution,
   canRerunExecution,
+  canResumeExecution,
   canStopExecution,
   connectionState,
   currentStatus,
   description,
   isLoading,
   missingRerunFields,
+  isPausing,
   isReportError,
   isReportLoading,
+  isResuming,
   isRerunning,
   isRerunAvailable,
   isStopping,
   logLines,
+  onPauseExecution,
   onRerunExecution,
+  onResumeExecution,
   onStopExecution,
   rawExecutionJson,
   reportBasePath,
@@ -324,6 +343,26 @@ export function ExecutionLogsCard({
                 onConfirm={onRerunExecution}
                 rerunSummary={rerunSummary}
               />
+            ) : null}
+            {canPauseExecution ? (
+              <Button disabled={isPausing || isStopping} onClick={onPauseExecution} type="button" variant="outline">
+                {isPausing ? (
+                  <IconLoader2 className="animate-spin" data-icon="inline-start" />
+                ) : (
+                  <IconPlayerPause data-icon="inline-start" />
+                )}
+                {isPausing ? t('detail.pausing') : t('detail.pauseExecution')}
+              </Button>
+            ) : null}
+            {canResumeExecution ? (
+              <Button disabled={isResuming} onClick={onResumeExecution} type="button" variant="outline">
+                {isResuming ? (
+                  <IconLoader2 className="animate-spin" data-icon="inline-start" />
+                ) : (
+                  <IconPlayerPlay data-icon="inline-start" />
+                )}
+                {isResuming ? t('detail.resuming') : t('detail.resumeExecution')}
+              </Button>
             ) : null}
             {canStopExecution ? (
               <AlertDialog>

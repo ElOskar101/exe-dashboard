@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { cn } from '@/lib/utils'
-import type { ExecutionWizardStepKey, useExecutionWizard } from '../../hooks/use-execution-wizard'
+import type { ExecutionWizardStepKey, useExecutionWizard } from '../hooks/use-execution-wizard'
 
 interface ExecutionWizardStepperProps {
   steps: ExecutionWizardStepKey[]
