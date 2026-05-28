@@ -12,6 +12,10 @@ VITE_URL_LOGIN=
 - `VITE_URL_LOGIN`: External login app URL used when a protected route has no
   token.
 
+The Carrier auth/user API is fixed in `src/app.config.ts` and routed through
+the same-origin `/carrier-api` proxy so browsers do not make direct
+cross-origin calls to `https://dev-carrier.dentalautomation.ai/api`.
+
 ## E2E tests
 
 Create `.env.e2e.local` with the test login credentials and auth endpoint:

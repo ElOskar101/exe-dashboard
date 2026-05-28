@@ -19,6 +19,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/carrier-api': {
+        target: 'https://dev-carrier.dentalautomation.ai',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/carrier-api/, ''),
+      },
       '/execution-api': {
         target: 'https://api.controlcentralcarrier.com',
         changeOrigin: true,
@@ -33,6 +38,11 @@ export default defineConfig({
   },
   preview: {
     proxy: {
+      '/carrier-api': {
+        target: 'https://dev-carrier.dentalautomation.ai',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/carrier-api/, ''),
+      },
       '/execution-api': {
         target: 'https://api.controlcentralcarrier.com',
         changeOrigin: true,

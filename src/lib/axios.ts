@@ -15,7 +15,7 @@ export const ensurePathSuffix = (value: string | undefined, suffix: string) => {
 }
 
 const cccClient = axios.create({
-  baseURL: ensurePathSuffix(APP_CONFIG.cccApiUrl, '/api'),
+  baseURL: ensurePathSuffix(APP_CONFIG.cccApiProxyUrl, '/api'),
   adapter: 'fetch',
 })
 export const exeClient = axios.create({

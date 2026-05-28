@@ -18,8 +18,8 @@ describe('axios URL helpers', () => {
     )
   })
 
-  it('uses the configured dev Carrier API URL for the CCC client', () => {
-    expect(cccClient.defaults.baseURL).toBe('https://dev-carrier.dentalautomation.ai/api')
+  it('uses the configured Carrier API proxy URL for the CCC client', () => {
+    expect(cccClient.defaults.baseURL).toBe('/carrier-api/api')
   })
 
   it('uses the configured EXE API URL for the EXE client', () => {
