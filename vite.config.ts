@@ -31,6 +31,20 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    proxy: {
+      '/execution-api': {
+        target: 'https://api.controlcentralcarrier.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/execution-api/, '/api/v1'),
+      },
+      '/execution-reports': {
+        target: 'https://api.controlcentralcarrier.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/execution-reports/, '/reports'),
+      },
+    },
+  },
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client'],
     alias: [
