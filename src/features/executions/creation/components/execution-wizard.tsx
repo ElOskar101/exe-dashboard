@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { IconArrowLeft, IconArrowRight, IconLoader2, IconSend2 } from '@tabler/icons-react'
 import { executionWizardSteps, useExecutionWizard } from '../hooks/use-execution-wizard'
@@ -17,9 +17,6 @@ export default function ExecutionWizard() {
 
   return (
     <Card className="mx-auto w-full max-w-5xl">
-      {/*       <CardHeader className="">
-        <CardTitle>{t('page.title')}</CardTitle>
-      </CardHeader> */}
       <CardContent className="flex flex-col gap-5 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-6">
         <ExecutionWizardStepper
           steps={executionWizardSteps}

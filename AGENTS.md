@@ -9,6 +9,9 @@ Run the following check commands after any code changes:
 
 Always try to fix lint issues and don't disable linter rules only if completely necessary.
 
+### Note
+Trust the changes made by the linter, do not revert them.
+
 ## Project structure
 `/src/features`: Here you can find this app's core modules. Only read the interfaces (`index.ts`) when exploring, investigating a module's capabilities, needing a module reference, or adding a new feature module.
 

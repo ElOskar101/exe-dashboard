@@ -217,7 +217,7 @@ async function completeBotStep(
 ) {
   const passwordInput = page.getByRole('textbox', { name: 'Password' })
 
-  await page.getByRole('combobox', { name: 'Select bot' }).click()
+  await page.getByRole('combobox', { name: 'Clinic bot' }).click()
   await page.getByRole('option', { name: clinicBotName }).click()
   await expect(passwordInput).toBeEnabled()
   await expect(passwordInput).toHaveValue('super-secret')
@@ -255,7 +255,8 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await expect(page).toHaveURL('/')
-    await expect(page.getByRole('main').getByText('Create execution')).toBeVisible()
+    await expect(page.getByLabel('Client')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Next' })).toBeVisible()
   })
 
   test('validates invalid steps while navigating and supports back navigation', async ({ page, request }) => {
@@ -482,7 +483,7 @@ test.describe('protected executions route', () => {
 
     await expect(page.getByText('Execution API is unavailable.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Create execution' })).toBeVisible()
-    await expect(page.getByText('Jane Doe', { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Jane Doe' })).toBeVisible()
     await expect(page.getByText('"workers": 2')).toBeVisible()
   })
 })
