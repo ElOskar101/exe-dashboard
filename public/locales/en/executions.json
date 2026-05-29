@@ -48,7 +48,7 @@
     "project": "Project",
     "client": "Client",
     "clinic": "Clinic",
-    "bot": "Select bot",
+    "bot": "Clinic bot",
     "botName": "Bot name",
     "url": "Portal URL",
     "username": "Username",
