@@ -63,17 +63,17 @@ export function ExecutionLogList({ isLoading, logLines }: ExecutionLogListProps)
 
 function ExecutionTextLine({ line, tone }: { line: ExecutionLogLine; tone?: ExecutionLogTone }) {
   return (
-    <div className="flex min-h-6 min-w-0 items-baseline gap-2 rounded-lg px-2 py-0.5 transition-colors hover:bg-muted/40">
-      <ExecutionLogMeta stream={line.stream} timestamp={line.timestamp} />
+    <div className="flex min-h-6 min-w-0 flex-col gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-muted/40 sm:flex-row sm:items-baseline sm:gap-2 sm:py-0.5">
       <span
         className={cn(
-          'min-w-0 flex-1 pr-3 whitespace-pre-wrap text-[13px] leading-6 [overflow-wrap:anywhere]',
+          'min-w-0 flex-1 whitespace-pre-wrap text-[13px] leading-6 [overflow-wrap:anywhere] sm:pr-3',
           getToneClassName(tone),
         )}
         style={{ tabSize: 2 }}
       >
         <AnsiLogMessage message={line.message} />
       </span>
+      <ExecutionLogMeta className="sm:shrink-0" stream={line.stream} timestamp={line.timestamp} />
     </div>
   )
 }
@@ -89,8 +89,7 @@ function ExecutionCodeFrame({
 
   return (
     <div className="min-w-0 rounded-xl border border-border/80 bg-muted/30 px-2 py-2">
-      <div className="flex min-w-0 items-baseline gap-2">
-        <ExecutionLogMeta stream={item.stream} timestamp={item.timestamp} />
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-baseline">
         <div className="min-w-0 flex-1">
           <div className="min-w-0 whitespace-pre-wrap text-[13px] leading-6" style={{ tabSize: 2 }}>
             {item.lines.map((line) => (
@@ -124,18 +123,27 @@ function ExecutionCodeFrame({
             ))}
           </div>
         </div>
+        <ExecutionLogMeta className="sm:shrink-0" stream={item.stream} timestamp={item.timestamp} />
       </div>
     </div>
   )
 }
 
-function ExecutionLogMeta({ stream, timestamp }: { stream?: ExecutionLogStream; timestamp?: string }) {
+function ExecutionLogMeta({
+  className,
+  stream,
+  timestamp,
+}: {
+  className?: string
+  stream?: ExecutionLogStream
+  timestamp?: string
+}) {
   if (!timestamp && !stream) {
     return null
   }
 
   return (
-    <div className="flex shrink-0 items-baseline gap-2 leading-6">
+    <div className={cn('flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 leading-6', className)}>
       {timestamp ? (
         <span className="shrink-0 select-none text-[11px] text-muted-foreground">
           {formatExecutionDateTime(timestamp)}

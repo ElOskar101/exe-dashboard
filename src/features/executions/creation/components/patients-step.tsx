@@ -83,7 +83,7 @@ export function PatientsStep({
   return (
     <FieldSet>
       <FieldGroup>
-        <FieldGroup className="md:grid md:grid-cols-4">
+        <FieldGroup className="gap-4 md:grid md:grid-cols-4">
           <Field data-invalid={showErrors && Boolean(contextErrors.client)}>
             <FieldLabel htmlFor="client">{t('fields.client')}</FieldLabel>
             <CustomerSearchField
@@ -223,7 +223,7 @@ export function PatientsStep({
         ) : null}
 
         {patients.length > 0 ? (
-          <div className="max-h-[34rem] space-y-4 overflow-y-auto pr-1">
+          <div className="max-h-[28rem] space-y-4 overflow-y-auto sm:max-h-[34rem] sm:pr-1">
             {patients.map((patient, index) =>
               (() => {
                 const rowErrors = errors.rows[index] ?? {}
@@ -237,7 +237,7 @@ export function PatientsStep({
                     key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
                     className="rounded-3xl border border-border/70 bg-muted/20 p-4"
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="font-medium">
                         {t('sections.patients.patientTitle', {
                           index: index + 1,
@@ -248,6 +248,7 @@ export function PatientsStep({
                         type="button"
                         onClick={() => onRemovePatient(index)}
                         aria-label={t('buttons.removePatient')}
+                        className="w-full sm:w-auto"
                       >
                         <IconTrash data-icon="inline-start" />
                         {t('buttons.removePatient')}

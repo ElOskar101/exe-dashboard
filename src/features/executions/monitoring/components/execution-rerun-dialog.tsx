@@ -55,25 +55,35 @@ export function ExecutionRerunDialog({
         <div className="grid gap-4">
           <div className="rounded-3xl border border-border/70 bg-muted/30 p-4">
             <p className="text-sm font-medium">{t('detail.rerunSummaryTitle')}</p>
-            <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-              <SummaryField emptyValue={emptyValue} label={t('fields.project')} value={rerunSummary.project} />
-              <SummaryField emptyValue={emptyValue} label={t('fields.botName')} value={rerunSummary.botName} />
-              <SummaryField emptyValue={emptyValue} label={t('fields.client')} value={rerunSummary.client} />
-              <SummaryField emptyValue={emptyValue} label={t('fields.clinic')} value={rerunSummary.clinic} />
-              <SummaryField emptyValue={emptyValue} label={t('fields.execution')} value={rerunSummary.execution} />
-              <SummaryField
-                emptyValue={emptyValue}
-                label={t('detail.rerunSummaryFields.status')}
-                value={currentStatus}
-              />
-              <SummaryField
-                emptyValue={emptyValue}
-                label={t('detail.rerunSummaryFields.patientCount')}
-                value={String(rerunSummary.patientCount)}
-              />
-              <SummaryField emptyValue={emptyValue} label={t('fields.workers')} value={String(rerunSummary.workers)} />
-              <SummaryField emptyValue={emptyValue} label={t('fields.retries')} value={String(rerunSummary.retries)} />
-            </dl>
+            <div className="mt-3 max-h-[18rem] overflow-auto pr-2">
+              <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                <SummaryField emptyValue={emptyValue} label={t('fields.project')} value={rerunSummary.project} />
+                <SummaryField emptyValue={emptyValue} label={t('fields.botName')} value={rerunSummary.botName} />
+                <SummaryField emptyValue={emptyValue} label={t('fields.client')} value={rerunSummary.client} />
+                <SummaryField emptyValue={emptyValue} label={t('fields.clinic')} value={rerunSummary.clinic} />
+                <SummaryField emptyValue={emptyValue} label={t('fields.execution')} value={rerunSummary.execution} />
+                <SummaryField
+                  emptyValue={emptyValue}
+                  label={t('detail.rerunSummaryFields.status')}
+                  value={currentStatus}
+                />
+                <SummaryField
+                  emptyValue={emptyValue}
+                  label={t('detail.rerunSummaryFields.patientCount')}
+                  value={String(rerunSummary.patientCount)}
+                />
+                <SummaryField
+                  emptyValue={emptyValue}
+                  label={t('fields.workers')}
+                  value={String(rerunSummary.workers)}
+                />
+                <SummaryField
+                  emptyValue={emptyValue}
+                  label={t('fields.retries')}
+                  value={String(rerunSummary.retries)}
+                />
+              </dl>
+            </div>
           </div>
           {!isRerunAvailable && missingRerunFields.length > 0 ? (
             <Alert variant="destructive">

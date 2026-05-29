@@ -17,10 +17,10 @@ export default function ExecutionWizard() {
 
   return (
     <Card className="mx-auto w-full max-w-5xl">
-      <CardHeader>
+      <CardHeader className="pb-4 sm:pb-6">
         <CardTitle>{t('page.title')}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-6">
+      <CardContent className="flex flex-col gap-5 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-6">
         <ExecutionWizardStepper
           steps={executionWizardSteps}
           currentStep={wizard.currentStep}
@@ -102,23 +102,34 @@ export default function ExecutionWizard() {
           {wizard.currentStep === 3 ? <ReviewStep draft={wizard.draft} payload={wizard.payloadPreview} t={t} /> : null}
         </div>
       </CardContent>
-      <CardFooter className="justify-between border-t border-border">
+      <CardFooter className="flex flex-col-reverse gap-3 border-t border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         {wizard.currentStep === 0 ? (
-          <span />
+          <span className="hidden sm:block" />
         ) : (
-          <Button type="button" variant="ghost" onClick={wizard.handlePreviousStep} disabled={wizard.isSubmitting}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={wizard.handlePreviousStep}
+            disabled={wizard.isSubmitting}
+            className="w-full sm:w-auto"
+          >
             <IconArrowLeft data-icon="inline-start" />
             {t('buttons.back')}
           </Button>
         )}
 
         {wizard.currentStep < executionWizardSteps.length - 1 ? (
-          <Button type="button" onClick={wizard.handleNextStep}>
+          <Button type="button" onClick={wizard.handleNextStep} className="w-full sm:w-auto">
             {t('buttons.next')}
             <IconArrowRight data-icon="inline-end" />
           </Button>
         ) : (
-          <Button type="button" onClick={wizard.handleSubmit} disabled={wizard.isSubmitting}>
+          <Button
+            type="button"
+            onClick={wizard.handleSubmit}
+            disabled={wizard.isSubmitting}
+            className="w-full sm:w-auto"
+          >
             {wizard.isSubmitting ? <IconLoader2 data-icon="inline-start" /> : <IconSend2 data-icon="inline-start" />}
             {wizard.isSubmitting ? t('buttons.submitting') : t('buttons.submit')}
           </Button>

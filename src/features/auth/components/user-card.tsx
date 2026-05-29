@@ -42,7 +42,7 @@ function UserCard() {
     <div className="relative" onBlurCapture={handleBlur}>
       <button
         type="button"
-        className="flex items-center gap-x-2 rounded-3xl px-2 py-1.5 text-left transition-colors hover:bg-muted"
+        className="flex items-center gap-x-2 rounded-full p-1 text-left transition-colors hover:bg-muted sm:rounded-3xl sm:px-2 sm:py-1.5"
         onClick={() => setIsOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
@@ -55,18 +55,18 @@ function UserCard() {
               )}
               <AvatarFallback>{getInitials(user.username || '')}</AvatarFallback>
             </Avatar>
-            <div className="flex flex-col leading-none text-xs">
+            <div className="hidden flex-col leading-none text-xs sm:flex">
               {userData?.nameAndUser}
               <span className="text-muted-foreground">{userData?.role}</span>
             </div>
-            <IconChevronDown className="size-4 text-muted-foreground" />
+            <IconChevronDown className="hidden size-4 text-muted-foreground sm:block" />
           </>
         ) : (
           <>
             <Avatar>
               <AvatarFallback className="animate-pulse">{getInitials('loading...')}</AvatarFallback>
             </Avatar>
-            <div className="leading-none">
+            <div className="hidden leading-none sm:block">
               <div className="mb-1 h-4 w-20 animate-pulse rounded"></div>
               <div className="h-4 w-24 animate-pulse rounded text-sm"></div>
             </div>

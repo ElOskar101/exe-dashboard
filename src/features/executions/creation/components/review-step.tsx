@@ -54,7 +54,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   }
 
   return (
-    <div className="grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <div className="grid items-stretch gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">
       <div className="min-w-0 flex flex-col gap-6">
         <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
           <dl className="grid gap-3 sm:grid-cols-2">
@@ -98,30 +98,78 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           </dl>
         </div>
 
-        <div className="max-h-48 overflow-auto rounded-2xl border border-border/70 bg-muted/40">
+        <div className="max-h-[26rem] overflow-auto rounded-2xl border border-border/70 bg-muted/40 md:max-h-48">
           {patients.length > 0 ? (
-            <table className="w-full min-w-[40rem] text-left text-sm">
-              <thead className="sticky top-0 bg-muted/70">
-                <tr className="border-b border-border/70">
-                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientName')}</th>
-                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientDob')}</th>
-                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.memberId')}</th>
-                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.relationship')}</th>
-                  <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.verificationType')}</th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <div className="space-y-3 p-3 md:hidden">
                 {patients.map((patient, index) => (
-                  <tr key={`${patient.patientMemberId}-${index}`} className="border-b border-border/50 last:border-b-0">
-                    <td className="px-3 py-2 font-medium">{getExecutionWizardPatientFullName(patient, emptyValue)}</td>
-                    <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</td>
-                    <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}</td>
-                    <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.relationship, emptyValue)}</td>
-                    <td className="px-3 py-2">{patient.verificationType || emptyValue}</td>
-                  </tr>
+                  <div
+                    key={`${patient.patientMemberId}-${index}`}
+                    className="rounded-2xl border border-border/60 bg-background/60 p-3"
+                  >
+                    <p className="font-medium">{getExecutionWizardPatientFullName(patient, emptyValue)}</p>
+                    <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <dt className="text-xs text-muted-foreground">{t('fields.patientDob')}</dt>
+                        <dd className="mt-1 text-sm font-medium">
+                          {getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">{t('fields.memberId')}</dt>
+                        <dd className="mt-1 text-sm font-medium">
+                          {getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">{t('fields.relationship')}</dt>
+                        <dd className="mt-1 text-sm font-medium">
+                          {getExecutionWizardDisplayValue(patient.relationship, emptyValue)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground">{t('fields.verificationType')}</dt>
+                        <dd className="mt-1 text-sm font-medium">{patient.verificationType || emptyValue}</dd>
+                      </div>
+                    </dl>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              <div className="hidden md:block">
+                <table className="w-full min-w-[40rem] text-left text-sm">
+                  <thead className="sticky top-0 bg-muted/70">
+                    <tr className="border-b border-border/70">
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientName')}</th>
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientDob')}</th>
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.memberId')}</th>
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.relationship')}</th>
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.verificationType')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {patients.map((patient, index) => (
+                      <tr
+                        key={`${patient.patientMemberId}-${index}`}
+                        className="border-b border-border/50 last:border-b-0"
+                      >
+                        <td className="px-3 py-2 font-medium">
+                          {getExecutionWizardPatientFullName(patient, emptyValue)}
+                        </td>
+                        <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</td>
+                        <td className="px-3 py-2">
+                          {getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}
+                        </td>
+                        <td className="px-3 py-2">
+                          {getExecutionWizardDisplayValue(patient.relationship, emptyValue)}
+                        </td>
+                        <td className="px-3 py-2">{patient.verificationType || emptyValue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <div className="p-3">
               <p className="font-medium text-muted-foreground">{t('review.noPatients')}</p>
@@ -151,7 +199,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         </div>
       </div>
 
-      <div className="flex max-h-96 min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4">
+      <div className="flex max-h-[24rem] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4 sm:max-h-96">
         <pre className="min-h-0 min-w-0 flex-1 overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-muted/70 p-4 text-xs leading-6">
           {JSON.stringify(reviewPayload, null, 2)}
         </pre>

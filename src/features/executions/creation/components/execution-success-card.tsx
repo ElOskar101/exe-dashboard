@@ -31,7 +31,7 @@ export function ExecutionSuccessCard({ execution, onReset, t }: ExecutionSuccess
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-3xl border border-border/70 bg-muted/30 p-4">
             <p className="text-sm text-muted-foreground">{t('success.executionId')}</p>
-            <p className="mt-1 text-base font-medium">{execution._id}</p>
+            <p className="mt-1 break-all text-base font-medium">{execution._id}</p>
           </div>
           <div className="rounded-3xl border border-border/70 bg-muted/30 p-4">
             <p className="text-sm text-muted-foreground">{t('success.status')}</p>
@@ -43,12 +43,12 @@ export function ExecutionSuccessCard({ execution, onReset, t }: ExecutionSuccess
           </div>
           <div className="rounded-3xl border border-border/70 bg-muted/30 p-4">
             <p className="text-sm text-muted-foreground">{t('success.jobId')}</p>
-            <p className="mt-1 text-base font-medium">{execution.jobId || '—'}</p>
+            <p className="mt-1 break-all text-base font-medium">{execution.jobId || '—'}</p>
           </div>
         </div>
       </CardContent>
       <CardFooter className="border-t border-border">
-        <Button onClick={onReset}>
+        <Button onClick={onReset} className="w-full sm:w-auto">
           <IconRefresh data-icon="inline-start" />
           {t('buttons.startOver')}
         </Button>

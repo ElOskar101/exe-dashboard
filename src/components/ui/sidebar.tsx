@@ -2,7 +2,6 @@ import * as React from 'react'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
-
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -13,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { IconLayoutSidebar } from '@tabler/icons-react'
 import { useMountEffect } from '@/hooks/use-mount-effect'
+import { SidebarContext, type SidebarContextProps, type SidebarProviderOpenChange, useSidebar } from './sidebar-context'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -20,20 +20,6 @@ const SIDEBAR_WIDTH = '16rem'
 const SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
-
-type SidebarContextProps = {
-  state: 'expanded' | 'collapsed'
-  open: boolean
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>
-  openMobile: boolean
-  setOpenMobile: React.Dispatch<React.SetStateAction<boolean>>
-  isMobile: boolean
-  toggleSidebar: () => void
-}
-
-type SidebarProviderOpenChange = React.Dispatch<React.SetStateAction<boolean>>
-
-const SidebarContext = React.createContext<SidebarContextProps | null>(null)
 
 function useSidebarKeyboardShortcut(toggleSidebar: () => void) {
   useMountEffect(() => {
@@ -47,15 +33,6 @@ function useSidebarKeyboardShortcut(toggleSidebar: () => void) {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   })
-}
-
-function useSidebar() {
-  const context = React.useContext(SidebarContext)
-  if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider.')
-  }
-
-  return context
 }
 
 function SidebarProvider({
@@ -152,21 +129,6 @@ function Sidebar({
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
-  if (collapsible === 'none') {
-    return (
-      <div
-        data-slot="sidebar"
-        className={cn(
-          'sticky top-0 flex h-svh w-(--sidebar-width) shrink-0 flex-col bg-sidebar text-sidebar-foreground',
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    )
-  }
-
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
@@ -190,6 +152,21 @@ function Sidebar({
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
       </Sheet>
+    )
+  }
+
+  if (collapsible === 'none') {
+    return (
+      <div
+        data-slot="sidebar"
+        className={cn(
+          'sticky top-0 flex h-svh w-(--sidebar-width) shrink-0 flex-col bg-sidebar text-sidebar-foreground',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </div>
     )
   }
 
