@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Execution } from '@/features/executions/shared'
-import { getExecutionDayLabel, groupExecutionsByProject } from './execution-sidebar-display'
+import { getExecutionDayLabel, getRelativeCreatedAt, groupExecutionsByProject } from './execution-sidebar-display'
 
 const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-123456789',
@@ -45,5 +45,14 @@ describe('execution sidebar display', () => {
   it('uses only the execution day for the clickable row label', () => {
     expect(getExecutionDayLabel(createExecution({ execution: '2026-05-29' }))).toBe('2026-05-29')
     expect(getExecutionDayLabel(createExecution({ _id: 'execution-123456789', execution: '' }))).toBe('executio...')
+  })
+
+  it('formats the created-at value as relative time', () => {
+    const currentTime = new Date('2026-05-29T12:00:00.000Z').getTime()
+
+    expect(getRelativeCreatedAt('2026-05-29T11:45:00.000Z', currentTime)).toBe(
+      new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }).format(-15, 'minute'),
+    )
+    expect(getRelativeCreatedAt('invalid-date', new Date('2026-05-29T12:00:00.000Z').getTime())).toBeNull()
   })
 })
