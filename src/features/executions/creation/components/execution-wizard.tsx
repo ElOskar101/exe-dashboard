@@ -17,9 +17,9 @@ export default function ExecutionWizard() {
 
   return (
     <Card className="mx-auto w-full max-w-5xl">
-      <CardHeader className="pb-4 sm:pb-6">
+      {/*       <CardHeader className="">
         <CardTitle>{t('page.title')}</CardTitle>
-      </CardHeader>
+      </CardHeader> */}
       <CardContent className="flex flex-col gap-5 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-6">
         <ExecutionWizardStepper
           steps={executionWizardSteps}
