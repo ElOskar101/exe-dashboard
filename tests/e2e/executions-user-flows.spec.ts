@@ -94,7 +94,7 @@ const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFi
   status: 'completed',
   client: 'customer-1',
   clinic: 'clinic-1',
-  execution: 'Daily eligibility',
+  execution: '2026-05-25',
   botName: 'Eligibility Runner',
   createdAt: '2026-05-25T14:00:00.000Z',
   updatedAt: '2026-05-25T14:10:00.000Z',
@@ -280,16 +280,18 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [
       execution,
-      createExecution({ _id: 'execution-2', execution: 'Claims check', status: 'running' }),
+      createExecution({ _id: 'execution-2', execution: '2026-05-26', status: 'running' }),
     ])
     await stubExecutionDetails(page, execution._id, () => execution)
 
     await page.goto('/')
 
-    await expect(page.getByText('chromium Daily eligibility')).toBeVisible()
+    await expect(page.getByText('chromium')).toBeVisible()
+    await expect(page.getByText('2026-05-26')).toBeVisible()
+    await expect(page.getByRole('link', { name: /2026-05-25/ })).toBeVisible()
     await expect(page.getByLabel('queued')).toBeVisible()
     await expect(page.getByLabel('running')).toBeVisible()
-    await page.getByText('chromium Daily eligibility').click()
+    await page.getByText('2026-05-25').click()
 
     await expect(page).toHaveURL('/execution/execution-1')
     await expect(page.getByText('Execution details')).toBeVisible()
@@ -313,7 +315,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Executions could not be loaded')).toBeVisible({ timeout: 15_000 })
     shouldSucceed = true
     await page.getByRole('button', { name: 'Retry' }).click()
-    await expect(page.getByText('chromium Daily eligibility')).toBeVisible()
+    await expect(page.getByText('2026-05-25')).toBeVisible()
   })
 
   test('cancels deleting an execution from the sidebar', async ({ page, request }) => {
@@ -331,11 +333,11 @@ test.describe('execution user flows', () => {
 
     await page.goto('/')
 
-    await page.getByRole('button', { name: 'Delete Daily eligibility' }).click({ force: true })
+    await page.getByRole('button', { name: 'Delete 2026-05-25' }).click({ force: true })
     await expect(page.getByText('Delete execution?')).toBeVisible()
     await page.getByRole('button', { name: 'Cancel' }).click()
 
-    await expect(page.getByText('chromium Daily eligibility')).toBeVisible()
+    await expect(page.getByRole('link', { name: /2026-05-25/ })).toBeVisible()
     expect(deleteRequested).toBe(false)
   })
 
@@ -359,7 +361,7 @@ test.describe('execution user flows', () => {
 
     await page.goto('/execution/execution-1')
 
-    await page.getByRole('button', { name: 'Delete Daily eligibility' }).click({ force: true })
+    await page.getByRole('button', { name: 'Delete 2026-05-25' }).click({ force: true })
     await page.getByRole('button', { name: 'Delete', exact: true }).click()
 
     await expect(page).toHaveURL('/')
@@ -379,7 +381,7 @@ test.describe('execution user flows', () => {
 
     await page.goto('/execution/execution-1')
 
-    await expect(page.getByText('Eligibility Runner - Daily eligibility')).toBeVisible()
+    await expect(page.getByText('Eligibility Runner - 2026-05-25')).toBeVisible()
     await expect(page.getByText('Running')).toBeVisible()
     await expect(page.getByText('Starting carrier login')).toBeVisible()
     await page.getByRole('button', { name: 'Debug' }).click()
@@ -405,7 +407,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({
         json: createExecution({
           _id: 'execution-2',
-          execution: 'Daily eligibility rerun',
+          execution: '2026-05-25 rerun',
           jobId: 'job-2',
           playwrightExecutionId: 'report-2',
           status: 'queued',
@@ -423,7 +425,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({
         json: createExecution({
           _id: 'execution-2',
-          execution: 'Daily eligibility rerun',
+          execution: '2026-05-25 rerun',
           jobId: 'job-2',
           playwrightExecutionId: 'report-2',
           status: 'queued',
@@ -445,7 +447,7 @@ test.describe('execution user flows', () => {
       createdBy: 'e2e-user',
       client: 'customer-1',
       clinic: 'clinic-1',
-      execution: 'Daily eligibility',
+      execution: '2026-05-25',
       botName: 'Eligibility Runner',
       meta: createExecutionMeta(),
     })
