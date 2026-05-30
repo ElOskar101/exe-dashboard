@@ -419,7 +419,7 @@ export function ExecutionLogsCard({
                     className: 'bg-background',
                   }}
                 >
-                  <div className="max-w-full p-4">
+                  <div className="max-w-full p-4 font-mono">
                     <ExecutionLogList isLoading={isLoading} logLines={logLines} />
                   </div>
                 </ScrollArea>
