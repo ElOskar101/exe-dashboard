@@ -6,6 +6,7 @@ import { getExecutionRequestErrorMessage, useCreateExecutionMutation } from '@/f
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
+import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
 import {
   type ClinicBotPasswordRequestState,
@@ -239,7 +240,18 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
   const submitExecutionMutation = useCreateExecutionMutation({
     onSuccess: async ([response]) => {
-      navigate(`/execution/${response.data._id}`)
+      const executionId = response.data._id
+      const successToastCopy = getExecutionWizardSuccessToastCopy(t, response.data.execution)
+
+      toast.success(successToastCopy.title, {
+        description: successToastCopy.description,
+        action: {
+          label: successToastCopy.actionLabel,
+          onClick: () => {
+            navigate(`/execution/${executionId}`)
+          },
+        },
+      })
     },
   })
 

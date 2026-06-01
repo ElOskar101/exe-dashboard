@@ -182,6 +182,9 @@
   "success": {
     "title": "Execution created",
     "description": "The execution was posted successfully and the response is ready to review.",
+    "toastTitle": "Execution created",
+    "toastDescription": "Execution {{executionDay}} was created successfully.",
+    "viewExecutionAction": "View execution",
     "alertTitle": "Submission complete",
     "alertDescription": "You can start another execution right away without leaving this page.",
     "executionId": "Execution ID",
