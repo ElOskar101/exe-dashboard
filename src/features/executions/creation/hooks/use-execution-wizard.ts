@@ -1,8 +1,8 @@
 import { useContext, useMemo, useRef, useState, startTransition, type SetStateAction } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
-import { createExecution, getExecutionRequestErrorMessage } from '@/features/executions/shared'
+import { getExecutionRequestErrorMessage, useCreateExecutionMutation } from '@/features/executions/shared'
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
@@ -44,13 +44,11 @@ export const executionWizardSteps: ExecutionWizardStepKey[] = ['patients', 'bot'
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { user } = useContext(AuthContext)
   const createdBy = user?._id ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
   const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [decryptClinicBotPasswordRequest, setDecryptClinicBotPasswordRequestState] = useState(() =>
     createIdleClinicBotPasswordRequestState(),
@@ -239,6 +237,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     bot: Boolean(attemptedSteps[1]),
     config: Boolean(attemptedSteps[2]),
   }
+  const submitExecutionMutation = useCreateExecutionMutation({
+    onSuccess: async ([response]) => {
+      navigate(`/execution/${response.data._id}`)
+    },
+  })
 
   const updateContextField = (field: keyof ExecutionWizardDraft['context'], value: string) => {
     setDraft((previousDraft) => ({
@@ -468,7 +471,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     setCurrentStep(0)
     setAttemptedSteps({})
     setSubmitError(null)
-    setIsSubmitting(false)
     setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
   }
 
@@ -489,68 +491,95 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }
 
     toast.dismiss('execution-wizard-validation')
-    setIsSubmitting(true)
     setSubmitError(null)
 
     try {
-      const response = await createExecution(payloadPreview)
-
-      await queryClient.invalidateQueries({ queryKey: ['executions'] })
-      navigate(`/execution/${response.data._id}`)
+      await submitExecutionMutation.mutateAsync(payloadPreview)
     } catch (error) {
       setSubmitError(getExecutionRequestErrorMessage(error, t('submit.errorDescription')))
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
   return {
-    draft,
-    currentStep,
-    validationErrors,
-    payloadPreview,
-    stepValidity,
-    stepNeedsAttention,
-    showErrors,
-    isSubmitting,
-    submitError,
-    createdBy,
-    customerOptions: customerSearchQuery.data?.customers ?? [],
-    isSearchingCustomers: customerSearchQuery.isFetching,
-    customerSearchError: customerSearchQuery.error instanceof Error ? customerSearchQuery.error.message : null,
-    selectedCustomerError: selectedCustomerQuery.error instanceof Error ? selectedCustomerQuery.error.message : null,
-    clinicOptions,
-    isLoadingClinics: selectedCustomerQuery.isFetching,
-    hasSelectedCustomerWithoutClinics,
-    clinicBotOptions,
-    selectedClinicBotId,
-    isLoadingClinicBots: clinicBotsQuery.isFetching,
-    clinicBotsError: clinicBotsQuery.error instanceof Error ? clinicBotsQuery.error.message : null,
-    isDecryptingClinicBotPassword: decryptClinicBotPasswordStatus.isPending,
-    decryptClinicBotPasswordError: decryptClinicBotPasswordStatus.error,
-    hasSelectedClinicWithoutActiveBots,
-    executionDayOptions,
-    isLoadingExecutionDays: clinicExecutionDaysQuery.isFetching,
-    executionDaysError: clinicExecutionDaysQuery.error instanceof Error ? clinicExecutionDaysQuery.error.message : null,
-    isImportingPatients: importPatientsMutation.isPending,
-    importPatientsError: importPatientsMutation.error instanceof Error ? importPatientsMutation.error.message : null,
-    handleStepChange,
-    updateContextField,
-    updateCustomerSearch,
-    clearCustomerSelection,
-    selectCustomer,
-    selectClinic,
-    selectClinicBot,
-    updateBotField,
-    updateWorkers,
-    updateRetries,
-    selectExecutionDay,
-    importPatients,
-    removePatient,
-    updateConfig,
-    handleNextStep,
-    handlePreviousStep,
-    handleSubmit,
-    resetWizard,
+    botStep: {
+      bot: draft.bot,
+      clinicBotOptions,
+      clinicBotsError: clinicBotsQuery.error instanceof Error ? clinicBotsQuery.error.message : null,
+      context: draft.context,
+      decryptClinicBotPasswordError: decryptClinicBotPasswordStatus.error,
+      errors: validationErrors.bot,
+      hasSelectedClinicWithoutActiveBots,
+      isDecryptingClinicBotPassword: decryptClinicBotPasswordStatus.isPending,
+      isLoadingClinicBots: clinicBotsQuery.isFetching,
+      onBotFieldChange: updateBotField,
+      onClinicBotSelect: selectClinicBot,
+      selectedClinicBotId,
+      showErrors: showErrors.bot,
+    },
+    configStep: {
+      contextErrors: validationErrors.context,
+      draft,
+      errors: validationErrors.config,
+      onConfigChange: updateConfig,
+      onContextFieldChange: updateContextField,
+      onRetriesChange: updateRetries,
+      onWorkersChange: updateWorkers,
+      showErrors: showErrors.config,
+    },
+    patientsStep: {
+      clinicOptions,
+      context: draft.context,
+      contextErrors: validationErrors.context,
+      customerOptions: customerSearchQuery.data?.customers ?? [],
+      customerSearchError: customerSearchQuery.error instanceof Error ? customerSearchQuery.error.message : null,
+      errors: validationErrors.patients,
+      execution: draft.execution.execution,
+      executionDayOptions,
+      executionDaysError:
+        clinicExecutionDaysQuery.error instanceof Error ? clinicExecutionDaysQuery.error.message : null,
+      executionName: draft.execution.executionName,
+      hasSelectedCustomerWithoutClinics,
+      importPatientsError: importPatientsMutation.error instanceof Error ? importPatientsMutation.error.message : null,
+      isImportingPatients: importPatientsMutation.isPending,
+      isLoadingClinics: selectedCustomerQuery.isFetching,
+      isLoadingExecutionDays: clinicExecutionDaysQuery.isFetching,
+      isSearchingCustomers: customerSearchQuery.isFetching,
+      onClinicSelect: selectClinic,
+      onCustomerClear: clearCustomerSelection,
+      onCustomerSearchChange: updateCustomerSearch,
+      onCustomerSelect: selectCustomer,
+      onExecutionDaySelect: selectExecutionDay,
+      onImportPatients: importPatients,
+      onRemovePatient: removePatient,
+      patients: draft.execution.patients,
+      selectedCustomerError: selectedCustomerQuery.error instanceof Error ? selectedCustomerQuery.error.message : null,
+      showErrors: showErrors.patients,
+    },
+    reviewStep: {
+      draft,
+      payload: payloadPreview,
+    },
+    stepper: {
+      currentStep,
+      onNextStep: handleNextStep,
+      onPreviousStep: handlePreviousStep,
+      onStepChange: handleStepChange,
+      stepNeedsAttention,
+      steps: executionWizardSteps,
+    },
+    submission: {
+      isSubmitting: submitExecutionMutation.isPending,
+      onReset: resetWizard,
+      onSubmit: handleSubmit,
+      submitError,
+    },
   }
 }
+
+export type UseExecutionWizardResult = ReturnType<typeof useExecutionWizard>
+export type ExecutionWizardStepperState = UseExecutionWizardResult['stepper']
+export type ExecutionWizardPatientsStepState = UseExecutionWizardResult['patientsStep']
+export type ExecutionWizardBotStepState = UseExecutionWizardResult['botStep']
+export type ExecutionWizardConfigStepState = UseExecutionWizardResult['configStep']
+export type ExecutionWizardReviewStepState = UseExecutionWizardResult['reviewStep']
+export type ExecutionWizardSubmissionState = UseExecutionWizardResult['submission']

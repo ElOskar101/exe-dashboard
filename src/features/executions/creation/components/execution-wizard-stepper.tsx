@@ -1,12 +1,11 @@
 import type { TFunction } from 'i18next'
 import { cn } from '@/lib/utils'
-import type { ExecutionWizardStepKey, useExecutionWizard } from '../hooks/use-execution-wizard'
+import type { ExecutionWizardStepperState } from '../hooks/use-execution-wizard'
 
-interface ExecutionWizardStepperProps {
-  steps: ExecutionWizardStepKey[]
-  currentStep: number
-  stepNeedsAttention: boolean[]
-  onStepChange: ReturnType<typeof useExecutionWizard>['handleStepChange']
+interface ExecutionWizardStepperProps extends Pick<
+  ExecutionWizardStepperState,
+  'currentStep' | 'onStepChange' | 'stepNeedsAttention' | 'steps'
+> {
   t: TFunction<'executions'>
 }
 

@@ -6,24 +6,9 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/component
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IconAlertCircle, IconEye, IconEyeOff } from '@tabler/icons-react'
-import type { useExecutionWizard } from '../hooks/use-execution-wizard'
-import type { StepErrors } from '../lib/execution-wizard-validation'
-import type { ExecutionWizardDraft } from '../model/execution-create'
+import type { ExecutionWizardBotStepState } from '../hooks/use-execution-wizard'
 
-interface BotStepProps {
-  bot: ExecutionWizardDraft['bot']
-  context: ExecutionWizardDraft['context']
-  errors: StepErrors['bot']
-  showErrors: boolean
-  clinicBotOptions: ReturnType<typeof useExecutionWizard>['clinicBotOptions']
-  selectedClinicBotId: ReturnType<typeof useExecutionWizard>['selectedClinicBotId']
-  isLoadingClinicBots: ReturnType<typeof useExecutionWizard>['isLoadingClinicBots']
-  clinicBotsError: ReturnType<typeof useExecutionWizard>['clinicBotsError']
-  isDecryptingClinicBotPassword: ReturnType<typeof useExecutionWizard>['isDecryptingClinicBotPassword']
-  decryptClinicBotPasswordError: ReturnType<typeof useExecutionWizard>['decryptClinicBotPasswordError']
-  hasSelectedClinicWithoutActiveBots: ReturnType<typeof useExecutionWizard>['hasSelectedClinicWithoutActiveBots']
-  onClinicBotSelect: ReturnType<typeof useExecutionWizard>['selectClinicBot']
-  onBotFieldChange: ReturnType<typeof useExecutionWizard>['updateBotField']
+interface BotStepProps extends ExecutionWizardBotStepState {
   t: TFunction<'executions'>
 }
 

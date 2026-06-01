@@ -1,5 +1,5 @@
-export const _base64Encode = (data: string) => window.btoa(data)
-export const _base64Decode = (data: string) => window.atob(data)
+export const _base64Encode = (data: string) => globalThis.btoa(data)
+export const _base64Decode = (data: string) => globalThis.atob(data)
 
 export const getDiffDates = (date1: string, date2: string, unit: 's' | 'm' | 'h' | 'd' | 'w' = 's') => {
   const diffMs = Math.abs(new Date(date1).getTime() - new Date(date2).getTime())

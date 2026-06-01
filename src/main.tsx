@@ -8,7 +8,7 @@ import cccClient from '@/lib/axios'
 import '@/lib/i18n'
 import './app/register-vite-preload-error-handler'
 
-consumeAuthTokenFromUrl((t) => localStorage.setItem('token', t))
+consumeAuthTokenFromUrl()
 setupAuthInterceptors(cccClient)
 
 createRoot(document.getElementById('root')!).render(

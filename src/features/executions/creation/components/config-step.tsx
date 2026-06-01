@@ -1,19 +1,9 @@
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import type { TFunction } from 'i18next'
-import type { useExecutionWizard } from '../hooks/use-execution-wizard'
-import type { StepErrors } from '../lib/execution-wizard-validation'
-import type { ExecutionWizardDraft } from '../model/execution-create'
+import type { ExecutionWizardConfigStepState } from '../hooks/use-execution-wizard'
 
-interface ConfigStepProps {
-  draft: ExecutionWizardDraft
-  contextErrors: StepErrors['context']
-  errors: StepErrors['config']
-  showErrors: boolean
-  onContextFieldChange: ReturnType<typeof useExecutionWizard>['updateContextField']
-  onWorkersChange: ReturnType<typeof useExecutionWizard>['updateWorkers']
-  onRetriesChange: ReturnType<typeof useExecutionWizard>['updateRetries']
-  onConfigChange: ReturnType<typeof useExecutionWizard>['updateConfig']
+interface ConfigStepProps extends ExecutionWizardConfigStepState {
   t: TFunction<'executions'>
 }
 
