@@ -26,16 +26,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { isExecutionRunning } from '@/features/executions/shared'
-import {
-  IconArrowDown,
-  IconLoader2,
-  IconPlayerPause,
-  IconPlayerPlay,
-  IconPlayerStop,
-  IconTerminal2,
-} from '@tabler/icons-react'
+import { IconArrowDown, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../lib/execution-log-buffer'
 import { getCanScrollToBottom, getIsScrolledToBottom } from '../lib/execution-log-scroll'
@@ -316,9 +310,7 @@ export function ExecutionLogsCard({
                   className={getStatusBadgeClassName(currentStatus)}
                 >
                   {currentStatus ?? t('detail.statusUnknown')}
-                  {isCurrentExecutionRunning ? (
-                    <IconLoader2 aria-hidden="true" className="animate-spin" data-icon="inline-end" />
-                  ) : null}
+                  {isCurrentExecutionRunning ? <Spinner aria-hidden="true" data-icon="inline-end" /> : null}
                 </Badge>
               )}
             </CardTitle>
@@ -346,21 +338,13 @@ export function ExecutionLogsCard({
             ) : null}
             {canPauseExecution ? (
               <Button disabled={isPausing || isStopping} onClick={onPauseExecution} type="button" variant="outline">
-                {isPausing ? (
-                  <IconLoader2 className="animate-spin" data-icon="inline-start" />
-                ) : (
-                  <IconPlayerPause data-icon="inline-start" />
-                )}
+                {isPausing ? <Spinner data-icon="inline-start" /> : <IconPlayerPause data-icon="inline-start" />}
                 {isPausing ? t('detail.pausing') : t('detail.pauseExecution')}
               </Button>
             ) : null}
             {canResumeExecution ? (
               <Button disabled={isResuming} onClick={onResumeExecution} type="button" variant="outline">
-                {isResuming ? (
-                  <IconLoader2 className="animate-spin" data-icon="inline-start" />
-                ) : (
-                  <IconPlayerPlay data-icon="inline-start" />
-                )}
+                {isResuming ? <Spinner data-icon="inline-start" /> : <IconPlayerPlay data-icon="inline-start" />}
                 {isResuming ? t('detail.resuming') : t('detail.resumeExecution')}
               </Button>
             ) : null}
@@ -374,11 +358,7 @@ export function ExecutionLogsCard({
                       disabled={isStopping}
                       type="button"
                     >
-                      {isStopping ? (
-                        <IconLoader2 className="animate-spin" data-icon="inline-start" />
-                      ) : (
-                        <IconPlayerStop data-icon="inline-start" />
-                      )}
+                      {isStopping ? <Spinner data-icon="inline-start" /> : <IconPlayerStop data-icon="inline-start" />}
                       {isStopping ? t('detail.stopping') : t('detail.stopExecution')}
                     </Button>
                   }
@@ -391,7 +371,7 @@ export function ExecutionLogsCard({
                   <AlertDialogFooter>
                     <AlertDialogCancel disabled={isStopping}>{t('detail.cancelStop')}</AlertDialogCancel>
                     <AlertDialogAction variant="destructive" disabled={isStopping} onClick={onStopExecution}>
-                      {isStopping ? <IconLoader2 className="animate-spin" data-icon="inline-start" /> : null}
+                      {isStopping ? <Spinner data-icon="inline-start" /> : null}
                       {isStopping ? t('detail.stopping') : t('detail.confirmStop')}
                     </AlertDialogAction>
                   </AlertDialogFooter>

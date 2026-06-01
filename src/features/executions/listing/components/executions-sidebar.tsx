@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { IconAlertCircle, IconChevronDown, IconLoader2, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
+import { IconAlertCircle, IconChevronDown, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Sidebar,
   SidebarContent,
@@ -231,10 +232,7 @@ export function ExecutionsSidebar() {
                                   >
                                     <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
                                       {isExecutionRunning(status) ? (
-                                        <IconLoader2
-                                          aria-label={status}
-                                          className="mt-0.5 size-3 shrink-0 animate-spin text-blue-500"
-                                        />
+                                        <Spinner aria-label={status} className="mt-0.5 size-3 shrink-0 text-blue-500" />
                                       ) : (
                                         <span
                                           aria-label={status}
@@ -298,9 +296,7 @@ export function ExecutionsSidebar() {
                                           disabled={isDeleting}
                                           onClick={() => deleteMutation.mutate(execution._id)}
                                         >
-                                          {isDeleting ? (
-                                            <IconLoader2 className="animate-spin" data-icon="inline-start" />
-                                          ) : null}
+                                          {isDeleting ? <Spinner data-icon="inline-start" /> : null}
                                           {isDeleting ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
                                         </Button>
                                       </AlertDialogFooter>

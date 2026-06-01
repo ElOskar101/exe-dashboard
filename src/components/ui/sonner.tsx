@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { IconAlertOctagon, IconAlertTriangle, IconCircleCheck, IconInfoCircle, IconLoader } from '@tabler/icons-react'
+import { IconAlertOctagon, IconAlertTriangle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react'
+import { Spinner } from '@/components/ui/spinner'
 import { useTheme } from '@/hooks/use-theme'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
@@ -15,7 +16,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         info: <IconInfoCircle className="size-4" />,
         warning: <IconAlertTriangle className="size-4" />,
         error: <IconAlertOctagon className="size-4" />,
-        loading: <IconLoader className="size-4 animate-spin" />,
+        loading: <Spinner />,
       }}
       style={
         {

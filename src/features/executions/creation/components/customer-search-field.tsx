@@ -1,6 +1,7 @@
 import { useState, type Dispatch, type FocusEvent } from 'react'
-import { IconCheck, IconLoader2, IconSearch } from '@tabler/icons-react'
+import { IconCheck, IconSearch } from '@tabler/icons-react'
 import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import type { CustomerSearchItem } from '../services/ccc.service'
 
@@ -77,7 +78,7 @@ export function CustomerSearchField({
           <div className="max-h-72 overflow-y-auto p-2">
             {isLoading ? (
               <div className="flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-muted-foreground">
-                <IconLoader2 className="size-4 animate-spin" />
+                <Spinner />
                 {searchingText}
               </div>
             ) : searchError ? (

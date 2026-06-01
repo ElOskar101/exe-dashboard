@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { IconArrowLeft, IconArrowRight, IconLoader2, IconSend2 } from '@tabler/icons-react'
+import { Spinner } from '@/components/ui/spinner'
+import { IconArrowLeft, IconArrowRight, IconSend2 } from '@tabler/icons-react'
 import { executionWizardSteps, useExecutionWizard } from '../hooks/use-execution-wizard'
 import { BotStep } from './bot-step'
 import { ConfigStep } from './config-step'
@@ -73,7 +74,7 @@ export default function ExecutionWizard() {
             className="w-full sm:w-auto"
           >
             {wizard.submission.isSubmitting ? (
-              <IconLoader2 data-icon="inline-start" />
+              <Spinner data-icon="inline-start" />
             ) : (
               <IconSend2 data-icon="inline-start" />
             )}

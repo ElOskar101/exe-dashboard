@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { IconLoader2, IconPlayerPlay } from '@tabler/icons-react'
+import { Spinner } from '@/components/ui/spinner'
+import { IconPlayerPlay } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
 
@@ -38,11 +39,7 @@ export function ExecutionRerunDialog({
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button variant="outline" disabled={isRerunning} type="button" />}>
-        {isRerunning ? (
-          <IconLoader2 className="animate-spin" data-icon="inline-start" />
-        ) : (
-          <IconPlayerPlay data-icon="inline-start" />
-        )}
+        {isRerunning ? <Spinner data-icon="inline-start" /> : <IconPlayerPlay data-icon="inline-start" />}
         {isRerunning ? t('detail.rerunning') : t('detail.rerunExecution')}
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-lg">
@@ -104,7 +101,7 @@ export function ExecutionRerunDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isRerunning}>{t('detail.cancelRerun')}</AlertDialogCancel>
           <AlertDialogAction disabled={isRerunning || !isRerunAvailable} onClick={onConfirm}>
-            {isRerunning ? <IconLoader2 className="animate-spin" data-icon="inline-start" /> : null}
+            {isRerunning ? <Spinner data-icon="inline-start" /> : null}
             {isRerunning ? t('detail.rerunning') : t('detail.confirmRerun')}
           </AlertDialogAction>
         </AlertDialogFooter>

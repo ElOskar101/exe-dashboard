@@ -3,7 +3,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { IconAlertCircle, IconDownload, IconLoader2, IconTrash } from '@tabler/icons-react'
+import { Spinner } from '@/components/ui/spinner'
+import { IconAlertCircle, IconDownload, IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
 import { hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionWizardPatientsStepState } from '../hooks/use-execution-wizard'
@@ -147,11 +148,7 @@ export function PatientsStep({
               disabled={!execution || isImportingPatients}
               className="w-full"
             >
-              {isImportingPatients ? (
-                <IconLoader2 data-icon="inline-start" />
-              ) : (
-                <IconDownload data-icon="inline-start" />
-              )}
+              {isImportingPatients ? <Spinner data-icon="inline-start" /> : <IconDownload data-icon="inline-start" />}
               {isImportingPatients ? t('buttons.gettingPatients') : t('buttons.getPatients')}
             </Button>
           </Field>
