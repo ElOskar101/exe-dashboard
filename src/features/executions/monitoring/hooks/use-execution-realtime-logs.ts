@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type SetStateAction } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import {
   normalizeExecutionStatus,
@@ -19,6 +19,7 @@ import { resolveBufferUpdate } from '../lib/execution-realtime-log-utils'
 
 interface UseExecutionRealtimeLogsOptions {
   historyContent?: string
+  onStatus?: Dispatch<ExecutionStatus>
 }
 
 export const useExecutionRealtimeLogs = (executionId: string, options: UseExecutionRealtimeLogsOptions = {}) => {
@@ -70,7 +71,10 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
         )
       },
       onStatus: (payload: ExecutionStatusPayload) => {
-        setStatus(normalizeExecutionStatus(payload.status))
+        const nextStatus = normalizeExecutionStatus(payload.status)
+
+        setStatus(nextStatus)
+        options.onStatus?.(nextStatus)
       },
     })
 

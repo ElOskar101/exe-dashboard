@@ -1,9 +1,12 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { APP_CONFIG } from '@/app.config'
 import {
+  executionKeys,
   isExecutionFailed,
   isExecutionSuccessful,
+  updateExecutionStatus,
   useExecutionQuery,
   useExecutionReportQuery,
   usePauseExecutionMutation,
@@ -57,10 +60,16 @@ export interface ExecutionDetailSession {
 
 export const useExecutionDetailSession = (executionId: string): ExecutionDetailSession => {
   const { t } = useTranslation('executions')
+  const queryClient = useQueryClient()
   const [controlStatus, setControlStatus] = useState<ExecutionRuntimeStatus | null>(null)
   const executionQuery = useExecutionQuery(executionId)
   const realtimeLogs = useExecutionRealtimeLogs(executionId, {
     historyContent: executionQuery.data?.logs ?? '',
+    onStatus: (status) => {
+      queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
+        updateExecutionStatus(executions, executionId, status),
+      )
+    },
   })
   const stopMutation = useStopExecutionMutation(executionId)
   const pauseMutation = usePauseExecutionMutation(executionId, {

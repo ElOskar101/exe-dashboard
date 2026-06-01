@@ -5,6 +5,7 @@ export {
   isExecutionPaused,
   isExecutionRunning,
   isExecutionStatus,
+  mergeExecutionIntoList,
   isExecutionSuccessful,
   normalizeExecutionStatus,
   updateExecutionStatus,

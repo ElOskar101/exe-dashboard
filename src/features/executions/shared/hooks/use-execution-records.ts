@@ -4,6 +4,7 @@ import type { Dispatch } from 'react'
 import type { ExecutionCreatePayload } from '@/features/executions/creation'
 import type { Execution } from '../model/execution'
 import { executionKeys } from '../lib/execution-query-keys'
+import { mergeExecutionIntoList } from '../lib/execution-display'
 import {
   createExecution,
   deleteExecution,
@@ -37,15 +38,22 @@ export const useExecutionsQuery = () =>
     },
   })
 
-export const useExecutionQuery = (executionId: string) =>
-  useQuery({
+export const useExecutionQuery = (executionId: string) => {
+  const queryClient = useQueryClient()
+
+  return useQuery({
     queryKey: executionKeys.detail(executionId),
     queryFn: async () => {
       const response = await getExecutionById(executionId)
 
+      queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
+        mergeExecutionIntoList(executions, response.data),
+      )
+
       return response.data
     },
   })
+}
 
 export const useExecutionReportQuery = (executionId: string, enabled: boolean) =>
   useQuery({

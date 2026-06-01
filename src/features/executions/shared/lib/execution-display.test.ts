@@ -3,6 +3,7 @@ import {
   getExecutionLabel,
   isExecutionPaused,
   isExecutionRunning,
+  mergeExecutionIntoList,
   normalizeExecutionStatus,
   updateExecutionStatus,
 } from './execution-display'
@@ -76,5 +77,50 @@ describe('execution display helpers', () => {
       createExecution({ _id: 'execution-2', status: 'running' }),
     ])
     expect(updateExecutionStatus(executions, 'missing', 'completed')).toBe(executions)
+  })
+
+  it('merges execution detail data into the cached list and normalizes the status', () => {
+    const executions = [
+      createExecution({ status: 'running', notes: ['stale'] }),
+      createExecution({ _id: 'execution-2', status: 'queued' }),
+    ]
+
+    expect(
+      mergeExecutionIntoList(
+        executions,
+        createExecution({
+          status: 'process',
+          notes: ['fresh'],
+          finishedAt: '2026-05-23T00:05:00.000Z',
+        }),
+      ),
+    ).toEqual([
+      createExecution({
+        status: 'running',
+        notes: ['fresh'],
+        finishedAt: '2026-05-23T00:05:00.000Z',
+      }),
+      createExecution({ _id: 'execution-2', status: 'queued' }),
+    ])
+  })
+
+  it('adds a missing execution into the cached list', () => {
+    const executions = [createExecution({ status: 'queued' })]
+
+    expect(
+      mergeExecutionIntoList(
+        executions,
+        createExecution({
+          _id: 'execution-2',
+          status: 'process',
+        }),
+      ),
+    ).toEqual([
+      createExecution({ status: 'queued' }),
+      createExecution({
+        _id: 'execution-2',
+        status: 'running',
+      }),
+    ])
   })
 })

@@ -69,3 +69,28 @@ export const updateExecutionStatus = (
 
   return updated ? nextExecutions : executions
 }
+
+export const mergeExecutionIntoList = (
+  executions: Execution[] | undefined,
+  nextExecution: Execution,
+): Execution[] | undefined => {
+  if (!executions) return executions
+
+  const normalizedExecution = {
+    ...nextExecution,
+    status: normalizeExecutionStatus(nextExecution.status),
+  }
+  const existingExecutionIndex = executions.findIndex((execution) => execution._id === normalizedExecution._id)
+
+  if (existingExecutionIndex === -1) {
+    return [...executions, normalizedExecution]
+  }
+
+  const nextExecutions = [...executions]
+  nextExecutions[existingExecutionIndex] = {
+    ...nextExecutions[existingExecutionIndex],
+    ...normalizedExecution,
+  }
+
+  return nextExecutions
+}
