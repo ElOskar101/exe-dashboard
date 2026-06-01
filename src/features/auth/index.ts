@@ -7,3 +7,14 @@ export { AuthProvider } from './contexts/provider'
 export type { IUser } from './models/user.interface'
 export { redirectToLogin } from './utils/auth'
 export { consumeAuthTokenFromUrl } from './utils/consume-auth-token-from-url'
+export {
+  clearAuthSession,
+  clearAuthToken,
+  clearStoredUser,
+  consumeStoredAuthReturnUrl,
+  getAuthToken,
+  getStoredUser,
+  saveAuthToken,
+  saveStoredUser,
+  storeAuthReturnUrl,
+} from './lib/auth-session'

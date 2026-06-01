@@ -1,0 +1,145 @@
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { APP_CONFIG } from '@/app.config'
+import {
+  isExecutionFailed,
+  isExecutionSuccessful,
+  useExecutionQuery,
+  useExecutionReportQuery,
+  usePauseExecutionMutation,
+  useResumeExecutionMutation,
+  useStopExecutionMutation,
+  type Execution,
+  type ExecutionRuntimeStatus,
+} from '@/features/executions/shared'
+import { useExecutionRealtimeLogs } from './use-execution-realtime-logs'
+import { useExecutionRerun } from './use-execution-rerun'
+import { formatExecutionStatusLabel } from '../lib/execution-detail-display'
+import { getExecutionControlAvailability } from '../lib/execution-control-actions'
+import { createExecutionLogDisplayLines, type ExecutionLogBufferState } from '../lib/execution-log-buffer'
+import type { ExecutionRerunSummary } from '../lib/execution-rerun'
+
+export interface ExecutionDetailSession {
+  canPauseExecution: boolean
+  canResumeExecution: boolean
+  canRerunExecution: boolean
+  canStopExecution: boolean
+  connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
+  currentStatus?: string | null
+  description: string | null
+  execution?: Execution
+  isLoading: boolean
+  isPausing: boolean
+  isReportError: boolean
+  isReportLoading: boolean
+  isResuming: boolean
+  isRerunAvailable: boolean
+  isRerunning: boolean
+  isStopping: boolean
+  loadError: boolean
+  logLines: ReturnType<typeof createExecutionLogDisplayLines>
+  missingRerunFields: string[]
+  onPauseExecution: () => void
+  onRerunExecution: () => void
+  onResumeExecution: () => void
+  onStopExecution: () => void
+  pauseError: boolean
+  rawExecutionJson: string
+  reportBasePath: string
+  reportHtml?: string
+  rerunErrorMessage: string | null
+  rerunSummary: ExecutionRerunSummary | null
+  resumeError: boolean
+  showReport: boolean
+  stopError: boolean
+  title: string
+}
+
+export const useExecutionDetailSession = (executionId: string): ExecutionDetailSession => {
+  const { t } = useTranslation('executions')
+  const [controlStatus, setControlStatus] = useState<ExecutionRuntimeStatus | null>(null)
+  const executionQuery = useExecutionQuery(executionId)
+  const realtimeLogs = useExecutionRealtimeLogs(executionId, {
+    historyContent: executionQuery.data?.logs ?? '',
+  })
+  const stopMutation = useStopExecutionMutation(executionId)
+  const pauseMutation = usePauseExecutionMutation(executionId, {
+    onSuccess: async ([response]) => {
+      setControlStatus(response.data.status)
+    },
+  })
+  const resumeMutation = useResumeExecutionMutation(executionId, {
+    onSuccess: async ([response]) => {
+      setControlStatus(response.data.status)
+    },
+  })
+  const logState = useMemo<ExecutionLogBufferState>(
+    () => ({
+      lines: realtimeLogs.lines,
+      partial: realtimeLogs.partial,
+      partialStream: realtimeLogs.partialStream,
+      partialTimestamp: realtimeLogs.partialTimestamp,
+    }),
+    [realtimeLogs.lines, realtimeLogs.partial, realtimeLogs.partialStream, realtimeLogs.partialTimestamp],
+  )
+  const rawExecutionJson = useMemo(() => JSON.stringify(executionQuery.data ?? null, null, 2), [executionQuery.data])
+  const executionSubtitle = useMemo(() => {
+    if (!executionQuery.data) return null
+
+    const botName = executionQuery.data.botName || executionQuery.data.bot || t('detail.subtitleUnknownBot')
+    const executionName = executionQuery.data.execution || executionId
+
+    return t('detail.subtitle', {
+      botName,
+      execution: executionName,
+    })
+  }, [executionId, executionQuery.data, t])
+  const currentStatus =
+    isExecutionSuccessful(realtimeLogs.status) || isExecutionFailed(realtimeLogs.status)
+      ? realtimeLogs.status
+      : (controlStatus ?? realtimeLogs.status ?? executionQuery.data?.status)
+  const rerun = useExecutionRerun(executionQuery.data)
+  const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
+  const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
+  const reportBasePath = `${APP_CONFIG.exeReportsUrl}/${reportExecutionId}`
+  const reportQuery = useExecutionReportQuery(reportExecutionId, showReport)
+  const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])
+  const displayStatus = formatExecutionStatusLabel(currentStatus)
+  const { canPauseExecution, canResumeExecution, canStopExecution } = getExecutionControlAvailability(currentStatus)
+
+  return {
+    canPauseExecution,
+    canResumeExecution,
+    canRerunExecution: Boolean(executionQuery.data) && showReport,
+    canStopExecution,
+    connectionState: realtimeLogs.connectionState,
+    currentStatus: displayStatus,
+    description: executionSubtitle,
+    execution: executionQuery.data,
+    isLoading: executionQuery.isLoading,
+    isPausing: pauseMutation.isPending,
+    isReportError: reportQuery.isError,
+    isReportLoading: !showReport || reportQuery.isLoading,
+    isResuming: resumeMutation.isPending,
+    isRerunAvailable: rerun.isRerunAvailable,
+    isRerunning: rerun.isRerunning,
+    isStopping: stopMutation.isPending,
+    loadError: executionQuery.isError,
+    logLines,
+    missingRerunFields: rerun.missingRerunFields,
+    onPauseExecution: () => pauseMutation.mutate(),
+    onRerunExecution: rerun.triggerRerun,
+    onResumeExecution: () => resumeMutation.mutate(),
+    onStopExecution: () => stopMutation.mutate(),
+    pauseError: pauseMutation.isError,
+    rawExecutionJson,
+    reportBasePath,
+    reportHtml: reportQuery.data,
+    rerunErrorMessage: rerun.rerunErrorMessage,
+    rerunSummary: rerun.rerunSummary,
+    resumeError: resumeMutation.isError,
+    showReport,
+    stopError: stopMutation.isError,
+    title: t('detail.title'),
+  }
+}

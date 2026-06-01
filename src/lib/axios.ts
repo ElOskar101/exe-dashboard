@@ -1,5 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { APP_CONFIG } from '@/app.config'
+import { getAuthToken } from '@/features/auth/lib/auth-session'
 
 export const stripTrailingSlash = (value?: string) => value?.replace(/\/+$/, '')
 
@@ -28,7 +29,7 @@ export const exeReportsClient = axios.create({
 })
 
 const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('token')
+  const token = getAuthToken()
   if (token) config.headers.set('x-access-token', token)
 
   return config

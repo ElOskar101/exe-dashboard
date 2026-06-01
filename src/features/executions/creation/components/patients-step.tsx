@@ -4,39 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { IconAlertCircle, IconDownload, IconLoader2, IconTrash } from '@tabler/icons-react'
-import type { useExecutionWizard } from '../hooks/use-execution-wizard'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
-import { hasErrors, type StepErrors } from '../lib/execution-wizard-validation'
-import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
+import { hasErrors } from '../lib/execution-wizard-validation'
+import type { ExecutionWizardPatientsStepState } from '../hooks/use-execution-wizard'
 import { CustomerSearchField } from './customer-search-field'
 
-interface PatientsStepProps {
-  context: ExecutionWizardDraft['context']
-  execution: ExecutionWizardDraft['execution']['execution']
-  executionName: ExecutionWizardDraft['execution']['executionName']
-  patients: ExecutionPatient[]
-  contextErrors: StepErrors['context']
-  errors: StepErrors['patients']
-  showErrors: boolean
-  customerOptions: ReturnType<typeof useExecutionWizard>['customerOptions']
-  isSearchingCustomers: ReturnType<typeof useExecutionWizard>['isSearchingCustomers']
-  customerSearchError: ReturnType<typeof useExecutionWizard>['customerSearchError']
-  selectedCustomerError: ReturnType<typeof useExecutionWizard>['selectedCustomerError']
-  clinicOptions: ReturnType<typeof useExecutionWizard>['clinicOptions']
-  isLoadingClinics: ReturnType<typeof useExecutionWizard>['isLoadingClinics']
-  hasSelectedCustomerWithoutClinics: ReturnType<typeof useExecutionWizard>['hasSelectedCustomerWithoutClinics']
-  executionDayOptions: ReturnType<typeof useExecutionWizard>['executionDayOptions']
-  isLoadingExecutionDays: ReturnType<typeof useExecutionWizard>['isLoadingExecutionDays']
-  executionDaysError: ReturnType<typeof useExecutionWizard>['executionDaysError']
-  isImportingPatients: ReturnType<typeof useExecutionWizard>['isImportingPatients']
-  importPatientsError: ReturnType<typeof useExecutionWizard>['importPatientsError']
-  onCustomerSearchChange: ReturnType<typeof useExecutionWizard>['updateCustomerSearch']
-  onCustomerClear: ReturnType<typeof useExecutionWizard>['clearCustomerSelection']
-  onCustomerSelect: ReturnType<typeof useExecutionWizard>['selectCustomer']
-  onClinicSelect: ReturnType<typeof useExecutionWizard>['selectClinic']
-  onExecutionDaySelect: ReturnType<typeof useExecutionWizard>['selectExecutionDay']
-  onImportPatients: ReturnType<typeof useExecutionWizard>['importPatients']
-  onRemovePatient: ReturnType<typeof useExecutionWizard>['removePatient']
+interface PatientsStepProps extends ExecutionWizardPatientsStepState {
   t: TFunction<'executions'>
 }
 

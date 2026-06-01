@@ -19,95 +19,40 @@ export default function ExecutionWizard() {
     <Card className="mx-auto w-full max-w-5xl">
       <CardContent className="flex flex-col gap-5 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-6">
         <ExecutionWizardStepper
-          steps={executionWizardSteps}
-          currentStep={wizard.currentStep}
-          stepNeedsAttention={wizard.stepNeedsAttention}
-          onStepChange={wizard.handleStepChange}
+          steps={wizard.stepper.steps}
+          currentStep={wizard.stepper.currentStep}
+          stepNeedsAttention={wizard.stepper.stepNeedsAttention}
+          onStepChange={wizard.stepper.onStepChange}
           t={t}
         />
 
         <Separator />
 
-        {wizard.submitError ? <ExecutionSubmitErrorAlert message={wizard.submitError} t={t} /> : null}
+        {wizard.submission.submitError ? (
+          <ExecutionSubmitErrorAlert message={wizard.submission.submitError} t={t} />
+        ) : null}
 
         <div className="flex flex-col gap-6">
-          {wizard.currentStep === 0 ? (
-            <PatientsStep
-              context={wizard.draft.context}
-              execution={wizard.draft.execution.execution}
-              executionName={wizard.draft.execution.executionName}
-              patients={wizard.draft.execution.patients}
-              contextErrors={wizard.validationErrors.context}
-              errors={wizard.validationErrors.patients}
-              showErrors={wizard.showErrors.patients}
-              customerOptions={wizard.customerOptions}
-              isSearchingCustomers={wizard.isSearchingCustomers}
-              customerSearchError={wizard.customerSearchError}
-              selectedCustomerError={wizard.selectedCustomerError}
-              clinicOptions={wizard.clinicOptions}
-              isLoadingClinics={wizard.isLoadingClinics}
-              hasSelectedCustomerWithoutClinics={wizard.hasSelectedCustomerWithoutClinics}
-              executionDayOptions={wizard.executionDayOptions}
-              isLoadingExecutionDays={wizard.isLoadingExecutionDays}
-              executionDaysError={wizard.executionDaysError}
-              isImportingPatients={wizard.isImportingPatients}
-              importPatientsError={wizard.importPatientsError}
-              onCustomerSearchChange={wizard.updateCustomerSearch}
-              onCustomerClear={wizard.clearCustomerSelection}
-              onCustomerSelect={wizard.selectCustomer}
-              onClinicSelect={wizard.selectClinic}
-              onExecutionDaySelect={wizard.selectExecutionDay}
-              onImportPatients={wizard.importPatients}
-              onRemovePatient={wizard.removePatient}
-              t={t}
-            />
-          ) : null}
+          {wizard.stepper.currentStep === 0 ? <PatientsStep {...wizard.patientsStep} t={t} /> : null}
 
-          {wizard.currentStep === 1 ? (
-            <BotStep
-              bot={wizard.draft.bot}
-              context={wizard.draft.context}
-              errors={wizard.validationErrors.bot}
-              showErrors={wizard.showErrors.bot}
-              clinicBotOptions={wizard.clinicBotOptions}
-              selectedClinicBotId={wizard.selectedClinicBotId}
-              isLoadingClinicBots={wizard.isLoadingClinicBots}
-              clinicBotsError={wizard.clinicBotsError}
-              isDecryptingClinicBotPassword={wizard.isDecryptingClinicBotPassword}
-              decryptClinicBotPasswordError={wizard.decryptClinicBotPasswordError}
-              hasSelectedClinicWithoutActiveBots={wizard.hasSelectedClinicWithoutActiveBots}
-              onClinicBotSelect={wizard.selectClinicBot}
-              onBotFieldChange={wizard.updateBotField}
-              t={t}
-            />
-          ) : null}
+          {wizard.stepper.currentStep === 1 ? <BotStep {...wizard.botStep} t={t} /> : null}
 
-          {wizard.currentStep === 2 ? (
-            <ConfigStep
-              draft={wizard.draft}
-              contextErrors={wizard.validationErrors.context}
-              errors={wizard.validationErrors.config}
-              showErrors={wizard.showErrors.config}
-              onContextFieldChange={wizard.updateContextField}
-              onWorkersChange={wizard.updateWorkers}
-              onRetriesChange={wizard.updateRetries}
-              onConfigChange={wizard.updateConfig}
-              t={t}
-            />
-          ) : null}
+          {wizard.stepper.currentStep === 2 ? <ConfigStep {...wizard.configStep} t={t} /> : null}
 
-          {wizard.currentStep === 3 ? <ReviewStep draft={wizard.draft} payload={wizard.payloadPreview} t={t} /> : null}
+          {wizard.stepper.currentStep === 3 ? (
+            <ReviewStep draft={wizard.reviewStep.draft} payload={wizard.reviewStep.payload} t={t} />
+          ) : null}
         </div>
       </CardContent>
       <CardFooter className="flex flex-col-reverse gap-3 border-t border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        {wizard.currentStep === 0 ? (
+        {wizard.stepper.currentStep === 0 ? (
           <span className="hidden sm:block" />
         ) : (
           <Button
             type="button"
             variant="ghost"
-            onClick={wizard.handlePreviousStep}
-            disabled={wizard.isSubmitting}
+            onClick={wizard.stepper.onPreviousStep}
+            disabled={wizard.submission.isSubmitting}
             className="w-full sm:w-auto"
           >
             <IconArrowLeft data-icon="inline-start" />
@@ -115,20 +60,24 @@ export default function ExecutionWizard() {
           </Button>
         )}
 
-        {wizard.currentStep < executionWizardSteps.length - 1 ? (
-          <Button type="button" onClick={wizard.handleNextStep} className="w-full sm:w-auto">
+        {wizard.stepper.currentStep < executionWizardSteps.length - 1 ? (
+          <Button type="button" onClick={wizard.stepper.onNextStep} className="w-full sm:w-auto">
             {t('buttons.next')}
             <IconArrowRight data-icon="inline-end" />
           </Button>
         ) : (
           <Button
             type="button"
-            onClick={wizard.handleSubmit}
-            disabled={wizard.isSubmitting}
+            onClick={() => void wizard.submission.onSubmit()}
+            disabled={wizard.submission.isSubmitting}
             className="w-full sm:w-auto"
           >
-            {wizard.isSubmitting ? <IconLoader2 data-icon="inline-start" /> : <IconSend2 data-icon="inline-start" />}
-            {wizard.isSubmitting ? t('buttons.submitting') : t('buttons.submit')}
+            {wizard.submission.isSubmitting ? (
+              <IconLoader2 data-icon="inline-start" />
+            ) : (
+              <IconSend2 data-icon="inline-start" />
+            )}
+            {wizard.submission.isSubmitting ? t('buttons.submitting') : t('buttons.submit')}
           </Button>
         )}
       </CardFooter>

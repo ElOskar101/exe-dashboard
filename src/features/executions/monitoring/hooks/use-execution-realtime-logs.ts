@@ -1,41 +1,21 @@
 import { useCallback, useLayoutEffect, useRef, useState, type SetStateAction } from 'react'
-import { socket } from '@/lib/socket'
 import { useMountEffect } from '@/hooks/use-mount-effect'
-import { normalizeExecutionStatus, type ExecutionStatus } from '@/features/executions/shared'
+import {
+  normalizeExecutionStatus,
+  subscribeToExecutionRoom,
+  type ExecutionLogPayload,
+  type ExecutionLogsHistoryPayload,
+  type ExecutionRealtimeConnectionState,
+  type ExecutionStatus,
+  type ExecutionStatusPayload,
+} from '@/features/executions/shared'
 import {
   appendExecutionLogChunk,
   type ExecutionLogBufferState,
   createExecutionLogLinesFromHistory,
   hydrateExecutionLogBufferState,
-  shouldHandleExecutionEvent,
-  type ExecutionLogStream,
 } from '../lib/execution-log-buffer'
-import { joinExecutionRoom, leaveExecutionRoom, resolveBufferUpdate } from '../lib/execution-realtime-log-utils'
-
-type ConnectionState = 'connecting' | 'connected' | 'disconnected'
-
-interface ExecutionLogsHistoryPayload {
-  executionId: string
-  content: string
-}
-
-interface ExecutionLogPayload {
-  executionId: string
-  jobId?: string
-  stream: ExecutionLogStream
-  message: string
-  timestamp: string
-}
-
-interface ExecutionStatusPayload {
-  executionId: string
-  jobId?: string
-  status: string
-  pid?: number
-  exitCode?: number | null
-  error?: string | null
-  timestamp: string
-}
+import { resolveBufferUpdate } from '../lib/execution-realtime-log-utils'
 
 interface UseExecutionRealtimeLogsOptions {
   historyContent?: string
@@ -45,7 +25,7 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
   const { historyContent = '' } = options
   const [buffer, setBuffer] = useState(() => createExecutionLogLinesFromHistory(historyContent))
   const [status, setStatus] = useState<ExecutionStatus | null>(null)
-  const [connectionState, setConnectionState] = useState<ConnectionState>('connecting')
+  const [connectionState, setConnectionState] = useState<ExecutionRealtimeConnectionState>('connecting')
   const appliedHistoryContentRef = useRef(historyContent)
 
   const updateBuffer = useCallback((updater: SetStateAction<ExecutionLogBufferState>) => {
@@ -66,65 +46,36 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
   }, [historyContent, updateBuffer])
 
   useMountEffect(() => {
-    const handleConnect = () => {
-      setConnectionState('connected')
-      joinExecutionRoom(executionId)
-    }
-
-    const handleDisconnect = () => {
-      setConnectionState('disconnected')
-    }
-
-    const handleHistory = (payload: ExecutionLogsHistoryPayload) => {
-      if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
-
-      appliedHistoryContentRef.current = payload.content
-      updateBuffer((previousBuffer) => hydrateExecutionLogBufferState(previousBuffer, payload.content))
-    }
-
-    const handleLog = (payload: ExecutionLogPayload) => {
-      if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
-
-      updateBuffer((previousBuffer) =>
-        appendExecutionLogChunk({
-          state: previousBuffer,
-          message: payload.message,
-          sourceId: `${payload.timestamp}-${payload.stream}`,
-          stream: payload.stream,
-          timestamp: payload.timestamp,
-        }),
-      )
-    }
-
-    const handleStatus = (payload: ExecutionStatusPayload) => {
-      if (!shouldHandleExecutionEvent(payload.executionId, executionId)) return
-
-      setStatus(normalizeExecutionStatus(payload.status))
-    }
-
-    socket.auth = {
-      token: localStorage.getItem('token'),
-    }
-
-    socket.on('connect', handleConnect)
-    socket.on('disconnect', handleDisconnect)
-    socket.on('execution:logs:history', handleHistory)
-    socket.on('logs', handleLog)
-    socket.on('status', handleStatus)
-
-    if (socket.connected) {
-      handleConnect()
-    } else {
-      socket.connect()
-    }
+    const unsubscribe = subscribeToExecutionRoom({
+      executionId,
+      onConnect: () => {
+        setConnectionState('connected')
+      },
+      onDisconnect: () => {
+        setConnectionState('disconnected')
+      },
+      onHistory: (payload: ExecutionLogsHistoryPayload) => {
+        appliedHistoryContentRef.current = payload.content
+        updateBuffer((previousBuffer) => hydrateExecutionLogBufferState(previousBuffer, payload.content))
+      },
+      onLog: (payload: ExecutionLogPayload) => {
+        updateBuffer((previousBuffer) =>
+          appendExecutionLogChunk({
+            state: previousBuffer,
+            message: payload.message,
+            sourceId: `${payload.timestamp}-${payload.stream}`,
+            stream: payload.stream,
+            timestamp: payload.timestamp,
+          }),
+        )
+      },
+      onStatus: (payload: ExecutionStatusPayload) => {
+        setStatus(normalizeExecutionStatus(payload.status))
+      },
+    })
 
     return () => {
-      leaveExecutionRoom(executionId)
-      socket.off('connect', handleConnect)
-      socket.off('disconnect', handleDisconnect)
-      socket.off('execution:logs:history', handleHistory)
-      socket.off('logs', handleLog)
-      socket.off('status', handleStatus)
+      unsubscribe()
     }
   })
 

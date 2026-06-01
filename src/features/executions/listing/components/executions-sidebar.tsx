@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { IconAlertCircle, IconChevronDown, IconLoader2, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -34,9 +33,9 @@ import { useCurrentTime } from '@/hooks/use-current-time'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { cn } from '@/lib/utils'
 import {
-  deleteExecution,
+  useDeleteExecutionMutation,
+  useExecutionsQuery,
   getExecutionLabel,
-  getExecutions,
   isExecutionRunning,
   normalizeExecutionStatus,
 } from '@/features/executions/shared'
@@ -48,14 +47,12 @@ import {
   groupExecutionsByProject,
 } from '../lib/execution-sidebar-display'
 
-const EXECUTIONS_QUERY_KEY = ['executions'] as const
 const MIN_REFRESH_SPIN_DURATION_MS = 1000
 
 export function ExecutionsSidebar() {
   const { t } = useTranslation('executions')
   const { id: currentExecutionId } = useParams()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { isMobile, setOpenMobile } = useSidebar()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
   const [collapsedProjects, setCollapsedProjects] = useState<string[]>([])
@@ -63,19 +60,10 @@ export function ExecutionsSidebar() {
   const refreshSpinnerTimeoutId = useRef<number | null>(null)
   const currentTime = useCurrentTime()
   useExecutionStatusUpdates()
-  const executionsQuery = useQuery({
-    queryKey: EXECUTIONS_QUERY_KEY,
-    queryFn: async () => {
-      const response = await getExecutions()
-
-      return response.data
-    },
-  })
-  const deleteMutation = useMutation({
-    mutationFn: deleteExecution,
-    onSuccess: async (_deletedExecution, deletedExecutionId) => {
+  const executionsQuery = useExecutionsQuery()
+  const deleteMutation = useDeleteExecutionMutation({
+    onSuccess: async ([, deletedExecutionId]) => {
       setOpenDeleteId((currentOpenId) => (currentOpenId === deletedExecutionId ? null : currentOpenId))
-      await queryClient.invalidateQueries({ queryKey: EXECUTIONS_QUERY_KEY })
 
       if (deletedExecutionId === currentExecutionId) {
         navigate('/')

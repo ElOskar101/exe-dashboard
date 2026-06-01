@@ -25,3 +25,22 @@ export {
   updateExecution,
 } from './services/execution.service'
 export type { ExecutionUpdatePayload } from './services/execution.service'
+export { executionKeys } from './lib/execution-query-keys'
+export {
+  subscribeToExecutionRoom,
+  subscribeToExecutionStatus,
+  type ExecutionLogPayload,
+  type ExecutionLogsHistoryPayload,
+  type ExecutionRealtimeConnectionState,
+  type ExecutionStatusPayload,
+} from './lib/execution-realtime'
+export {
+  useCreateExecutionMutation,
+  useDeleteExecutionMutation,
+  useExecutionQuery,
+  useExecutionReportQuery,
+  useExecutionsQuery,
+  usePauseExecutionMutation,
+  useResumeExecutionMutation,
+  useStopExecutionMutation,
+} from './hooks/use-execution-records'

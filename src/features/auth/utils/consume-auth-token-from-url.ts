@@ -1,4 +1,5 @@
 import { _base64Decode } from '@/utils/common'
+import { clearAuthToken, consumeStoredAuthReturnUrl, saveAuthToken } from '../lib/auth-session'
 
 const getSafeReturnUrl = (storedReturnUrl: string | null) => {
   if (!storedReturnUrl) {
@@ -18,8 +19,7 @@ const getSafeReturnUrl = (storedReturnUrl: string | null) => {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-export const consumeAuthTokenFromUrl = (saveToken: (token: string) => void) => {
+export const consumeAuthTokenFromUrl = () => {
   const url = new URL(window.location.href)
   const token = url.searchParams.get('key')
 
@@ -27,18 +27,17 @@ export const consumeAuthTokenFromUrl = (saveToken: (token: string) => void) => {
     return false
   }
 
-  const returnUrl = getSafeReturnUrl(sessionStorage.getItem('returnUrl'))
-  sessionStorage.removeItem('returnUrl')
+  const returnUrl = getSafeReturnUrl(consumeStoredAuthReturnUrl())
 
   url.searchParams.delete('key')
   window.history.replaceState({}, '', url.toString())
 
   try {
-    saveToken(_base64Decode(token))
+    saveAuthToken(_base64Decode(token))
     window.location.replace(returnUrl)
     return true
   } catch {
-    localStorage.removeItem('token')
+    clearAuthToken()
     window.location.replace('/')
     return false
   }

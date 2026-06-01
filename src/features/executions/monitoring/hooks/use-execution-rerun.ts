@@ -1,24 +1,24 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { createExecution, getExecutionRequestErrorMessage, type Execution } from '@/features/executions/shared'
+import {
+  getExecutionRequestErrorMessage,
+  useCreateExecutionMutation,
+  type Execution,
+} from '@/features/executions/shared'
 import { getExecutionRerunSummary, prepareExecutionRerun } from '../lib/execution-rerun'
 
 export const useExecutionRerun = (execution?: Execution) => {
   const { t } = useTranslation('executions')
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const rerunPreparation = useMemo(() => (execution ? prepareExecutionRerun(execution) : null), [execution])
   const rerunPayload = rerunPreparation?.payload ?? null
   const rerunSummary = useMemo(
     () => (execution ? getExecutionRerunSummary(execution, rerunPayload) : null),
     [execution, rerunPayload],
   )
-  const rerunMutation = useMutation({
-    mutationFn: createExecution,
-    onSuccess: async (response) => {
-      await queryClient.invalidateQueries({ queryKey: ['executions'] })
+  const rerunMutation = useCreateExecutionMutation({
+    onSuccess: async ([response]) => {
       navigate(`/execution/${response.data._id}`)
     },
   })

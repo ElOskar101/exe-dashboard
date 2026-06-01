@@ -1,4 +1,5 @@
 import type { AxiosInstance } from 'axios'
+import { clearAuthSession } from '../lib/auth-session'
 import { redirectToLogin } from '../utils/auth'
 
 export const setupAuthInterceptors = (api: AxiosInstance) => {
@@ -9,9 +10,7 @@ export const setupAuthInterceptors = (api: AxiosInstance) => {
       const status = error?.response?.status
 
       if (status === 401) {
-        localStorage.removeItem('token')
-        sessionStorage.removeItem('token')
-
+        clearAuthSession()
         redirectToLogin()
 
         return Promise.reject(error)
