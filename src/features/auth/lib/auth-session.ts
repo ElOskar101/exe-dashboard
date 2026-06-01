@@ -5,22 +5,56 @@ const AUTH_TOKEN_STORAGE_KEY = 'token'
 const AUTH_USER_STORAGE_KEY = 'me'
 const AUTH_RETURN_URL_STORAGE_KEY = 'returnUrl'
 
-const getLocalStorage = () => (typeof globalThis.localStorage === 'undefined' ? null : globalThis.localStorage)
-const getSessionStorage = () => (typeof globalThis.sessionStorage === 'undefined' ? null : globalThis.sessionStorage)
+const getStorage = (storageKey: 'localStorage' | 'sessionStorage') => {
+  try {
+    const storage = globalThis[storageKey]
 
-export const getAuthToken = () => getLocalStorage()?.getItem(AUTH_TOKEN_STORAGE_KEY) ?? ''
+    return typeof storage === 'undefined' ? null : storage
+  } catch {
+    return null
+  }
+}
+
+const getLocalStorage = () => getStorage('localStorage')
+const getSessionStorage = () => getStorage('sessionStorage')
+
+const readStorageValue = (storage: Storage | null, key: string) => {
+  try {
+    return storage?.getItem(key) ?? null
+  } catch {
+    return null
+  }
+}
+
+const writeStorageValue = (storage: Storage | null, key: string, value: string) => {
+  try {
+    storage?.setItem(key, value)
+  } catch {
+    return
+  }
+}
+
+const removeStorageValue = (storage: Storage | null, key: string) => {
+  try {
+    storage?.removeItem(key)
+  } catch {
+    return
+  }
+}
+
+export const getAuthToken = () => readStorageValue(getLocalStorage(), AUTH_TOKEN_STORAGE_KEY) ?? ''
 
 export const saveAuthToken = (token: string) => {
-  getLocalStorage()?.setItem(AUTH_TOKEN_STORAGE_KEY, token)
+  writeStorageValue(getLocalStorage(), AUTH_TOKEN_STORAGE_KEY, token)
 }
 
 export const clearAuthToken = () => {
-  getLocalStorage()?.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  removeStorageValue(getLocalStorage(), AUTH_TOKEN_STORAGE_KEY)
 }
 
 export const getStoredUser = () => {
   const sessionStorage = getSessionStorage()
-  const savedUserData = sessionStorage?.getItem(AUTH_USER_STORAGE_KEY)
+  const savedUserData = readStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY)
 
   if (!savedUserData) {
     return null
@@ -33,20 +67,20 @@ export const getStoredUser = () => {
       return parsedUser.data
     }
 
-    sessionStorage?.removeItem(AUTH_USER_STORAGE_KEY)
+    removeStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY)
     return null
   } catch {
-    sessionStorage?.removeItem(AUTH_USER_STORAGE_KEY)
+    removeStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY)
     return null
   }
 }
 
 export const saveStoredUser = (user: IUser) => {
-  getSessionStorage()?.setItem(AUTH_USER_STORAGE_KEY, _base64Encode(JSON.stringify(user)))
+  writeStorageValue(getSessionStorage(), AUTH_USER_STORAGE_KEY, _base64Encode(JSON.stringify(user)))
 }
 
 export const clearStoredUser = () => {
-  getSessionStorage()?.removeItem(AUTH_USER_STORAGE_KEY)
+  removeStorageValue(getSessionStorage(), AUTH_USER_STORAGE_KEY)
 }
 
 export const clearAuthSession = () => {
@@ -55,14 +89,14 @@ export const clearAuthSession = () => {
 }
 
 export const storeAuthReturnUrl = (returnUrl: string) => {
-  getSessionStorage()?.setItem(AUTH_RETURN_URL_STORAGE_KEY, returnUrl)
+  writeStorageValue(getSessionStorage(), AUTH_RETURN_URL_STORAGE_KEY, returnUrl)
 }
 
 export const consumeStoredAuthReturnUrl = () => {
   const sessionStorage = getSessionStorage()
-  const returnUrl = sessionStorage?.getItem(AUTH_RETURN_URL_STORAGE_KEY) ?? null
+  const returnUrl = readStorageValue(sessionStorage, AUTH_RETURN_URL_STORAGE_KEY)
 
-  sessionStorage?.removeItem(AUTH_RETURN_URL_STORAGE_KEY)
+  removeStorageValue(sessionStorage, AUTH_RETURN_URL_STORAGE_KEY)
 
   return returnUrl
 }

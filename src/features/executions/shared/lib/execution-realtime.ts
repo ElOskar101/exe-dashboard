@@ -1,6 +1,5 @@
 import type { Dispatch } from 'react'
-import { getAuthToken } from '@/features/auth/lib/auth-session'
-import { socket } from '@/lib/socket'
+import { getSocketAuth, socket } from '@/lib/socket'
 
 export type ExecutionRealtimeConnectionState = 'connecting' | 'connected' | 'disconnected'
 
@@ -39,9 +38,7 @@ interface ExecutionRealtimeSubscriptionOptions {
 let executionRealtimeConsumerCount = 0
 
 const syncExecutionRealtimeAuth = () => {
-  socket.auth = {
-    token: getAuthToken(),
-  }
+  socket.auth = getSocketAuth()
 }
 
 const acquireExecutionRealtimeConnection = () => {

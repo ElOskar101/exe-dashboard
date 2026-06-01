@@ -35,6 +35,25 @@ const createStorageMock = (): Storage => {
   }
 }
 
+const createThrowingStorageMock = (): Storage => ({
+  clear() {},
+  getItem() {
+    throw new Error('Storage unavailable')
+  },
+  key() {
+    return null
+  },
+  get length() {
+    return 0
+  },
+  removeItem() {
+    throw new Error('Storage unavailable')
+  },
+  setItem() {
+    throw new Error('Storage unavailable')
+  },
+})
+
 const createUser = (): IUser => ({
   twoFactor: {
     isEnabled: false,
@@ -133,5 +152,19 @@ describe('auth-session', () => {
 
     expect(getAuthToken()).toBe('')
     expect(getStoredUser()).toBeNull()
+  })
+
+  it('treats unavailable storage as missing state instead of throwing', () => {
+    vi.stubGlobal('localStorage', createThrowingStorageMock())
+    vi.stubGlobal('sessionStorage', createThrowingStorageMock())
+
+    expect(() => saveAuthToken('token-123')).not.toThrow()
+    expect(() => saveStoredUser(createUser())).not.toThrow()
+    expect(() => storeAuthReturnUrl('/execution/exe-1')).not.toThrow()
+    expect(() => clearAuthSession()).not.toThrow()
+
+    expect(getAuthToken()).toBe('')
+    expect(getStoredUser()).toBeNull()
+    expect(consumeStoredAuthReturnUrl()).toBeNull()
   })
 })
