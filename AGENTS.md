@@ -20,3 +20,17 @@ If a feature uses deep modules, follow this order before opening implementation 
 - `/src/features/<feature>/<deep-module>/index.ts`
 
 Only dig into a deep module's implementation details when you are actively working in that deep module.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The repo uses the default five triage labels with the same names as the canonical roles. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context docs rooted at `CONTEXT.md` with ADRs under `docs/adr/`. See `docs/agents/domain.md`.
