@@ -327,8 +327,30 @@ test.describe('protected executions route', () => {
 
     const token = await login(request)
     let submittedPayload: unknown = null
+    const createdExecution = {
+      _id: 'execution-e2e',
+      createdBy: 'e2e-user',
+      playwrightProject: 'chromium',
+      status: 'process',
+      note: [],
+      attachments: [],
+      client: 'qa-client',
+      clinic: 'qa-clinic',
+      execution: 'payload',
+      bot: 'Eligibility Runner',
+      createdAt: '2026-05-21T14:00:00.000Z',
+      updatedAt: '2026-05-21T14:00:00.000Z',
+      jobId: 'job-e2e',
+      playwrightExecutionId: 'playwright-e2e',
+      pid: 1234,
+      startedAt: '2026-05-21T14:00:00.000Z',
+      finishedAt: '',
+    }
 
     await stubProtectedRouteDependencies(page)
+    await page.route('**/execution-api/executions/execution-e2e', async (route) => {
+      await route.fulfill({ json: createdExecution })
+    })
     await page.route('**/executions', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.fallback()
@@ -338,25 +360,7 @@ test.describe('protected executions route', () => {
       submittedPayload = route.request().postDataJSON()
 
       await route.fulfill({
-        json: {
-          _id: 'execution-e2e',
-          createdBy: 'e2e-user',
-          playwrightProject: 'chromium',
-          status: 'process',
-          note: [],
-          attachments: [],
-          client: 'qa-client',
-          clinic: 'qa-clinic',
-          execution: 'payload',
-          bot: 'Eligibility Runner',
-          createdAt: '2026-05-21T14:00:00.000Z',
-          updatedAt: '2026-05-21T14:00:00.000Z',
-          jobId: 'job-e2e',
-          playwrightExecutionId: 'playwright-e2e',
-          pid: 1234,
-          startedAt: '2026-05-21T14:00:00.000Z',
-          finishedAt: '',
-        },
+        json: createdExecution,
       })
     })
     await page.addInitScript((accessToken) => {
@@ -378,7 +382,10 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('"workers": 4')).toBeVisible()
     await page.getByRole('button', { name: 'Create execution' }).click()
 
-    await expect(page).toHaveURL('/execution/execution-e2e')
+    await expect(page).toHaveURL('/')
+    await expect(page.getByText('Execution created')).toBeVisible()
+    const viewExecutionButton = page.getByRole('button', { name: 'View execution' })
+    await expect(viewExecutionButton).toBeVisible()
     expect(submittedPayload).toEqual({
       project: 'liberty',
       createdBy: 'e2e-user',
@@ -437,6 +444,9 @@ test.describe('protected executions route', () => {
         retries: 2,
       },
     })
+
+    await viewExecutionButton.click()
+    await expect(page).toHaveURL('/execution/execution-e2e')
   })
 
   test('keeps the review state after a failed submission', async ({ page, request }) => {

@@ -1,5 +1,4 @@
-import type { ExecutionCreatePayload } from '@/features/executions/creation'
-import type { Execution } from '@/features/executions/shared'
+import type { Execution, ExecutionCreatePayload, ExecutionPayloadPatient } from '@/features/executions/shared'
 
 export interface ExecutionRerunSummary {
   botName: string
@@ -33,7 +32,7 @@ const getRequiredString = (value: string | undefined, field: string, missingFiel
   return resolvedValue
 }
 
-const normalizeRerunPatients = (patients: ExecutionCreatePayload['meta']['patients']) => {
+const normalizeRerunPatients = (patients: ExecutionPayloadPatient[]) => {
   return patients.map(({ clinic, ...patient }) => ({
     ...patient,
     ...(clinic?.trim() ? { clinic: clinic.trim() } : {}),

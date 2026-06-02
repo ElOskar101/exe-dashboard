@@ -1,4 +1,4 @@
-import type { ExecutionCreatePayload } from '../../creation/model/execution-create'
+import type { ExecutionPayloadMeta } from './execution-create-payload'
 
 export type ExecutionStatus = 'queued' | 'running' | 'paused' | 'completed' | 'unknown' | 'cancelled' | 'failed'
 export type ExecutionRuntimeStatus = ExecutionStatus | 'process'
@@ -25,7 +25,7 @@ export interface Execution {
   execution: string
   bot?: string
   botName?: string
-  meta?: ExecutionCreatePayload['meta']
+  meta?: ExecutionPayloadMeta
   createdAt: string
   updatedAt: string
   jobId: string

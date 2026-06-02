@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
 import type { Dispatch } from 'react'
-import type { ExecutionCreatePayload } from '@/features/executions/creation'
 import type { Execution } from '../model/execution'
+import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 import { executionKeys } from '../lib/execution-query-keys'
 import { mergeExecutionIntoList } from '../lib/execution-display'
 import {

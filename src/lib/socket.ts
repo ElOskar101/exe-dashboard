@@ -1,11 +1,7 @@
 import { io } from 'socket.io-client'
-import { getAuthToken } from '@/features/auth/lib/auth-session'
+import { getSocketAuthPayload } from '@/features/auth/lib/auth-transport'
 
-export const getSocketAuth = () => {
-  const token = getAuthToken()
-
-  return token ? { token } : {}
-}
+export const getSocketAuth = () => getSocketAuthPayload()
 
 export const socket = io(import.meta.env.VITE_SOCKET_URL, {
   autoConnect: false,
