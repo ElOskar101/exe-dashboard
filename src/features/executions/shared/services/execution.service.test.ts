@@ -11,7 +11,7 @@ import {
   stopExecution,
   updateExecution,
 } from './execution.service'
-import type { ExecutionCreatePayload } from '@/features/executions/creation'
+import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 
 vi.mock('@/lib/axios', () => ({
   exeClient: {

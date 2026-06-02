@@ -1,6 +1,5 @@
-import { useContext, useMemo, useRef, useState, startTransition, type SetStateAction } from 'react'
+import { useContext, useMemo, useState, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
 import { AuthContext } from '@/features/auth'
 import { getExecutionRequestErrorMessage, useCreateExecutionMutation } from '@/features/executions/shared'
 import type { TFunction } from 'i18next'
@@ -8,15 +7,7 @@ import { toast } from 'sonner'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
-import {
-  type ClinicBotPasswordRequestState,
-  createIdleClinicBotPasswordRequestState,
-  createPendingClinicBotPasswordRequestState,
-  failClinicBotPasswordRequestState,
-  getClinicBotPasswordRequestStatus,
-  resolveClinicBotPasswordRequestState,
-} from '../lib/clinic-bot-password-request'
-import { getSelectableClinicBots, mapClinicBotToExecutionBot } from '../lib/execution-clinic-bots'
+import { mapClinicBotToExecutionBot } from '../lib/execution-clinic-bots'
 import { createEmptyDraft } from '../lib/execution-wizard-draft'
 import {
   createEmptyBotSelection,
@@ -26,22 +17,27 @@ import {
   isPatientsStepDirty,
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
-import { mapCCCExecutionRowsToPatients } from '../lib/ccc-execution-patients'
 import type { ExecutionWizardDraft } from '../model/execution-create'
-import {
-  decryptClinicBotPassword,
-  getCCCExecution,
-  getClinicBots,
-  getClinicExecutionDays,
-  getCustomerById,
-  searchCustomers,
-  type ClinicBotRecord,
-  type CustomerSearchItem,
-} from '../services/ccc.service'
+import type { CustomerSearchItem } from '../services/ccc.service'
+import { useClinicBotPasswordRequest } from './use-clinic-bot-password-request'
+import { useExecutionWizardData } from './use-execution-wizard-data'
 
 export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
 
 export const executionWizardSteps: ExecutionWizardStepKey[] = ['patients', 'bot', 'config', 'review']
+
+const resetDraftDependentSelections = (
+  draft: ExecutionWizardDraft,
+  contextUpdates: Partial<ExecutionWizardDraft['context']>,
+): ExecutionWizardDraft => ({
+  ...draft,
+  context: {
+    ...draft.context,
+    ...contextUpdates,
+  },
+  bot: createEmptyBotSelection(),
+  execution: createEmptyExecutionSelection(draft.execution),
+})
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
@@ -51,155 +47,45 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const [currentStep, setCurrentStep] = useState(0)
   const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [decryptClinicBotPasswordRequest, setDecryptClinicBotPasswordRequestState] = useState(() =>
-    createIdleClinicBotPasswordRequestState(),
-  )
-  const decryptClinicBotPasswordRequestRef = useRef(decryptClinicBotPasswordRequest)
-  const setDecryptClinicBotPasswordRequest = (nextRequest: SetStateAction<ClinicBotPasswordRequestState>) => {
-    const resolvedRequest =
-      typeof nextRequest === 'function' ? nextRequest(decryptClinicBotPasswordRequestRef.current) : nextRequest
-
-    decryptClinicBotPasswordRequestRef.current = resolvedRequest
-    setDecryptClinicBotPasswordRequestState(resolvedRequest)
-  }
   const customerSearch = draft.context.clientName.trim()
-  const customerSearchEnabled = draft.context.client.trim().length === 0 && customerSearch.length >= 2
-
-  const customerSearchQuery = useQuery({
-    queryKey: ['execution-customer-search', customerSearch],
-    queryFn: async ({ signal }) => {
-      await new Promise<void>((resolve, reject) => {
-        const timeoutId = window.setTimeout(resolve, 300)
-
-        signal.addEventListener(
-          'abort',
-          () => {
-            window.clearTimeout(timeoutId)
-            reject(new DOMException('Aborted', 'AbortError'))
-          },
-          { once: true },
-        )
-      })
-
-      const response = await searchCustomers(customerSearch)
-
-      return response.data
-    },
-    enabled: customerSearchEnabled,
-  })
-
-  const selectedCustomerQuery = useQuery({
-    queryKey: ['execution-customer', draft.context.client],
-    queryFn: async () => {
-      const response = await getCustomerById(draft.context.client)
-
-      return response.data
-    },
-    enabled: draft.context.client.trim().length > 0,
-  })
-
-  const clinicExecutionDaysQuery = useQuery({
-    queryKey: ['clinic-execution-days', draft.context.clinic],
-    queryFn: async () => {
-      const response = await getClinicExecutionDays(draft.context.clinic)
-
-      return response.data
-    },
-    enabled: draft.context.clinic.trim().length > 0,
-  })
-
-  const clinicBotsQuery = useQuery({
-    queryKey: ['clinic-bots', draft.context.clinic],
-    queryFn: async () => {
-      const response = await getClinicBots(draft.context.clinic)
-
-      return response.data
-    },
-    enabled: draft.context.clinic.trim().length > 0,
-  })
-
-  const importPatientsMutation = useMutation({
-    mutationFn: async (executionId: string) => {
-      const response = await getCCCExecution(executionId)
-
-      return response.data
-    },
-    onSuccess: (execution) => {
-      const patients = mapCCCExecutionRowsToPatients(execution.rows)
-
+  const wizardData = useExecutionWizardData({
+    context: draft.context,
+    customerSearch,
+    onPatientsImported: ({ executionId, patients }) => {
       setDraft((previousDraft) => ({
         ...previousDraft,
         execution: {
           ...previousDraft.execution,
-          patients: previousDraft.execution.execution === execution._id ? patients : previousDraft.execution.patients,
+          patients: previousDraft.execution.execution === executionId ? patients : previousDraft.execution.patients,
         },
       }))
     },
   })
-
-  interface DecryptClinicBotPasswordMutationVariables {
-    clinicBotId: string
-    requestId: string
-    selectedClinicBot: ClinicBotRecord
-  }
-
-  const decryptClinicBotPasswordMutation = useMutation({
-    mutationFn: async ({ clinicBotId, requestId, selectedClinicBot }: DecryptClinicBotPasswordMutationVariables) => {
-      const response = await decryptClinicBotPassword(clinicBotId)
-
-      return {
-        clinicBotId,
-        password: response.data,
-        requestId,
-        selectedClinicBot,
-      }
+  const clinicBotPasswordRequest = useClinicBotPasswordRequest({
+    clinicBotOptions: wizardData.clinicBotOptions,
+    currentClinicBotId: draft.bot.clinicBotId,
+    onCleared: () => {
+      setDraft((previousDraft) => ({
+        ...previousDraft,
+        bot: createEmptyBotSelection(),
+      }))
     },
-    onSuccess: ({ clinicBotId, password, requestId, selectedClinicBot }) => {
-      const currentRequest = decryptClinicBotPasswordRequestRef.current
-
-      if (currentRequest.clinicBotId === clinicBotId && currentRequest.requestId === requestId) {
-        setDraft((previousDraft) => ({
-          ...previousDraft,
-          bot: mapClinicBotToExecutionBot(selectedClinicBot, password),
-        }))
-      }
-
-      setDecryptClinicBotPasswordRequest((previousRequest) =>
-        resolveClinicBotPasswordRequestState(previousRequest, { clinicBotId, requestId }),
-      )
-    },
-    onError: (error, { clinicBotId, requestId }) => {
-      setDecryptClinicBotPasswordRequest((previousRequest) =>
-        failClinicBotPasswordRequestState(
-          previousRequest,
-          { clinicBotId, requestId },
-          error instanceof Error ? error.message : 'Unable to decrypt clinic bot password',
-        ),
-      )
+    onResolved: (selectedClinicBot, password) => {
+      setDraft((previousDraft) => ({
+        ...previousDraft,
+        bot: mapClinicBotToExecutionBot(selectedClinicBot, password),
+      }))
     },
   })
-
-  const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
-  const clinicBotOptions = useMemo(() => getSelectableClinicBots(clinicBotsQuery.data ?? []), [clinicBotsQuery.data])
-  const executionDayOptions = (clinicExecutionDaysQuery.data ?? []).filter((day) => !day.trashed)
-  const hasSelectedCustomerWithoutClinics =
-    draft.context.client.trim().length > 0 && selectedCustomerQuery.status === 'success' && clinicOptions.length === 0
-  const hasSelectedClinicWithoutActiveBots =
-    draft.context.clinic.trim().length > 0 && clinicBotsQuery.status === 'success' && clinicBotOptions.length === 0
-  const selectedClinicBotId =
-    decryptClinicBotPasswordRequest.status === 'idle'
-      ? draft.bot.clinicBotId
-      : decryptClinicBotPasswordRequest.clinicBotId
-  const decryptClinicBotPasswordStatus = getClinicBotPasswordRequestStatus(
-    decryptClinicBotPasswordRequest,
-    selectedClinicBotId,
-  )
-
+  const clinicOptions = wizardData.clinicOptions
+  const executionDayOptions = wizardData.executionDayOptions
+  const selectedClinicBotId = clinicBotPasswordRequest.selectedClinicBotId
+  const decryptClinicBotPasswordStatus = clinicBotPasswordRequest.status
   const validationErrors = useMemo(
     () =>
       getExecutionWizardValidationErrors(draft, createdBy, t, {
-        hasSelectedCustomerWithoutClinics,
-        hasSelectedClinicWithoutActiveBots,
+        hasSelectedCustomerWithoutClinics: wizardData.hasSelectedCustomerWithoutClinics,
+        hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
         selectedClinicBotId,
         isDecryptingClinicBotPassword: decryptClinicBotPasswordStatus.isPending,
       }),
@@ -207,14 +93,13 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       createdBy,
       decryptClinicBotPasswordStatus.isPending,
       draft,
-      hasSelectedClinicWithoutActiveBots,
-      hasSelectedCustomerWithoutClinics,
       selectedClinicBotId,
       t,
+      wizardData.hasSelectedClinicWithoutActiveBots,
+      wizardData.hasSelectedCustomerWithoutClinics,
     ],
   )
   const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
-
   const stepValidity = [
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
@@ -255,6 +140,11 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     },
   })
 
+  const resetWizardRequests = () => {
+    wizardData.resetImportPatients()
+    clinicBotPasswordRequest.reset()
+  }
+
   const updateContextField = (field: keyof ExecutionWizardDraft['context'], value: string) => {
     setDraft((previousDraft) => ({
       ...previousDraft,
@@ -266,113 +156,64 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const updateCustomerSearch = (value: string) => {
-    importPatientsMutation.reset()
-    setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
+    resetWizardRequests()
     startTransition(() => {
-      setDraft((previousDraft) => ({
-        ...previousDraft,
-        context: {
-          ...previousDraft.context,
+      setDraft((previousDraft) =>
+        resetDraftDependentSelections(previousDraft, {
           client: '',
           clientName: value,
           clinic: '',
           clinicName: '',
-        },
-        bot: createEmptyBotSelection(),
-        execution: createEmptyExecutionSelection(previousDraft.execution),
-      }))
+        }),
+      )
     })
   }
 
   const clearCustomerSelection = () => {
-    importPatientsMutation.reset()
-    setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      context: {
-        ...previousDraft.context,
+    resetWizardRequests()
+    setDraft((previousDraft) =>
+      resetDraftDependentSelections(previousDraft, {
         client: '',
         clinic: '',
         clinicName: '',
-      },
-      bot: createEmptyBotSelection(),
-      execution: createEmptyExecutionSelection(previousDraft.execution),
-    }))
+      }),
+    )
   }
 
   const selectCustomer = (customer: CustomerSearchItem) => {
-    importPatientsMutation.reset()
-    setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
+    resetWizardRequests()
     setDraft((previousDraft) => {
       if (previousDraft.context.client === customer._id) {
-        return {
-          ...previousDraft,
-          context: {
-            ...previousDraft.context,
-            client: '',
-            clinic: '',
-            clinicName: '',
-          },
-          bot: createEmptyBotSelection(),
-          execution: createEmptyExecutionSelection(previousDraft.execution),
-        }
-      }
-
-      return {
-        ...previousDraft,
-        context: {
-          ...previousDraft.context,
-          client: customer._id,
-          clientName: customer.clientName,
+        return resetDraftDependentSelections(previousDraft, {
+          client: '',
           clinic: '',
           clinicName: '',
-        },
-        bot: createEmptyBotSelection(),
-        execution: createEmptyExecutionSelection(previousDraft.execution),
+        })
       }
+
+      return resetDraftDependentSelections(previousDraft, {
+        client: customer._id,
+        clientName: customer.clientName,
+        clinic: '',
+        clinicName: '',
+      })
     })
   }
 
   const selectClinic = (clinicId: string) => {
-    importPatientsMutation.reset()
-    setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
+    resetWizardRequests()
     const selectedClinic = clinicOptions.find((clinic) => clinic._id === clinicId)
 
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      context: {
-        ...previousDraft.context,
+    setDraft((previousDraft) =>
+      resetDraftDependentSelections(previousDraft, {
         clinic: clinicId,
         clinicName: selectedClinic?.clinicName ?? '',
-      },
-      bot: createEmptyBotSelection(),
-      execution: createEmptyExecutionSelection(previousDraft.execution),
-    }))
+      }),
+    )
   }
 
   const selectClinicBot = (clinicBotId: string) => {
-    const selectedClinicBot = clinicBotOptions.find((clinicBot) => clinicBot._id === clinicBotId)
-
-    if (!selectedClinicBot) {
-      setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
-      setDraft((previousDraft) => ({
-        ...previousDraft,
-        bot: createEmptyBotSelection(),
-      }))
-
-      return
-    }
-
-    const requestId = crypto.randomUUID()
-    const request = { clinicBotId, requestId, selectedClinicBot }
-
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      bot: createEmptyBotSelection(),
-    }))
-
-    setDecryptClinicBotPasswordRequest(createPendingClinicBotPasswordRequestState(request))
-    decryptClinicBotPasswordMutation.mutate(request)
+    clinicBotPasswordRequest.selectClinicBot(clinicBotId)
   }
 
   const updateBotField = (field: keyof ExecutionWizardDraft['bot'], value: string) => {
@@ -406,7 +247,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const selectExecutionDay = (executionDayId: string) => {
-    importPatientsMutation.reset()
+    wizardData.resetImportPatients()
     const selectedDay = executionDayOptions.find((day) => day._id === executionDayId)
 
     setDraft((previousDraft) => ({
@@ -431,13 +272,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   const importPatients = () => {
-    const executionId = draft.execution.execution.trim()
-
-    if (!executionId) {
-      return
-    }
-
-    importPatientsMutation.mutate(executionId)
+    wizardData.importPatients(draft.execution.execution)
   }
 
   const removePatient = (index: number) => {
@@ -483,7 +318,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     setCurrentStep(0)
     setAttemptedSteps({})
     setSubmitError(null)
-    setDecryptClinicBotPasswordRequest(createIdleClinicBotPasswordRequestState())
+    resetWizardRequests()
   }
 
   const handleSubmit = async () => {
@@ -515,14 +350,15 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   return {
     botStep: {
       bot: draft.bot,
-      clinicBotOptions,
-      clinicBotsError: clinicBotsQuery.error instanceof Error ? clinicBotsQuery.error.message : null,
+      clinicBotOptions: wizardData.clinicBotOptions,
+      clinicBotsError:
+        wizardData.clinicBotsQuery.error instanceof Error ? wizardData.clinicBotsQuery.error.message : null,
       context: draft.context,
       decryptClinicBotPasswordError: decryptClinicBotPasswordStatus.error,
       errors: validationErrors.bot,
-      hasSelectedClinicWithoutActiveBots,
+      hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
       isDecryptingClinicBotPassword: decryptClinicBotPasswordStatus.isPending,
-      isLoadingClinicBots: clinicBotsQuery.isFetching,
+      isLoadingClinicBots: wizardData.clinicBotsQuery.isFetching,
       onBotFieldChange: updateBotField,
       onClinicBotSelect: selectClinicBot,
       selectedClinicBotId,
@@ -542,20 +378,26 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       clinicOptions,
       context: draft.context,
       contextErrors: validationErrors.context,
-      customerOptions: customerSearchQuery.data?.customers ?? [],
-      customerSearchError: customerSearchQuery.error instanceof Error ? customerSearchQuery.error.message : null,
+      customerOptions: wizardData.customerSearchQuery.data?.customers ?? [],
+      customerSearchError:
+        wizardData.customerSearchQuery.error instanceof Error ? wizardData.customerSearchQuery.error.message : null,
       errors: validationErrors.patients,
       execution: draft.execution.execution,
       executionDayOptions,
       executionDaysError:
-        clinicExecutionDaysQuery.error instanceof Error ? clinicExecutionDaysQuery.error.message : null,
+        wizardData.clinicExecutionDaysQuery.error instanceof Error
+          ? wizardData.clinicExecutionDaysQuery.error.message
+          : null,
       executionName: draft.execution.executionName,
-      hasSelectedCustomerWithoutClinics,
-      importPatientsError: importPatientsMutation.error instanceof Error ? importPatientsMutation.error.message : null,
-      isImportingPatients: importPatientsMutation.isPending,
-      isLoadingClinics: selectedCustomerQuery.isFetching,
-      isLoadingExecutionDays: clinicExecutionDaysQuery.isFetching,
-      isSearchingCustomers: customerSearchQuery.isFetching,
+      hasSelectedCustomerWithoutClinics: wizardData.hasSelectedCustomerWithoutClinics,
+      importPatientsError:
+        wizardData.importPatientsMutation.error instanceof Error
+          ? wizardData.importPatientsMutation.error.message
+          : null,
+      isImportingPatients: wizardData.importPatientsMutation.isPending,
+      isLoadingClinics: wizardData.selectedCustomerQuery.isFetching,
+      isLoadingExecutionDays: wizardData.clinicExecutionDaysQuery.isFetching,
+      isSearchingCustomers: wizardData.customerSearchQuery.isFetching,
       onClinicSelect: selectClinic,
       onCustomerClear: clearCustomerSelection,
       onCustomerSearchChange: updateCustomerSearch,
@@ -564,7 +406,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       onImportPatients: importPatients,
       onRemovePatient: removePatient,
       patients: draft.execution.patients,
-      selectedCustomerError: selectedCustomerQuery.error instanceof Error ? selectedCustomerQuery.error.message : null,
+      selectedCustomerError:
+        wizardData.selectedCustomerQuery.error instanceof Error ? wizardData.selectedCustomerQuery.error.message : null,
       showErrors: showErrors.patients,
     },
     reviewStep: {

@@ -1,5 +1,5 @@
 import cccClient from '@/lib/axios'
-import type { ExecutionVerificationType } from '../model/execution-create'
+import type { ExecutionVerificationType } from '../../shared/model/execution-create-payload'
 
 export interface CustomerSearchItem {
   _id: string

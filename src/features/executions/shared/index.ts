@@ -11,6 +11,14 @@ export {
   updateExecutionStatus,
 } from './lib/execution-display'
 export { formatExecutionDateTime } from './lib/format-execution-date-time'
+export type {
+  ExecutionCreatePayload,
+  ExecutionMetadata,
+  ExecutionPayloadBot,
+  ExecutionPayloadMeta,
+  ExecutionPayloadPatient,
+  ExecutionVerificationType,
+} from './model/execution-create-payload'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'

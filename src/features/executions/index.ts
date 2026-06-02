@@ -9,10 +9,7 @@ export type {
   CustomerDetailsResponse,
   CustomerSearchItem,
   CustomerSearchResponse,
-  ExecutionCreatePayload,
-  ExecutionMetadata,
   ExecutionPatient,
-  ExecutionVerificationType,
   ExecutionWizardDraft,
 } from './creation'
 export { ExecutionsSidebar } from './listing'
@@ -40,4 +37,12 @@ export {
   updateExecution,
   updateExecutionStatus,
 } from './shared'
-export type { Execution, ExecutionRuntimeStatus, ExecutionStatus, ExecutionUpdatePayload } from './shared'
+export type {
+  Execution,
+  ExecutionCreatePayload,
+  ExecutionMetadata,
+  ExecutionRuntimeStatus,
+  ExecutionStatus,
+  ExecutionUpdatePayload,
+  ExecutionVerificationType,
+} from './shared'
