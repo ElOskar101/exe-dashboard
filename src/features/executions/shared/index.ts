@@ -10,6 +10,13 @@ export {
   normalizeExecutionStatus,
   updateExecutionStatus,
 } from './lib/execution-display'
+export {
+  normalizeExecutionRecord,
+  syncExecutionFromDetailSnapshot,
+  syncExecutionStatusReadModel,
+  syncExecutionsFromListSnapshot,
+  type ExecutionStatusReadModel,
+} from './lib/execution-status-cache'
 export { formatExecutionDateTime } from './lib/format-execution-date-time'
 export type {
   ExecutionCreatePayload,
@@ -53,3 +60,4 @@ export {
   useResumeExecutionMutation,
   useStopExecutionMutation,
 } from './hooks/use-execution-records'
+export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'

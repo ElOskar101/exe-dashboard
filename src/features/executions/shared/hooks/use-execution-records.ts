@@ -4,7 +4,7 @@ import type { Dispatch } from 'react'
 import type { Execution } from '../model/execution'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 import { executionKeys } from '../lib/execution-query-keys'
-import { mergeExecutionIntoList } from '../lib/execution-display'
+import { syncExecutionFromDetailSnapshot, syncExecutionsFromListSnapshot } from '../lib/execution-status-cache'
 import {
   createExecution,
   deleteExecution,
@@ -28,15 +28,18 @@ const invalidateExecutionDetail = async (queryClient: ReturnType<typeof useQuery
   await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId) })
 }
 
-export const useExecutionsQuery = () =>
-  useQuery({
+export const useExecutionsQuery = () => {
+  const queryClient = useQueryClient()
+
+  return useQuery({
     queryKey: executionKeys.list(),
     queryFn: async () => {
       const response = await getExecutions()
 
-      return response.data
+      return syncExecutionsFromListSnapshot(queryClient, response.data)
     },
   })
+}
 
 export const useExecutionQuery = (executionId: string) => {
   const queryClient = useQueryClient()
@@ -46,11 +49,7 @@ export const useExecutionQuery = (executionId: string) => {
     queryFn: async () => {
       const response = await getExecutionById(executionId)
 
-      queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
-        mergeExecutionIntoList(executions, response.data),
-      )
-
-      return response.data
+      return syncExecutionFromDetailSnapshot(queryClient, response.data)
     },
   })
 }
@@ -94,9 +93,7 @@ export const useDeleteExecutionMutation = (
   })
 }
 
-interface ExecutionActionMutationOptions extends ExecutionMutationOptions<AxiosResponse<Execution>, string> {
-  syncDetailCache?: boolean
-}
+type ExecutionActionMutationOptions = ExecutionMutationOptions<AxiosResponse<Execution>, string>
 
 const useExecutionActionMutation = (
   mutationFn: typeof pauseExecution,
@@ -108,10 +105,6 @@ const useExecutionActionMutation = (
   return useMutation({
     mutationFn: async () => mutationFn(executionId),
     onSuccess: async (response) => {
-      if (options.syncDetailCache ?? true) {
-        queryClient.setQueryData(executionKeys.detail(executionId), response.data)
-      }
-
       await Promise.all([invalidateExecutionDetail(queryClient, executionId), invalidateExecutionList(queryClient)])
       await options.onSuccess?.([response, executionId])
     },

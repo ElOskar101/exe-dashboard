@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils'
 import {
   useDeleteExecutionMutation,
   useExecutionsQuery,
+  useExecutionStatusReadModel,
   getExecutionLabel,
   isExecutionRunning,
   normalizeExecutionStatus,
@@ -62,6 +63,7 @@ export function ExecutionsSidebar() {
   const currentTime = useCurrentTime()
   useExecutionStatusUpdates()
   const executionsQuery = useExecutionsQuery()
+  const executionStatusReadModel = useExecutionStatusReadModel()
   const deleteMutation = useDeleteExecutionMutation({
     onSuccess: async ([, deletedExecutionId]) => {
       setOpenDeleteId((currentOpenId) => (currentOpenId === deletedExecutionId ? null : currentOpenId))
@@ -218,7 +220,8 @@ export function ExecutionsSidebar() {
                             const label = getExecutionLabel(execution)
                             const executionDayLabel = getExecutionDayLabel(execution)
                             const relativeCreatedAt = getRelativeCreatedAt(execution.createdAt, currentTime)
-                            const status = normalizeExecutionStatus(execution.status)
+                            const status =
+                              executionStatusReadModel.data[execution._id] ?? normalizeExecutionStatus(execution.status)
                             const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                             return (

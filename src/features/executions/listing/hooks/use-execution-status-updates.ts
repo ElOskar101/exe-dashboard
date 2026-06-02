@@ -3,7 +3,7 @@ import { useMountEffect } from '@/hooks/use-mount-effect'
 import {
   executionKeys,
   subscribeToExecutionStatus,
-  updateExecutionStatus,
+  syncExecutionStatusReadModel,
   type Execution,
 } from '@/features/executions/shared'
 import { shouldInvalidateExecutionsOnConnect } from '../lib/execution-status-updates'
@@ -35,9 +35,7 @@ export const useExecutionStatusUpdates = () => {
     const unsubscribe = subscribeToExecutionStatus({
       onConnect: handleConnect,
       onStatus: (payload) => {
-        queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
-          updateExecutionStatus(executions, payload.executionId, payload.status),
-        )
+        syncExecutionStatusReadModel(queryClient, payload.executionId, payload.status)
       },
     })
 
