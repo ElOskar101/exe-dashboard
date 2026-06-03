@@ -134,6 +134,15 @@ export function ExecutionsSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              render={<Link to="/executions" onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/executions'}
+              tooltip={t('sidebar.allExecutions')}
+            >
+              <span>{t('sidebar.allExecutions')}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
               render={<Link to="/" onClick={closeSidebarOnMobile} />}
               isActive={pathname === '/'}
               tooltip={t('sidebar.createExecution')}

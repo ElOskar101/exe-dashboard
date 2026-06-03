@@ -127,6 +127,9 @@ export default function ExecutionsPage() {
   }, [customerQueries])
   const projectOptions = useMemo(() => groupedExecutions.map((group) => group.project), [groupedExecutions])
   const normalizedSearchValue = deferredSearchValue.trim().toLowerCase()
+  const selectedProjectFilterLabel = projectFilter === ALL_FILTER_VALUE ? t('list.filters.allProjects') : projectFilter
+  const selectedStatusFilterLabel =
+    statusFilter === ALL_FILTER_VALUE ? t('list.filters.allStatuses') : t(`list.statusOptions.${statusFilter}`)
   const filteredExecutions = useMemo(
     () =>
       sortedExecutions.filter((execution) => {
@@ -185,7 +188,7 @@ export default function ExecutionsPage() {
               <FieldLabel htmlFor="execution-project-filter">{t('list.filters.projectLabel')}</FieldLabel>
               <Select value={projectFilter} onValueChange={(value) => setProjectFilter(value ?? ALL_FILTER_VALUE)}>
                 <SelectTrigger id="execution-project-filter" className="w-full">
-                  <SelectValue placeholder={t('list.filters.allProjects')} />
+                  <SelectValue placeholder={t('list.filters.allProjects')}>{selectedProjectFilterLabel}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="start">
                   <SelectGroup>
@@ -203,7 +206,7 @@ export default function ExecutionsPage() {
               <FieldLabel htmlFor="execution-status-filter">{t('list.filters.statusLabel')}</FieldLabel>
               <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? ALL_FILTER_VALUE)}>
                 <SelectTrigger id="execution-status-filter" className="w-full">
-                  <SelectValue placeholder={t('list.filters.allStatuses')} />
+                  <SelectValue placeholder={t('list.filters.allStatuses')}>{selectedStatusFilterLabel}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="start">
                   <SelectGroup>
