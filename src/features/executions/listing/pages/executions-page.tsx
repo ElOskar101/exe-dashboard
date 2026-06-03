@@ -6,18 +6,19 @@ import { IconAlertCircle, IconExternalLink, IconPlus, IconSearch } from '@tabler
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { cn } from '@/lib/utils'
 import {
   EXECUTION_STATUSES,
   formatExecutionDateTime,
-  isExecutionFailed,
   isExecutionRunning,
-  isExecutionSuccessful,
+  getStatusBadgeClassName,
+  getStatusBadgeVariant,
   normalizeExecutionStatus,
   useExecutionsQuery,
   useExecutionStatusReadModel,
@@ -26,6 +27,7 @@ import {
 } from '@/features/executions/shared'
 import { executionWizardKeys, getCustomerById, type CustomerDetailsResponse } from '@/features/executions/creation'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { ExecutionPatientsDialog } from '../components/execution-patients-dialog'
 import { getExecutionDayLabel, groupExecutionsByProject } from '../lib/execution-sidebar-display'
 
 const ALL_FILTER_VALUE = 'all'
@@ -79,10 +81,9 @@ const getExecutionDisplayNames = (
 
 function ExecutionStatusBadge({ status }: { status: ExecutionStatus }) {
   const { t } = useTranslation('executions')
-  const variant = isExecutionSuccessful(status) ? 'success' : isExecutionFailed(status) ? 'destructive' : 'secondary'
 
   return (
-    <Badge variant={variant} className="capitalize">
+    <Badge variant={getStatusBadgeVariant(status)} className={cn('capitalize', getStatusBadgeClassName(status))}>
       {isExecutionRunning(status) ? <Spinner data-icon="inline-start" /> : null}
       {t(`list.statusOptions.${status}`)}
     </Badge>
@@ -154,7 +155,7 @@ export default function ExecutionsPage() {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col">
           <h1 className="text-3xl font-semibold tracking-tight">{t('list.title')}</h1>
           <p className="max-w-3xl text-muted-foreground">{t('list.description')}</p>
         </div>
@@ -165,15 +166,6 @@ export default function ExecutionsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>{t('list.tableTitle')}</CardTitle>
-          <CardDescription>
-            {t('list.tableDescription', {
-              count: filteredExecutions.length,
-              total: sortedExecutions.length,
-            })}
-          </CardDescription>
-        </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <FieldGroup className="gap-3 md:grid md:grid-cols-[minmax(0,1fr)_14rem_12rem]">
             <Field>
@@ -247,17 +239,28 @@ export default function ExecutionsPage() {
           ) : null}
 
           {!executionsQuery.isLoading && !executionsQuery.isError ? (
-            <Table>
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('list.columns.execution')}</TableHead>
-                  <TableHead>{t('list.columns.status')}</TableHead>
-                  <TableHead>{t('list.columns.project')}</TableHead>
-                  <TableHead>{t('list.columns.client')}</TableHead>
-                  <TableHead>{t('list.columns.clinic')}</TableHead>
-                  <TableHead>{t('list.columns.bot')}</TableHead>
-                  <TableHead>{t('list.columns.createdAt')}</TableHead>
-                  <TableHead className="text-right">{t('list.columns.actions')}</TableHead>
+                  <TableHead className="w-28 whitespace-normal">{t('list.columns.execution')}</TableHead>
+                  <TableHead className="w-28">{t('list.columns.status')}</TableHead>
+                  <TableHead className="hidden whitespace-normal lg:table-cell xl:w-28">
+                    {t('list.columns.project')}
+                  </TableHead>
+                  <TableHead className="hidden whitespace-normal lg:table-cell xl:w-36">
+                    {t('list.columns.client')}
+                  </TableHead>
+                  <TableHead className="hidden whitespace-normal xl:table-cell xl:w-36">
+                    {t('list.columns.clinic')}
+                  </TableHead>
+                  <TableHead className="w-[11rem] whitespace-normal sm:w-[14rem]">
+                    {t('list.columns.patients')}
+                  </TableHead>
+                  <TableHead className="hidden whitespace-normal 2xl:table-cell 2xl:w-36">
+                    {t('list.columns.bot')}
+                  </TableHead>
+                  <TableHead className="hidden 2xl:table-cell 2xl:w-36">{t('list.columns.createdAt')}</TableHead>
+                  <TableHead className="w-16 text-right sm:w-28">{t('list.columns.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -269,7 +272,7 @@ export default function ExecutionsPage() {
 
                     return (
                       <TableRow key={execution._id}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium whitespace-normal break-words">
                           <Link className="hover:underline" to={`/execution/${execution._id}`}>
                             {executionDayLabel}
                           </Link>
@@ -277,28 +280,43 @@ export default function ExecutionsPage() {
                         <TableCell>
                           <ExecutionStatusBadge status={status} />
                         </TableCell>
-                        <TableCell>{getExecutionProjectLabel(execution)}</TableCell>
-                        <TableCell>{displayNames.client || t('list.emptyValue')}</TableCell>
-                        <TableCell>{displayNames.clinic || t('list.emptyValue')}</TableCell>
-                        <TableCell>{execution.botName || execution.bot || t('list.emptyValue')}</TableCell>
-                        <TableCell>{formatExecutionDateTime(execution.createdAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            nativeButton={false}
-                            variant="outline"
-                            size="sm"
-                            render={<Link to={`/execution/${execution._id}`} />}
-                          >
-                            {t('list.viewDetails')}
-                            <IconExternalLink data-icon="inline-end" />
-                          </Button>
+                        <TableCell className="hidden whitespace-normal break-words lg:table-cell">
+                          {getExecutionProjectLabel(execution)}
+                        </TableCell>
+                        <TableCell className="hidden whitespace-normal break-words lg:table-cell">
+                          {displayNames.client || t('list.emptyValue')}
+                        </TableCell>
+                        <TableCell className="hidden whitespace-normal break-words xl:table-cell">
+                          {displayNames.clinic || t('list.emptyValue')}
+                        </TableCell>
+                        <TableCell className="whitespace-normal break-words">
+                          <ExecutionPatientsDialog execution={execution} executionLabel={executionDayLabel} />
+                        </TableCell>
+                        <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
+                          {execution.botName || execution.bot || t('list.emptyValue')}
+                        </TableCell>
+                        <TableCell className="hidden whitespace-nowrap 2xl:table-cell">
+                          {formatExecutionDateTime(execution.createdAt)}
+                        </TableCell>
+                        <TableCell className="">
+                          <div className="flex justify-end">
+                            <Button
+                              nativeButton={false}
+                              variant="outline"
+                              className="text-xs"
+                              render={<Link to={`/execution/${execution._id}`} />}
+                            >
+                              <span className="sr-only sm:not-sr-only">{t('list.viewDetails')}</span>
+                              <IconExternalLink data-icon="inline-end" className="not-sr-only sm:sr-only" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )
                   })
                 ) : (
                   <TableRow>
-                    <TableCell className="h-28 text-center text-muted-foreground" colSpan={8}>
+                    <TableCell className="h-28 text-center text-muted-foreground" colSpan={9}>
                       {isFiltered ? t('list.noFilteredExecutions') : t('list.noExecutions')}
                     </TableCell>
                   </TableRow>
