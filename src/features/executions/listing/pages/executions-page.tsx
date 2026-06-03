@@ -171,7 +171,7 @@ export default function ExecutionsPage() {
             <Field>
               <FieldLabel htmlFor="execution-search">{t('list.filters.searchLabel')}</FieldLabel>
               <div className="relative">
-                <IconSearch className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
+                <IconSearch className="size-4 pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="execution-search"
                   value={searchValue}

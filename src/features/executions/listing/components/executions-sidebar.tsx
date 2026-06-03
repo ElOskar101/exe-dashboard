@@ -211,7 +211,7 @@ export function ExecutionsSidebar() {
                           className={cn('size-3.5 shrink-0 transition-transform', !isOpen && '-rotate-90')}
                         />
                         <span className="truncate">{group.project}</span>
-                        <span className="ml-auto shrink-0 text-[10px] tracking-[0.18em] uppercase text-sidebar-foreground/55">
+                        <span className="ml-auto shrink-0 text-xs text-sidebar-foreground/55">
                           {group.executions.length}
                         </span>
                       </CollapsibleTrigger>
