@@ -1,5 +1,6 @@
 import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router-dom'
 import { UserCard } from '@/features/auth'
 import { useTheme } from '@/hooks/use-theme'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,8 @@ import { IconBrightnessDown, IconMoon } from '@tabler/icons-react'
 
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation()
+  const { t: executionT } = useTranslation('executions')
+  const { pathname } = useLocation()
   const { theme, handleTheme } = useTheme()
 
   return (
@@ -23,6 +26,14 @@ const Header: () => JSX.Element = () => {
             <a href="/" className="transition-colors">
               <img className="h-8 w-auto object-cover" src="/agent-icon.svg" alt={t('project-name')} />
             </a>
+            <Button
+              nativeButton={false}
+              variant={pathname === '/executions' ? 'secondary' : 'ghost'}
+              size="sm"
+              render={<Link to="/executions" />}
+            >
+              {executionT('sidebar.allExecutions')}
+            </Button>
           </div>
 
           <div className="ms-auto flex items-center gap-x-2">

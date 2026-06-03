@@ -1,14 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import {
-  IconAlertCircle,
-  IconChevronDown,
-  IconListDetails,
-  IconPlus,
-  IconRefresh,
-  IconTrash,
-} from '@tabler/icons-react'
+import { IconAlertCircle, IconChevronDown, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -147,16 +140,6 @@ export function ExecutionsSidebar() {
             >
               <span>{t('sidebar.createExecution')}</span>
               <IconPlus className="ml-auto" />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              render={<Link to="/executions" onClick={closeSidebarOnMobile} />}
-              isActive={pathname === '/executions'}
-              tooltip={t('sidebar.allExecutions')}
-            >
-              <span>{t('sidebar.allExecutions')}</span>
-              <IconListDetails className="ml-auto" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

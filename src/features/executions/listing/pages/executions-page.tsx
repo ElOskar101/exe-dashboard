@@ -1,6 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { useQueries } from '@tanstack/react-query'
 import { IconAlertCircle, IconExternalLink, IconPlus, IconSearch } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +15,6 @@ import { Spinner } from '@/components/ui/spinner'
 import {
   EXECUTION_STATUSES,
   formatExecutionDateTime,
-  getExecutionLabel,
   isExecutionFailed,
   isExecutionRunning,
   isExecutionSuccessful,
@@ -24,6 +24,7 @@ import {
   type Execution,
   type ExecutionStatus,
 } from '@/features/executions/shared'
+import { executionWizardKeys, getCustomerById, type CustomerDetailsResponse } from '@/features/executions/creation'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { getExecutionDayLabel, groupExecutionsByProject } from '../lib/execution-sidebar-display'
 
@@ -33,12 +34,14 @@ const UNKNOWN_PROJECT_LABEL = 'Unknown project'
 const getResolvedExecutionStatus = (execution: Execution, executionStatusReadModel: Record<string, ExecutionStatus>) =>
   executionStatusReadModel[execution._id] ?? normalizeExecutionStatus(execution.status)
 
-const getFilterableExecutionText = (execution: Execution) =>
+const getFilterableExecutionText = (execution: Execution, displayNames: ExecutionDisplayNames) =>
   [
     execution._id,
     execution.playwrightProject,
     execution.client,
     execution.clinic,
+    displayNames.client,
+    displayNames.clinic,
     execution.execution,
     execution.bot,
     execution.botName,
@@ -48,13 +51,31 @@ const getFilterableExecutionText = (execution: Execution) =>
     .join(' ')
     .toLowerCase()
 
-const getExecutionSearchMatch = (execution: Execution, searchTerm: string) => {
+const getExecutionSearchMatch = (execution: Execution, searchTerm: string, displayNames: ExecutionDisplayNames) => {
   if (!searchTerm) return true
 
-  return getFilterableExecutionText(execution).includes(searchTerm)
+  return getFilterableExecutionText(execution, displayNames).includes(searchTerm)
 }
 
 const getExecutionProjectLabel = (execution: Execution) => execution.playwrightProject || UNKNOWN_PROJECT_LABEL
+
+interface ExecutionDisplayNames {
+  client: string
+  clinic: string
+}
+
+const getExecutionDisplayNames = (
+  execution: Execution,
+  customersById: Map<string, CustomerDetailsResponse>,
+): ExecutionDisplayNames => {
+  const customer = customersById.get(execution.client)
+  const clinic = customer?.clinic.find((customerClinic) => customerClinic._id === execution.clinic)
+
+  return {
+    client: customer?.clientName || execution.client,
+    clinic: clinic?.clinicName || execution.clinic,
+  }
+}
 
 function ExecutionStatusBadge({ status }: { status: ExecutionStatus }) {
   const { t } = useTranslation('executions')
@@ -78,19 +99,54 @@ export default function ExecutionsPage() {
   const executionStatusReadModel = useExecutionStatusReadModel()
   const groupedExecutions = useMemo(() => groupExecutionsByProject(executionsQuery.data ?? []), [executionsQuery.data])
   const sortedExecutions = useMemo(() => groupedExecutions.flatMap((group) => group.executions), [groupedExecutions])
+  const customerIds = useMemo(
+    () => Array.from(new Set(sortedExecutions.map((execution) => execution.client).filter(Boolean))).sort(),
+    [sortedExecutions],
+  )
+  const customerQueries = useQueries({
+    queries: customerIds.map((customerId) => ({
+      queryKey: executionWizardKeys.customer(customerId),
+      queryFn: async () => {
+        const response = await getCustomerById(customerId)
+
+        return response.data
+      },
+    })),
+  })
+  const customersById = useMemo(() => {
+    const nextCustomersById = new Map<string, CustomerDetailsResponse>()
+
+    customerQueries.forEach((customerQuery) => {
+      if (customerQuery.data) {
+        nextCustomersById.set(customerQuery.data._id, customerQuery.data)
+      }
+    })
+
+    return nextCustomersById
+  }, [customerQueries])
   const projectOptions = useMemo(() => groupedExecutions.map((group) => group.project), [groupedExecutions])
   const normalizedSearchValue = deferredSearchValue.trim().toLowerCase()
   const filteredExecutions = useMemo(
     () =>
       sortedExecutions.filter((execution) => {
         const status = getResolvedExecutionStatus(execution, executionStatusReadModel.data)
+        const displayNames = getExecutionDisplayNames(execution, customersById)
         const matchesProject =
           projectFilter === ALL_FILTER_VALUE || getExecutionProjectLabel(execution) === projectFilter
         const matchesStatus = statusFilter === ALL_FILTER_VALUE || status === statusFilter
 
-        return matchesProject && matchesStatus && getExecutionSearchMatch(execution, normalizedSearchValue)
+        return (
+          matchesProject && matchesStatus && getExecutionSearchMatch(execution, normalizedSearchValue, displayNames)
+        )
       }),
-    [executionStatusReadModel.data, normalizedSearchValue, projectFilter, sortedExecutions, statusFilter],
+    [
+      customersById,
+      executionStatusReadModel.data,
+      normalizedSearchValue,
+      projectFilter,
+      sortedExecutions,
+      statusFilter,
+    ],
   )
   const isFiltered =
     Boolean(normalizedSearchValue) || projectFilter !== ALL_FILTER_VALUE || statusFilter !== ALL_FILTER_VALUE
@@ -102,7 +158,7 @@ export default function ExecutionsPage() {
           <h1 className="text-3xl font-semibold tracking-tight">{t('list.title')}</h1>
           <p className="max-w-3xl text-muted-foreground">{t('list.description')}</p>
         </div>
-        <Button render={<Link to="/" />}>
+        <Button nativeButton={false} render={<Link to="/" />}>
           <IconPlus data-icon="inline-start" />
           {t('list.createExecution')}
         </Button>
@@ -208,29 +264,31 @@ export default function ExecutionsPage() {
                 {filteredExecutions.length > 0 ? (
                   filteredExecutions.map((execution) => {
                     const status = getResolvedExecutionStatus(execution, executionStatusReadModel.data)
-                    const executionLabel = getExecutionLabel(execution)
                     const executionDayLabel = getExecutionDayLabel(execution)
+                    const displayNames = getExecutionDisplayNames(execution, customersById)
 
                     return (
                       <TableRow key={execution._id}>
                         <TableCell className="font-medium">
-                          <div className="flex min-w-44 flex-col gap-1">
-                            <Link className="hover:underline" to={`/execution/${execution._id}`}>
-                              {executionDayLabel}
-                            </Link>
-                            <span className="text-xs text-muted-foreground">{executionLabel}</span>
-                          </div>
+                          <Link className="hover:underline" to={`/execution/${execution._id}`}>
+                            {executionDayLabel}
+                          </Link>
                         </TableCell>
                         <TableCell>
                           <ExecutionStatusBadge status={status} />
                         </TableCell>
                         <TableCell>{getExecutionProjectLabel(execution)}</TableCell>
-                        <TableCell>{execution.client || t('list.emptyValue')}</TableCell>
-                        <TableCell>{execution.clinic || t('list.emptyValue')}</TableCell>
+                        <TableCell>{displayNames.client || t('list.emptyValue')}</TableCell>
+                        <TableCell>{displayNames.clinic || t('list.emptyValue')}</TableCell>
                         <TableCell>{execution.botName || execution.bot || t('list.emptyValue')}</TableCell>
                         <TableCell>{formatExecutionDateTime(execution.createdAt)}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" render={<Link to={`/execution/${execution._id}`} />}>
+                          <Button
+                            nativeButton={false}
+                            variant="outline"
+                            size="sm"
+                            render={<Link to={`/execution/${execution._id}`} />}
+                          >
                             {t('list.viewDetails')}
                             <IconExternalLink data-icon="inline-end" />
                           </Button>
