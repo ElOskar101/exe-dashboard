@@ -195,6 +195,7 @@
   "sidebar": {
     "title": "Executions",
     "createExecution": "Create execution",
+    "allExecutions": "All executions",
     "loadErrorTitle": "Executions could not be loaded",
     "loadErrorDescription": "Try again to refresh the executions list.",
     "refreshList": "Refresh executions",
@@ -206,6 +207,47 @@
     "cancelDelete": "Cancel",
     "confirmDelete": "Delete",
     "deleting": "Deleting..."
+  },
+  "list": {
+    "title": "All executions",
+    "description": "Review every execution currently available in the sidebar, filter locally, and open a run for details.",
+    "createExecution": "Create execution",
+    "tableTitle": "Executions",
+    "tableDescription": "Showing {{count}} of {{total}} executions.",
+    "emptyValue": "None",
+    "viewDetails": "View details",
+    "loadErrorTitle": "Executions could not be loaded",
+    "loadErrorDescription": "Try again to refresh the executions table.",
+    "retry": "Retry",
+    "noExecutions": "No executions yet.",
+    "noFilteredExecutions": "No executions match these filters.",
+    "filters": {
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search by client, clinic, bot, project, or ID",
+      "projectLabel": "Project",
+      "allProjects": "All projects",
+      "statusLabel": "Status",
+      "allStatuses": "All statuses"
+    },
+    "columns": {
+      "execution": "Execution",
+      "status": "Status",
+      "project": "Project",
+      "client": "Client",
+      "clinic": "Clinic",
+      "bot": "Bot",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "statusOptions": {
+      "queued": "Queued",
+      "running": "Running",
+      "paused": "Paused",
+      "completed": "Completed",
+      "unknown": "Unknown",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    }
   },
   "detail": {
     "title": "Execution details",

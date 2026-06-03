@@ -9,6 +9,7 @@ const ExecutionCreatePage = lazy(() =>
 const ExecutionDetailPage = lazy(() =>
   import('@/features/executions/monitoring').then((module) => ({ default: module.ExecutionDetailPage })),
 )
+const ExecutionsPage = lazy(() => import('@/features/executions/listing/pages/executions-page'))
 const NotFound = lazy(() => import('@/pages/not-found.tsx'))
 const UnderConstruction = lazy(() => import('@/features/auth/pages/under-construction'))
 
@@ -28,6 +29,7 @@ export const AppRouter = () => {
             }
           >
             <Route index element={<ExecutionCreatePage />} />
+            <Route path="executions" element={<ExecutionsPage />} />
             <Route path="execution/:id" element={<ExecutionDetailPage />} />
           </Route>
         </Routes>
