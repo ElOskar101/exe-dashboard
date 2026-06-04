@@ -27,6 +27,7 @@ export default function ExecutionsPage() {
     executionsQuery,
     filteredExecutions,
     isFiltered,
+    loadingCustomerIds,
     selectedClientIds,
     selectedClinicIds,
     statusFilter,
@@ -81,7 +82,10 @@ export default function ExecutionsPage() {
             <Field className="gap-2">
               <FieldLabel htmlFor="execution-status-filter">{t('list.filters.statusLabel')}</FieldLabel>
               <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? ALL_FILTER_VALUE)}>
-                <SelectTrigger id="execution-status-filter" className="w-full">
+                <SelectTrigger
+                  id="execution-status-filter"
+                  className="w-full rounded-4xl border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-transparent dark:hover:bg-input/30"
+                >
                   <SelectValue placeholder={t('list.filters.allStatuses')}>{selectedStatusFilterLabel}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="start">
@@ -126,6 +130,7 @@ export default function ExecutionsPage() {
           {!executionsQuery.isLoading && !executionsQuery.isError ? (
             <ExecutionsTable
               customersById={customersById}
+              loadingCustomerIds={loadingCustomerIds}
               executionStatusReadModel={executionStatusReadModel.data}
               executions={filteredExecutions}
               isFiltered={isFiltered}

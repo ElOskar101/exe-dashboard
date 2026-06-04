@@ -75,6 +75,19 @@ export function useExecutionsListing() {
 
     return nextCustomersById
   }, [customerQueries])
+  const loadingCustomerIds = useMemo(() => {
+    const nextLoadingCustomerIds = new Set<string>()
+
+    customerQueries.forEach((customerQuery, index) => {
+      const customerId = customerIds[index]
+
+      if (customerId && customerQuery.isLoading) {
+        nextLoadingCustomerIds.add(customerId)
+      }
+    })
+
+    return nextLoadingCustomerIds
+  }, [customerIds, customerQueries])
   const clinicOptions = useMemo(
     () => getSelectedClientClinicOptions(customersById, selectedClientIds),
     [customersById, selectedClientIds],
@@ -130,6 +143,7 @@ export function useExecutionsListing() {
     executionsQuery,
     filteredExecutions,
     isFiltered,
+    loadingCustomerIds,
     selectedClientIds,
     selectedClinicIds,
     statusFilter,

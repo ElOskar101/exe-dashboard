@@ -25,5 +25,5 @@ export const formatExecutionDate = (value?: string) => {
     return value
   }
 
-  return format(parsedDate, 'MMM d')
+  return format(parsedDate, 'MMM d, yyyy')
 }

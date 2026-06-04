@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { IconExternalLink } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { formatExecutionDate, type Execution, type ExecutionStatus } from '@/features/executions/shared'
 import { type CustomerDetailsResponse } from '@/features/executions/creation'
@@ -21,6 +22,7 @@ interface ExecutionsTableProps {
   executionStatusReadModel: Record<string, ExecutionStatus>
   executions: Execution[]
   isFiltered: boolean
+  loadingCustomerIds: Set<string>
 }
 
 export function ExecutionsTable({
@@ -28,6 +30,7 @@ export function ExecutionsTable({
   executionStatusReadModel,
   executions,
   isFiltered,
+  loadingCustomerIds,
 }: ExecutionsTableProps) {
   const { t } = useTranslation('executions')
 
@@ -54,6 +57,7 @@ export function ExecutionsTable({
             const status = getResolvedExecutionStatus(execution, executionStatusReadModel)
             const executionDayLabel = getExecutionDayLabel(execution)
             const displayNames = getExecutionDisplayNames(execution, customersById)
+            const isCustomerLoading = loadingCustomerIds.has(execution.client) && !customersById.has(execution.client)
 
             return (
               <TableRow key={execution._id}>
@@ -66,10 +70,10 @@ export function ExecutionsTable({
                   <ExecutionStatusBadge status={status} />
                 </TableCell>
                 <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                  {displayNames.client || t('list.emptyValue')}
+                  {isCustomerLoading ? <Skeleton className="h-4 w-20" /> : displayNames.client || t('list.emptyValue')}
                 </TableCell>
                 <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                  {displayNames.clinic || t('list.emptyValue')}
+                  {isCustomerLoading ? <Skeleton className="h-4 w-24" /> : displayNames.clinic || t('list.emptyValue')}
                 </TableCell>
                 <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
                   {getExecutionProjectLabel(execution)}

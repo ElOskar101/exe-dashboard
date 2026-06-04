@@ -3,7 +3,7 @@ import { formatExecutionDate, formatExecutionDateTime } from './format-execution
 
 describe('execution date formatting', () => {
   it('formats a brief execution date without time', () => {
-    expect(formatExecutionDate('2026-05-08T14:00:00.000Z')).toBe('May 8')
+    expect(formatExecutionDate('2026-05-08T14:00:00.000Z')).toBe('May 8, 2026')
   })
 
   it('keeps the fallback value for invalid dates', () => {

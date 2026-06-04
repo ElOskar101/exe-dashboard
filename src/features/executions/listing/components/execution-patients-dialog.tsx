@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import type { Execution } from '@/features/executions/shared'
 import { formatExecutionPatientOtherInformation, getExecutionPatientsSummary } from '../lib/execution-patients-display'
 
@@ -32,89 +33,98 @@ export function ExecutionPatientsDialog({ execution, executionLabel }: Execution
         render={
           <Button
             variant="link"
-            size="sm"
             type="button"
             aria-label={t('list.patientTriggerAriaLabel', { execution: executionLabel })}
-            className="h-auto justify-start px-0 py-0 text-left whitespace-normal break-words"
+            className="text-foreground h-auto justify-start px-0 py-0 text-left whitespace-normal break-words"
           />
         }
       >
         {getExecutionPatientsSummary(patients, emptyValue)}
       </DialogTrigger>
-      <DialogContent initialFocus={titleRef} className="sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto pr-2">
+      <DialogContent initialFocus={titleRef} className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle ref={titleRef} tabIndex={-1}>
             {t('list.patientsDialogTitle')}
           </DialogTitle>
           <DialogDescription>{t('list.patientsDialogDescription', { execution: executionLabel })}</DialogDescription>
         </DialogHeader>
-        {patients.length > 0 ? (
-          <div className="pr-2">
-            <div className="grid grid-cols-2 gap-4">
-              {patients.map((patient, index) => (
-                <Card key={`${execution._id}-patient-${index}`} className="bg-muted/15">
-                  <CardContent>
-                    <dl className="grid gap-4 text-sm sm:grid-cols-2">
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.patientName')}
-                        value={patient.patientName}
-                      />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.patientLastName')}
-                        value={patient.patientLastName}
-                      />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.memberId')}
-                        value={patient.patientMemberId}
-                      />
-                      <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob} />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.policyHolderName')}
-                        value={patient.policyHolderName}
-                      />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.policyHolderLastName')}
-                        value={patient.policyHolderLastName}
-                      />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.policyHolderDob')}
-                        value={patient.policyHolderDob}
-                      />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.relationship')}
-                        value={patient.relationship}
-                      />
-                      <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />
-                      <PatientField emptyValue={emptyValue} label={t('fields.patientClinic')} value={patient.clinic} />
-                      <PatientField
-                        emptyValue={emptyValue}
-                        label={t('fields.verificationType')}
-                        value={patient.verificationType}
-                      />
-                      <PatientField emptyValue={emptyValue} label={t('fields.filenames')} value={patient.filenames} />
-                      <PatientMetadataField
-                        emptyValue={emptyValue}
-                        label={t('fields.patientOtherInformation')}
-                        value={formatExecutionPatientOtherInformation(patient.otherInformation, emptyValue)}
-                      />
-                    </dl>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+        <ScrollArea className="max-h-[calc(100vh-16rem)]" viewportProps={{ className: 'max-h-[calc(100vh-16rem)]' }}>
+          <div className="p-1 pr-3">
+            {patients.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {patients.map((patient, index) => (
+                  <Card key={`${execution._id}-patient-${index}`} className="bg-muted/15">
+                    <CardContent>
+                      <dl className="grid gap-4 text-sm sm:grid-cols-2">
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.patientName')}
+                          value={patient.patientName}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.patientLastName')}
+                          value={patient.patientLastName}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.memberId')}
+                          value={patient.patientMemberId}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.patientDob')}
+                          value={patient.patientDob}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.policyHolderName')}
+                          value={patient.policyHolderName}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.policyHolderLastName')}
+                          value={patient.policyHolderLastName}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.policyHolderDob')}
+                          value={patient.policyHolderDob}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.relationship')}
+                          value={patient.relationship}
+                        />
+                        <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.patientClinic')}
+                          value={patient.clinic}
+                        />
+                        <PatientField
+                          emptyValue={emptyValue}
+                          label={t('fields.verificationType')}
+                          value={patient.verificationType}
+                        />
+                        <PatientField emptyValue={emptyValue} label={t('fields.filenames')} value={patient.filenames} />
+                        <PatientMetadataField
+                          emptyValue={emptyValue}
+                          label={t('fields.patientOtherInformation')}
+                          value={formatExecutionPatientOtherInformation(patient.otherInformation, emptyValue)}
+                        />
+                      </dl>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-3xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
+                {t('list.noPatients')}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="rounded-3xl border border-dashed border-border/70 bg-muted/20 p-6 text-sm text-muted-foreground">
-            {t('list.noPatients')}
-          </div>
-        )}
+        </ScrollArea>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>{t('list.closePatientsDialog')}</DialogClose>
         </DialogFooter>
