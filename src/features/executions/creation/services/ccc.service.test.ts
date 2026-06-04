@@ -40,6 +40,27 @@ describe('ccc.service', () => {
     })
   })
 
+  it('searchCustomers sends pagination params', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: {
+        totalDocs: 0,
+        totalPages: 0,
+        query: {},
+        customers: [],
+      },
+    })
+
+    await searchCustomers('legacy', { limit: 15, page: 2 })
+
+    expect(cccClient.get).toHaveBeenCalledWith('v2/customers', {
+      params: {
+        clientName: 'legacy',
+        limit: 15,
+        page: 2,
+      },
+    })
+  })
+
   it('getAllCustomers requests each customer search page', async () => {
     vi.mocked(cccClient.get)
       .mockResolvedValueOnce({

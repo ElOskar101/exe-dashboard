@@ -17,7 +17,7 @@ export {
   syncExecutionsFromListSnapshot,
   type ExecutionStatusReadModel,
 } from './lib/execution-status-cache'
-export { formatExecutionDateTime } from './lib/format-execution-date-time'
+export { formatExecutionDate, formatExecutionDateTime } from './lib/format-execution-date-time'
 export { getStatusBadgeClassName, getStatusBadgeVariant } from './lib/execution-badge-styles'
 export type {
   ExecutionCreatePayload,

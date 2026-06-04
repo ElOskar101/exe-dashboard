@@ -16,6 +16,7 @@ export interface CustomerSearchResponse {
 }
 
 interface CustomerSearchOptions {
+  limit?: number
   page?: number
 }
 
@@ -80,6 +81,7 @@ export const searchCustomers = (clientName: string, options: CustomerSearchOptio
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
       clientName,
+      ...(options.limit ? { limit: options.limit } : {}),
       ...(options.page ? { page: options.page } : {}),
     },
   })

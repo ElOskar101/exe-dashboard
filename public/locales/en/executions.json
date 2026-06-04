@@ -230,6 +230,9 @@
       "clientLabel": "Client",
       "allClients": "All clients",
       "searchClients": "Search clients",
+      "removeAllClients": "Remove all clients",
+      "loadingClients": "Loading clients...",
+      "loadingMoreClients": "Loading more clients...",
       "selectedClients": "{{count}} clients selected",
       "noClients": "No clients available.",
       "clinicLabel": "Clinic",
@@ -249,7 +252,7 @@
       "clinic": "Clinic",
       "patients": "Patients",
       "bot": "Bot",
-      "createdAt": "Created",
+      "createdAt": "Created at",
       "actions": "Actions"
     },
     "statusOptions": {

@@ -1,7 +1,7 @@
-import { useMemo, useState, type Dispatch } from 'react'
+import { useMemo, useState, type Dispatch, type UIEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueries } from '@tanstack/react-query'
 import { IconAlertCircle, IconChevronDown, IconExternalLink, IconPlus, IconX } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -16,10 +16,11 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { cn } from '@/lib/utils'
 import {
   EXECUTION_STATUSES,
-  formatExecutionDateTime,
+  formatExecutionDate,
   isExecutionRunning,
   getStatusBadgeClassName,
   getStatusBadgeVariant,
@@ -32,8 +33,8 @@ import {
 } from '@/features/executions/shared'
 import {
   executionWizardKeys,
-  getAllCustomers,
   getCustomerById,
+  searchCustomers,
   type CustomerDetailsResponse,
   type CustomerSearchItem,
 } from '@/features/executions/creation'
@@ -42,7 +43,10 @@ import { ExecutionPatientsDialog } from '../components/execution-patients-dialog
 import { getExecutionDayLabel, groupExecutionsByProject } from '../lib/execution-sidebar-display'
 
 const ALL_FILTER_VALUE = 'all'
+const CLIENT_FILTER_PAGE_SIZE = 15
+const CLIENT_FILTER_SEARCH_DELAY_MS = 300
 const EXECUTION_DATE_FIELD = 'createdAt'
+const FILTER_SCROLL_BOTTOM_THRESHOLD = 48
 const UNKNOWN_PROJECT_LABEL = 'Unknown project'
 
 const getResolvedExecutionStatus = (execution: Execution, executionStatusReadModel: Record<string, ExecutionStatus>) =>
@@ -78,8 +82,8 @@ const compareFilterOptions = (a: ExecutionFilterOption, b: ExecutionFilterOption
 
 const getClientFilterOptions = (
   customers: CustomerSearchItem[],
-  executions: Execution[],
   customersById: Map<string, CustomerDetailsResponse>,
+  selectedClientIds: string[],
 ): ExecutionFilterOption[] => {
   const optionsByValue = new Map<string, ExecutionFilterOption>()
 
@@ -91,12 +95,14 @@ const getClientFilterOptions = (
     optionsByValue.set(value, { value, label: customer.clientName || value })
   })
 
-  executions.forEach((execution) => {
-    const value = execution.client.trim()
+  selectedClientIds.forEach((clientId) => {
+    const value = clientId.trim()
 
     if (!value) return
 
-    const label = customersById.get(value)?.clientName || value
+    const existingOption = optionsByValue.get(value)
+    const label = customersById.get(value)?.clientName || existingOption?.label || value
+
     optionsByValue.set(value, { value, label })
   })
 
@@ -149,10 +155,20 @@ const matchesDateRange = (execution: Execution, from: Date | undefined, to: Date
 }
 
 interface ExecutionMultiSelectFilterProps {
+  clearSelectionLabel?: string
+  clearSelectionPlacement?: 'top' | 'bottom'
   disabled?: boolean
   emptyMessage: string
+  filterOptionsLocally?: boolean
+  hasMoreOptions?: boolean
   id: string
   label: string
+  loadingMessage?: string
+  loadingMoreMessage?: string
+  isLoadingMoreOptions?: boolean
+  isLoadingOptions?: boolean
+  onLoadMoreOptions?: () => void
+  onSearchValueChange?: Dispatch<string>
   onSelectedValuesChange: Dispatch<string[]>
   options: ExecutionFilterOption[]
   placeholder: string
@@ -162,10 +178,20 @@ interface ExecutionMultiSelectFilterProps {
 }
 
 function ExecutionMultiSelectFilter({
+  clearSelectionLabel,
+  clearSelectionPlacement = 'top',
   disabled = false,
   emptyMessage,
+  filterOptionsLocally = true,
+  hasMoreOptions = false,
   id,
   label,
+  loadingMessage,
+  loadingMoreMessage,
+  isLoadingMoreOptions = false,
+  isLoadingOptions = false,
+  onLoadMoreOptions,
+  onSearchValueChange,
   onSelectedValuesChange,
   options,
   placeholder,
@@ -175,12 +201,14 @@ function ExecutionMultiSelectFilter({
 }: ExecutionMultiSelectFilterProps) {
   const [searchValue, setSearchValue] = useState('')
   const filteredOptions = useMemo(() => {
+    if (!filterOptionsLocally) return options
+
     const normalizedSearchValue = searchValue.trim().toLocaleLowerCase()
 
     if (!normalizedSearchValue) return options
 
     return options.filter((option) => option.label.toLocaleLowerCase().includes(normalizedSearchValue))
-  }, [options, searchValue])
+  }, [filterOptionsLocally, options, searchValue])
   const selectedValuesSet = useMemo(() => new Set(selectedValues), [selectedValues])
   const selectedLabel = useMemo(() => {
     if (selectedValues.length === 0) return placeholder
@@ -199,6 +227,32 @@ function ExecutionMultiSelectFilter({
         : selectedValues.filter((selectedValue) => selectedValue !== value),
     )
   }
+  const clearSelectionButton = selectedValues.length > 0 && (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className={cn(clearSelectionPlacement === 'bottom' ? 'w-full justify-start' : 'w-fit')}
+      onClick={() => onSelectedValuesChange([])}
+    >
+      <IconX data-icon="inline-start" />
+      {clearSelectionLabel ?? placeholder}
+    </Button>
+  )
+  const handleSearchValueChange = (value: string) => {
+    setSearchValue(value)
+    onSearchValueChange?.(value)
+  }
+  const handleOptionsScroll = (event: UIEvent<HTMLDivElement>) => {
+    if (!onLoadMoreOptions || !hasMoreOptions || isLoadingMoreOptions) return
+
+    const viewport = event.currentTarget
+    const distanceToBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight
+
+    if (distanceToBottom <= FILTER_SCROLL_BOTTOM_THRESHOLD) {
+      onLoadMoreOptions()
+    }
+  }
 
   return (
     <Field className="gap-2">
@@ -216,29 +270,26 @@ function ExecutionMultiSelectFilter({
           <PopoverHeader>
             <PopoverTitle>{label}</PopoverTitle>
           </PopoverHeader>
-          {selectedValues.length > 0 ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="w-fit"
-              onClick={() => onSelectedValuesChange([])}
-            >
-              <IconX data-icon="inline-start" />
-              {placeholder}
-            </Button>
-          ) : null}
+          {clearSelectionPlacement === 'top' ? clearSelectionButton : null}
           {searchPlaceholder ? (
             <Input
               type="search"
               value={searchValue}
               placeholder={searchPlaceholder}
               aria-label={searchPlaceholder}
-              onChange={(event) => setSearchValue(event.target.value)}
+              onChange={(event) => handleSearchValueChange(event.target.value)}
             />
           ) : null}
-          <ScrollArea className="max-h-72" viewportProps={{ className: 'flex max-h-72 flex-col gap-1' }}>
-            {filteredOptions.length > 0 ? (
+          <ScrollArea
+            className="max-h-72"
+            viewportProps={{ className: 'flex max-h-72 flex-col gap-1', onScroll: handleOptionsScroll }}
+          >
+            {isLoadingOptions && filteredOptions.length === 0 ? (
+              <div className="flex items-center gap-2 rounded-2xl px-2 py-1.5 text-muted-foreground">
+                <Spinner data-icon="inline-start" />
+                {loadingMessage ?? emptyMessage}
+              </div>
+            ) : filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <Label
                   key={option.value}
@@ -254,7 +305,16 @@ function ExecutionMultiSelectFilter({
             ) : (
               <div className="rounded-2xl px-2 py-1.5 text-muted-foreground">{emptyMessage}</div>
             )}
+            {isLoadingMoreOptions ? (
+              <div className="flex items-center gap-2 rounded-2xl px-2 py-1.5 text-muted-foreground">
+                <Spinner data-icon="inline-start" />
+                {loadingMoreMessage ?? loadingMessage ?? emptyMessage}
+              </div>
+            ) : null}
           </ScrollArea>
+          {clearSelectionPlacement === 'bottom' && clearSelectionButton ? (
+            <div className="sticky bottom-0 -mx-4 -mb-4 border-t bg-popover p-3">{clearSelectionButton}</div>
+          ) : null}
         </PopoverContent>
       </Popover>
     </Field>
@@ -276,9 +336,11 @@ export default function ExecutionsPage() {
   const { t } = useTranslation('executions')
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([])
   const [selectedClinicIds, setSelectedClinicIds] = useState<string[]>([])
+  const [clientSearchValue, setClientSearchValue] = useState('')
   const [dateFromValue, setDateFromValue] = useState('')
   const [dateToValue, setDateToValue] = useState('')
   const [statusFilter, setStatusFilter] = useState(ALL_FILTER_VALUE)
+  const debouncedClientSearchValue = useDebouncedValue(clientSearchValue, CLIENT_FILTER_SEARCH_DELAY_MS)
   const dateFrom = useMemo(() => parseDateInputValue(dateFromValue, 'start'), [dateFromValue])
   const dateTo = useMemo(() => parseDateInputValue(dateToValue, 'end'), [dateToValue])
   const executionQueryFilters = useMemo(() => {
@@ -295,12 +357,22 @@ export default function ExecutionsPage() {
   }, [dateFrom, dateTo, selectedClientIds, selectedClinicIds, statusFilter])
   const allExecutionsQuery = useExecutionsQuery()
   const executionsQuery = useExecutionsQuery(executionQueryFilters)
-  const allCustomersQuery = useQuery({
-    queryKey: executionWizardKeys.customers(),
-    queryFn: async () => {
-      const response = await getAllCustomers()
+  const clientSearchQuery = useInfiniteQuery({
+    queryKey: executionWizardKeys.customerSearch(debouncedClientSearchValue, { limit: CLIENT_FILTER_PAGE_SIZE }),
+    queryFn: async ({ pageParam }) => {
+      const response = await searchCustomers(debouncedClientSearchValue, {
+        limit: CLIENT_FILTER_PAGE_SIZE,
+        page: pageParam,
+      })
 
-      return response.data.customers
+      return response.data
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      const nextPage = pages.length + 1
+      const totalPages = Math.max(lastPage.totalPages, 1)
+
+      return nextPage <= totalPages ? nextPage : undefined
     },
   })
   const executionStatusReadModel = useExecutionStatusReadModel()
@@ -342,9 +414,13 @@ export default function ExecutionsPage() {
 
     return nextCustomersById
   }, [customerQueries])
+  const searchedCustomers = useMemo(
+    () => clientSearchQuery.data?.pages.flatMap((page) => page.customers) ?? [],
+    [clientSearchQuery.data],
+  )
   const clientOptions = useMemo(
-    () => getClientFilterOptions(allCustomersQuery.data ?? [], optionExecutions, customersById),
-    [allCustomersQuery.data, customersById, optionExecutions],
+    () => getClientFilterOptions(searchedCustomers, customersById, selectedClientIds),
+    [customersById, searchedCustomers, selectedClientIds],
   )
   const clinicOptions = useMemo(
     () => getSelectedClientClinicOptions(customersById, selectedClientIds),
@@ -412,14 +488,24 @@ export default function ExecutionsPage() {
         <CardContent className="flex flex-col gap-4">
           <FieldGroup className="gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(8rem,0.65fr)_minmax(8rem,0.65fr)_minmax(10rem,0.75fr)]">
             <ExecutionMultiSelectFilter
+              clearSelectionLabel={t('list.filters.removeAllClients')}
+              clearSelectionPlacement="bottom"
+              filterOptionsLocally={false}
+              hasMoreOptions={clientSearchQuery.hasNextPage}
               id="execution-client-filter"
+              isLoadingMoreOptions={clientSearchQuery.isFetchingNextPage}
+              isLoadingOptions={clientSearchQuery.isLoading}
               label={t('list.filters.clientLabel')}
+              loadingMessage={t('list.filters.loadingClients')}
+              loadingMoreMessage={t('list.filters.loadingMoreClients')}
               placeholder={t('list.filters.allClients')}
               selectedCountLabel={t('list.filters.selectedClients', { count: selectedClientIds.length })}
               selectedValues={selectedClientIds}
               options={clientOptions}
               emptyMessage={t('list.filters.noClients')}
               searchPlaceholder={t('list.filters.searchClients')}
+              onLoadMoreOptions={() => void clientSearchQuery.fetchNextPage()}
+              onSearchValueChange={setClientSearchValue}
               onSelectedValuesChange={updateSelectedClientIds}
             />
             <ExecutionMultiSelectFilter
@@ -498,6 +584,9 @@ export default function ExecutionsPage() {
                 <TableRow>
                   <TableHead className="w-28 whitespace-normal">{t('list.columns.execution')}</TableHead>
                   <TableHead className="w-28">{t('list.columns.status')}</TableHead>
+                  <TableHead className="hidden w-24 whitespace-nowrap md:table-cell">
+                    {t('list.columns.createdAt')}
+                  </TableHead>
                   <TableHead className="hidden whitespace-normal lg:table-cell xl:w-36">
                     {t('list.columns.client')}
                   </TableHead>
@@ -513,7 +602,6 @@ export default function ExecutionsPage() {
                   <TableHead className="hidden whitespace-normal 2xl:table-cell 2xl:w-36">
                     {t('list.columns.bot')}
                   </TableHead>
-                  <TableHead className="hidden 2xl:table-cell 2xl:w-36">{t('list.columns.createdAt')}</TableHead>
                   <TableHead className="w-16 text-right sm:w-28">{t('list.columns.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -534,6 +622,9 @@ export default function ExecutionsPage() {
                         <TableCell>
                           <ExecutionStatusBadge status={status} />
                         </TableCell>
+                        <TableCell className="hidden whitespace-nowrap md:table-cell">
+                          {formatExecutionDate(execution.createdAt)}
+                        </TableCell>
                         <TableCell className="hidden whitespace-normal break-words lg:table-cell">
                           {displayNames.client || t('list.emptyValue')}
                         </TableCell>
@@ -548,9 +639,6 @@ export default function ExecutionsPage() {
                         </TableCell>
                         <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
                           {execution.botName || execution.bot || t('list.emptyValue')}
-                        </TableCell>
-                        <TableCell className="hidden whitespace-nowrap 2xl:table-cell">
-                          {formatExecutionDateTime(execution.createdAt)}
                         </TableCell>
                         <TableCell className="">
                           <div className="flex justify-end">
