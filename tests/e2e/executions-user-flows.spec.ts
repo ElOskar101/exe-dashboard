@@ -426,7 +426,7 @@ test.describe('execution user flows', () => {
 
     await page.goto('/executions')
     await page
-      .getByRole('row', { name: /2026-05-25 Queued chromium Legacy Dental Care Downtown Clinic .* Details/ })
+      .getByRole('row', { name: /2026-05-25 Queued Legacy Dental Care Downtown Clinic .* Details/ })
       .getByRole('button', { name: 'Details' })
       .click()
 
