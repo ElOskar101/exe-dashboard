@@ -64,6 +64,36 @@ describe('execution.service', () => {
     expect(exeClient.get).toHaveBeenCalledWith('executions')
   })
 
+  it('getExecutions sends supported filters as query params', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: [] })
+
+    await getExecutions({
+      by: ['user-2', 'user-1'],
+      client: ['client-1'],
+      clinic: ['clinic-1'],
+      execution: ['execution-1'],
+      bot: ['bot-1'],
+      from: new Date('2026-05-01T00:00:00.000Z'),
+      to: new Date('2026-05-31T23:59:59.000Z'),
+      dateField: 'createdAt',
+      status: 'cancelled',
+    })
+
+    const [, config] = vi.mocked(exeClient.get).mock.calls[0]
+    const params = config?.params as URLSearchParams
+
+    expect(exeClient.get).toHaveBeenCalledWith('executions', { params })
+    expect(params.getAll('by')).toEqual(['user-1', 'user-2'])
+    expect(params.getAll('client')).toEqual(['client-1'])
+    expect(params.getAll('clinic')).toEqual(['clinic-1'])
+    expect(params.getAll('execution')).toEqual(['execution-1'])
+    expect(params.getAll('bot')).toEqual(['bot-1'])
+    expect(params.get('from')).toBe('2026-05-01T00:00:00.000Z')
+    expect(params.get('to')).toBe('2026-05-31T23:59:59.000Z')
+    expect(params.get('dateField')).toBe('createdAt')
+    expect(params.get('status')).toBe('cancelled')
+  })
+
   it('createExecution posts the execution payload', async () => {
     vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 

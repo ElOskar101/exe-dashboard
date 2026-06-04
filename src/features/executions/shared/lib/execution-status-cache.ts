@@ -83,7 +83,7 @@ export const syncExecutionStatusReadModel = (queryClient: QueryClient, execution
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(), (statusReadModel) =>
     mergeExecutionStatusReadModelEntry(statusReadModel, executionId, status),
   )
-  queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
+  queryClient.setQueriesData<Execution[]>({ queryKey: executionKeys.listRoot() }, (executions) =>
     updateExecutionStatus(executions, executionId, status),
   )
   queryClient.setQueryData<Execution>(executionKeys.detail(executionId), (execution) =>

@@ -1,11 +1,34 @@
 import { exeClient, exeReportsClient } from '@/lib/axios'
 import type { Execution } from '../model/execution'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
+import { EXECUTION_ARRAY_QUERY_KEYS, normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
 
 export type ExecutionUpdatePayload = Partial<Omit<Execution, '_id'>>
 
-export const getExecutions = () => {
-  return exeClient.get<Execution[]>('executions')
+const buildExecutionSearchParams = (query: ExecutionQuery) => {
+  const normalizedQuery = normalizeExecutionQuery(query)
+  const searchParams = new URLSearchParams()
+
+  for (const key of EXECUTION_ARRAY_QUERY_KEYS) {
+    normalizedQuery[key]?.forEach((value) => searchParams.append(key, value))
+  }
+
+  if (normalizedQuery.from) searchParams.set('from', normalizedQuery.from)
+  if (normalizedQuery.to) searchParams.set('to', normalizedQuery.to)
+  if (normalizedQuery.dateField) searchParams.set('dateField', normalizedQuery.dateField)
+  if (normalizedQuery.status) searchParams.set('status', normalizedQuery.status)
+
+  return searchParams
+}
+
+export const getExecutions = (query: ExecutionQuery = {}) => {
+  const params = buildExecutionSearchParams(query)
+
+  if (params.size === 0) {
+    return exeClient.get<Execution[]>('executions')
+  }
+
+  return exeClient.get<Execution[]>('executions', { params })
 }
 
 export const createExecution = (data: ExecutionCreatePayload) => {

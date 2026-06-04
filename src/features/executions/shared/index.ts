@@ -27,6 +27,7 @@ export type {
   ExecutionPayloadPatient,
   ExecutionVerificationType,
 } from './model/execution-create-payload'
+export type { ExecutionQuery } from './model/execution-query'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'
