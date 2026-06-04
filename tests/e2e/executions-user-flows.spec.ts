@@ -178,8 +178,26 @@ async function stubExecutionCustomers(
     }
   >,
 ) {
-  await page.route('**/api/v2/customers/**', async (route) => {
+  await page.route('**/api/v2/customers**', async (route) => {
     const url = new URL(route.request().url())
+
+    if (url.pathname.endsWith('/api/v2/customers')) {
+      await route.fulfill({
+        json: {
+          totalDocs: Object.keys(customersById).length,
+          totalPages: 1,
+          query: {},
+          customers: Object.values(customersById).map((customer) => ({
+            _id: customer._id,
+            clientName: customer.clientName,
+            isActive: customer.isActive ?? true,
+            createdAt: '2026-05-21T14:00:00.000Z',
+          })),
+        },
+      })
+      return
+    }
+
     const customerId = url.pathname.split('/').pop()
 
     if (!customerId || !(customerId in customersById)) {

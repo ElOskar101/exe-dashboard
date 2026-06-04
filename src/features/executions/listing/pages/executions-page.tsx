@@ -1,7 +1,7 @@
 import { useMemo, useState, type Dispatch } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useQueries } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { IconAlertCircle, IconChevronDown, IconExternalLink, IconPlus, IconX } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +30,13 @@ import {
   type ExecutionQuery,
   type ExecutionStatus,
 } from '@/features/executions/shared'
-import { executionWizardKeys, getCustomerById, type CustomerDetailsResponse } from '@/features/executions/creation'
+import {
+  executionWizardKeys,
+  getAllCustomers,
+  getCustomerById,
+  type CustomerDetailsResponse,
+  type CustomerSearchItem,
+} from '@/features/executions/creation'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ExecutionPatientsDialog } from '../components/execution-patients-dialog'
 import { getExecutionDayLabel, groupExecutionsByProject } from '../lib/execution-sidebar-display'
@@ -70,11 +76,20 @@ const getExecutionDisplayNames = (
 const compareFilterOptions = (a: ExecutionFilterOption, b: ExecutionFilterOption) =>
   a.label.localeCompare(b.label) || a.value.localeCompare(b.value)
 
-const getUniqueClientOptions = (
+const getClientFilterOptions = (
+  customers: CustomerSearchItem[],
   executions: Execution[],
   customersById: Map<string, CustomerDetailsResponse>,
 ): ExecutionFilterOption[] => {
   const optionsByValue = new Map<string, ExecutionFilterOption>()
+
+  customers.forEach((customer) => {
+    const value = customer._id.trim()
+
+    if (!value) return
+
+    optionsByValue.set(value, { value, label: customer.clientName || value })
+  })
 
   executions.forEach((execution) => {
     const value = execution.client.trim()
@@ -88,19 +103,22 @@ const getUniqueClientOptions = (
   return Array.from(optionsByValue.values()).sort(compareFilterOptions)
 }
 
-const getUniqueClinicOptions = (
-  executions: Execution[],
+const getSelectedClientClinicOptions = (
   customersById: Map<string, CustomerDetailsResponse>,
+  selectedClientIds: string[],
 ): ExecutionFilterOption[] => {
   const optionsByValue = new Map<string, ExecutionFilterOption>()
 
-  executions.forEach((execution) => {
-    const value = execution.clinic.trim()
+  selectedClientIds.forEach((clientId) => {
+    const customer = customersById.get(clientId)
 
-    if (!value) return
+    customer?.clinic.forEach((clinic) => {
+      const value = clinic._id.trim()
 
-    const { clinic } = getExecutionDisplayNames(execution, customersById)
-    optionsByValue.set(value, { value, label: clinic || value })
+      if (!value) return
+
+      optionsByValue.set(value, { value, label: clinic.clinicName || value })
+    })
   })
 
   return Array.from(optionsByValue.values()).sort(compareFilterOptions)
@@ -131,26 +149,38 @@ const matchesDateRange = (execution: Execution, from: Date | undefined, to: Date
 }
 
 interface ExecutionMultiSelectFilterProps {
+  disabled?: boolean
   emptyMessage: string
   id: string
   label: string
   onSelectedValuesChange: Dispatch<string[]>
   options: ExecutionFilterOption[]
   placeholder: string
+  searchPlaceholder?: string
   selectedCountLabel: string
   selectedValues: string[]
 }
 
 function ExecutionMultiSelectFilter({
+  disabled = false,
   emptyMessage,
   id,
   label,
   onSelectedValuesChange,
   options,
   placeholder,
+  searchPlaceholder,
   selectedCountLabel,
   selectedValues,
 }: ExecutionMultiSelectFilterProps) {
+  const [searchValue, setSearchValue] = useState('')
+  const filteredOptions = useMemo(() => {
+    const normalizedSearchValue = searchValue.trim().toLocaleLowerCase()
+
+    if (!normalizedSearchValue) return options
+
+    return options.filter((option) => option.label.toLocaleLowerCase().includes(normalizedSearchValue))
+  }, [options, searchValue])
   const selectedValuesSet = useMemo(() => new Set(selectedValues), [selectedValues])
   const selectedLabel = useMemo(() => {
     if (selectedValues.length === 0) return placeholder
@@ -171,10 +201,14 @@ function ExecutionMultiSelectFilter({
   }
 
   return (
-    <Field>
+    <Field className="gap-2">
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <Popover>
-        <PopoverTrigger render={<Button id={id} type="button" variant="outline" className="w-full justify-between" />}>
+        <PopoverTrigger
+          render={
+            <Button id={id} type="button" variant="outline" disabled={disabled} className="w-full justify-between" />
+          }
+        >
           <span className="truncate">{selectedLabel}</span>
           <IconChevronDown data-icon="inline-end" />
         </PopoverTrigger>
@@ -194,9 +228,18 @@ function ExecutionMultiSelectFilter({
               {placeholder}
             </Button>
           ) : null}
+          {searchPlaceholder ? (
+            <Input
+              type="search"
+              value={searchValue}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+              onChange={(event) => setSearchValue(event.target.value)}
+            />
+          ) : null}
           <ScrollArea className="max-h-72" viewportProps={{ className: 'flex max-h-72 flex-col gap-1' }}>
-            {options.length > 0 ? (
-              options.map((option) => (
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
                 <Label
                   key={option.value}
                   className="flex min-h-9 cursor-pointer items-center rounded-2xl px-2 py-1.5 hover:bg-muted"
@@ -252,6 +295,14 @@ export default function ExecutionsPage() {
   }, [dateFrom, dateTo, selectedClientIds, selectedClinicIds, statusFilter])
   const allExecutionsQuery = useExecutionsQuery()
   const executionsQuery = useExecutionsQuery(executionQueryFilters)
+  const allCustomersQuery = useQuery({
+    queryKey: executionWizardKeys.customers(),
+    queryFn: async () => {
+      const response = await getAllCustomers()
+
+      return response.data.customers
+    },
+  })
   const executionStatusReadModel = useExecutionStatusReadModel()
   const groupedExecutions = useMemo(() => groupExecutionsByProject(executionsQuery.data ?? []), [executionsQuery.data])
   const sortedExecutions = useMemo(() => groupedExecutions.flatMap((group) => group.executions), [groupedExecutions])
@@ -262,9 +313,13 @@ export default function ExecutionsPage() {
   const customerIds = useMemo(
     () =>
       Array.from(
-        new Set([...optionExecutions, ...sortedExecutions].map((execution) => execution.client).filter(Boolean)),
+        new Set([
+          ...optionExecutions.map((execution) => execution.client).filter(Boolean),
+          ...sortedExecutions.map((execution) => execution.client).filter(Boolean),
+          ...selectedClientIds,
+        ]),
       ).sort(),
-    [optionExecutions, sortedExecutions],
+    [optionExecutions, selectedClientIds, sortedExecutions],
   )
   const customerQueries = useQueries({
     queries: customerIds.map((customerId) => ({
@@ -288,13 +343,27 @@ export default function ExecutionsPage() {
     return nextCustomersById
   }, [customerQueries])
   const clientOptions = useMemo(
-    () => getUniqueClientOptions(optionExecutions, customersById),
-    [customersById, optionExecutions],
+    () => getClientFilterOptions(allCustomersQuery.data ?? [], optionExecutions, customersById),
+    [allCustomersQuery.data, customersById, optionExecutions],
   )
   const clinicOptions = useMemo(
-    () => getUniqueClinicOptions(optionExecutions, customersById),
-    [customersById, optionExecutions],
+    () => getSelectedClientClinicOptions(customersById, selectedClientIds),
+    [customersById, selectedClientIds],
   )
+  const updateSelectedClientIds = (nextClientIds: string[]) => {
+    setSelectedClientIds(nextClientIds)
+
+    if (nextClientIds.length === 0) {
+      setSelectedClinicIds([])
+      return
+    }
+
+    const nextClinicIds = new Set(
+      nextClientIds.flatMap((clientId) => customersById.get(clientId)?.clinic.map((clinic) => clinic._id) ?? []),
+    )
+
+    setSelectedClinicIds((currentClinicIds) => currentClinicIds.filter((clinicId) => nextClinicIds.has(clinicId)))
+  }
   const selectedClientIdsSet = useMemo(() => new Set(selectedClientIds), [selectedClientIds])
   const selectedClinicIdsSet = useMemo(() => new Set(selectedClinicIds), [selectedClinicIds])
   const selectedStatusFilterLabel =
@@ -339,9 +408,9 @@ export default function ExecutionsPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardContent className="flex flex-col gap-5">
-          <FieldGroup className="gap-3 md:grid md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_10rem_12rem]">
+      <Card size="sm">
+        <CardContent className="flex flex-col gap-4">
+          <FieldGroup className="gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(8rem,0.65fr)_minmax(8rem,0.65fr)_minmax(10rem,0.75fr)]">
             <ExecutionMultiSelectFilter
               id="execution-client-filter"
               label={t('list.filters.clientLabel')}
@@ -350,7 +419,8 @@ export default function ExecutionsPage() {
               selectedValues={selectedClientIds}
               options={clientOptions}
               emptyMessage={t('list.filters.noClients')}
-              onSelectedValuesChange={setSelectedClientIds}
+              searchPlaceholder={t('list.filters.searchClients')}
+              onSelectedValuesChange={updateSelectedClientIds}
             />
             <ExecutionMultiSelectFilter
               id="execution-clinic-filter"
@@ -360,9 +430,10 @@ export default function ExecutionsPage() {
               selectedValues={selectedClinicIds}
               options={clinicOptions}
               emptyMessage={t('list.filters.noClinics')}
+              disabled={selectedClientIds.length === 0}
               onSelectedValuesChange={setSelectedClinicIds}
             />
-            <Field>
+            <Field className="gap-2">
               <FieldLabel htmlFor="execution-date-from-filter">{t('list.filters.fromLabel')}</FieldLabel>
               <Input
                 id="execution-date-from-filter"
@@ -372,7 +443,7 @@ export default function ExecutionsPage() {
                 onChange={(event) => setDateFromValue(event.target.value)}
               />
             </Field>
-            <Field>
+            <Field className="gap-2">
               <FieldLabel htmlFor="execution-date-to-filter">{t('list.filters.toLabel')}</FieldLabel>
               <Input
                 id="execution-date-to-filter"
@@ -382,7 +453,7 @@ export default function ExecutionsPage() {
                 onChange={(event) => setDateToValue(event.target.value)}
               />
             </Field>
-            <Field>
+            <Field className="gap-2">
               <FieldLabel htmlFor="execution-status-filter">{t('list.filters.statusLabel')}</FieldLabel>
               <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? ALL_FILTER_VALUE)}>
                 <SelectTrigger id="execution-status-filter" className="w-full">

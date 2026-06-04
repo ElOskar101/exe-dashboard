@@ -3,5 +3,6 @@ export const executionWizardKeys = {
   clinicBots: (clinicId: string) => [...executionWizardKeys.all, 'clinic-bots', clinicId] as const,
   clinicExecutionDays: (clinicId: string) => [...executionWizardKeys.all, 'clinic-execution-days', clinicId] as const,
   customer: (customerId: string) => [...executionWizardKeys.all, 'customer', customerId] as const,
+  customers: () => [...executionWizardKeys.all, 'customers'] as const,
   customerSearch: (customerSearch: string) => [...executionWizardKeys.all, 'customer-search', customerSearch] as const,
 }

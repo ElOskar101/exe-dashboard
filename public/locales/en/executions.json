@@ -229,6 +229,7 @@
     "filters": {
       "clientLabel": "Client",
       "allClients": "All clients",
+      "searchClients": "Search clients",
       "selectedClients": "{{count}} clients selected",
       "noClients": "No clients available.",
       "clinicLabel": "Clinic",
