@@ -1,18 +1,17 @@
+import { format, isValid, parseISO } from 'date-fns'
+
 export const formatExecutionDateTime = (value?: string) => {
   if (!value) {
     return '—'
   }
 
-  const parsedDate = new Date(value)
+  const parsedDate = parseISO(value)
 
-  if (Number.isNaN(parsedDate.getTime())) {
+  if (!isValid(parsedDate)) {
     return value
   }
 
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(parsedDate)
+  return format(parsedDate, 'MMM d, yyyy, h:mm a')
 }
 
 export const formatExecutionDate = (value?: string) => {
@@ -20,14 +19,11 @@ export const formatExecutionDate = (value?: string) => {
     return '—'
   }
 
-  const parsedDate = new Date(value)
+  const parsedDate = parseISO(value)
 
-  if (Number.isNaN(parsedDate.getTime())) {
+  if (!isValid(parsedDate)) {
     return value
   }
 
-  return new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-  }).format(parsedDate)
+  return format(parsedDate, 'MMM d')
 }
