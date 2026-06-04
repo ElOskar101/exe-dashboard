@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { type ExecutionFilterOption } from '../lib/execution-listing-filters'
 
 const FILTER_SCROLL_BOTTOM_THRESHOLD = 48
+const FILTER_POPOVER_COLLISION_AVOIDANCE = { fallbackAxisSide: 'none' } as const
 
 interface ExecutionMultiSelectFilterProps {
   clearSelectionLabel?: string
@@ -80,6 +81,7 @@ export function ExecutionMultiSelectFilter({
 
     return selectedCountLabel
   }, [options, placeholder, selectedCountLabel, selectedValues])
+  const optionsMaxHeightClass = clearSelectionPlacement === 'bottom' ? 'max-h-56' : 'max-h-72'
 
   const setOptionSelected = (value: string, selected: boolean) => {
     onSelectedValuesChange(
@@ -127,7 +129,11 @@ export function ExecutionMultiSelectFilter({
           <span className="truncate">{selectedLabel}</span>
           <IconChevronDown data-icon="inline-end" />
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-80 gap-3">
+        <PopoverContent
+          align="start"
+          collisionAvoidance={FILTER_POPOVER_COLLISION_AVOIDANCE}
+          className="w-(--anchor-width) min-w-80 gap-3 overflow-hidden pb-0"
+        >
           <PopoverHeader>
             <PopoverTitle>{label}</PopoverTitle>
           </PopoverHeader>
@@ -142,8 +148,11 @@ export function ExecutionMultiSelectFilter({
             />
           ) : null}
           <ScrollArea
-            className="max-h-72"
-            viewportProps={{ className: 'flex max-h-72 flex-col gap-1', onScroll: handleOptionsScroll }}
+            className={optionsMaxHeightClass}
+            viewportProps={{
+              className: cn('flex flex-col gap-1', optionsMaxHeightClass),
+              onScroll: handleOptionsScroll,
+            }}
           >
             {isLoadingOptions && filteredOptions.length === 0 ? (
               <div className="flex items-center gap-2 rounded-2xl px-2 py-1.5 text-muted-foreground">
@@ -174,7 +183,7 @@ export function ExecutionMultiSelectFilter({
             ) : null}
           </ScrollArea>
           {clearSelectionPlacement === 'bottom' && clearSelectionButton ? (
-            <div className="sticky bottom-0 -mx-4 -mb-4 border-t bg-popover p-3">{clearSelectionButton}</div>
+            <div className="-mx-4 border-t bg-popover p-3">{clearSelectionButton}</div>
           ) : null}
         </PopoverContent>
       </Popover>
