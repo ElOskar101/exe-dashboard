@@ -9,7 +9,7 @@ import { formatExecutionDate, type Execution, type ExecutionStatus } from '@/fea
 import { type CustomerDetailsResponse } from '@/features/executions/creation'
 
 import { ExecutionPatientsDialog } from './execution-patients-dialog'
-import { ExecutionStatusBadge } from './execution-status-badge'
+import { ExecutionStatusLabel } from './execution-status-label'
 import {
   getExecutionDisplayNames,
   getExecutionProjectLabel,
@@ -67,7 +67,7 @@ export function ExecutionsTable({
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <ExecutionStatusBadge status={status} />
+                  <ExecutionStatusLabel status={status} />
                 </TableCell>
                 <TableCell className="hidden whitespace-normal break-words lg:table-cell">
                   {isCustomerLoading ? <Skeleton className="h-4 w-20" /> : displayNames.client || t('list.emptyValue')}
