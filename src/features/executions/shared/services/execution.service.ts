@@ -2,8 +2,25 @@ import { exeClient, exeReportsClient } from '@/lib/axios'
 import type { Execution } from '../model/execution'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 import { EXECUTION_ARRAY_QUERY_KEYS, normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
+import type { PlaywrightProject } from '../model/playwright-project'
+import type { PlaywrightRuntime } from '../model/playwright-runtime'
+import type { ExecutionApiRequestTarget } from '../lib/execution-target'
 
 export type ExecutionUpdatePayload = Partial<Omit<Execution, '_id'>>
+
+const getExecutionRequestConfig = (target?: ExecutionApiRequestTarget) =>
+  target
+    ? {
+        baseURL: target.apiUrl,
+      }
+    : undefined
+
+const getExecutionReportsRequestConfig = (target?: ExecutionApiRequestTarget) =>
+  target
+    ? {
+        baseURL: target.reportsUrl,
+      }
+    : undefined
 
 const buildExecutionSearchParams = (query: ExecutionQuery) => {
   const normalizedQuery = normalizeExecutionQuery(query)
@@ -21,44 +38,103 @@ const buildExecutionSearchParams = (query: ExecutionQuery) => {
   return searchParams
 }
 
-export const getExecutions = (query: ExecutionQuery = {}) => {
+export const getExecutions = (query: ExecutionQuery = {}, target?: ExecutionApiRequestTarget) => {
   const params = buildExecutionSearchParams(query)
+  const config = getExecutionRequestConfig(target)
 
   if (params.size === 0) {
-    return exeClient.get<Execution[]>('executions')
+    return config ? exeClient.get<Execution[]>('executions', config) : exeClient.get<Execution[]>('executions')
   }
 
-  return exeClient.get<Execution[]>('executions', { params })
+  return exeClient.get<Execution[]>('executions', { ...config, params })
 }
 
-export const createExecution = (data: ExecutionCreatePayload) => {
-  return exeClient.post<Execution>('executions', data)
+export const createExecution = (data: ExecutionCreatePayload, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config ? exeClient.post<Execution>('executions', data, config) : exeClient.post<Execution>('executions', data)
 }
 
-export const getExecutionById = (executionId: string) => {
-  return exeClient.get<Execution>(`executions/${executionId}`)
+export const getExecutionById = (executionId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.get<Execution>(`executions/${executionId}`, config)
+    : exeClient.get<Execution>(`executions/${executionId}`)
 }
 
-export const getExecutionReportHtml = (executionId: string) => {
-  return exeReportsClient.get<string>(`${executionId}/index.html`)
+export const getPlaywrightProjects = (target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.get<PlaywrightProject[]>('v2/playwright-projects', config)
+    : exeClient.get<PlaywrightProject[]>('v2/playwright-projects')
 }
 
-export const updateExecution = (executionId: string, data: ExecutionUpdatePayload) => {
-  return exeClient.patch<Execution>(`executions/${executionId}`, data)
+export const getPlaywrightProjectById = (playwrightProjectId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`, config)
+    : exeClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`)
 }
 
-export const deleteExecution = (executionId: string) => {
-  return exeClient.delete<Execution>(`executions/${executionId}`)
+export const getPlaywrightRuntimes = () => {
+  return exeClient.get<PlaywrightRuntime[]>('v2/playwright-runtimes')
 }
 
-export const stopExecution = (executionId: string) => {
-  return exeClient.post<Execution>(`executions/${executionId}/stop`)
+export const getPlaywrightRuntimeById = (playwrightRuntimeId: string) => {
+  return exeClient.get<PlaywrightRuntime>(`v2/playwright-runtimes/${playwrightRuntimeId}`)
 }
 
-export const pauseExecution = (executionId: string) => {
-  return exeClient.post<Execution>(`executions/${executionId}/pause`)
+export const getExecutionReportHtml = (executionId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionReportsRequestConfig(target)
+
+  return config
+    ? exeReportsClient.get<string>(`${executionId}/index.html`, config)
+    : exeReportsClient.get<string>(`${executionId}/index.html`)
 }
 
-export const resumeExecution = (executionId: string) => {
-  return exeClient.post<Execution>(`executions/${executionId}/resume`)
+export const updateExecution = (
+  executionId: string,
+  data: ExecutionUpdatePayload,
+  target?: ExecutionApiRequestTarget,
+) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.patch<Execution>(`executions/${executionId}`, data, config)
+    : exeClient.patch<Execution>(`executions/${executionId}`, data)
+}
+
+export const deleteExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.delete<Execution>(`executions/${executionId}`, config)
+    : exeClient.delete<Execution>(`executions/${executionId}`)
+}
+
+export const stopExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.post<Execution>(`executions/${executionId}/stop`, undefined, config)
+    : exeClient.post<Execution>(`executions/${executionId}/stop`)
+}
+
+export const pauseExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.post<Execution>(`executions/${executionId}/pause`, undefined, config)
+    : exeClient.post<Execution>(`executions/${executionId}/pause`)
+}
+
+export const resumeExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config
+    ? exeClient.post<Execution>(`executions/${executionId}/resume`, undefined, config)
+    : exeClient.post<Execution>(`executions/${executionId}/resume`)
 }

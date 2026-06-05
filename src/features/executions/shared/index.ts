@@ -14,6 +14,7 @@ export {
   normalizeExecutionRecord,
   syncExecutionFromDetailSnapshot,
   syncExecutionStatusReadModel,
+  syncExecutionStatusReadModelForTarget,
   syncExecutionsFromListSnapshot,
   type ExecutionStatusReadModel,
 } from './lib/execution-status-cache'
@@ -28,6 +29,8 @@ export type {
   ExecutionVerificationType,
 } from './model/execution-create-payload'
 export type { ExecutionQuery } from './model/execution-query'
+export type { PlaywrightProject } from './model/playwright-project'
+export type { PlaywrightRuntime, PlaywrightRuntimeApplication } from './model/playwright-runtime'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'
@@ -35,6 +38,10 @@ export {
   createExecution,
   deleteExecution,
   getExecutionById,
+  getPlaywrightProjectById,
+  getPlaywrightProjects,
+  getPlaywrightRuntimeById,
+  getPlaywrightRuntimes,
   getExecutionReportHtml,
   getExecutions,
   pauseExecution,
@@ -44,6 +51,23 @@ export {
 } from './services/execution.service'
 export type { ExecutionUpdatePayload } from './services/execution.service'
 export { executionKeys } from './lib/execution-query-keys'
+export {
+  DEFAULT_EXECUTION_TARGET_KEY,
+  DEFAULT_EXECUTION_TARGET_LABEL,
+  EXECUTION_APPLICATION_SEARCH_PARAM,
+  EXECUTION_RUNTIME_SEARCH_PARAM,
+  decodeExecutionTargetValue,
+  defaultExecutionTarget,
+  encodeExecutionTargetValue,
+  getDefaultExecutionApiUrl,
+  getDefaultExecutionReportsUrl,
+  getExecutionTargetKey,
+  getExecutionTargetSearchSelection,
+  resolveExecutionTarget,
+  type ExecutionApiRequestTarget,
+  type ExecutionTarget,
+  type ExecutionTargetSearchSelection,
+} from './lib/execution-target'
 export {
   subscribeToExecutionRoom,
   subscribeToExecutionStatus,
@@ -62,4 +86,10 @@ export {
   useResumeExecutionMutation,
   useStopExecutionMutation,
 } from './hooks/use-execution-records'
+export {
+  useExecutionTarget,
+  useExecutionTargetNavigation,
+  useExecutionTargetSetter,
+  usePlaywrightRuntimesQuery,
+} from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'

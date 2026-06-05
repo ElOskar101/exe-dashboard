@@ -6,6 +6,7 @@ import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 import type { ExecutionQuery } from '../model/execution-query'
 import { executionKeys } from '../lib/execution-query-keys'
 import { syncExecutionFromDetailSnapshot, syncExecutionsFromListSnapshot } from '../lib/execution-status-cache'
+import { useExecutionTarget } from './use-execution-target'
 import {
   createExecution,
   deleteExecution,
@@ -21,60 +22,78 @@ interface ExecutionMutationOptions<TResponse, TVariables> {
   onSuccess?: Dispatch<readonly [TResponse, TVariables]>
 }
 
-const invalidateExecutionList = async (queryClient: ReturnType<typeof useQueryClient>) => {
-  await queryClient.invalidateQueries({ queryKey: executionKeys.list() })
+const invalidateExecutionList = async (queryClient: ReturnType<typeof useQueryClient>, targetKey: string) => {
+  await queryClient.invalidateQueries({ queryKey: executionKeys.list(undefined, targetKey) })
 }
 
-const invalidateExecutionDetail = async (queryClient: ReturnType<typeof useQueryClient>, executionId: string) => {
-  await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId) })
+const invalidateExecutionDetail = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+  executionId: string,
+  targetKey: string,
+) => {
+  await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId, targetKey) })
 }
 
 export const useExecutionsQuery = (query: ExecutionQuery = {}) => {
   const queryClient = useQueryClient()
+  const { isResolving, target } = useExecutionTarget()
 
   return useQuery({
-    queryKey: executionKeys.list(query),
+    queryKey: executionKeys.list(query, target.key),
     queryFn: async () => {
-      const response = await getExecutions(query)
+      const response = await getExecutions(query, target.requestTarget)
 
-      return syncExecutionsFromListSnapshot(queryClient, response.data)
+      return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
     },
+    enabled: !isResolving,
   })
 }
 
 export const useExecutionQuery = (executionId: string) => {
   const queryClient = useQueryClient()
+  const { isResolving, target } = useExecutionTarget()
 
   return useQuery({
-    queryKey: executionKeys.detail(executionId),
+    queryKey: executionKeys.detail(executionId, target.key),
     queryFn: async () => {
-      const response = await getExecutionById(executionId)
+      const response = await getExecutionById(executionId, target.requestTarget)
 
-      return syncExecutionFromDetailSnapshot(queryClient, response.data)
+      return syncExecutionFromDetailSnapshot(queryClient, response.data, target.key)
     },
+    enabled: !isResolving,
   })
 }
 
-export const useExecutionReportQuery = (executionId: string, enabled: boolean) =>
-  useQuery({
-    queryKey: executionKeys.report(executionId),
+export const useExecutionReportQuery = (executionId: string, enabled: boolean) => {
+  const { isResolving, target } = useExecutionTarget()
+
+  return useQuery({
+    queryKey: executionKeys.report(executionId, target.key),
     queryFn: async () => {
-      const response = await getExecutionReportHtml(executionId)
+      const response = await getExecutionReportHtml(executionId, target.requestTarget)
 
       return response.data
     },
-    enabled,
+    enabled: enabled && !isResolving,
   })
+}
 
 export const useCreateExecutionMutation = (
   options: ExecutionMutationOptions<AxiosResponse<Execution>, ExecutionCreatePayload> = {},
 ) => {
   const queryClient = useQueryClient()
+  const { isResolving, target } = useExecutionTarget()
 
   return useMutation({
-    mutationFn: createExecution,
+    mutationFn: (payload: ExecutionCreatePayload) => {
+      if (isResolving) {
+        throw new Error('Execution target is still loading.')
+      }
+
+      return createExecution(payload, target.requestTarget)
+    },
     onSuccess: async (response, variables) => {
-      await invalidateExecutionList(queryClient)
+      await invalidateExecutionList(queryClient, target.key)
       await options.onSuccess?.([response, variables])
     },
   })
@@ -84,11 +103,18 @@ export const useDeleteExecutionMutation = (
   options: ExecutionMutationOptions<AxiosResponse<Execution>, string> = {},
 ) => {
   const queryClient = useQueryClient()
+  const { isResolving, target } = useExecutionTarget()
 
   return useMutation({
-    mutationFn: deleteExecution,
+    mutationFn: (executionId: string) => {
+      if (isResolving) {
+        throw new Error('Execution target is still loading.')
+      }
+
+      return deleteExecution(executionId, target.requestTarget)
+    },
     onSuccess: async (response, executionId) => {
-      await invalidateExecutionList(queryClient)
+      await invalidateExecutionList(queryClient, target.key)
       await options.onSuccess?.([response, executionId])
     },
   })
@@ -102,11 +128,21 @@ const useExecutionActionMutation = (
   options: ExecutionActionMutationOptions = {},
 ) => {
   const queryClient = useQueryClient()
+  const { isResolving, target } = useExecutionTarget()
 
   return useMutation({
-    mutationFn: async () => mutationFn(executionId),
+    mutationFn: async () => {
+      if (isResolving) {
+        throw new Error('Execution target is still loading.')
+      }
+
+      return mutationFn(executionId, target.requestTarget)
+    },
     onSuccess: async (response) => {
-      await Promise.all([invalidateExecutionDetail(queryClient, executionId), invalidateExecutionList(queryClient)])
+      await Promise.all([
+        invalidateExecutionDetail(queryClient, executionId, target.key),
+        invalidateExecutionList(queryClient, target.key),
+      ])
       await options.onSuccess?.([response, executionId])
     },
   })

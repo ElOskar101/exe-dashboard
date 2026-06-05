@@ -40,6 +40,7 @@ import {
   getExecutionLabel,
   isExecutionRunning,
   normalizeExecutionStatus,
+  useExecutionTargetNavigation,
 } from '@/features/executions/shared'
 import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
 import {
@@ -56,6 +57,7 @@ export function ExecutionsSidebar() {
   const { id: currentExecutionId } = useParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const { isMobile, setOpenMobile } = useSidebar()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
   const [collapsedProjects, setCollapsedProjects] = useState<string[]>([])
@@ -70,7 +72,7 @@ export function ExecutionsSidebar() {
       setOpenDeleteId((currentOpenId) => (currentOpenId === deletedExecutionId ? null : currentOpenId))
 
       if (deletedExecutionId === currentExecutionId) {
-        navigate('/')
+        navigate(getPathWithExecutionTarget('/'))
       }
     },
   })
@@ -134,7 +136,7 @@ export function ExecutionsSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link to="/executions" onClick={closeSidebarOnMobile} />}
+              render={<Link to={getPathWithExecutionTarget('/executions')} onClick={closeSidebarOnMobile} />}
               isActive={pathname === '/executions'}
               tooltip={t('sidebar.allExecutions')}
             >
@@ -143,7 +145,7 @@ export function ExecutionsSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link to="/" onClick={closeSidebarOnMobile} />}
+              render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
               isActive={pathname === '/'}
               tooltip={t('sidebar.createExecution')}
             >
@@ -238,7 +240,12 @@ export function ExecutionsSidebar() {
                               <SidebarMenuItem key={execution._id}>
                                 <div className="flex items-center">
                                   <SidebarMenuButton
-                                    render={<Link to={`/execution/${execution._id}`} onClick={closeSidebarOnMobile} />}
+                                    render={
+                                      <Link
+                                        to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
+                                        onClick={closeSidebarOnMobile}
+                                      />
+                                    }
                                     isActive={currentExecutionId === execution._id}
                                     tooltip={`${group.project} ${label}`}
                                     className="h-auto min-h-9 items-start"

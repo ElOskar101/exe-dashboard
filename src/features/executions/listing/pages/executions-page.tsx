@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EXECUTION_STATUSES } from '@/features/executions/shared'
+import { EXECUTION_STATUSES, useExecutionTargetNavigation } from '@/features/executions/shared'
 
 import { ExecutionClientFilter } from '../components/execution-client-filter'
 import { ExecutionDateRangeFilter } from '../components/execution-date-range-filter'
@@ -19,6 +19,7 @@ import { ALL_FILTER_VALUE } from '../lib/execution-listing-filters'
 
 export default function ExecutionsPage() {
   const { t } = useTranslation('executions')
+  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const {
     clinicOptions,
     customersById,
@@ -46,7 +47,7 @@ export default function ExecutionsPage() {
           <h1 className="text-3xl font-semibold tracking-tight">{t('list.title')}</h1>
           <p className="max-w-3xl text-muted-foreground">{t('list.description')}</p>
         </div>
-        <Button nativeButton={false} render={<Link to="/" />}>
+        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/')} />}>
           <IconPlus data-icon="inline-start" />
           {t('list.createExecution')}
         </Button>

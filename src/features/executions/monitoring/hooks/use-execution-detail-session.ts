@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { APP_CONFIG } from '@/app.config'
 import {
+  getDefaultExecutionReportsUrl,
   isExecutionFailed,
   isExecutionSuccessful,
   useExecutionQuery,
@@ -10,7 +10,8 @@ import {
   useExecutionStatusValue,
   usePauseExecutionMutation,
   useResumeExecutionMutation,
-  syncExecutionStatusReadModel,
+  syncExecutionStatusReadModelForTarget,
+  useExecutionTarget,
   useStopExecutionMutation,
   type Execution,
 } from '@/features/executions/shared'
@@ -60,11 +61,12 @@ export interface ExecutionDetailSession {
 export const useExecutionDetailSession = (executionId: string): ExecutionDetailSession => {
   const { t } = useTranslation('executions')
   const queryClient = useQueryClient()
+  const { target } = useExecutionTarget()
   const executionQuery = useExecutionQuery(executionId)
   const realtimeLogs = useExecutionRealtimeLogs(executionId, {
     historyContent: executionQuery.data?.logs ?? '',
     onStatus: (status) => {
-      syncExecutionStatusReadModel(queryClient, executionId, status)
+      syncExecutionStatusReadModelForTarget(queryClient, executionId, status, target.key)
     },
   })
   const currentStatus = useExecutionStatusValue(executionId, executionQuery.data?.status)
@@ -95,7 +97,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportBasePath = `${APP_CONFIG.exeReportsUrl}/${reportExecutionId}`
+  const reportBasePath = `${target.requestTarget?.reportsUrl ?? getDefaultExecutionReportsUrl()}/${reportExecutionId}`
   const reportQuery = useExecutionReportQuery(reportExecutionId, showReport)
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])
   const displayStatus = formatExecutionStatusLabel(currentStatus)

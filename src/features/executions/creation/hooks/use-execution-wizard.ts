@@ -1,7 +1,11 @@
 import { useContext, useMemo, useState, startTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '@/features/auth'
-import { getExecutionRequestErrorMessage, useCreateExecutionMutation } from '@/features/executions/shared'
+import {
+  getExecutionRequestErrorMessage,
+  useCreateExecutionMutation,
+  useExecutionTargetNavigation,
+} from '@/features/executions/shared'
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
@@ -41,6 +45,7 @@ const resetDraftDependentSelections = (
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
+  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const { user } = useContext(AuthContext)
   const createdBy = user?._id ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
@@ -133,7 +138,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         action: {
           label: successToastCopy.actionLabel,
           onClick: () => {
-            navigate(`/execution/${executionId}`)
+            navigate(getPathWithExecutionTarget(`/execution/${executionId}`))
           },
         },
       })

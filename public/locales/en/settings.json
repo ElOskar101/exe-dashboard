@@ -1,0 +1,26 @@
+{
+  "page": {
+    "eyebrow": "Settings",
+    "title": "Settings",
+    "description": "Choose which runtime application this browser tab uses for executions."
+  },
+  "runtime": {
+    "title": "Runtime application",
+    "description": "Execution requests, realtime updates, projects, and reports use the selected application.",
+    "targetLabel": "Execution target",
+    "targetPlaceholder": "Choose an execution target",
+    "defaultDescription": "Uses the dashboard's built-in execution API route.",
+    "noDescription": "No description available.",
+    "noApiUrl": "No API URL configured",
+    "loadErrorTitle": "Runtime catalog could not be loaded",
+    "loadErrorDescription": "Default App is still available. Try again later to choose a runtime application.",
+    "currentTarget": "Current target",
+    "runtime": "Runtime",
+    "none": "None",
+    "catalog": "Catalog",
+    "catalogSummary": "{{applications}} apps across {{runtimes}} runtimes",
+    "effectiveApiUrl": "Effective API URL",
+    "selected": "Selected",
+    "default": "Default"
+  }
+}

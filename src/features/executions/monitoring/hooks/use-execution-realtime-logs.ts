@@ -8,6 +8,7 @@ import {
   type ExecutionRealtimeConnectionState,
   type ExecutionStatus,
   type ExecutionStatusPayload,
+  useExecutionTarget,
 } from '@/features/executions/shared'
 import {
   appendExecutionLogChunk,
@@ -24,6 +25,7 @@ interface UseExecutionRealtimeLogsOptions {
 
 export const useExecutionRealtimeLogs = (executionId: string, options: UseExecutionRealtimeLogsOptions = {}) => {
   const { historyContent = '' } = options
+  const { target } = useExecutionTarget()
   const [buffer, setBuffer] = useState(() => createExecutionLogLinesFromHistory(historyContent))
   const [status, setStatus] = useState<ExecutionStatus | null>(null)
   const [connectionState, setConnectionState] = useState<ExecutionRealtimeConnectionState>('connecting')
@@ -76,6 +78,7 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
         setStatus(nextStatus)
         options.onStatus?.(nextStatus)
       },
+      socketUrl: target.requestTarget?.socketUrl,
     })
 
     return () => {

@@ -24,12 +24,42 @@ _Avoid_: Status change, confirmed status
 The shared client-side representation of confirmed **Execution Status** that every execution view reads from.
 _Avoid_: View-local status state, detail-only status, sidebar-only status
 
+**Playwright Project**:
+A named automation project that can group **Executions** and can be associated with one or more bots.
+_Avoid_: Suite, script set
+
+**Playwright Runtime**:
+A named automation runtime definition that describes the application endpoints available to Playwright-driven automation.
+_Avoid_: Environment, host set
+
+**Playwright Runtime Application**:
+One application entry exposed by a **Playwright Runtime**, including its name and optional API URL.
+_Avoid_: Service, integration target
+
+**Selected Playwright Runtime Application**:
+The **Playwright Runtime Application** chosen by the user for the current dashboard URL, which determines which execution API the dashboard uses.
+_Avoid_: Global runtime preference, environment switcher
+
+**Default Execution API**:
+The dashboard's built-in execution API target used when no **Selected Playwright Runtime Application** is chosen for the current URL. The user-facing label is "Default App".
+_Avoid_: Default runtime, default application
+
 ## Relationships
 
 - An **Execution** has exactly one current **Execution Status**
 - An **Execution** is associated with one **Client**
+- An **Execution** can reference one **Playwright Project**
 - A **Client** can own many clinics
 - An **Execution** can receive many **Execution Control Requests** over its lifetime
+- A **Playwright Project** can be associated with many bots
+- A **Playwright Runtime** can expose many **Playwright Runtime Applications**
+- A **Selected Playwright Runtime Application** belongs to one **Playwright Runtime**
+- Execution API requests use the API URL of the **Selected Playwright Runtime Application**
+- Execution API requests use the **Default Execution API** when no **Selected Playwright Runtime Application** is chosen
+- Execution realtime subscriptions follow the same execution target as execution API requests
+- Execution reports follow the same execution target as execution API requests
+- The **Default Execution API** provides the catalog of available **Playwright Runtimes**
+- **Playwright Project** requests follow the same execution target as execution API requests
 - The sidebar and detail page both present the same **Execution Status** for a given **Execution**
 - An **Execution Control Request** does not change **Execution Status** by itself; the status changes only when the lifecycle update is confirmed by the system
 - The sidebar and detail page both read confirmed status from the same **Execution Status Read Model**

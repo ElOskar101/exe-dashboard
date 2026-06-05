@@ -3,15 +3,17 @@ import { useMountEffect } from '@/hooks/use-mount-effect'
 import {
   executionKeys,
   subscribeToExecutionStatus,
-  syncExecutionStatusReadModel,
+  syncExecutionStatusReadModelForTarget,
+  useExecutionTarget,
   type Execution,
 } from '@/features/executions/shared'
 import { shouldInvalidateExecutionsOnConnect } from '../lib/execution-status-updates'
 
 export const useExecutionStatusUpdates = () => {
   const queryClient = useQueryClient()
+  const { target } = useExecutionTarget()
   const hadCachedExecutionsAtMount = Boolean(
-    queryClient.getQueryState<Execution[]>(executionKeys.list())?.dataUpdatedAt,
+    queryClient.getQueryState<Execution[]>(executionKeys.list(undefined, target.key))?.dataUpdatedAt,
   )
 
   useMountEffect(() => {
@@ -29,14 +31,15 @@ export const useExecutionStatusUpdates = () => {
         return
       }
 
-      void queryClient.invalidateQueries({ queryKey: executionKeys.list() })
+      void queryClient.invalidateQueries({ queryKey: executionKeys.list(undefined, target.key) })
     }
 
     const unsubscribe = subscribeToExecutionStatus({
       onConnect: handleConnect,
       onStatus: (payload) => {
-        syncExecutionStatusReadModel(queryClient, payload.executionId, payload.status)
+        syncExecutionStatusReadModelForTarget(queryClient, payload.executionId, payload.status, target.key)
       },
+      socketUrl: target.requestTarget?.socketUrl,
     })
 
     return () => {

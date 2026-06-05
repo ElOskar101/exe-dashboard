@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   getExecutionRequestErrorMessage,
   useCreateExecutionMutation,
+  useExecutionTargetNavigation,
   type Execution,
 } from '@/features/executions/shared'
 import { getExecutionRerunSummary, prepareExecutionRerun } from '../lib/execution-rerun'
@@ -11,6 +12,7 @@ import { getExecutionRerunSummary, prepareExecutionRerun } from '../lib/executio
 export const useExecutionRerun = (execution?: Execution) => {
   const { t } = useTranslation('executions')
   const navigate = useNavigate()
+  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const rerunPreparation = useMemo(() => (execution ? prepareExecutionRerun(execution) : null), [execution])
   const rerunPayload = rerunPreparation?.payload ?? null
   const rerunSummary = useMemo(
@@ -19,7 +21,7 @@ export const useExecutionRerun = (execution?: Execution) => {
   )
   const rerunMutation = useCreateExecutionMutation({
     onSuccess: async ([response]) => {
-      navigate(`/execution/${response.data._id}`)
+      navigate(getPathWithExecutionTarget(`/execution/${response.data._id}`))
     },
   })
 

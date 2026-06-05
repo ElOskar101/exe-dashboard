@@ -95,22 +95,31 @@ const updateDetailExecutionStatus = (
 }
 
 export const syncExecutionStatusReadModel = (queryClient: QueryClient, executionId: string, status: string) => {
-  queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(), (statusReadModel) =>
+  syncExecutionStatusReadModelForTarget(queryClient, executionId, status)
+}
+
+export const syncExecutionStatusReadModelForTarget = (
+  queryClient: QueryClient,
+  executionId: string,
+  status: string,
+  targetKey?: string,
+) => {
+  queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
     mergeExecutionStatusReadModelEntry(statusReadModel, executionId, status),
   )
-  queryClient.setQueriesData<Execution[]>({ queryKey: executionKeys.listRoot() }, (executions) =>
+  queryClient.setQueriesData<Execution[]>({ queryKey: executionKeys.listRoot(targetKey) }, (executions) =>
     updateExecutionStatus(executions, executionId, status),
   )
-  queryClient.setQueryData<Execution>(executionKeys.detail(executionId), (execution) =>
+  queryClient.setQueryData<Execution>(executionKeys.detail(executionId, targetKey), (execution) =>
     updateDetailExecutionStatus(execution, status),
   )
 }
 
-export const syncExecutionFromDetailSnapshot = (queryClient: QueryClient, execution: Execution) => {
+export const syncExecutionFromDetailSnapshot = (queryClient: QueryClient, execution: Execution, targetKey?: string) => {
   const normalizedExecution = normalizeExecutionRecord(execution)
-  const listRootKey = executionKeys.listRoot()
+  const listRootKey = executionKeys.listRoot(targetKey)
 
-  queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(), (statusReadModel) =>
+  queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
     mergeExecutionStatusReadModelEntry(statusReadModel, normalizedExecution._id, normalizedExecution.status),
   )
   queryClient.getQueriesData<Execution[]>({ queryKey: listRootKey }).forEach(([queryKey, executions]) => {
@@ -125,15 +134,19 @@ export const syncExecutionFromDetailSnapshot = (queryClient: QueryClient, execut
   return normalizedExecution
 }
 
-export const syncExecutionsFromListSnapshot = (queryClient: QueryClient, executions: Execution[]) => {
+export const syncExecutionsFromListSnapshot = (
+  queryClient: QueryClient,
+  executions: Execution[],
+  targetKey?: string,
+) => {
   const normalizedExecutions = executions.map(normalizeExecutionRecord)
 
-  queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(), (statusReadModel) =>
+  queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
     mergeExecutionStatusReadModelSnapshot(statusReadModel, normalizedExecutions),
   )
 
   normalizedExecutions.forEach((execution) => {
-    queryClient.setQueryData<Execution>(executionKeys.detail(execution._id), (currentExecution) =>
+    queryClient.setQueryData<Execution>(executionKeys.detail(execution._id, targetKey), (currentExecution) =>
       mergeExecutionIntoDetail(currentExecution, execution),
     )
   })

@@ -1,5 +1,6 @@
 import type { Dispatch } from 'react'
-import { getSocketAuth, socket } from '@/lib/socket'
+import type { Socket } from 'socket.io-client'
+import { getExecutionSocket, getSocketAuth } from '@/lib/socket'
 
 export type ExecutionRealtimeConnectionState = 'connecting' | 'connected' | 'disconnected'
 
@@ -32,28 +33,34 @@ interface ExecutionRealtimeSubscriptionOptions {
   handleConnect?: () => void
   cleanup?: () => void
   register: () => void
+  socket: Socket
+  socketKey: string
   unregister: () => void
 }
 
-let executionRealtimeConsumerCount = 0
+const executionRealtimeConsumerCounts = new Map<string, number>()
 
-const syncExecutionRealtimeAuth = () => {
+const syncExecutionRealtimeAuth = (socket: Socket) => {
   socket.auth = getSocketAuth()
 }
 
-const acquireExecutionRealtimeConnection = () => {
-  executionRealtimeConsumerCount += 1
-  syncExecutionRealtimeAuth()
+const acquireExecutionRealtimeConnection = (socket: Socket, socketKey: string) => {
+  const consumerCount = executionRealtimeConsumerCounts.get(socketKey) ?? 0
+
+  executionRealtimeConsumerCounts.set(socketKey, consumerCount + 1)
+  syncExecutionRealtimeAuth(socket)
 
   if (!socket.connected && !socket.active) {
     socket.connect()
   }
 }
 
-const releaseExecutionRealtimeConnection = () => {
-  executionRealtimeConsumerCount = Math.max(executionRealtimeConsumerCount - 1, 0)
+const releaseExecutionRealtimeConnection = (socket: Socket, socketKey: string) => {
+  const consumerCount = Math.max((executionRealtimeConsumerCounts.get(socketKey) ?? 0) - 1, 0)
 
-  if (executionRealtimeConsumerCount === 0 && (socket.connected || socket.active)) {
+  executionRealtimeConsumerCounts.set(socketKey, consumerCount)
+
+  if (consumerCount === 0 && (socket.connected || socket.active)) {
     socket.disconnect()
   }
 }
@@ -62,10 +69,12 @@ const createExecutionRealtimeSubscription = ({
   handleConnect,
   cleanup,
   register,
+  socket,
+  socketKey,
   unregister,
 }: ExecutionRealtimeSubscriptionOptions) => {
   register()
-  acquireExecutionRealtimeConnection()
+  acquireExecutionRealtimeConnection(socket, socketKey)
 
   if (socket.connected) {
     handleConnect?.()
@@ -74,16 +83,22 @@ const createExecutionRealtimeSubscription = ({
   return () => {
     cleanup?.()
     unregister()
-    releaseExecutionRealtimeConnection()
+    releaseExecutionRealtimeConnection(socket, socketKey)
   }
 }
 
 export const subscribeToExecutionStatus = (options: {
   onConnect?: () => void
   onStatus: Dispatch<ExecutionStatusPayload>
-}) =>
-  createExecutionRealtimeSubscription({
+  socketUrl?: string
+}) => {
+  const socket = getExecutionSocket(options.socketUrl)
+  const socketKey = options.socketUrl ?? 'default'
+
+  return createExecutionRealtimeSubscription({
     handleConnect: options.onConnect,
+    socket,
+    socketKey,
     register: () => {
       if (options.onConnect) {
         socket.on('connect', options.onConnect)
@@ -99,6 +114,7 @@ export const subscribeToExecutionStatus = (options: {
       socket.off('status', options.onStatus)
     },
   })
+}
 
 export const subscribeToExecutionRoom = (options: {
   executionId: string
@@ -107,7 +123,11 @@ export const subscribeToExecutionRoom = (options: {
   onHistory?: Dispatch<ExecutionLogsHistoryPayload>
   onLog?: Dispatch<ExecutionLogPayload>
   onStatus?: Dispatch<ExecutionStatusPayload>
+  socketUrl?: string
 }) => {
+  const socket = getExecutionSocket(options.socketUrl)
+  const socketKey = options.socketUrl ?? 'default'
+
   const joinExecutionRoom = () => {
     socket.emit('execution:join', { executionId: options.executionId })
     options.onConnect?.()
@@ -138,6 +158,8 @@ export const subscribeToExecutionRoom = (options: {
   return createExecutionRealtimeSubscription({
     handleConnect: joinExecutionRoom,
     cleanup: leaveExecutionRoom,
+    socket,
+    socketKey,
     register: () => {
       socket.on('connect', joinExecutionRoom)
 

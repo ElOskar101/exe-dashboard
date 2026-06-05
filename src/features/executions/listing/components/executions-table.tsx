@@ -5,7 +5,12 @@ import { IconExternalLink } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatExecutionDate, type Execution, type ExecutionStatus } from '@/features/executions/shared'
+import {
+  formatExecutionDate,
+  useExecutionTargetNavigation,
+  type Execution,
+  type ExecutionStatus,
+} from '@/features/executions/shared'
 import { type CustomerDetailsResponse } from '@/features/executions/creation'
 
 import { ExecutionPatientsDialog } from './execution-patients-dialog'
@@ -33,6 +38,7 @@ export function ExecutionsTable({
   loadingCustomerIds,
 }: ExecutionsTableProps) {
   const { t } = useTranslation('executions')
+  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
 
   return (
     <Table className="table-fixed">
@@ -62,7 +68,7 @@ export function ExecutionsTable({
             return (
               <TableRow key={execution._id}>
                 <TableCell className="font-medium whitespace-normal break-words">
-                  <Link className="hover:underline" to={`/execution/${execution._id}`}>
+                  <Link className="hover:underline" to={getPathWithExecutionTarget(`/execution/${execution._id}`)}>
                     {executionDayLabel}
                   </Link>
                 </TableCell>
@@ -93,7 +99,7 @@ export function ExecutionsTable({
                       nativeButton={false}
                       variant="outline"
                       className="text-xs"
-                      render={<Link to={`/execution/${execution._id}`} />}
+                      render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
                     >
                       <span className="sr-only sm:not-sr-only">{t('list.viewDetails')}</span>
                       <IconExternalLink data-icon="inline-end" className="not-sr-only sm:sr-only" />

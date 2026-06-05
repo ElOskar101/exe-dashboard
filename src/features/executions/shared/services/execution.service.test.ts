@@ -4,6 +4,10 @@ import {
   createExecution,
   deleteExecution,
   getExecutionById,
+  getPlaywrightProjectById,
+  getPlaywrightProjects,
+  getPlaywrightRuntimeById,
+  getPlaywrightRuntimes,
   getExecutionReportHtml,
   getExecutions,
   pauseExecution,
@@ -45,6 +49,12 @@ const executionPayload: ExecutionCreatePayload = {
     workers: 1,
     retries: 0,
   },
+}
+
+const runtimeTarget = {
+  apiUrl: 'https://runtime.example.com/api/v1',
+  reportsUrl: 'https://runtime.example.com/api/v1/reports',
+  socketUrl: 'https://runtime.example.com',
 }
 
 describe('execution.service', () => {
@@ -102,6 +112,16 @@ describe('execution.service', () => {
     expect(exeClient.post).toHaveBeenCalledWith('executions', executionPayload)
   })
 
+  it('createExecution posts to a selected runtime application API URL', async () => {
+    vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
+
+    await createExecution(executionPayload, runtimeTarget)
+
+    expect(exeClient.post).toHaveBeenCalledWith('executions', executionPayload, {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
+  })
+
   it('getExecutionById requests execution details with logs', async () => {
     vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
@@ -110,12 +130,64 @@ describe('execution.service', () => {
     expect(exeClient.get).toHaveBeenCalledWith('executions/exe-1')
   })
 
+  it('getPlaywrightProjects requests the playwright project catalog', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: [] })
+
+    await getPlaywrightProjects()
+
+    expect(exeClient.get).toHaveBeenCalledWith('v2/playwright-projects')
+  })
+
+  it('getPlaywrightProjects requests projects from a selected runtime application API URL', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: [] })
+
+    await getPlaywrightProjects(runtimeTarget)
+
+    expect(exeClient.get).toHaveBeenCalledWith('v2/playwright-projects', {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
+  })
+
+  it('getPlaywrightProjectById requests the selected playwright project', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { _id: 'project-1' } })
+
+    await getPlaywrightProjectById('project-1')
+
+    expect(exeClient.get).toHaveBeenCalledWith('v2/playwright-projects/project-1')
+  })
+
+  it('getPlaywrightRuntimes requests the playwright runtime catalog', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: [] })
+
+    await getPlaywrightRuntimes()
+
+    expect(exeClient.get).toHaveBeenCalledWith('v2/playwright-runtimes')
+  })
+
+  it('getPlaywrightRuntimeById requests the selected playwright runtime', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { _id: 'runtime-1' } })
+
+    await getPlaywrightRuntimeById('runtime-1')
+
+    expect(exeClient.get).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1')
+  })
+
   it('getExecutionReportHtml requests the execution HTML report', async () => {
     vi.mocked(exeReportsClient.get).mockResolvedValueOnce({ data: '<html></html>' })
 
     await getExecutionReportHtml('exe-1')
 
     expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/index.html')
+  })
+
+  it('getExecutionReportHtml requests reports from a selected runtime application API URL', async () => {
+    vi.mocked(exeReportsClient.get).mockResolvedValueOnce({ data: '<html></html>' })
+
+    await getExecutionReportHtml('exe-1', runtimeTarget)
+
+    expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/index.html', {
+      baseURL: 'https://runtime.example.com/api/v1/reports',
+    })
   })
 
   it('updateExecution patches the selected execution', async () => {

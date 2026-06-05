@@ -1,16 +1,20 @@
 import { normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
+import { DEFAULT_EXECUTION_TARGET_KEY } from './execution-target'
 
 export const executionKeys = {
-  all: ['executions'] as const,
-  listRoot: () => [...executionKeys.all, 'list'] as const,
-  list: (query?: ExecutionQuery) => {
+  all: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => ['executions', targetKey] as const,
+  runtimeCatalog: () => ['playwright-runtime-catalog'] as const,
+  listRoot: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => [...executionKeys.all(targetKey), 'list'] as const,
+  list: (query?: ExecutionQuery, targetKey = DEFAULT_EXECUTION_TARGET_KEY) => {
     const normalizedQuery = normalizeExecutionQuery(query)
 
     return Object.keys(normalizedQuery).length > 0
-      ? ([...executionKeys.listRoot(), normalizedQuery] as const)
-      : executionKeys.listRoot()
+      ? ([...executionKeys.listRoot(targetKey), normalizedQuery] as const)
+      : executionKeys.listRoot(targetKey)
   },
-  detail: (executionId: string) => ['execution', executionId] as const,
-  statuses: () => ['execution-statuses'] as const,
-  report: (executionId: string) => ['execution-report', executionId] as const,
+  detail: (executionId: string, targetKey = DEFAULT_EXECUTION_TARGET_KEY) =>
+    [...executionKeys.all(targetKey), 'detail', executionId] as const,
+  statuses: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => [...executionKeys.all(targetKey), 'statuses'] as const,
+  report: (executionId: string, targetKey = DEFAULT_EXECUTION_TARGET_KEY) =>
+    [...executionKeys.all(targetKey), 'report', executionId] as const,
 }
