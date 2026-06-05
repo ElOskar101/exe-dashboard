@@ -61,6 +61,21 @@ const mergeExecutionIntoDetail = (currentExecution: Execution | undefined, nextE
   }
 }
 
+const mergeExecutionIntoCachedList = (
+  executions: Execution[] | undefined,
+  nextExecution: Execution,
+): Execution[] | undefined => {
+  if (!executions) return executions
+
+  const existingExecutionIndex = executions.findIndex((execution) => execution._id === nextExecution._id)
+
+  if (existingExecutionIndex === -1) {
+    return executions
+  }
+
+  return mergeExecutionIntoList(executions, nextExecution)
+}
+
 const updateDetailExecutionStatus = (
   currentExecution: Execution | undefined,
   status: string,
@@ -83,7 +98,7 @@ export const syncExecutionStatusReadModel = (queryClient: QueryClient, execution
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(), (statusReadModel) =>
     mergeExecutionStatusReadModelEntry(statusReadModel, executionId, status),
   )
-  queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
+  queryClient.setQueriesData<Execution[]>({ queryKey: executionKeys.listRoot() }, (executions) =>
     updateExecutionStatus(executions, executionId, status),
   )
   queryClient.setQueryData<Execution>(executionKeys.detail(executionId), (execution) =>
@@ -93,13 +108,19 @@ export const syncExecutionStatusReadModel = (queryClient: QueryClient, execution
 
 export const syncExecutionFromDetailSnapshot = (queryClient: QueryClient, execution: Execution) => {
   const normalizedExecution = normalizeExecutionRecord(execution)
+  const listRootKey = executionKeys.listRoot()
 
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(), (statusReadModel) =>
     mergeExecutionStatusReadModelEntry(statusReadModel, normalizedExecution._id, normalizedExecution.status),
   )
-  queryClient.setQueryData<Execution[]>(executionKeys.list(), (executions) =>
-    mergeExecutionIntoList(executions, normalizedExecution),
-  )
+  queryClient.getQueriesData<Execution[]>({ queryKey: listRootKey }).forEach(([queryKey, executions]) => {
+    const nextExecutions =
+      queryKey.length === listRootKey.length
+        ? mergeExecutionIntoList(executions, normalizedExecution)
+        : mergeExecutionIntoCachedList(executions, normalizedExecution)
+
+    queryClient.setQueryData<Execution[]>(queryKey, nextExecutions)
+  })
 
   return normalizedExecution
 }

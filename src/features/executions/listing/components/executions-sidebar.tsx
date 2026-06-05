@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { IconAlertCircle, IconChevronDown, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -54,6 +54,7 @@ const MIN_REFRESH_SPIN_DURATION_MS = 1000
 export function ExecutionsSidebar() {
   const { t } = useTranslation('executions')
   const { id: currentExecutionId } = useParams()
+  const { pathname } = useLocation()
   const navigate = useNavigate()
   const { isMobile, setOpenMobile } = useSidebar()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
@@ -133,8 +134,17 @@ export function ExecutionsSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              render={<Link to="/executions" onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/executions'}
+              tooltip={t('sidebar.allExecutions')}
+            >
+              <span>{t('sidebar.allExecutions')}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
               render={<Link to="/" onClick={closeSidebarOnMobile} />}
-              isActive={!currentExecutionId}
+              isActive={pathname === '/'}
               tooltip={t('sidebar.createExecution')}
             >
               <span>{t('sidebar.createExecution')}</span>
@@ -210,7 +220,7 @@ export function ExecutionsSidebar() {
                           className={cn('size-3.5 shrink-0 transition-transform', !isOpen && '-rotate-90')}
                         />
                         <span className="truncate">{group.project}</span>
-                        <span className="ml-auto shrink-0 text-[10px] tracking-[0.18em] uppercase text-sidebar-foreground/55">
+                        <span className="ml-auto shrink-0 text-xs text-sidebar-foreground/55">
                           {group.executions.length}
                         </span>
                       </CollapsibleTrigger>

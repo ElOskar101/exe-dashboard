@@ -54,11 +54,18 @@ describe('execution status cache', () => {
     )
   })
 
-  it('normalizes detail snapshots and merges them back into the list cache', () => {
+  it('normalizes detail snapshots and merges them back into all list caches', () => {
     const queryClient = createQueryClient()
     const staleExecution = createExecution({ status: 'running', notes: ['stale'] })
+    const otherExecution = createExecution({
+      _id: 'execution-2',
+      client: 'client-2',
+      notes: ['other'],
+    })
 
     queryClient.setQueryData(executionKeys.list(), [staleExecution])
+    queryClient.setQueryData(executionKeys.list({ client: ['client-1'] }), [staleExecution])
+    queryClient.setQueryData(executionKeys.list({ client: ['client-2'] }), [otherExecution])
 
     const normalizedExecution = syncExecutionFromDetailSnapshot(
       queryClient,
@@ -85,6 +92,16 @@ describe('execution status cache', () => {
         notes: ['fresh'],
         finishedAt: '2026-05-23T00:05:00.000Z',
       }),
+    ])
+    expect(queryClient.getQueryData<Execution[]>(executionKeys.list({ client: ['client-1'] }))).toEqual([
+      createExecution({
+        status: 'running',
+        notes: ['fresh'],
+        finishedAt: '2026-05-23T00:05:00.000Z',
+      }),
+    ])
+    expect(queryClient.getQueryData<Execution[]>(executionKeys.list({ client: ['client-2'] }))).toEqual([
+      otherExecution,
     ])
   })
 

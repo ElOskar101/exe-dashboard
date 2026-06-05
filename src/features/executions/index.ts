@@ -41,6 +41,7 @@ export type {
   Execution,
   ExecutionCreatePayload,
   ExecutionMetadata,
+  ExecutionQuery,
   ExecutionRuntimeStatus,
   ExecutionStatus,
   ExecutionUpdatePayload,

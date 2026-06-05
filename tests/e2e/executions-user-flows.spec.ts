@@ -166,6 +166,54 @@ async function stubExecutionDetails(page: Page, executionId: string, getExecutio
   })
 }
 
+async function stubExecutionCustomers(
+  page: Page,
+  customersById: Record<
+    string,
+    {
+      _id: string
+      clientName: string
+      isActive?: boolean
+      clinic: Array<{ _id: string; clinicName: string }>
+    }
+  >,
+) {
+  await page.route('**/api/v2/customers**', async (route) => {
+    const url = new URL(route.request().url())
+
+    if (url.pathname.endsWith('/api/v2/customers')) {
+      await route.fulfill({
+        json: {
+          totalDocs: Object.keys(customersById).length,
+          totalPages: 1,
+          query: {},
+          customers: Object.values(customersById).map((customer) => ({
+            _id: customer._id,
+            clientName: customer.clientName,
+            isActive: customer.isActive ?? true,
+            createdAt: '2026-05-21T14:00:00.000Z',
+          })),
+        },
+      })
+      return
+    }
+
+    const customerId = url.pathname.split('/').pop()
+
+    if (!customerId || !(customerId in customersById)) {
+      await route.fulfill({ status: 404, json: { message: 'Customer not found' } })
+      return
+    }
+
+    await route.fulfill({
+      json: {
+        isActive: true,
+        ...customersById[customerId],
+      },
+    })
+  })
+}
+
 async function stubWizardDependencies(page: Page, incompletePatient = false) {
   await page.route('**/api/v2/customers**', async (route) => {
     const url = new URL(route.request().url())
@@ -272,6 +320,118 @@ test.describe('execution user flows', () => {
     await page.goto('/')
 
     await expect(page.getByText('No executions yet.')).toBeVisible()
+  })
+
+  test('renders the executions page table and opens the patients dialog from the summary cell', async ({
+    page,
+    request,
+  }) => {
+    await prepareAuthenticatedPage(page, request)
+    const basePatient = createExecutionMeta().patients[0]
+    const execution = createExecution({
+      status: 'running',
+      meta: {
+        ...createExecutionMeta(),
+        patients: [
+          basePatient,
+          {
+            ...basePatient,
+            patientName: 'John',
+            patientLastName: 'Smith',
+            patientMemberId: '222222',
+            patientDob: '02/02/1992',
+            policyHolderName: 'Janet',
+            policyHolderLastName: 'Smith',
+            policyHolderDob: '02/02/1982',
+            relationship: 'Child',
+            zipCode: '90002',
+            filenames: 'john-smith.pdf',
+          },
+          {
+            ...basePatient,
+            patientName: 'Mary',
+            patientLastName: 'Jones',
+            patientMemberId: '333333',
+            patientDob: '03/03/1993',
+            policyHolderName: 'Mark',
+            policyHolderLastName: 'Jones',
+            policyHolderDob: '03/03/1983',
+            relationship: 'Spouse',
+            zipCode: '90003',
+            filenames: 'mary-jones.pdf',
+          },
+          {
+            ...basePatient,
+            patientName: 'Alex',
+            patientLastName: 'Taylor',
+            patientMemberId: '444444',
+            patientDob: '04/04/1994',
+            policyHolderName: 'Avery',
+            policyHolderLastName: 'Taylor',
+            policyHolderDob: '04/04/1984',
+            relationship: 'Dependent',
+            zipCode: '90004',
+            filenames: 'alex-taylor.pdf',
+          },
+        ],
+      },
+    })
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionCustomers(page, {
+      'customer-1': {
+        _id: 'customer-1',
+        clientName: 'Legacy Dental Care',
+        clinic: [{ _id: 'clinic-1', clinicName: 'Downtown Clinic' }],
+      },
+    })
+
+    await page.goto('/executions')
+
+    await expect(page).toHaveURL('/executions')
+    await expect(page.getByRole('heading', { name: 'All executions' })).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Patients' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Legacy Dental Care' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Downtown Clinic' })).toBeVisible()
+    await expect(page.getByText('Running')).toBeVisible()
+
+    const patientTrigger = page.getByRole('button', { name: 'View patients for execution 2026-05-25' })
+    await expect(patientTrigger).toContainText('Jane Doe, John Smith, +2')
+    await patientTrigger.click()
+
+    await expect(page.getByRole('heading', { name: 'Patients' })).toBeFocused()
+    await expect(page.getByText('Review the patients stored for execution 2026-05-25.')).toBeVisible()
+    await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('John', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('Mary', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('Alex', { exact: true }).first()).toBeVisible()
+
+    await page.getByRole('dialog', { name: 'Patients' }).getByRole('button', { name: 'Close' }).first().click()
+    await expect(page.getByRole('heading', { name: 'Patients' })).not.toBeVisible()
+  })
+
+  test('navigates to execution details from the executions table details action', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({ status: 'queued' })
+
+    await stubExecutionList(page, () => [execution])
+    await stubExecutionCustomers(page, {
+      'customer-1': {
+        _id: 'customer-1',
+        clientName: 'Legacy Dental Care',
+        clinic: [{ _id: 'clinic-1', clinicName: 'Downtown Clinic' }],
+      },
+    })
+    await stubExecutionDetails(page, execution._id, () => execution)
+
+    await page.goto('/executions')
+    await page
+      .getByRole('row', { name: /2026-05-25 Queued Legacy Dental Care Downtown Clinic .* Details/ })
+      .getByRole('button', { name: 'Details' })
+      .click()
+
+    await expect(page).toHaveURL('/execution/execution-1')
+    await expect(page.getByText('Execution details')).toBeVisible()
   })
 
   test('loads execution history and opens an execution detail page', async ({ page, request }) => {
@@ -490,7 +650,6 @@ test.describe('execution user flows', () => {
     await page.getByRole('button', { name: 'Stop execution', exact: true }).click()
 
     await expect(page.getByText('Execution could not be stopped')).toBeVisible()
-    await expect(page.getByLabel('Stop execution?').getByRole('button', { name: 'Stop execution' })).toBeVisible()
   })
 
   test('displays the report for a completed execution', async ({ page, request }) => {

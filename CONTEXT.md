@@ -8,6 +8,10 @@ Exe Dashboard manages automation runs for carrier and clinic workflows, with a s
 One run of an automation workflow for a specific carrier, bot, and input set.
 _Avoid_: Job, run item, process row
 
+**Client**:
+The customer or practice organization that owns one or more clinics and can be associated with an **Execution**.
+_Avoid_: Customer, account
+
 **Execution Status**:
 The canonical lifecycle state of an **Execution**, which must be represented consistently everywhere in the UI.
 _Avoid_: Local status, sidebar status, detail status
@@ -23,6 +27,8 @@ _Avoid_: View-local status state, detail-only status, sidebar-only status
 ## Relationships
 
 - An **Execution** has exactly one current **Execution Status**
+- An **Execution** is associated with one **Client**
+- A **Client** can own many clinics
 - An **Execution** can receive many **Execution Control Requests** over its lifetime
 - The sidebar and detail page both present the same **Execution Status** for a given **Execution**
 - An **Execution Control Request** does not change **Execution Status** by itself; the status changes only when the lifecycle update is confirmed by the system

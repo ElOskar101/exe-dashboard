@@ -15,6 +15,11 @@ export interface CustomerSearchResponse {
   customers: CustomerSearchItem[]
 }
 
+interface CustomerSearchOptions {
+  limit?: number
+  page?: number
+}
+
 export interface CustomerClinic {
   _id: string
   clinicName: string
@@ -72,12 +77,42 @@ export interface CCCExecutionResponse {
   trashed: boolean
 }
 
-export const searchCustomers = (clientName: string) => {
+export const searchCustomers = (clientName: string, options: CustomerSearchOptions = {}) => {
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
       clientName,
+      ...(options.limit ? { limit: options.limit } : {}),
+      ...(options.page ? { page: options.page } : {}),
     },
   })
+}
+
+export const getAllCustomers = async () => {
+  const firstResponse = await searchCustomers('')
+  const totalPages = Math.max(firstResponse.data.totalPages, 1)
+
+  if (totalPages === 1) {
+    return firstResponse
+  }
+
+  const remainingResponses = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) => searchCustomers('', { page: index + 2 })),
+  )
+  const customersById = new Map<string, CustomerSearchItem>()
+
+  ;[firstResponse, ...remainingResponses].forEach((response) => {
+    response.data.customers.forEach((customer) => {
+      customersById.set(customer._id, customer)
+    })
+  })
+
+  return {
+    ...firstResponse,
+    data: {
+      ...firstResponse.data,
+      customers: Array.from(customersById.values()),
+    },
+  }
 }
 
 export const getCustomerById = (customerId: string) =>

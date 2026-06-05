@@ -3,6 +3,7 @@ import type { AxiosResponse } from 'axios'
 import type { Dispatch } from 'react'
 import type { Execution } from '../model/execution'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
+import type { ExecutionQuery } from '../model/execution-query'
 import { executionKeys } from '../lib/execution-query-keys'
 import { syncExecutionFromDetailSnapshot, syncExecutionsFromListSnapshot } from '../lib/execution-status-cache'
 import {
@@ -28,13 +29,13 @@ const invalidateExecutionDetail = async (queryClient: ReturnType<typeof useQuery
   await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId) })
 }
 
-export const useExecutionsQuery = () => {
+export const useExecutionsQuery = (query: ExecutionQuery = {}) => {
   const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: executionKeys.list(),
+    queryKey: executionKeys.list(query),
     queryFn: async () => {
-      const response = await getExecutions()
+      const response = await getExecutions(query)
 
       return syncExecutionsFromListSnapshot(queryClient, response.data)
     },

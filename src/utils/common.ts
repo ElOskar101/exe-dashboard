@@ -1,8 +1,13 @@
+import { differenceInMilliseconds, isValid, parseISO } from 'date-fns'
+
 export const _base64Encode = (data: string) => globalThis.btoa(data)
 export const _base64Decode = (data: string) => globalThis.atob(data)
 
 export const getDiffDates = (date1: string, date2: string, unit: 's' | 'm' | 'h' | 'd' | 'w' = 's') => {
-  const diffMs = Math.abs(new Date(date1).getTime() - new Date(date2).getTime())
+  const firstDate = parseISO(date1)
+  const secondDate = parseISO(date2)
+  const diffMs =
+    isValid(firstDate) && isValid(secondDate) ? Math.abs(differenceInMilliseconds(firstDate, secondDate)) : NaN
 
   switch (unit) {
     case 's':

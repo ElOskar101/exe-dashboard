@@ -1,3 +1,5 @@
+import { intlFormatDistance, isValid, parseISO } from 'date-fns'
+
 import {
   isExecutionPending,
   isExecutionSuccessful,
@@ -6,30 +8,12 @@ import {
   type ExecutionStatus,
 } from '@/features/executions/shared'
 
-const RELATIVE_TIME_UNITS = [
-  { unit: 'year', seconds: 60 * 60 * 24 * 365 },
-  { unit: 'month', seconds: 60 * 60 * 24 * 30 },
-  { unit: 'week', seconds: 60 * 60 * 24 * 7 },
-  { unit: 'day', seconds: 60 * 60 * 24 },
-  { unit: 'hour', seconds: 60 * 60 },
-  { unit: 'minute', seconds: 60 },
-] as const
-
-const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
-  numeric: 'auto',
-})
-
 export const getRelativeCreatedAt = (createdAt: string, currentTime: number) => {
-  const createdAtTime = new Date(createdAt).getTime()
+  const createdAtDate = parseISO(createdAt)
 
-  if (Number.isNaN(createdAtTime)) return null
+  if (!isValid(createdAtDate)) return null
 
-  const elapsedSeconds = Math.max(0, Math.floor((currentTime - createdAtTime) / 1000))
-  const relativeUnit = RELATIVE_TIME_UNITS.find(({ seconds }) => elapsedSeconds >= seconds)
-
-  if (!relativeUnit) return relativeTimeFormatter.format(0, 'second')
-
-  return relativeTimeFormatter.format(-Math.floor(elapsedSeconds / relativeUnit.seconds), relativeUnit.unit)
+  return intlFormatDistance(createdAtDate, currentTime, { numeric: 'auto' })
 }
 
 export const getStatusDotClassName = (status: ExecutionStatus) => {
@@ -47,10 +31,10 @@ export interface ExecutionProjectGroup {
 }
 
 const getExecutionDaySortValue = (execution: Execution) => {
-  const executionDayTime = new Date(execution.execution).getTime()
+  const executionDayDate = parseISO(execution.execution)
 
-  if (!Number.isNaN(executionDayTime)) {
-    return executionDayTime
+  if (isValid(executionDayDate)) {
+    return executionDayDate.getTime()
   }
 
   return execution.execution

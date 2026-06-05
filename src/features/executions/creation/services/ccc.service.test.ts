@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import cccClient from '@/lib/axios'
 import {
   decryptClinicBotPassword,
+  getAllCustomers,
   getCCCExecution,
   getClinicBots,
   getClinicExecutionDays,
@@ -37,6 +38,82 @@ describe('ccc.service', () => {
         clientName: 'legacy',
       },
     })
+  })
+
+  it('searchCustomers sends pagination params', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: {
+        totalDocs: 0,
+        totalPages: 0,
+        query: {},
+        customers: [],
+      },
+    })
+
+    await searchCustomers('legacy', { limit: 15, page: 2 })
+
+    expect(cccClient.get).toHaveBeenCalledWith('v2/customers', {
+      params: {
+        clientName: 'legacy',
+        limit: 15,
+        page: 2,
+      },
+    })
+  })
+
+  it('getAllCustomers requests each customer search page', async () => {
+    vi.mocked(cccClient.get)
+      .mockResolvedValueOnce({
+        data: {
+          totalDocs: 3,
+          totalPages: 2,
+          query: {},
+          customers: [
+            {
+              _id: 'customer-1',
+              clientName: 'Legacy Dental Care',
+              isActive: true,
+              createdAt: '2026-05-21T14:00:00.000Z',
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          totalDocs: 3,
+          totalPages: 2,
+          query: {},
+          customers: [
+            {
+              _id: 'customer-2',
+              clientName: 'Sunshine Dental',
+              isActive: true,
+              createdAt: '2026-05-22T14:00:00.000Z',
+            },
+            {
+              _id: 'customer-3',
+              clientName: 'Westside Dental',
+              isActive: true,
+              createdAt: '2026-05-23T14:00:00.000Z',
+            },
+          ],
+        },
+      })
+
+    const response = await getAllCustomers()
+
+    expect(cccClient.get).toHaveBeenNthCalledWith(1, 'v2/customers', {
+      params: {
+        clientName: '',
+      },
+    })
+    expect(cccClient.get).toHaveBeenNthCalledWith(2, 'v2/customers', {
+      params: {
+        clientName: '',
+        page: 2,
+      },
+    })
+    expect(response.data.customers).toHaveLength(3)
   })
 
   it('getCustomerById requests the selected customer details', async () => {

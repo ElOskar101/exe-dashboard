@@ -17,7 +17,8 @@ export {
   syncExecutionsFromListSnapshot,
   type ExecutionStatusReadModel,
 } from './lib/execution-status-cache'
-export { formatExecutionDateTime } from './lib/format-execution-date-time'
+export { formatExecutionDate, formatExecutionDateTime } from './lib/format-execution-date-time'
+export { getStatusBadgeClassName, getStatusBadgeVariant } from './lib/execution-badge-styles'
 export type {
   ExecutionCreatePayload,
   ExecutionMetadata,
@@ -26,6 +27,7 @@ export type {
   ExecutionPayloadPatient,
   ExecutionVerificationType,
 } from './model/execution-create-payload'
+export type { ExecutionQuery } from './model/execution-query'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'
