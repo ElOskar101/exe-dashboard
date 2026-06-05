@@ -237,6 +237,7 @@
       "noClients": "No clients available.",
       "clinicLabel": "Clinic",
       "allClinics": "All clinics",
+      "removeAllClinics": "Remove all clinics",
       "selectedClinics": "{{count}} clinics selected",
       "noClinics": "No clinics available.",
       "dateRangeLabel": "Created at",

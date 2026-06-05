@@ -69,6 +69,8 @@ export default function ExecutionsPage() {
               onSelectedValuesChange={updateSelectedClientIds}
             />
             <ExecutionMultiSelectFilter
+              clearSelectionLabel={t('list.filters.removeAllClinics')}
+              clearSelectionPlacement="bottom"
               id="execution-clinic-filter"
               label={t('list.filters.clinicLabel')}
               placeholder={t('list.filters.allClinics')}
