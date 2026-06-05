@@ -8,8 +8,6 @@ Run the following check commands after any code changes:
 - `pnpm run typecheck`
 
 Always try to fix lint issues and don't disable linter rules only if completely necessary.
-
-### Note
 Trust the changes made by the linter, do not revert them.
 
 ## Project structure
@@ -21,15 +19,13 @@ If a feature uses deep modules, follow this order before opening implementation 
 
 Only dig into a deep module's implementation details when you are actively working in that deep module.
 
+## Testing new features
+
+When new endpoints are given try to test them to see an example of their responses. For this, use the TMP_ACCESS_TOKEN env variable for authentication.
+
+When you finish a new frontend feature test your changes using the most reliable browser skill that simulates real-world usage.
+
 ## Agent skills
-
-### Issue tracker
-
-GitHub Issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-The repo uses the default five triage labels with the same names as the canonical roles. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
