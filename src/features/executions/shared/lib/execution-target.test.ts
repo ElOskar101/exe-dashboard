@@ -31,6 +31,25 @@ describe('execution target', () => {
     expect(target.requestTarget?.reportsUrl).toBe('https://runtime.example.com/api/v1/reports')
   })
 
+  it('normalizes bare runtime application API hosts to the execution API base URL', () => {
+    const target = resolveExecutionTarget({ runtimeId: 'runtime-1', applicationName: 'Bare Host App' }, [
+      {
+        ...runtime,
+        applications: [
+          {
+            name: 'Bare Host App',
+            apiUrl: 'api.controlcentralcarrier.com',
+          },
+        ],
+      },
+    ])
+
+    expect(target.type).toBe('runtime-application')
+    expect(target.requestTarget?.apiUrl).toBe('https://api.controlcentralcarrier.com/api/v1')
+    expect(target.requestTarget?.reportsUrl).toBe('https://api.controlcentralcarrier.com/api/v1/reports')
+    expect(target.requestTarget?.socketUrl).toBe('https://api.controlcentralcarrier.com')
+  })
+
   it('uses the default target when URL params are missing or invalid', () => {
     expect(resolveExecutionTarget(null, [runtime])).toEqual({
       type: 'default',

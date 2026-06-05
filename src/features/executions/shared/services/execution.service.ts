@@ -1,4 +1,4 @@
-import { exeClient, exeReportsClient } from '@/lib/axios'
+import cccClient, { exeClient, exeReportsClient } from '@/lib/axios'
 import type { Execution } from '../model/execution'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 import { EXECUTION_ARRAY_QUERY_KEYS, normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
@@ -63,29 +63,15 @@ export const getExecutionById = (executionId: string, target?: ExecutionApiReque
     : exeClient.get<Execution>(`executions/${executionId}`)
 }
 
-export const getPlaywrightProjects = (target?: ExecutionApiRequestTarget) => {
-  const config = getExecutionRequestConfig(target)
+export const getPlaywrightProjects = () => cccClient.get<PlaywrightProject[]>('v2/playwright-projects')
 
-  return config
-    ? exeClient.get<PlaywrightProject[]>('v2/playwright-projects', config)
-    : exeClient.get<PlaywrightProject[]>('v2/playwright-projects')
-}
+export const getPlaywrightProjectById = (playwrightProjectId: string) =>
+  cccClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`)
 
-export const getPlaywrightProjectById = (playwrightProjectId: string, target?: ExecutionApiRequestTarget) => {
-  const config = getExecutionRequestConfig(target)
+export const getPlaywrightRuntimes = () => cccClient.get<PlaywrightRuntime[]>('v2/playwright-runtimes')
 
-  return config
-    ? exeClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`, config)
-    : exeClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`)
-}
-
-export const getPlaywrightRuntimes = () => {
-  return exeClient.get<PlaywrightRuntime[]>('v2/playwright-runtimes')
-}
-
-export const getPlaywrightRuntimeById = (playwrightRuntimeId: string) => {
-  return exeClient.get<PlaywrightRuntime>(`v2/playwright-runtimes/${playwrightRuntimeId}`)
-}
+export const getPlaywrightRuntimeById = (playwrightRuntimeId: string) =>
+  cccClient.get<PlaywrightRuntime>(`v2/playwright-runtimes/${playwrightRuntimeId}`)
 
 export const getExecutionReportHtml = (executionId: string, target?: ExecutionApiRequestTarget) => {
   const config = getExecutionReportsRequestConfig(target)
