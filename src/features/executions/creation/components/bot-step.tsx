@@ -15,14 +15,19 @@ interface BotStepProps extends ExecutionWizardBotStepState {
 export function BotStep({
   associatedBotOptions,
   bot,
+  botPasswordError,
   context,
   errors,
   projectError,
   showErrors,
   playwrightProjectOptions,
   selectedBotId,
+  isDecryptingBotPassword,
+  isLoadingClinicBots,
   isLoadingPlaywrightProjects,
+  clinicBotsError,
   playwrightProjectsError,
+  hasSelectedClinicWithoutActiveBots,
   hasSelectedProjectWithoutAssociatedBots,
   onProjectSelect,
   onBotSelect,
@@ -31,18 +36,28 @@ export function BotStep({
 }: BotStepProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const hasSelectedProject = context.project.trim().length > 0
+  const hasSelectedClinic = context.clinic.trim().length > 0
+  const showBotFieldErrors = showErrors && !isDecryptingBotPassword
   const selectedBotName =
     associatedBotOptions.find((associatedBot) => associatedBot._id === selectedBotId)?.botName ?? ''
   const isBotFormEnabled =
     hasSelectedProject &&
+    hasSelectedClinic &&
     selectedBotId.trim().length > 0 &&
+    !isDecryptingBotPassword &&
+    !hasSelectedClinicWithoutActiveBots &&
     !hasSelectedProjectWithoutAssociatedBots &&
+    !clinicBotsError &&
     !playwrightProjectsError
   const isProjectSelectDisabled = isLoadingPlaywrightProjects || Boolean(playwrightProjectsError)
   const isBotSelectDisabled =
     !hasSelectedProject ||
+    !hasSelectedClinic ||
     isLoadingPlaywrightProjects ||
+    isLoadingClinicBots ||
+    hasSelectedClinicWithoutActiveBots ||
     hasSelectedProjectWithoutAssociatedBots ||
+    Boolean(clinicBotsError) ||
     Boolean(playwrightProjectsError)
 
   return (
@@ -56,6 +71,37 @@ export function BotStep({
           </Alert>
         ) : null}
 
+        {clinicBotsError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
+            <AlertDescription>{clinicBotsError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {botPasswordError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
+            <AlertDescription>{botPasswordError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {!hasSelectedClinic ? (
+          <Alert>
+            <IconAlertCircle />
+            <AlertDescription>{t('help.selectClientAndClinicFirst')}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {hasSelectedClinicWithoutActiveBots ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
+            <AlertDescription>{t('help.noActiveClinicBots')}</AlertDescription>
+          </Alert>
+        ) : null}
+
         {hasSelectedProjectWithoutAssociatedBots ? (
           <Alert variant="destructive">
             <IconAlertCircle />
@@ -65,13 +111,24 @@ export function BotStep({
         ) : null}
 
         {hasSelectedProject &&
+        hasSelectedClinic &&
         !selectedBotId.trim().length &&
         !isLoadingPlaywrightProjects &&
+        !isLoadingClinicBots &&
+        !hasSelectedClinicWithoutActiveBots &&
         !hasSelectedProjectWithoutAssociatedBots &&
+        !clinicBotsError &&
         !playwrightProjectsError ? (
           <Alert>
             <IconAlertCircle />
             <AlertDescription>{t('help.selectBotToEdit')}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {isDecryptingBotPassword ? (
+          <Alert>
+            <IconAlertCircle />
+            <AlertDescription>{t('help.decryptingClinicBotPassword')}</AlertDescription>
           </Alert>
         ) : null}
 
@@ -130,20 +187,20 @@ export function BotStep({
             <FieldError>{showErrors ? errors.clinicBotId : null}</FieldError>
           </Field>
 
-          <Field data-invalid={showErrors && Boolean(errors.botName)}>
+          <Field data-invalid={showBotFieldErrors && Boolean(errors.botName)}>
             <FieldLabel htmlFor="botName">{t('fields.botName')}</FieldLabel>
             <Input
               id="botName"
               value={bot.botName}
               onChange={(event) => onBotFieldChange('botName', event.target.value)}
               disabled={!isBotFormEnabled}
-              aria-invalid={showErrors && Boolean(errors.botName)}
+              aria-invalid={showBotFieldErrors && Boolean(errors.botName)}
               placeholder={t('placeholders.botName')}
             />
-            <FieldError>{showErrors ? errors.botName : null}</FieldError>
+            <FieldError>{showBotFieldErrors ? errors.botName : null}</FieldError>
           </Field>
 
-          <Field data-invalid={showErrors && Boolean(errors.targetUrl)} className="md:col-span-2">
+          <Field data-invalid={showBotFieldErrors && Boolean(errors.targetUrl)}>
             <FieldLabel htmlFor="targetUrl">{t('fields.url')}</FieldLabel>
             <Input
               id="targetUrl"
@@ -151,13 +208,13 @@ export function BotStep({
               value={bot.targetUrl}
               onChange={(event) => onBotFieldChange('targetUrl', event.target.value)}
               disabled={!isBotFormEnabled}
-              aria-invalid={showErrors && Boolean(errors.targetUrl)}
+              aria-invalid={showBotFieldErrors && Boolean(errors.targetUrl)}
               placeholder={t('placeholders.url')}
             />
-            <FieldError>{showErrors ? errors.targetUrl : null}</FieldError>
+            <FieldError>{showBotFieldErrors ? errors.targetUrl : null}</FieldError>
           </Field>
 
-          <Field data-invalid={showErrors && Boolean(errors.username)}>
+          <Field data-invalid={showBotFieldErrors && Boolean(errors.username)}>
             <FieldLabel htmlFor="botUsername">{t('fields.username')}</FieldLabel>
             <Input
               id="botUsername"
@@ -165,13 +222,13 @@ export function BotStep({
               value={bot.username}
               onChange={(event) => onBotFieldChange('username', event.target.value)}
               disabled={!isBotFormEnabled}
-              aria-invalid={showErrors && Boolean(errors.username)}
+              aria-invalid={showBotFieldErrors && Boolean(errors.username)}
               placeholder={t('placeholders.username')}
             />
-            <FieldError>{showErrors ? errors.username : null}</FieldError>
+            <FieldError>{showBotFieldErrors ? errors.username : null}</FieldError>
           </Field>
 
-          <Field data-invalid={showErrors && Boolean(errors.password)}>
+          <Field data-invalid={showBotFieldErrors && Boolean(errors.password)}>
             <FieldLabel htmlFor="botPassword">{t('fields.password')}</FieldLabel>
             <div className="relative">
               <Input
@@ -181,7 +238,7 @@ export function BotStep({
                 value={bot.password}
                 onChange={(event) => onBotFieldChange('password', event.target.value)}
                 disabled={!isBotFormEnabled}
-                aria-invalid={showErrors && Boolean(errors.password)}
+                aria-invalid={showBotFieldErrors && Boolean(errors.password)}
                 placeholder={t('placeholders.password')}
                 className="pr-12"
               />
@@ -196,7 +253,7 @@ export function BotStep({
                 {isPasswordVisible ? <IconEyeOff /> : <IconEye />}
               </Button>
             </div>
-            <FieldError>{showErrors ? errors.password : null}</FieldError>
+            <FieldError>{showBotFieldErrors ? errors.password : null}</FieldError>
           </Field>
         </FieldGroup>
       </FieldGroup>

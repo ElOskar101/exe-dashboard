@@ -145,6 +145,7 @@
     "playwrightProjectsTitle": "Playwright Projects could not be loaded",
     "associatedBotsTitle": "Associated bots could not be loaded",
     "noAssociatedBots": "The selected Playwright Project has no active associated bots available.",
+    "selectedBotNotInClinicBots": "The selected bot doesn't exist in the selected clinic's bots.",
     "decryptClinicBotPasswordTitle": "Bot password could not be decrypted",
     "executionDaysTitle": "Execution days could not be loaded",
     "importPatientsTitle": "Patients could not be imported"

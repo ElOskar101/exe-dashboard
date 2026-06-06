@@ -42,9 +42,17 @@ describe('execution-clinic-bots', () => {
         isActive: false,
       },
     })
+    const clinicBotWithoutNestedBot = {
+      ...createClinicBot(),
+      _id: 'clinic-bot-4',
+      bot: null,
+    } as unknown as ClinicBotRecord
 
     expect(isClinicBotSelectable(activeClinicBot)).toBe(true)
-    expect(getSelectableClinicBots([activeClinicBot, disabledClinicBot, inactiveNestedBot])).toEqual([activeClinicBot])
+    expect(isClinicBotSelectable(clinicBotWithoutNestedBot)).toBe(false)
+    expect(
+      getSelectableClinicBots([activeClinicBot, disabledClinicBot, inactiveNestedBot, clinicBotWithoutNestedBot]),
+    ).toEqual([activeClinicBot])
   })
 
   it('sorts selectable clinic bots by bot name', () => {

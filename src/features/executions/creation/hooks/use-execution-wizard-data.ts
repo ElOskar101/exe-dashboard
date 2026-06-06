@@ -2,10 +2,17 @@ import { useMemo } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getPlaywrightProjects } from '@/features/executions/shared'
 import { mapCCCExecutionRowsToPatients } from '../lib/ccc-execution-patients'
+import { getSelectableClinicBots } from '../lib/execution-clinic-bots'
 import { getSelectablePlaywrightProjectBots } from '../lib/execution-playwright-projects'
 import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
-import { getCCCExecution, getClinicExecutionDays, getCustomerById, searchCustomers } from '../services/ccc.service'
+import {
+  getCCCExecution,
+  getClinicBots,
+  getClinicExecutionDays,
+  getCustomerById,
+  searchCustomers,
+} from '../services/ccc.service'
 
 interface UseExecutionWizardDataOptions {
   context: ExecutionWizardDraft['context']
@@ -73,6 +80,16 @@ export const useExecutionWizardData = ({
     },
   })
 
+  const clinicBotsQuery = useQuery({
+    queryKey: executionWizardKeys.clinicBots(context.clinic),
+    queryFn: async () => {
+      const response = await getClinicBots(context.clinic)
+
+      return response.data
+    },
+    enabled: context.clinic.trim().length > 0,
+  })
+
   const importPatientsMutation = useMutation({
     mutationFn: async (executionId: string) => {
       const response = await getCCCExecution(executionId)
@@ -88,6 +105,7 @@ export const useExecutionWizardData = ({
   })
 
   const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
+  const clinicBotOptions = useMemo(() => getSelectableClinicBots(clinicBotsQuery.data ?? []), [clinicBotsQuery.data])
   const playwrightProjectOptions = useMemo(
     () =>
       [...(playwrightProjectsQuery.data ?? [])].sort((leftProject, rightProject) =>
@@ -106,6 +124,8 @@ export const useExecutionWizardData = ({
   )
   const hasSelectedCustomerWithoutClinics =
     context.client.trim().length > 0 && selectedCustomerQuery.status === 'success' && clinicOptions.length === 0
+  const hasSelectedClinicWithoutActiveBots =
+    context.clinic.trim().length > 0 && clinicBotsQuery.status === 'success' && clinicBotOptions.length === 0
   const hasSelectedProjectWithoutAssociatedBots =
     context.project.trim().length > 0 &&
     playwrightProjectsQuery.status === 'success' &&
@@ -124,11 +144,14 @@ export const useExecutionWizardData = ({
 
   return {
     associatedBotOptions,
+    clinicBotOptions,
+    clinicBotsQuery,
     clinicExecutionDaysQuery,
     clinicOptions,
     customerSearchQuery,
     executionDayOptions,
     hasSelectedProjectWithoutAssociatedBots,
+    hasSelectedClinicWithoutActiveBots,
     hasSelectedCustomerWithoutClinics,
     importPatients,
     importPatientsMutation,

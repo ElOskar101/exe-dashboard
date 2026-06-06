@@ -67,7 +67,7 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.bot.clinicBotId).toBe('validation.noAssociatedBots')
   })
 
-  it('validates editable bot fields after a bot is selected', () => {
+  it('validates required editable bot fields after a bot is selected', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'customer-1'
@@ -86,6 +86,27 @@ describe('getExecutionWizardValidationErrors', () => {
       username: 'validation.required',
       password: 'validation.required',
     })
+  })
+
+  it("blocks submission when the selected bot is not in the selected clinic's bots", () => {
+    const draft = createEmptyDraft()
+
+    draft.context.client = 'customer-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Downtown Clinic'
+    draft.context.project = 'liberty'
+    draft.bot.clinicBotId = 'bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never, {
+      selectedBotMissingFromClinicBots: true,
+    })
+
+    expect(errors.bot.clinicBotId).toBe('validation.selectedBotNotInClinicBots')
   })
 
   it('requires core imported patient fields before allowing submission', () => {

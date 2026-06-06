@@ -23,8 +23,6 @@ Only dig into a deep module's implementation details when you are actively worki
 
 When new endpoints are given try to test them to see an example of their responses. For this, use the TMP_ACCESS_TOKEN env variable for authentication.
 
-When you finish a new frontend feature test your changes using the most reliable browser skill that simulates real-world usage.
-
 ## Agent skills
 
 ### Domain docs

@@ -8,6 +8,7 @@ const translations: Record<string, string> = {
   'validation.customerHasNoClinics': 'The selected client has no clinics available.',
   'validation.noActiveClinicBots': 'The selected clinic has no active bots available.',
   'validation.noAssociatedBots': 'The selected Playwright Project has no active associated bots available.',
+  'validation.selectedBotNotInClinicBots': "The selected bot doesn't exist in the selected clinic's bots.",
   'validation.addPatient': 'Add at least one patient before continuing.',
   'validation.patientRowIncomplete': 'Patient {{index}}: {{fields}}',
   'validation.submitBlockedTitle': 'Complete the required fields first.',
@@ -91,14 +92,14 @@ describe('getExecutionWizardValidationToastCopy', () => {
     const errors = createStepErrors()
 
     errors.context.clinic = 'The selected client has no clinics available.'
-    errors.bot.clinicBotId = 'The selected Playwright Project has no active associated bots available.'
+    errors.bot.clinicBotId = "The selected bot doesn't exist in the selected clinic's bots."
 
     const copy = getExecutionWizardValidationToastCopy(errors, t)
 
     expect(copy).toEqual({
       title: 'Complete the required fields first.',
       description:
-        'Missing or incomplete: The selected client has no clinics available., The selected Playwright Project has no active associated bots available..',
+        "Missing or incomplete: The selected client has no clinics available., The selected bot doesn't exist in the selected clinic's bots..",
     })
   })
 })

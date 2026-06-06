@@ -20,7 +20,9 @@ export type StepErrors = {
 
 interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
+  hasSelectedClinicWithoutActiveBots?: boolean
   hasSelectedProjectWithoutAssociatedBots?: boolean
+  selectedBotMissingFromClinicBots?: boolean
 }
 
 const requiredPatientFields: Array<
@@ -85,9 +87,17 @@ export const getExecutionWizardValidationErrors = (
   )
 
   if (hasSelectedProject && !hasSelectedBot) {
-    bot.clinicBotId = options.hasSelectedProjectWithoutAssociatedBots
-      ? t('validation.noAssociatedBots')
-      : t('validation.required')
+    if (options.hasSelectedClinicWithoutActiveBots) {
+      bot.clinicBotId = t('validation.noActiveClinicBots')
+    } else if (options.hasSelectedProjectWithoutAssociatedBots) {
+      bot.clinicBotId = t('validation.noAssociatedBots')
+    } else {
+      bot.clinicBotId = t('validation.required')
+    }
+  }
+
+  if (hasSelectedBot && options.selectedBotMissingFromClinicBots) {
+    bot.clinicBotId = t('validation.selectedBotNotInClinicBots')
   }
 
   if (hasSelectedBot || hasEditableBotValues) {

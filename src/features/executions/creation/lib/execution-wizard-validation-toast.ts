@@ -51,6 +51,7 @@ export const getExecutionWizardValidationToastCopy = (
     t('validation.customerHasNoClinics'),
     t('validation.noActiveClinicBots'),
     t('validation.noAssociatedBots'),
+    t('validation.selectedBotNotInClinicBots'),
     t('validation.userRequired'),
   ])
 

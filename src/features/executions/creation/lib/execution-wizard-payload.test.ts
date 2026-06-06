@@ -128,6 +128,26 @@ describe('buildExecutionPayload', () => {
     })
   })
 
+  it('returns null when bot username or password is empty', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.project = 'liberty'
+    draft.context.client = 'customer-id-42'
+    draft.context.clientName = 'Sunshine Dental'
+    draft.context.clinic = 'clinic-id-9'
+    draft.context.clinicName = 'Main Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.verificationType = 'ELG'
+
+    expect(buildExecutionPayload(draft, 'user-id-7')).toBeNull()
+
+    draft.bot.username = 'operator'
+
+    expect(buildExecutionPayload(draft, 'user-id-7')).toBeNull()
+  })
+
   it('omits the optional execution name when it is empty', () => {
     const draft = createEmptyDraft()
 
