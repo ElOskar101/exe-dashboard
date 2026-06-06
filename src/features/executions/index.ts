@@ -67,6 +67,7 @@ export type {
   ExecutionTarget,
   ExecutionTargetSearchSelection,
   PlaywrightProject,
+  PlaywrightProjectBot,
   PlaywrightRuntime,
   PlaywrightRuntimeApplication,
   ExecutionUpdatePayload,

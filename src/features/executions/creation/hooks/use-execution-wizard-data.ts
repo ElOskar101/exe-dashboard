@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { getPlaywrightProjects } from '@/features/executions/shared'
 import { mapCCCExecutionRowsToPatients } from '../lib/ccc-execution-patients'
 import { getSelectableClinicBots } from '../lib/execution-clinic-bots'
+import { getSelectablePlaywrightProjectBots } from '../lib/execution-playwright-projects'
 import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
 import {
@@ -69,6 +71,15 @@ export const useExecutionWizardData = ({
     enabled: context.clinic.trim().length > 0,
   })
 
+  const playwrightProjectsQuery = useQuery({
+    queryKey: executionWizardKeys.playwrightProjects(),
+    queryFn: async () => {
+      const response = await getPlaywrightProjects()
+
+      return response.data
+    },
+  })
+
   const clinicBotsQuery = useQuery({
     queryKey: executionWizardKeys.clinicBots(context.clinic),
     queryFn: async () => {
@@ -95,6 +106,18 @@ export const useExecutionWizardData = ({
 
   const clinicOptions = selectedCustomerQuery.data?.clinic ?? []
   const clinicBotOptions = useMemo(() => getSelectableClinicBots(clinicBotsQuery.data ?? []), [clinicBotsQuery.data])
+  const playwrightProjectOptions = useMemo(
+    () =>
+      [...(playwrightProjectsQuery.data ?? [])].sort((leftProject, rightProject) =>
+        leftProject.name.localeCompare(rightProject.name),
+      ),
+    [playwrightProjectsQuery.data],
+  )
+  const selectedPlaywrightProject = playwrightProjectOptions.find((project) => project.name === context.project)
+  const associatedBotOptions = useMemo(
+    () => getSelectablePlaywrightProjectBots(selectedPlaywrightProject),
+    [selectedPlaywrightProject],
+  )
   const executionDayOptions = useMemo(
     () => (clinicExecutionDaysQuery.data ?? []).filter((day) => !day.trashed),
     [clinicExecutionDaysQuery.data],
@@ -103,6 +126,11 @@ export const useExecutionWizardData = ({
     context.client.trim().length > 0 && selectedCustomerQuery.status === 'success' && clinicOptions.length === 0
   const hasSelectedClinicWithoutActiveBots =
     context.clinic.trim().length > 0 && clinicBotsQuery.status === 'success' && clinicBotOptions.length === 0
+  const hasSelectedProjectWithoutAssociatedBots =
+    context.project.trim().length > 0 &&
+    playwrightProjectsQuery.status === 'success' &&
+    Boolean(selectedPlaywrightProject) &&
+    associatedBotOptions.length === 0
 
   const importPatients = (executionId: string) => {
     const trimmedExecutionId = executionId.trim()
@@ -115,16 +143,20 @@ export const useExecutionWizardData = ({
   }
 
   return {
+    associatedBotOptions,
     clinicBotOptions,
     clinicBotsQuery,
     clinicExecutionDaysQuery,
     clinicOptions,
     customerSearchQuery,
     executionDayOptions,
+    hasSelectedProjectWithoutAssociatedBots,
     hasSelectedClinicWithoutActiveBots,
     hasSelectedCustomerWithoutClinics,
     importPatients,
     importPatientsMutation,
+    playwrightProjectOptions,
+    playwrightProjectsQuery,
     resetImportPatients: () => importPatientsMutation.reset(),
     selectedCustomerQuery,
   }

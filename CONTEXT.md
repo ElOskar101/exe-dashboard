@@ -44,6 +44,10 @@ _Avoid_: Global runtime preference, environment switcher
 The dashboard's built-in execution API target used when no **Selected Playwright Runtime Application** is chosen for the current URL. The user-facing label is "Default App".
 _Avoid_: Default runtime, default application
 
+**Default Carrier API**:
+The dashboard's built-in carrier API target used for authentication, customer data, clinic data, and Playwright catalog discovery.
+_Avoid_: Execution API, selected app API
+
 ## Relationships
 
 - An **Execution** has exactly one current **Execution Status**
@@ -58,8 +62,8 @@ _Avoid_: Default runtime, default application
 - Execution API requests use the **Default Execution API** when no **Selected Playwright Runtime Application** is chosen
 - Execution realtime subscriptions follow the same execution target as execution API requests
 - Execution reports follow the same execution target as execution API requests
-- The **Default Execution API** provides the catalog of available **Playwright Runtimes**
-- **Playwright Project** requests follow the same execution target as execution API requests
+- The **Default Carrier API** provides the catalog of available **Playwright Runtimes**
+- The **Default Carrier API** provides the catalog of available **Playwright Projects**
 - The sidebar and detail page both present the same **Execution Status** for a given **Execution**
 - An **Execution Control Request** does not change **Execution Status** by itself; the status changes only when the lifecycle update is confirmed by the system
 - The sidebar and detail page both read confirmed status from the same **Execution Status Read Model**

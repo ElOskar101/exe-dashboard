@@ -14,6 +14,14 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.context.clinic).toBe('validation.required')
   })
 
+  it('requires a selected Playwright Project', () => {
+    const draft = createEmptyDraft()
+
+    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
+
+    expect(errors.context.project).toBe('validation.required')
+  })
+
   it('shows a dedicated clinic error when the selected customer has no clinics', () => {
     const draft = createEmptyDraft()
 
@@ -37,41 +45,36 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.config.config).toBe('validation.validJsonObject')
   })
 
-  it('requires a selected clinic bot after a clinic is chosen', () => {
+  it('requires a selected associated bot after a Playwright Project is chosen', () => {
     const draft = createEmptyDraft()
 
-    draft.context.client = 'customer-1'
-    draft.context.clientName = 'Legacy Dental Care'
-    draft.context.clinic = 'clinic-1'
-    draft.context.clinicName = 'Downtown Clinic'
+    draft.context.project = 'liberty'
 
     const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
 
     expect(errors.bot.clinicBotId).toBe('validation.required')
   })
 
-  it('shows a dedicated clinic bot error when the selected clinic has no active bots', () => {
+  it('shows a dedicated associated bot error when the selected Playwright Project has no active associated bots', () => {
     const draft = createEmptyDraft()
 
-    draft.context.client = 'customer-1'
-    draft.context.clientName = 'Legacy Dental Care'
-    draft.context.clinic = 'clinic-1'
-    draft.context.clinicName = 'Downtown Clinic'
+    draft.context.project = 'liberty'
 
     const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never, {
-      hasSelectedClinicWithoutActiveBots: true,
+      hasSelectedProjectWithoutAssociatedBots: true,
     })
 
-    expect(errors.bot.clinicBotId).toBe('validation.noActiveClinicBots')
+    expect(errors.bot.clinicBotId).toBe('validation.noAssociatedBots')
   })
 
-  it('validates editable bot fields after a clinic bot is selected', () => {
+  it('validates required editable bot fields after a bot is selected', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'customer-1'
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Downtown Clinic'
+    draft.context.project = 'liberty'
     draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.targetUrl = 'invalid-url'
 
@@ -85,20 +88,25 @@ describe('getExecutionWizardValidationErrors', () => {
     })
   })
 
-  it('waits for password decryption to finish before validating editable bot fields', () => {
+  it("blocks submission when the selected bot is not in the selected clinic's bots", () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'customer-1'
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Downtown Clinic'
+    draft.context.project = 'liberty'
+    draft.bot.clinicBotId = 'bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
 
     const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never, {
-      selectedClinicBotId: 'clinic-bot-1',
-      isDecryptingClinicBotPassword: true,
+      selectedBotMissingFromClinicBots: true,
     })
 
-    expect(errors.bot).toEqual({})
+    expect(errors.bot.clinicBotId).toBe('validation.selectedBotNotInClinicBots')
   })
 
   it('requires core imported patient fields before allowing submission', () => {
@@ -108,6 +116,7 @@ describe('getExecutionWizardValidationErrors', () => {
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
     draft.context.clinicName = 'Downtown Clinic'
+    draft.context.project = 'liberty'
     draft.bot.clinicBotId = 'clinic-bot-1'
     draft.bot.botName = 'Eligibility Runner'
     draft.bot.targetUrl = 'https://carrier.example.com'

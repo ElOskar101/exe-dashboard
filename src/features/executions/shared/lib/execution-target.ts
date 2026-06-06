@@ -1,5 +1,5 @@
 import { APP_CONFIG } from '@/app.config'
-import { stripTrailingSlash } from '@/lib/axios'
+import { ensurePathSuffix, stripTrailingSlash } from '@/lib/axios'
 import type { PlaywrightRuntime, PlaywrightRuntimeApplication } from '../model/playwright-runtime'
 
 export const EXECUTION_RUNTIME_SEARCH_PARAM = 'runtimeId'
@@ -45,6 +45,7 @@ export interface ExecutionTargetSearchSelection {
 }
 
 const EXECUTION_TARGET_VALUE_SEPARATOR = '\u001f'
+const URL_PROTOCOL_PATTERN = /^[a-z][a-z\d+\-.]*:\/\//i
 
 export const defaultExecutionTarget: ExecutionTarget = {
   type: 'default',
@@ -95,10 +96,22 @@ const getSocketUrlFromApiUrl = (apiUrl: string) => {
   }
 }
 
+export const normalizeSelectedExecutionApiUrl = (apiUrl?: string) => {
+  const trimmedApiUrl = apiUrl?.trim()
+
+  if (!trimmedApiUrl) {
+    return ''
+  }
+
+  const absoluteApiUrl = URL_PROTOCOL_PATTERN.test(trimmedApiUrl) ? trimmedApiUrl : `https://${trimmedApiUrl}`
+
+  return ensurePathSuffix(absoluteApiUrl, '/api/v1') ?? ''
+}
+
 export const getSelectedExecutionRequestTarget = (
   application: PlaywrightRuntimeApplication,
 ): ExecutionApiRequestTarget => {
-  const apiUrl = stripTrailingSlash(application.apiUrl) ?? ''
+  const apiUrl = normalizeSelectedExecutionApiUrl(application.apiUrl)
 
   return {
     apiUrl,

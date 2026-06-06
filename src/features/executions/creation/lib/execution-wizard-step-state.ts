@@ -31,6 +31,7 @@ export const isPatientsStepDirty = (draft: ExecutionWizardDraft) => {
 
 export const isBotStepDirty = (draft: ExecutionWizardDraft) => {
   return (
+    draft.context.project !== emptyDraft.context.project ||
     draft.bot.clinicBotId !== emptyDraft.bot.clinicBotId ||
     draft.bot.botName !== emptyDraft.bot.botName ||
     draft.bot.targetUrl !== emptyDraft.bot.targetUrl ||
@@ -41,7 +42,6 @@ export const isBotStepDirty = (draft: ExecutionWizardDraft) => {
 
 export const isConfigStepDirty = (draft: ExecutionWizardDraft) => {
   return (
-    draft.context.project !== emptyDraft.context.project ||
     draft.execution.workers !== emptyDraft.execution.workers ||
     draft.execution.retries !== emptyDraft.execution.retries ||
     draft.execution.config !== emptyDraft.execution.config

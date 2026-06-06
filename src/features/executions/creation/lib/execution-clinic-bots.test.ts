@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { getSelectableClinicBots, isClinicBotSelectable, mapClinicBotToExecutionBot } from './execution-clinic-bots'
+import {
+  getSelectableClinicBots,
+  isClinicBotSelectable,
+  mapClinicBotToExecutionBot,
+  type SelectableClinicBotRecord,
+} from './execution-clinic-bots'
 import type { ClinicBotRecord } from '../services/ccc.service'
 
-const createClinicBot = (overrides: Partial<ClinicBotRecord> = {}): ClinicBotRecord => ({
+const createSelectableClinicBot = (overrides: Partial<SelectableClinicBotRecord> = {}): SelectableClinicBotRecord => ({
   _id: 'clinic-bot-1',
   status: {
     _id: 'status-1',
@@ -26,48 +31,68 @@ const createClinicBot = (overrides: Partial<ClinicBotRecord> = {}): ClinicBotRec
 
 describe('execution-clinic-bots', () => {
   it('only treats clinic bots with active record status and active nested bots as selectable', () => {
-    const activeClinicBot = createClinicBot()
-    const disabledClinicBot = createClinicBot({
+    const activeClinicBot = createSelectableClinicBot()
+    const disabledClinicBot = createSelectableClinicBot({
       _id: 'clinic-bot-2',
       status: {
         _id: 'status-2',
         description: 'Disabled',
       },
     })
-    const inactiveNestedBot = createClinicBot({
+    const inactiveNestedBot = createSelectableClinicBot({
       _id: 'clinic-bot-3',
       bot: {
-        ...createClinicBot().bot,
+        ...createSelectableClinicBot().bot,
         _id: 'bot-3',
         isActive: false,
       },
     })
+    const clinicBotWithoutStatus: ClinicBotRecord = {
+      ...createSelectableClinicBot(),
+      _id: 'clinic-bot-4',
+      status: null,
+    }
+    const clinicBotWithoutNestedBot: ClinicBotRecord = {
+      ...createSelectableClinicBot(),
+      _id: 'clinic-bot-5',
+      bot: null,
+    }
 
     expect(isClinicBotSelectable(activeClinicBot)).toBe(true)
-    expect(getSelectableClinicBots([activeClinicBot, disabledClinicBot, inactiveNestedBot])).toEqual([activeClinicBot])
+    expect(isClinicBotSelectable(clinicBotWithoutStatus)).toBe(false)
+    expect(isClinicBotSelectable(clinicBotWithoutNestedBot)).toBe(false)
+    expect(
+      getSelectableClinicBots([
+        activeClinicBot,
+        disabledClinicBot,
+        inactiveNestedBot,
+        clinicBotWithoutStatus,
+        clinicBotWithoutNestedBot,
+      ]),
+    ).toEqual([activeClinicBot])
   })
 
   it('sorts selectable clinic bots by bot name', () => {
-    const zBot = createClinicBot({
+    const zBot = createSelectableClinicBot({
       _id: 'clinic-bot-2',
       bot: {
-        ...createClinicBot().bot,
+        ...createSelectableClinicBot().bot,
         _id: 'bot-2',
         botName: 'Zion',
       },
     })
-    const aBot = createClinicBot({
+    const aBot = createSelectableClinicBot({
       _id: 'clinic-bot-3',
       bot: {
-        ...createClinicBot().bot,
+        ...createSelectableClinicBot().bot,
         _id: 'bot-3',
         botName: 'Aetna',
       },
     })
-    const mBot = createClinicBot({
+    const mBot = createSelectableClinicBot({
       _id: 'clinic-bot-4',
       bot: {
-        ...createClinicBot().bot,
+        ...createSelectableClinicBot().bot,
         _id: 'bot-4',
         botName: 'MetLife',
       },
@@ -77,7 +102,7 @@ describe('execution-clinic-bots', () => {
   })
 
   it('maps the selected clinic bot into the execution bot payload fields', () => {
-    expect(mapClinicBotToExecutionBot(createClinicBot())).toEqual({
+    expect(mapClinicBotToExecutionBot(createSelectableClinicBot())).toEqual({
       clinicBotId: 'clinic-bot-1',
       botName: 'Aetna',
       targetUrl: 'https://carrier.example.com',
@@ -88,7 +113,7 @@ describe('execution-clinic-bots', () => {
   })
 
   it('can swap in the decrypted password without changing the rest of the mapped bot fields', () => {
-    expect(mapClinicBotToExecutionBot(createClinicBot(), 'decrypted-secret')).toEqual({
+    expect(mapClinicBotToExecutionBot(createSelectableClinicBot(), 'decrypted-secret')).toEqual({
       clinicBotId: 'clinic-bot-1',
       botName: 'Aetna',
       targetUrl: 'https://carrier.example.com',

@@ -18,7 +18,7 @@ export const createEmptyPatient = (): ExecutionPatient => ({
 
 export const createEmptyDraft = (): ExecutionWizardDraft => ({
   context: {
-    project: 'liberty',
+    project: '',
     client: '',
     clientName: '',
     clinic: '',

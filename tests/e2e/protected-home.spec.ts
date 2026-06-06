@@ -101,6 +101,26 @@ async function stubProtectedRouteDependencies(page: Page) {
     })
   })
 
+  await page.route('**/api/v2/playwright-projects**', async (route) => {
+    await route.fulfill({
+      json: [
+        {
+          _id: 'project-1',
+          name: 'liberty',
+          associatedWith: [
+            {
+              _id: 'project-bot-1',
+              botName: 'Eligibility Runner',
+              isActive: true,
+              type: 'ELG',
+              urlLogin: 'https://carrier.example.com',
+            },
+          ],
+        },
+      ],
+    })
+  })
+
   await page.route('**/api/clinicbots/decrypt/**', async (route) => {
     await route.fulfill({
       body: '"super-secret"',
@@ -208,7 +228,8 @@ async function importPatientsFromCCC(page: Page) {
 async function completeBotStep(
   page: Page,
   {
-    clinicBotName = 'Eligibility Runner',
+    projectName = 'liberty',
+    associatedBotName = 'Eligibility Runner',
     botName = 'Eligibility Runner',
     portalUrl = 'https://carrier.example.com',
     username = 'qa.operator',
@@ -217,8 +238,10 @@ async function completeBotStep(
 ) {
   const passwordInput = page.getByRole('textbox', { name: 'Password' })
 
-  await page.getByRole('combobox', { name: 'Clinic bot' }).click()
-  await page.getByRole('option', { name: clinicBotName }).click()
+  await page.getByRole('combobox', { name: 'Project' }).click()
+  await page.getByRole('option', { name: projectName }).click()
+  await page.getByRole('combobox', { name: 'Bot' }).click()
+  await page.getByRole('option', { name: associatedBotName }).click()
   await expect(passwordInput).toBeEnabled()
   await expect(passwordInput).toHaveValue('super-secret')
   await page.getByLabel('Bot name').fill(botName)
@@ -284,7 +307,8 @@ test.describe('protected executions route', () => {
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.getByText('Select a clinic bot to load its default execution settings.')).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Project' })).toBeVisible()
+    await expect(page.getByText('This field is required.').first()).toBeVisible()
 
     await completeBotStep(page)
     await expect(page.getByLabel('Workers')).toBeVisible()

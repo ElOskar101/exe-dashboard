@@ -1,8 +1,13 @@
 import type { ExecutionBot } from '../model/execution-create'
-import type { ClinicBotRecord } from '../services/ccc.service'
+import type { ClinicBotDefinition, ClinicBotRecord, ClinicBotStatus } from '../services/ccc.service'
 
-export const isClinicBotSelectable = (clinicBot: ClinicBotRecord) => {
-  return clinicBot.status.description === 'Active' && clinicBot.bot.isActive
+export interface SelectableClinicBotRecord extends ClinicBotRecord {
+  bot: ClinicBotDefinition
+  status: ClinicBotStatus
+}
+
+export const isClinicBotSelectable = (clinicBot: ClinicBotRecord): clinicBot is SelectableClinicBotRecord => {
+  return clinicBot.status?.description === 'Active' && clinicBot.bot?.isActive === true
 }
 
 export const getSelectableClinicBots = (clinicBots: ClinicBotRecord[]) => {
@@ -11,7 +16,10 @@ export const getSelectableClinicBots = (clinicBots: ClinicBotRecord[]) => {
     .sort((leftBot, rightBot) => leftBot.bot.botName.localeCompare(rightBot.bot.botName))
 }
 
-export const mapClinicBotToExecutionBot = (clinicBot: ClinicBotRecord, password = clinicBot.password): ExecutionBot => {
+export const mapClinicBotToExecutionBot = (
+  clinicBot: SelectableClinicBotRecord,
+  password = clinicBot.password,
+): ExecutionBot => {
   return {
     clinicBotId: clinicBot._id,
     botName: clinicBot.bot.botName,

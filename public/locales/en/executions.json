@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Create execution",
-    "description": "Import patients, choose the clinic bot details, configure the run, and submit when everything is ready."
+    "description": "Import patients, choose the Playwright Project and bot details, configure the run, and submit when everything is ready."
   },
   "steps": {
     "stepCounter": "Step {{current}} of {{total}}",
@@ -14,7 +14,7 @@
     },
     "bot": {
       "title": "Bot",
-      "description": "Pick the clinic bot and update the execution bot fields before submission."
+      "description": "Pick the Playwright Project and associated bot, then update the execution bot fields before submission."
     },
     "config": {
       "title": "Execution config",
@@ -28,7 +28,7 @@
   "sections": {
     "patients": {
       "legend": "Patients",
-      "description": "Choose a clinic bot and import patients from a selected CC execution day.",
+      "description": "Choose a clinic and import patients from a selected CC execution day.",
       "patientTitle": "Patient {{index}}",
       "patientDescription": "Every patient row becomes one item in execution.patients."
     },
@@ -48,7 +48,7 @@
     "project": "Project",
     "client": "Client",
     "clinic": "Clinic",
-    "bot": "Clinic bot",
+    "bot": "Bot",
     "botName": "Bot name",
     "url": "Portal URL",
     "username": "Username",
@@ -78,7 +78,7 @@
     "claimsForm": "Claims form"
   },
   "placeholders": {
-    "project": "liberty",
+    "project": "Select a project",
     "client": "Search clients by name",
     "clinic": "Select a clinic",
     "bot": "Select a bot",
@@ -142,6 +142,10 @@
     "patientDetailsDescription": "Fill the missing imported fields before creating the execution: {{fields}}.",
     "clinicBotsTitle": "Clinic bots could not be loaded",
     "noActiveClinicBots": "The selected clinic has no active bots available.",
+    "playwrightProjectsTitle": "Playwright Projects could not be loaded",
+    "associatedBotsTitle": "Associated bots could not be loaded",
+    "noAssociatedBots": "The selected Playwright Project has no active associated bots available.",
+    "selectedBotNotInClinicBots": "The selected bot doesn't exist in the selected clinic's bots.",
     "decryptClinicBotPasswordTitle": "Bot password could not be decrypted",
     "executionDaysTitle": "Execution days could not be loaded",
     "importPatientsTitle": "Patients could not be imported"
@@ -152,13 +156,14 @@
     "noCustomersFound": "No clients matched your search.",
     "selected": "Selected",
     "selectClientAndClinicFirst": "Select a client and clinic in the patients step before choosing a bot.",
-    "selectBotToEdit": "Select a clinic bot to load its default execution settings.",
-    "decryptingClinicBotPassword": "Decrypting the selected clinic bot password.",
+    "selectBotToEdit": "Select a bot to load its default execution settings.",
+    "decryptingClinicBotPassword": "Decrypting the selected bot password.",
     "selectClientFirst": "Select a client to load its clinics.",
     "loadingClinics": "Loading clinics for the selected client...",
     "loadClinicsError": "The selected client's clinics could not be loaded.",
     "selectClinic": "Choose one of the clinics available for this client.",
     "noActiveClinicBots": "This clinic has no active bots available. Choose a different clinic to continue.",
+    "noAssociatedBots": "This Playwright Project has no active associated bots. Choose a different project to continue.",
     "noImportedPatients": "Select an execution day and get patients to continue.",
     "importedPatients": "Imported patients: {{count}}"
   },
