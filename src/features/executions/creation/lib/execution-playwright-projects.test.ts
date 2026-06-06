@@ -142,6 +142,47 @@ describe('execution playwright projects', () => {
     expect(findClinicBotForPlaywrightProjectBot(bot, [matchingClinicBot])).toBe(matchingClinicBot)
   })
 
+  it('ignores clinic bots whose nested bot definition is missing', () => {
+    const bot = {
+      _id: 'bot-1',
+      botName: 'Liberty Dental Plan',
+      isActive: true,
+      type: 'ELG' as const,
+      urlLogin: 'https://providerportal.libertydentalplan.com',
+    }
+    const matchingClinicBot = {
+      _id: 'clinic-bot-1',
+      username: 'operator',
+      password: 'secret',
+      status: {
+        _id: 'status-1',
+        description: 'Active',
+      },
+      bot: {
+        _id: 'legacy-bot-99',
+        botName: 'Liberty Dental Plan',
+        isActive: true,
+        type: 'ELG' as const,
+        urlLogin: 'https://providerportal.libertydentalplan.com',
+        status: {
+          _id: 'status-1',
+          description: 'Active',
+        },
+      },
+    }
+
+    expect(
+      findClinicBotForPlaywrightProjectBot(bot, [
+        {
+          ...matchingClinicBot,
+          _id: 'clinic-bot-missing-bot',
+          bot: null,
+        },
+        matchingClinicBot,
+      ]),
+    ).toBe(matchingClinicBot)
+  })
+
   it('maps a project-associated bot with matched clinic bot credentials', () => {
     expect(
       mapPlaywrightProjectBotWithClinicBotToExecutionBot(

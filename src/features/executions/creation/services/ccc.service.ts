@@ -41,10 +41,10 @@ export interface ClinicBotDefinition {
 
 export interface ClinicBotRecord {
   _id: string
-  status: ClinicBotStatus
+  status: ClinicBotStatus | null
   username: string
   password: string
-  bot: ClinicBotDefinition
+  bot: ClinicBotDefinition | null
 }
 
 export interface CustomerDetailsResponse {

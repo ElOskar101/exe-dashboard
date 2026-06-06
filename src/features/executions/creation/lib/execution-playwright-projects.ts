@@ -26,7 +26,7 @@ export const findClinicBotForPlaywrightProjectBot = (bot: PlaywrightProjectBot, 
     return undefined
   }
 
-  return clinicBots.find((clinicBot) => normalizeBotName(clinicBot.bot.botName) === normalizedBotName)
+  return clinicBots.find((clinicBot) => normalizeBotName(clinicBot.bot?.botName ?? '') === normalizedBotName)
 }
 
 export const mapPlaywrightProjectBotWithClinicBotToExecutionBot = (
