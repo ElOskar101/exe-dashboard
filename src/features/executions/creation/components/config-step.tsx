@@ -9,10 +9,8 @@ interface ConfigStepProps extends ExecutionWizardConfigStepState {
 
 export function ConfigStep({
   draft,
-  contextErrors,
   errors,
   showErrors,
-  onContextFieldChange,
   onWorkersChange,
   onRetriesChange,
   onConfigChange,
@@ -20,7 +18,7 @@ export function ConfigStep({
 }: ConfigStepProps) {
   return (
     <FieldSet>
-      <FieldGroup className="md:grid md:grid-cols-3">
+      <FieldGroup className="md:grid md:grid-cols-2">
         <Field data-invalid={showErrors && Boolean(errors.workers)}>
           <FieldLabel htmlFor="workers">{t('fields.workers')}</FieldLabel>
           <Input
@@ -51,19 +49,7 @@ export function ConfigStep({
           <FieldError>{showErrors ? errors.retries : null}</FieldError>
         </Field>
 
-        <Field data-invalid={showErrors && Boolean(contextErrors.project)}>
-          <FieldLabel htmlFor="project">{t('fields.project')}</FieldLabel>
-          <Input
-            id="project"
-            value={draft.context.project}
-            onChange={(event) => onContextFieldChange('project', event.target.value)}
-            aria-invalid={showErrors && Boolean(contextErrors.project)}
-            placeholder={t('placeholders.project')}
-          />
-          <FieldError>{showErrors ? contextErrors.project : null}</FieldError>
-        </Field>
-
-        <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-3">
+        <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-2">
           <FieldLabel htmlFor="config">{t('fields.otherConfig')}</FieldLabel>
           <textarea
             id="config"

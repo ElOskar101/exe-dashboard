@@ -50,6 +50,7 @@ export const getExecutionWizardValidationToastCopy = (
   const passthroughErrors = new Set([
     t('validation.customerHasNoClinics'),
     t('validation.noActiveClinicBots'),
+    t('validation.noAssociatedBots'),
     t('validation.userRequired'),
   ])
 

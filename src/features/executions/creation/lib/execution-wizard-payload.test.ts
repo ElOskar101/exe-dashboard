@@ -6,6 +6,7 @@ describe('buildExecutionPayload', () => {
   it('builds the new create execution payload shape using the selected sheet name for execution', () => {
     const draft = createEmptyDraft()
 
+    draft.context.project = 'liberty'
     draft.context.client = 'client-1'
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
@@ -86,6 +87,7 @@ describe('buildExecutionPayload', () => {
   it('returns null when metadata JSON is invalid or createdBy is missing', () => {
     const draft = createEmptyDraft()
 
+    draft.context.project = 'liberty'
     draft.context.client = 'client-1'
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'
@@ -107,6 +109,7 @@ describe('buildExecutionPayload', () => {
   it('submits selected ids from the chosen customer, clinic, and user', () => {
     const draft = createEmptyDraft()
 
+    draft.context.project = 'liberty'
     draft.context.client = 'customer-id-42'
     draft.context.clientName = 'Sunshine Dental'
     draft.context.clinic = 'clinic-id-9'
@@ -128,6 +131,7 @@ describe('buildExecutionPayload', () => {
   it('omits the optional execution name when it is empty', () => {
     const draft = createEmptyDraft()
 
+    draft.context.project = 'liberty'
     draft.context.client = 'customer-id-42'
     draft.context.clientName = 'Sunshine Dental'
     draft.context.clinic = 'clinic-id-9'
@@ -145,6 +149,7 @@ describe('buildExecutionPayload', () => {
   it('falls back to the raw execution field when no execution name is available', () => {
     const draft = createEmptyDraft()
 
+    draft.context.project = 'liberty'
     draft.context.client = 'customer-id-42'
     draft.context.clientName = 'Sunshine Dental'
     draft.context.clinic = 'clinic-id-9'
@@ -165,6 +170,7 @@ describe('buildExecutionPayload', () => {
   it('omits patient clinic from the payload when it is blank', () => {
     const draft = createEmptyDraft()
 
+    draft.context.project = 'liberty'
     draft.context.client = 'client-1'
     draft.context.clientName = 'Legacy Dental Care'
     draft.context.clinic = 'clinic-1'

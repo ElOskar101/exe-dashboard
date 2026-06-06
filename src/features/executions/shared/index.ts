@@ -29,7 +29,7 @@ export type {
   ExecutionVerificationType,
 } from './model/execution-create-payload'
 export type { ExecutionQuery } from './model/execution-query'
-export type { PlaywrightProject } from './model/playwright-project'
+export type { PlaywrightProject, PlaywrightProjectBot } from './model/playwright-project'
 export type { PlaywrightRuntime, PlaywrightRuntimeApplication } from './model/playwright-runtime'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'

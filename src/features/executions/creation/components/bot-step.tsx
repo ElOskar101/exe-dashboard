@@ -13,71 +13,62 @@ interface BotStepProps extends ExecutionWizardBotStepState {
 }
 
 export function BotStep({
+  associatedBotOptions,
   bot,
   context,
   errors,
+  projectError,
   showErrors,
-  clinicBotOptions,
-  selectedClinicBotId,
-  isLoadingClinicBots,
-  clinicBotsError,
-  isDecryptingClinicBotPassword,
-  decryptClinicBotPasswordError,
-  hasSelectedClinicWithoutActiveBots,
-  onClinicBotSelect,
+  playwrightProjectOptions,
+  selectedBotId,
+  isLoadingPlaywrightProjects,
+  playwrightProjectsError,
+  hasSelectedProjectWithoutAssociatedBots,
+  onProjectSelect,
+  onBotSelect,
   onBotFieldChange,
   t,
 }: BotStepProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-  const hasSelectedContext = context.client.trim().length > 0 && context.clinic.trim().length > 0
-  const selectedClinicBotName =
-    clinicBotOptions.find((clinicBot) => clinicBot._id === selectedClinicBotId)?.bot.botName ?? ''
+  const hasSelectedProject = context.project.trim().length > 0
+  const selectedBotName =
+    associatedBotOptions.find((associatedBot) => associatedBot._id === selectedBotId)?.botName ?? ''
   const isBotFormEnabled =
-    hasSelectedContext &&
-    selectedClinicBotId.trim().length > 0 &&
-    !hasSelectedClinicWithoutActiveBots &&
-    !clinicBotsError
-  const isBotFieldInputEnabled = isBotFormEnabled && !isDecryptingClinicBotPassword
+    hasSelectedProject &&
+    selectedBotId.trim().length > 0 &&
+    !hasSelectedProjectWithoutAssociatedBots &&
+    !playwrightProjectsError
+  const isProjectSelectDisabled = isLoadingPlaywrightProjects || Boolean(playwrightProjectsError)
+  const isBotSelectDisabled =
+    !hasSelectedProject ||
+    isLoadingPlaywrightProjects ||
+    hasSelectedProjectWithoutAssociatedBots ||
+    Boolean(playwrightProjectsError)
 
   return (
     <FieldSet>
       <FieldGroup>
-        {!hasSelectedContext ? (
-          <Alert>
-            <IconAlertCircle />
-            <AlertDescription>{t('help.selectClientAndClinicFirst')}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {clinicBotsError ? (
+        {playwrightProjectsError ? (
           <Alert variant="destructive">
             <IconAlertCircle />
-            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
-            <AlertDescription>{clinicBotsError}</AlertDescription>
+            <AlertTitle>{t('validation.playwrightProjectsTitle')}</AlertTitle>
+            <AlertDescription>{playwrightProjectsError}</AlertDescription>
           </Alert>
         ) : null}
 
-        {hasSelectedClinicWithoutActiveBots ? (
+        {hasSelectedProjectWithoutAssociatedBots ? (
           <Alert variant="destructive">
             <IconAlertCircle />
-            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
-            <AlertDescription>{t('help.noActiveClinicBots')}</AlertDescription>
+            <AlertTitle>{t('validation.associatedBotsTitle')}</AlertTitle>
+            <AlertDescription>{t('help.noAssociatedBots')}</AlertDescription>
           </Alert>
         ) : null}
 
-        {decryptClinicBotPasswordError ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
-            <AlertDescription>{decryptClinicBotPasswordError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {hasSelectedContext &&
-        !selectedClinicBotId.trim().length &&
-        !isLoadingClinicBots &&
-        !hasSelectedClinicWithoutActiveBots &&
-        !clinicBotsError ? (
+        {hasSelectedProject &&
+        !selectedBotId.trim().length &&
+        !isLoadingPlaywrightProjects &&
+        !hasSelectedProjectWithoutAssociatedBots &&
+        !playwrightProjectsError ? (
           <Alert>
             <IconAlertCircle />
             <AlertDescription>{t('help.selectBotToEdit')}</AlertDescription>
@@ -85,26 +76,52 @@ export function BotStep({
         ) : null}
 
         <FieldGroup className="md:grid md:grid-cols-2">
-          <Field data-invalid={showErrors && Boolean(errors.clinicBotId)}>
-            <FieldLabel htmlFor="clinicBot">{t('fields.bot')}</FieldLabel>
+          <Field data-invalid={showErrors && Boolean(projectError)}>
+            <FieldLabel htmlFor="playwrightProject">{t('fields.project')}</FieldLabel>
             <Select
-              value={selectedClinicBotId}
-              onValueChange={(value) => onClinicBotSelect(value ?? '')}
-              disabled={
-                !hasSelectedContext ||
-                isLoadingClinicBots ||
-                hasSelectedClinicWithoutActiveBots ||
-                Boolean(clinicBotsError)
-              }
+              value={context.project}
+              onValueChange={(value) => onProjectSelect(value ?? '')}
+              disabled={isProjectSelectDisabled}
             >
-              <SelectTrigger id="clinicBot" aria-invalid={showErrors && Boolean(errors.clinicBotId)} className="w-full">
-                <SelectValue placeholder={t('placeholders.bot')}>{selectedClinicBotName || undefined}</SelectValue>
+              <SelectTrigger
+                id="playwrightProject"
+                aria-invalid={showErrors && Boolean(projectError)}
+                className="w-full"
+              >
+                <SelectValue placeholder={t('placeholders.project')}>{context.project || undefined}</SelectValue>
               </SelectTrigger>
               <SelectContent align="start">
                 <SelectGroup>
-                  {clinicBotOptions.map((clinicBot) => (
-                    <SelectItem key={clinicBot._id} value={clinicBot._id}>
-                      {clinicBot.bot.botName}
+                  {playwrightProjectOptions.map((project) => (
+                    <SelectItem key={project._id} value={project.name}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <FieldError>{showErrors ? projectError : null}</FieldError>
+          </Field>
+
+          <Field data-invalid={showErrors && Boolean(errors.clinicBotId)}>
+            <FieldLabel htmlFor="associatedBot">{t('fields.bot')}</FieldLabel>
+            <Select
+              value={selectedBotId}
+              onValueChange={(value) => onBotSelect(value ?? '')}
+              disabled={isBotSelectDisabled}
+            >
+              <SelectTrigger
+                id="associatedBot"
+                aria-invalid={showErrors && Boolean(errors.clinicBotId)}
+                className="w-full"
+              >
+                <SelectValue placeholder={t('placeholders.bot')}>{selectedBotName || undefined}</SelectValue>
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup>
+                  {associatedBotOptions.map((associatedBot) => (
+                    <SelectItem key={associatedBot._id} value={associatedBot._id}>
+                      {associatedBot.botName}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -119,7 +136,7 @@ export function BotStep({
               id="botName"
               value={bot.botName}
               onChange={(event) => onBotFieldChange('botName', event.target.value)}
-              disabled={!isBotFieldInputEnabled}
+              disabled={!isBotFormEnabled}
               aria-invalid={showErrors && Boolean(errors.botName)}
               placeholder={t('placeholders.botName')}
             />
@@ -133,7 +150,7 @@ export function BotStep({
               type="url"
               value={bot.targetUrl}
               onChange={(event) => onBotFieldChange('targetUrl', event.target.value)}
-              disabled={!isBotFieldInputEnabled}
+              disabled={!isBotFormEnabled}
               aria-invalid={showErrors && Boolean(errors.targetUrl)}
               placeholder={t('placeholders.url')}
             />
@@ -147,7 +164,7 @@ export function BotStep({
               autoComplete="username"
               value={bot.username}
               onChange={(event) => onBotFieldChange('username', event.target.value)}
-              disabled={!isBotFieldInputEnabled}
+              disabled={!isBotFormEnabled}
               aria-invalid={showErrors && Boolean(errors.username)}
               placeholder={t('placeholders.username')}
             />
@@ -163,13 +180,9 @@ export function BotStep({
                 autoComplete="current-password"
                 value={bot.password}
                 onChange={(event) => onBotFieldChange('password', event.target.value)}
-                disabled={!isBotFieldInputEnabled}
+                disabled={!isBotFormEnabled}
                 aria-invalid={showErrors && Boolean(errors.password)}
-                placeholder={
-                  isDecryptingClinicBotPassword
-                    ? t('placeholders.decryptingClinicBotPassword')
-                    : t('placeholders.password')
-                }
+                placeholder={t('placeholders.password')}
                 className="pr-12"
               />
               <Button
@@ -177,7 +190,7 @@ export function BotStep({
                 variant="ghost"
                 className="absolute top-1/2 right-1 h-7 min-w-7 -translate-y-1/2 rounded-full px-0"
                 onClick={() => setIsPasswordVisible((previousValue) => !previousValue)}
-                disabled={!isBotFieldInputEnabled}
+                disabled={!isBotFormEnabled}
                 aria-label={isPasswordVisible ? t('buttons.hidePassword') : t('buttons.showPassword')}
               >
                 {isPasswordVisible ? <IconEyeOff /> : <IconEye />}

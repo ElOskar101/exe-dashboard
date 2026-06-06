@@ -20,9 +20,7 @@ export type StepErrors = {
 
 interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
-  hasSelectedClinicWithoutActiveBots?: boolean
-  selectedClinicBotId?: string
-  isDecryptingClinicBotPassword?: boolean
+  hasSelectedProjectWithoutAssociatedBots?: boolean
 }
 
 const requiredPatientFields: Array<
@@ -80,20 +78,19 @@ export const getExecutionWizardValidationErrors = (
   }
 
   const bot: StepErrors['bot'] = {}
-  const hasSelectedClinic = draft.context.clinic.trim().length > 0
-  const selectedClinicBotId = options.selectedClinicBotId ?? draft.bot.clinicBotId
-  const hasSelectedClinicBot = selectedClinicBotId.trim().length > 0
+  const hasSelectedProject = draft.context.project.trim().length > 0
+  const hasSelectedBot = draft.bot.clinicBotId.trim().length > 0
   const hasEditableBotValues = [draft.bot.botName, draft.bot.targetUrl, draft.bot.username, draft.bot.password].some(
     (value) => value.trim().length > 0,
   )
 
-  if (hasSelectedClinic && !hasSelectedClinicBot) {
-    bot.clinicBotId = options.hasSelectedClinicWithoutActiveBots
-      ? t('validation.noActiveClinicBots')
+  if (hasSelectedProject && !hasSelectedBot) {
+    bot.clinicBotId = options.hasSelectedProjectWithoutAssociatedBots
+      ? t('validation.noAssociatedBots')
       : t('validation.required')
   }
 
-  if (!options.isDecryptingClinicBotPassword && (hasSelectedClinicBot || hasEditableBotValues)) {
+  if (hasSelectedBot || hasEditableBotValues) {
     if (!draft.bot.botName.trim()) {
       bot.botName = t('validation.required')
     }

@@ -6,4 +6,5 @@ export const executionWizardKeys = {
   customers: () => [...executionWizardKeys.all, 'customers'] as const,
   customerSearch: (customerSearch: string, options: { limit?: number } = {}) =>
     [...executionWizardKeys.all, 'customer-search', customerSearch, options] as const,
+  playwrightProjects: () => [...executionWizardKeys.all, 'playwright-projects'] as const,
 }
