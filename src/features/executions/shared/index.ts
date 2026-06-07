@@ -29,6 +29,12 @@ export type {
   ExecutionVerificationType,
 } from './model/execution-create-payload'
 export type { ExecutionQuery } from './model/execution-query'
+export type {
+  ExecutionAppComponentStatus,
+  ExecutionAppJobStats,
+  ExecutionAppMongoStatus,
+  ExecutionAppStats,
+} from './model/app-stats'
 export type { PlaywrightProject, PlaywrightProjectBot } from './model/playwright-project'
 export type { PlaywrightRuntime, PlaywrightRuntimeApplication } from './model/playwright-runtime'
 export { EXECUTION_STATUSES } from './model/execution'
@@ -37,6 +43,7 @@ export { getExecutionRequestErrorMessage } from './services/execution-errors'
 export {
   createExecution,
   deleteExecution,
+  getExecutionAppStats,
   getExecutionById,
   getPlaywrightProjectById,
   getPlaywrightProjects,
@@ -79,6 +86,7 @@ export {
 export {
   useCreateExecutionMutation,
   useDeleteExecutionMutation,
+  useExecutionAppStatsQuery,
   useExecutionQuery,
   useExecutionReportQuery,
   useExecutionsQuery,

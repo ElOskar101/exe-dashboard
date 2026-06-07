@@ -23,5 +23,35 @@
     "effectiveApiUrl": "Effective API URL",
     "selected": "Selected",
     "default": "Default"
+  },
+  "status": {
+    "sidebarTrigger": "App status",
+    "title": "App status",
+    "description": "Live health details for {{app}}.",
+    "loadErrorTitle": "App status could not be loaded",
+    "loadErrorDescription": "The selected execution app did not return its current status. Try again in a moment.",
+    "refresh": "Refresh",
+    "uptime": "Uptime",
+    "timestamp": "Last reported",
+    "jobsTitle": "Jobs",
+    "mongoState": "State: {{state}}",
+    "mongoReadyState": "Ready state: {{readyState}}",
+    "services": {
+      "server": "Server",
+      "mongo": "Mongo",
+      "redis": "Redis"
+    },
+    "jobs": {
+      "waiting": "Waiting",
+      "active": "Active",
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "delayed": "Delayed",
+      "paused": "Paused",
+      "prioritized": "Prioritized",
+      "waitingChildren": "Waiting children"
+    }
   }
 }

@@ -10,6 +10,7 @@ import { useExecutionTarget } from './use-execution-target'
 import {
   createExecution,
   deleteExecution,
+  getExecutionAppStats,
   getExecutionById,
   getExecutionReportHtml,
   getExecutions,
@@ -80,6 +81,20 @@ export const useExecutionReportQuery = (executionId: string, enabled: boolean) =
       return response.data
     },
     enabled: enabled && !isResolving,
+  })
+}
+
+export const useExecutionAppStatsQuery = () => {
+  const { isResolving, target } = useExecutionTarget()
+
+  return useQuery({
+    queryKey: executionKeys.appStats(target.key),
+    queryFn: async () => {
+      const response = await getExecutionAppStats(target.requestTarget)
+
+      return response.data
+    },
+    enabled: !isResolving,
   })
 }
 

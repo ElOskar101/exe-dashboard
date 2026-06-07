@@ -14,6 +14,7 @@ export const executionKeys = {
   },
   detail: (executionId: string, targetKey = DEFAULT_EXECUTION_TARGET_KEY) =>
     [...executionKeys.all(targetKey), 'detail', executionId] as const,
+  appStats: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => [...executionKeys.all(targetKey), 'app-stats'] as const,
   statuses: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => [...executionKeys.all(targetKey), 'statuses'] as const,
   report: (executionId: string, targetKey = DEFAULT_EXECUTION_TARGET_KEY) =>
     [...executionKeys.all(targetKey), 'report', executionId] as const,

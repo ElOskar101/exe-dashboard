@@ -3,6 +3,7 @@ import cccClient, { exeClient, exeReportsClient } from '@/lib/axios'
 import {
   createExecution,
   deleteExecution,
+  getExecutionAppStats,
   getExecutionById,
   getPlaywrightProjectById,
   getPlaywrightProjects,
@@ -134,6 +135,24 @@ describe('execution.service', () => {
     await getExecutionById('exe-1')
 
     expect(exeClient.get).toHaveBeenCalledWith('executions/exe-1')
+  })
+
+  it('getExecutionAppStats requests the selected app stats', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { status: 'ok' } })
+
+    await getExecutionAppStats()
+
+    expect(exeClient.get).toHaveBeenCalledWith('stats')
+  })
+
+  it('getExecutionAppStats requests stats from a selected runtime application API URL', async () => {
+    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { status: 'ok' } })
+
+    await getExecutionAppStats(runtimeTarget)
+
+    expect(exeClient.get).toHaveBeenCalledWith('stats', {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 
   it('getPlaywrightProjects requests the playwright project catalog', async () => {

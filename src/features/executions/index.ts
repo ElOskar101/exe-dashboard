@@ -28,6 +28,7 @@ export {
   formatExecutionDateTime,
   getDefaultExecutionApiUrl,
   getDefaultExecutionReportsUrl,
+  getExecutionAppStats,
   getExecutionById,
   getExecutionLabel,
   getExecutionTargetKey,
@@ -54,10 +55,12 @@ export {
   useExecutionTarget,
   useExecutionTargetNavigation,
   useExecutionTargetSetter,
+  useExecutionAppStatsQuery,
   usePlaywrightRuntimesQuery,
 } from './shared'
 export type {
   Execution,
+  ExecutionAppStats,
   ExecutionApiRequestTarget,
   ExecutionCreatePayload,
   ExecutionMetadata,

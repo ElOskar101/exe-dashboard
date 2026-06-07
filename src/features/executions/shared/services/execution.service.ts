@@ -2,6 +2,7 @@ import cccClient, { exeClient, exeReportsClient } from '@/lib/axios'
 import type { Execution } from '../model/execution'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 import { EXECUTION_ARRAY_QUERY_KEYS, normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
+import type { ExecutionAppStats } from '../model/app-stats'
 import type { PlaywrightProject } from '../model/playwright-project'
 import type { PlaywrightRuntime } from '../model/playwright-runtime'
 import type { ExecutionApiRequestTarget } from '../lib/execution-target'
@@ -48,6 +49,12 @@ export const getExecutions = (query: ExecutionQuery = {}, target?: ExecutionApiR
   }
 
   return exeClient.get<Execution[]>('executions', { ...config, params })
+}
+
+export const getExecutionAppStats = (target?: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return config ? exeClient.get<ExecutionAppStats>('stats', config) : exeClient.get<ExecutionAppStats>('stats')
 }
 
 export const createExecution = (data: ExecutionCreatePayload, target?: ExecutionApiRequestTarget) => {

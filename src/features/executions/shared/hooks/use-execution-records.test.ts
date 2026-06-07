@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useExecutionsQuery } from './use-execution-records'
+import { useExecutionAppStatsQuery, useExecutionsQuery } from './use-execution-records'
 
 const mocks = vi.hoisted(() => ({
   useExecutionTarget: vi.fn(),
@@ -27,6 +27,7 @@ vi.mock('../services/execution.service', () => ({
   createExecution: vi.fn(),
   deleteExecution: vi.fn(),
   getExecutionById: vi.fn(),
+  getExecutionAppStats: vi.fn(),
   getExecutionReportHtml: vi.fn(),
   getExecutions: vi.fn(),
   pauseExecution: vi.fn(),
@@ -67,6 +68,25 @@ describe('useExecutionsQuery', () => {
       expect.objectContaining({
         enabled: false,
         queryKey: ['executions', 'runtime-1', 'list', { by: ['user-1'] }],
+      }),
+    )
+  })
+
+  it('uses the selected execution target for app stats queries', () => {
+    mocks.useExecutionTarget.mockReturnValue({
+      isResolving: false,
+      target: {
+        key: 'runtime:runtime-1:application:app-1',
+        requestTarget: { apiUrl: 'https://runtime.example.com/api/v1' },
+      },
+    })
+
+    useExecutionAppStatsQuery()
+
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: true,
+        queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'app-stats'],
       }),
     )
   })
