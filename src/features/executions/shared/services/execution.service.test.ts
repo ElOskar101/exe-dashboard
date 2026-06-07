@@ -91,6 +91,7 @@ describe('execution.service', () => {
       to: new Date('2026-05-31T23:59:59.000Z'),
       dateField: 'createdAt',
       status: 'cancelled',
+      limit: 15,
     })
 
     const [, config] = vi.mocked(exeClient.get).mock.calls[0]
@@ -106,6 +107,7 @@ describe('execution.service', () => {
     expect(params.get('to')).toBe('2026-05-31T23:59:59.000Z')
     expect(params.get('dateField')).toBe('createdAt')
     expect(params.get('status')).toBe('cancelled')
+    expect(params.get('limit')).toBe('15')
   })
 
   it('createExecution posts the execution payload', async () => {

@@ -27,6 +27,7 @@ export default function ExecutionsPage() {
     executionStatusReadModel,
     executionsQuery,
     filteredExecutions,
+    isExecutionLimitActive,
     isFiltered,
     loadingCustomerIds,
     selectedClientIds,
@@ -35,6 +36,7 @@ export default function ExecutionsPage() {
     setDateRange,
     setSelectedClinicIds,
     setStatusFilter,
+    showAllExecutions,
     updateSelectedClientIds,
   } = useExecutionsListing()
   const selectedStatusFilterLabel =
@@ -124,9 +126,9 @@ export default function ExecutionsPage() {
 
           {executionsQuery.isLoading ? (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-12 w-full rounded-2xl" />
-              <Skeleton className="h-12 w-full rounded-2xl" />
-              <Skeleton className="h-12 w-full rounded-2xl" />
+              {Array.from({ length: 8 }, (_, index) => (
+                <Skeleton key={index} className="h-12 w-full rounded-2xl" />
+              ))}
             </div>
           ) : null}
 
@@ -136,7 +138,9 @@ export default function ExecutionsPage() {
               loadingCustomerIds={loadingCustomerIds}
               executionStatusReadModel={executionStatusReadModel.data}
               executions={filteredExecutions}
+              isExecutionLimitActive={isExecutionLimitActive}
               isFiltered={isFiltered}
+              onShowAllExecutions={showAllExecutions}
             />
           ) : null}
         </CardContent>

@@ -144,9 +144,15 @@ async function prepareAuthenticatedPage(page: Page, request: APIRequestContext) 
   }, token)
 }
 
+function isExecutionListRequest(urlString: string) {
+  const url = new URL(urlString)
+
+  return url.pathname.endsWith('/execution-api/executions')
+}
+
 async function stubExecutionList(page: Page, getExecutions: () => ExecutionFixture[]) {
-  await page.route('**/execution-api/executions', async (route) => {
-    if (route.request().method() !== 'GET') {
+  await page.route('**/execution-api/executions**', async (route) => {
+    if (!isExecutionListRequest(route.request().url()) || route.request().method() !== 'GET') {
       await route.fallback()
       return
     }
@@ -461,7 +467,12 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     let shouldSucceed = false
 
-    await page.route('**/execution-api/executions', async (route) => {
+    await page.route('**/execution-api/executions**', async (route) => {
+      if (!isExecutionListRequest(route.request().url())) {
+        await route.fallback()
+        return
+      }
+
       if (!shouldSucceed) {
         await route.fulfill({ status: 500, json: { message: 'Unable to load executions.' } })
         return
@@ -574,8 +585,8 @@ test.describe('execution user flows', () => {
         }),
       })
     })
-    await page.route('**/execution-api/executions', async (route) => {
-      if (route.request().method() !== 'POST') {
+    await page.route('**/execution-api/executions**', async (route) => {
+      if (!isExecutionListRequest(route.request().url()) || route.request().method() !== 'POST') {
         await route.fallback()
         return
       }

@@ -8,6 +8,7 @@ export interface ExecutionQuery {
   to?: Date
   dateField?: string
   status?: string
+  limit?: number
 }
 
 export type ExecutionArrayQueryKey = 'by' | 'client' | 'clinic' | 'execution' | 'bot'
@@ -24,6 +25,7 @@ export interface NormalizedExecutionQuery {
   to?: string
   dateField?: string
   status?: string
+  limit?: number
 }
 
 const normalizeString = (value: string | undefined) => {
@@ -49,6 +51,13 @@ const normalizeDate = (value: Date | undefined) => {
   return Number.isNaN(time) ? undefined : value.toISOString()
 }
 
+const normalizeLimit = (value: number | undefined) => {
+  if (value === undefined) return undefined
+  if (!Number.isInteger(value) || value <= 0) return undefined
+
+  return value
+}
+
 export const normalizeExecutionQuery = (query: ExecutionQuery = {}): NormalizedExecutionQuery => {
   const normalizedQuery: NormalizedExecutionQuery = {}
 
@@ -64,11 +73,13 @@ export const normalizeExecutionQuery = (query: ExecutionQuery = {}): NormalizedE
   const to = normalizeDate(query.to)
   const dateField = normalizeString(query.dateField)
   const status = normalizeString(query.status)
+  const limit = normalizeLimit(query.limit)
 
   if (from) normalizedQuery.from = from
   if (to) normalizedQuery.to = to
   if (dateField) normalizedQuery.dateField = dateField
   if (status) normalizedQuery.status = status
+  if (limit) normalizedQuery.limit = limit
 
   return normalizedQuery
 }

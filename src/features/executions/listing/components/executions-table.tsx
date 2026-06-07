@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { IconExternalLink } from '@tabler/icons-react'
+import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -26,16 +27,44 @@ interface ExecutionsTableProps {
   customersById: Map<string, CustomerDetailsResponse>
   executionStatusReadModel: Record<string, ExecutionStatus>
   executions: Execution[]
+  isExecutionLimitActive: boolean
   isFiltered: boolean
   loadingCustomerIds: Set<string>
+  onShowAllExecutions: () => void
+}
+
+interface ResponsiveTableRowCellProps {
+  children: ReactNode
+  className: string
+}
+
+function ResponsiveTableRowCell({ children, className }: ResponsiveTableRowCellProps) {
+  return (
+    <>
+      <TableCell className={`md:hidden ${className}`} colSpan={4}>
+        {children}
+      </TableCell>
+      <TableCell className={`hidden md:table-cell lg:hidden ${className}`} colSpan={5}>
+        {children}
+      </TableCell>
+      <TableCell className={`hidden lg:table-cell 2xl:hidden ${className}`} colSpan={7}>
+        {children}
+      </TableCell>
+      <TableCell className={`hidden 2xl:table-cell ${className}`} colSpan={9}>
+        {children}
+      </TableCell>
+    </>
+  )
 }
 
 export function ExecutionsTable({
   customersById,
   executionStatusReadModel,
   executions,
+  isExecutionLimitActive,
   isFiltered,
   loadingCustomerIds,
+  onShowAllExecutions,
 }: ExecutionsTableProps) {
   const { t } = useTranslation('executions')
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
@@ -59,61 +88,80 @@ export function ExecutionsTable({
       </TableHeader>
       <TableBody>
         {executions.length > 0 ? (
-          executions.map((execution) => {
-            const status = getResolvedExecutionStatus(execution, executionStatusReadModel)
-            const executionDayLabel = getExecutionDayLabel(execution)
-            const displayNames = getExecutionDisplayNames(execution, customersById)
-            const isCustomerLoading = loadingCustomerIds.has(execution.client) && !customersById.has(execution.client)
+          <>
+            {executions.map((execution) => {
+              const status = getResolvedExecutionStatus(execution, executionStatusReadModel)
+              const executionDayLabel = getExecutionDayLabel(execution)
+              const displayNames = getExecutionDisplayNames(execution, customersById)
+              const isCustomerLoading = loadingCustomerIds.has(execution.client) && !customersById.has(execution.client)
 
-            return (
-              <TableRow key={execution._id}>
-                <TableCell className="font-medium whitespace-normal break-words">
-                  <Link className="hover:underline" to={getPathWithExecutionTarget(`/execution/${execution._id}`)}>
-                    {executionDayLabel}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <ExecutionStatusLabel status={status} />
-                </TableCell>
-                <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                  {isCustomerLoading ? <Skeleton className="h-4 w-20" /> : displayNames.client || t('list.emptyValue')}
-                </TableCell>
-                <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                  {isCustomerLoading ? <Skeleton className="h-4 w-24" /> : displayNames.clinic || t('list.emptyValue')}
-                </TableCell>
-                <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
-                  {getExecutionProjectLabel(execution)}
-                </TableCell>
-                <TableCell className="whitespace-normal break-words">
-                  <ExecutionPatientsDialog execution={execution} executionLabel={executionDayLabel} />
-                </TableCell>
-                <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
-                  {execution.botName || execution.bot || t('list.emptyValue')}
-                </TableCell>
-                <TableCell className="hidden whitespace-nowrap md:table-cell">
-                  {formatExecutionDate(execution.createdAt)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end">
-                    <Button
-                      nativeButton={false}
-                      variant="outline"
-                      className="text-xs"
-                      render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
-                    >
-                      <span className="sr-only sm:not-sr-only">{t('list.viewDetails')}</span>
-                      <IconExternalLink data-icon="inline-end" className="not-sr-only sm:sr-only" />
-                    </Button>
-                  </div>
-                </TableCell>
+              return (
+                <TableRow key={execution._id}>
+                  <TableCell className="font-medium whitespace-normal break-words">
+                    <Link className="hover:underline" to={getPathWithExecutionTarget(`/execution/${execution._id}`)}>
+                      {executionDayLabel}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <ExecutionStatusLabel status={status} />
+                  </TableCell>
+                  <TableCell className="hidden whitespace-normal break-words lg:table-cell">
+                    {isCustomerLoading ? (
+                      <Skeleton className="h-4 w-20" />
+                    ) : (
+                      displayNames.client || t('list.emptyValue')
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden whitespace-normal break-words lg:table-cell">
+                    {isCustomerLoading ? (
+                      <Skeleton className="h-4 w-24" />
+                    ) : (
+                      displayNames.clinic || t('list.emptyValue')
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
+                    {getExecutionProjectLabel(execution)}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    <ExecutionPatientsDialog execution={execution} executionLabel={executionDayLabel} />
+                  </TableCell>
+                  <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
+                    {execution.botName || execution.bot || t('list.emptyValue')}
+                  </TableCell>
+                  <TableCell className="hidden whitespace-nowrap md:table-cell">
+                    {formatExecutionDate(execution.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end">
+                      <Button
+                        nativeButton={false}
+                        variant="outline"
+                        className="text-xs"
+                        render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
+                      >
+                        <span className="sr-only sm:not-sr-only">{t('list.viewDetails')}</span>
+                        <IconExternalLink data-icon="inline-end" className="not-sr-only sm:sr-only" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+            {isExecutionLimitActive ? (
+              <TableRow>
+                <ResponsiveTableRowCell className="h-16 text-center">
+                  <Button variant="ghost" onClick={onShowAllExecutions}>
+                    {t('list.showAll')}
+                  </Button>
+                </ResponsiveTableRowCell>
               </TableRow>
-            )
-          })
+            ) : null}
+          </>
         ) : (
           <TableRow>
-            <TableCell className="h-28 text-center text-muted-foreground" colSpan={9}>
+            <ResponsiveTableRowCell className="h-28 text-center text-muted-foreground">
               {isFiltered ? t('list.noFilteredExecutions') : t('list.noExecutions')}
-            </TableCell>
+            </ResponsiveTableRowCell>
           </TableRow>
         )}
       </TableBody>
