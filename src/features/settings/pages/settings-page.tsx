@@ -38,6 +38,15 @@ import {
   IconSettings,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
+
+const SETTINGS_TAB_SEARCH_PARAM = 'settingsTab'
+const DEFAULT_SETTINGS_TAB = 'runtime-application'
+const SETTINGS_TABS = [DEFAULT_SETTINGS_TAB, 'app-status'] as const
+
+type SettingsTab = (typeof SETTINGS_TABS)[number]
+
+const isSettingsTab = (value: string | null): value is SettingsTab => SETTINGS_TABS.some((tab) => tab === value)
 
 const getRuntimeApplicationOptionValue = (runtimeId: string, applicationName: string) =>
   encodeExecutionTargetValue({ runtimeId, applicationName })
@@ -170,6 +179,7 @@ function AppStatusPanel({ stats }: { stats: ExecutionAppStats }) {
 
 export function SettingsPage() {
   const { t } = useTranslation('settings')
+  const [searchParams, setSearchParams] = useSearchParams()
   const { target } = useExecutionTarget()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
@@ -180,6 +190,28 @@ export function SettingsPage() {
       : DEFAULT_EXECUTION_TARGET_KEY
   const effectiveApiUrl =
     target.type === 'runtime-application' ? target.requestTarget.apiUrl : getDefaultExecutionApiUrl()
+  const selectedSettingsTab = isSettingsTab(searchParams.get(SETTINGS_TAB_SEARCH_PARAM))
+    ? searchParams.get(SETTINGS_TAB_SEARCH_PARAM)
+    : DEFAULT_SETTINGS_TAB
+
+  const handleSettingsTabChange = (value: string | null) => {
+    const nextTab = isSettingsTab(value) ? value : DEFAULT_SETTINGS_TAB
+
+    setSearchParams(
+      (currentSearchParams) => {
+        const nextSearchParams = new URLSearchParams(currentSearchParams)
+
+        if (nextTab === DEFAULT_SETTINGS_TAB) {
+          nextSearchParams.delete(SETTINGS_TAB_SEARCH_PARAM)
+        } else {
+          nextSearchParams.set(SETTINGS_TAB_SEARCH_PARAM, nextTab)
+        }
+
+        return nextSearchParams
+      },
+      { replace: true },
+    )
+  }
 
   const handleTargetChange = (value: string | null) => {
     if (!value || value === DEFAULT_EXECUTION_TARGET_KEY) {
@@ -202,7 +234,8 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent>
           <Tabs
-            defaultValue="runtime-application"
+            value={selectedSettingsTab}
+            onValueChange={handleSettingsTabChange}
             orientation="vertical"
             className="flex-col gap-6 sm:items-stretch sm:flex-row"
           >
