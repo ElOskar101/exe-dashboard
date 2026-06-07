@@ -1,5 +1,4 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import {
@@ -61,10 +60,14 @@ export function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="runtime-application" orientation="vertical" className="flex-col gap-6 sm:flex-row">
+          <Tabs
+            defaultValue="runtime-application"
+            orientation="vertical"
+            className="flex-col gap-6 sm:items-stretch sm:flex-row"
+          >
             <TabsList
               variant="line"
-              className="w-full shrink-0 items-stretch justify-start rounded-none border-border sm:w-56 sm:border-r sm:pr-4"
+              className="w-full shrink-0 items-stretch justify-start rounded-none border-border sm:min-h-full sm:w-56 sm:self-stretch sm:border-r sm:pr-4"
             >
               <TabsTrigger
                 value="runtime-application"
@@ -127,17 +130,12 @@ export function SettingsPage() {
                 </Field>
               </FieldGroup>
 
-              <div className="flex flex-col gap-3 rounded-2xl border border-border p-4">
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
-                  <IconServer />
                   <span className="text-sm font-medium">{t('runtime.effectiveApiUrl')}</span>
-                  <Badge variant="secondary">
-                    {target.type === 'runtime-application' ? t('runtime.selected') : t('runtime.default')}
-                  </Badge>
+                  <IconServer />
                 </div>
-                <code className="overflow-x-auto rounded-2xl bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
-                  {effectiveApiUrl}
-                </code>
+                <span>{effectiveApiUrl}</span>
               </div>
             </TabsContent>
           </Tabs>
