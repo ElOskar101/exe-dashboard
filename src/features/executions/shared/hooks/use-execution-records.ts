@@ -22,6 +22,10 @@ interface ExecutionMutationOptions<TResponse, TVariables> {
   onSuccess?: Dispatch<readonly [TResponse, TVariables]>
 }
 
+interface ExecutionQueryOptions {
+  enabled?: boolean
+}
+
 const invalidateExecutionList = async (queryClient: ReturnType<typeof useQueryClient>, targetKey: string) => {
   await queryClient.invalidateQueries({ queryKey: executionKeys.list(undefined, targetKey) })
 }
@@ -34,9 +38,10 @@ const invalidateExecutionDetail = async (
   await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId, targetKey) })
 }
 
-export const useExecutionsQuery = (query: ExecutionQuery = {}) => {
+export const useExecutionsQuery = (query: ExecutionQuery = {}, options: ExecutionQueryOptions = {}) => {
   const queryClient = useQueryClient()
   const { isResolving, target } = useExecutionTarget()
+  const isEnabled = options.enabled ?? true
 
   return useQuery({
     queryKey: executionKeys.list(query, target.key),
@@ -45,7 +50,7 @@ export const useExecutionsQuery = (query: ExecutionQuery = {}) => {
 
       return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
     },
-    enabled: !isResolving,
+    enabled: isEnabled && !isResolving,
   })
 }
 

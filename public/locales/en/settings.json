@@ -5,9 +5,10 @@
     "description": "Choose which runtime application this browser tab uses for executions."
   },
   "runtime": {
+    "sidebarTrigger": "Runtime and application",
     "title": "Runtime application",
     "description": "Execution requests, realtime updates, projects, and reports use the selected application.",
-    "targetLabel": "Execution target",
+    "targetLabel": "Choose executions app",
     "targetPlaceholder": "Choose an execution target",
     "defaultDescription": "Uses the dashboard's built-in execution API route.",
     "noDescription": "No description available.",

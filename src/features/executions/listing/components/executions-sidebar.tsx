@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { IconAlertCircle, IconChevronDown, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react'
@@ -33,6 +33,7 @@ import { useSidebar } from '@/components/ui/sidebar-context'
 import { useCurrentTime } from '@/hooks/use-current-time'
 import { useMountEffect } from '@/hooks/use-mount-effect'
 import { cn } from '@/lib/utils'
+import { AuthContext } from '@/features/auth'
 import {
   useDeleteExecutionMutation,
   useExecutionsQuery,
@@ -57,6 +58,7 @@ export function ExecutionsSidebar() {
   const { id: currentExecutionId } = useParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { isLoadingUser, user } = useContext(AuthContext)
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const { isMobile, setOpenMobile } = useSidebar()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
@@ -64,8 +66,11 @@ export function ExecutionsSidebar() {
   const [isRefreshSpinning, setIsRefreshSpinning] = useState(false)
   const refreshSpinnerTimeoutId = useRef<number | null>(null)
   const currentTime = useCurrentTime()
+  const userId = user?._id
   useExecutionStatusUpdates()
-  const executionsQuery = useExecutionsQuery()
+  const executionsQuery = useExecutionsQuery(userId ? { by: [userId] } : {}, {
+    enabled: !isLoadingUser && Boolean(userId),
+  })
   const executionStatusReadModel = useExecutionStatusReadModel()
   const deleteMutation = useDeleteExecutionMutation({
     onSuccess: async ([, deletedExecutionId]) => {
