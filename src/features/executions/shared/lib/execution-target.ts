@@ -152,3 +152,11 @@ export const resolveExecutionTarget = (
 
 export const getDefaultExecutionApiUrl = () => APP_CONFIG.exeApiUrl
 export const getDefaultExecutionReportsUrl = () => APP_CONFIG.exeReportsUrl
+
+export const getExecutionReportsProxyPath = (reportsUrl: string, executionId: string) => {
+  const reportUrl = new URL(reportsUrl)
+  const encodedOrigin = encodeURIComponent(reportUrl.origin)
+  const reportPath = `${stripTrailingSlash(reportUrl.pathname)}/${executionId}`
+
+  return `/api/execution-reports/${encodedOrigin}${reportPath}`
+}

@@ -13,37 +13,82 @@ export const resolveExecutionReportBaseUrl = (
   origin = typeof window === 'undefined' ? 'http://localhost' : window.location.origin,
 ) => new URL(ensureTrailingSlash(reportBasePath), origin).toString()
 
-const createReportRuntimeShim = (reportBaseUrl: string) => `
+export type ExecutionReportTheme = 'light' | 'dark'
+
+const getPlaywrightReportTheme = (theme: ExecutionReportTheme) => `${theme}-mode`
+
+const createReportHeadInjection = (reportBaseUrl: string, theme: ExecutionReportTheme) => {
+  const playwrightTheme = getPlaywrightReportTheme(theme)
+
+  return `
 <base href="${escapeHtmlAttribute(reportBaseUrl)}" />
 <script>
 (() => {
   const reportBaseUrl = ${JSON.stringify(reportBaseUrl)}
-  const storageState = { theme: 'light-mode' }
-  const storage = {
-    get length() {
-      return Object.keys(storageState).length
+  const reportTheme = ${JSON.stringify(playwrightTheme)}
+  const nativeLocalStorage = window.localStorage
+  const reportStorageState = { theme: reportTheme }
+  const reportStorage = new Proxy(nativeLocalStorage, {
+    get(target, property, receiver) {
+      if (property === 'theme') {
+        return reportStorageState.theme
+      }
+
+      if (property === 'getItem') {
+        return (key) => (key === 'theme' ? reportStorageState.theme : target.getItem(key))
+      }
+
+      if (property === 'setItem') {
+        return (key, value) => {
+          if (key === 'theme') {
+            reportStorageState.theme = String(value)
+            return
+          }
+
+          target.setItem(key, value)
+        }
+      }
+
+      if (property === 'removeItem') {
+        return (key) => {
+          if (key === 'theme') {
+            reportStorageState.theme = reportTheme
+            return
+          }
+
+          target.removeItem(key)
+        }
+      }
+
+      if (property === 'clear') {
+        return () => {
+          reportStorageState.theme = reportTheme
+          target.clear()
+        }
+      }
+
+      return Reflect.get(target, property, receiver)
     },
-    key(index) {
-      return Object.keys(storageState)[index] || null
+    set(target, property, value, receiver) {
+      if (property === 'theme') {
+        reportStorageState.theme = String(value)
+        return true
+      }
+
+      return Reflect.set(target, property, value, receiver)
     },
-    getItem(key) {
-      return Object.prototype.hasOwnProperty.call(storageState, key) ? storageState[key] : null
-    },
-    setItem(key, value) {
-      storageState[key] = String(value)
-    },
-    removeItem(key) {
-      delete storageState[key]
-    },
-    clear() {
-      for (const key of Object.keys(storageState)) delete storageState[key]
-    },
-  }
+  })
 
   Object.defineProperty(window, 'localStorage', {
     configurable: true,
-    value: storage,
+    value: reportStorage,
   })
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: reportStorage,
+  })
+  document.documentElement.classList.remove('dark-mode', 'light-mode')
+  document.documentElement.classList.add(reportTheme)
 
   const NativeURL = window.URL
   const urlSchemePattern = /^[a-zA-Z][a-zA-Z0-9+.-]*:/
@@ -108,10 +153,12 @@ const createReportRuntimeShim = (reportBaseUrl: string) => `
     value: ReportURL,
   })
 
+  const resolveReportUrl = (value) => new URL(value, reportBaseUrl).toString()
+
   document.addEventListener(
     'click',
     (event) => {
-      const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null
+      const link = event.target instanceof Element ? event.target.closest('a[href]') : null
 
       if (!(link instanceof HTMLAnchorElement)) {
         return
@@ -120,6 +167,12 @@ const createReportRuntimeShim = (reportBaseUrl: string) => `
       const href = link.getAttribute('href')
 
       if (!href || href === '#') {
+        return
+      }
+
+      if (!href.startsWith('#')) {
+        event.preventDefault()
+        window.open(resolveReportUrl(href), '_blank', 'noopener,noreferrer')
         return
       }
 
@@ -136,13 +189,14 @@ const createReportRuntimeShim = (reportBaseUrl: string) => `
   )
 })()
 </script>`
+}
 
-export const isolateReportHtml = (html: string, reportBaseUrl: string) => {
-  const reportRuntimeShim = createReportRuntimeShim(reportBaseUrl)
+export const isolateReportHtml = (html: string, reportBaseUrl: string, theme: ExecutionReportTheme = 'light') => {
+  const reportHeadInjection = createReportHeadInjection(reportBaseUrl, theme)
 
   if (/<head(\s[^>]*)?>/i.test(html)) {
-    return html.replace(/<head(\s[^>]*)?>/i, (headTag) => `${headTag}${reportRuntimeShim}`)
+    return html.replace(/<head(\s[^>]*)?>/i, (headTag) => `${headTag}${reportHeadInjection}`)
   }
 
-  return `${reportRuntimeShim}${html}`
+  return `${reportHeadInjection}${html}`
 }

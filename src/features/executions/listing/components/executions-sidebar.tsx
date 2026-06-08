@@ -180,7 +180,9 @@ export function ExecutionsSidebar() {
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
   const isCollapsedDesktop = state === 'collapsed' && !isMobile
   const isExecutionsLoading =
-    playwrightProjectsQuery.isLoading || projectExecutionsQueries.some((query) => query.isLoading)
+    isResolvingExecutionTarget ||
+    playwrightProjectsQuery.isLoading ||
+    projectExecutionsQueries.some((query) => query.isLoading)
   const isExecutionsFetching =
     playwrightProjectsQuery.isFetching || projectExecutionsQueries.some((query) => query.isFetching)
   const isExecutionsError = playwrightProjectsQuery.isError || projectExecutionsQueries.some((query) => query.isError)

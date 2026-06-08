@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useExecutionAppStatsQuery, useExecutionsQuery } from './use-execution-records'
+import {
+  useExecutionAppStatsQuery,
+  useExecutionQuery,
+  useExecutionReportQuery,
+  useExecutionsQuery,
+} from './use-execution-records'
 
 const mocks = vi.hoisted(() => ({
   useExecutionTarget: vi.fn(),
@@ -46,7 +51,7 @@ describe('useExecutionsQuery', () => {
   })
 
   it('allows callers to disable the query until prerequisites are ready', () => {
-    useExecutionsQuery({ by: ['user-1'] }, { enabled: false })
+    const query = useExecutionsQuery({ by: ['user-1'] }, { enabled: false })
 
     expect(mocks.useQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -54,6 +59,8 @@ describe('useExecutionsQuery', () => {
         queryKey: ['executions', 'default', 'list', { by: ['user-1'] }],
       }),
     )
+    expect(query.isLoading).toBeUndefined()
+    expect(query.isPending).toBeUndefined()
   })
 
   it('keeps the query disabled while the execution target is resolving', () => {
@@ -62,7 +69,7 @@ describe('useExecutionsQuery', () => {
       target: { key: 'runtime-1', requestTarget: undefined },
     })
 
-    useExecutionsQuery({ by: ['user-1'] }, { enabled: true })
+    const query = useExecutionsQuery({ by: ['user-1'] }, { enabled: true })
 
     expect(mocks.useQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -70,6 +77,8 @@ describe('useExecutionsQuery', () => {
         queryKey: ['executions', 'runtime-1', 'list', { by: ['user-1'] }],
       }),
     )
+    expect(query.isLoading).toBe(true)
+    expect(query.isPending).toBe(true)
   })
 
   it('uses the selected execution target for app stats queries', () => {
@@ -89,5 +98,77 @@ describe('useExecutionsQuery', () => {
         queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'app-stats'],
       }),
     )
+  })
+
+  it('reports app stats as loading while the execution target is resolving', () => {
+    mocks.useExecutionTarget.mockReturnValue({
+      isResolving: true,
+      target: { key: 'runtime-1', requestTarget: undefined },
+    })
+
+    const query = useExecutionAppStatsQuery()
+
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+        queryKey: ['executions', 'runtime-1', 'app-stats'],
+      }),
+    )
+    expect(query.isLoading).toBe(true)
+    expect(query.isPending).toBe(true)
+  })
+
+  it('reports execution details as loading while the execution target is resolving', () => {
+    mocks.useExecutionTarget.mockReturnValue({
+      isResolving: true,
+      target: { key: 'runtime-1', requestTarget: undefined },
+    })
+
+    const query = useExecutionQuery('execution-1')
+
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+        queryKey: ['executions', 'runtime-1', 'detail', 'execution-1'],
+      }),
+    )
+    expect(query.isLoading).toBe(true)
+    expect(query.isPending).toBe(true)
+  })
+
+  it('reports execution reports as loading while the execution target is resolving and reports are enabled', () => {
+    mocks.useExecutionTarget.mockReturnValue({
+      isResolving: true,
+      target: { key: 'runtime-1', requestTarget: undefined },
+    })
+
+    const query = useExecutionReportQuery('execution-1', true)
+
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+        queryKey: ['executions', 'runtime-1', 'report', 'execution-1'],
+      }),
+    )
+    expect(query.isLoading).toBe(true)
+    expect(query.isPending).toBe(true)
+  })
+
+  it('does not report execution reports as loading when reports are disabled by the caller', () => {
+    mocks.useExecutionTarget.mockReturnValue({
+      isResolving: true,
+      target: { key: 'runtime-1', requestTarget: undefined },
+    })
+
+    const query = useExecutionReportQuery('execution-1', false)
+
+    expect(mocks.useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+        queryKey: ['executions', 'runtime-1', 'report', 'execution-1'],
+      }),
+    )
+    expect(query.isLoading).toBeUndefined()
+    expect(query.isPending).toBeUndefined()
   })
 })

@@ -43,23 +43,30 @@ export const useExecutionsQuery = (query: ExecutionQuery = {}, options: Executio
   const queryClient = useQueryClient()
   const { isResolving, target } = useExecutionTarget()
   const isEnabled = options.enabled ?? true
+  const isTargetResolutionBlocking = isEnabled && isResolving
 
-  return useQuery({
+  const executionsQuery = useQuery({
     queryKey: executionKeys.list(query, target.key),
     queryFn: async () => {
       const response = await getExecutions(query, target.requestTarget)
 
       return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
     },
-    enabled: isEnabled && !isResolving,
+    enabled: isEnabled && !isTargetResolutionBlocking,
   })
+
+  return {
+    ...executionsQuery,
+    isLoading: isTargetResolutionBlocking || executionsQuery.isLoading,
+    isPending: isTargetResolutionBlocking || executionsQuery.isPending,
+  }
 }
 
 export const useExecutionQuery = (executionId: string) => {
   const queryClient = useQueryClient()
   const { isResolving, target } = useExecutionTarget()
 
-  return useQuery({
+  const executionQuery = useQuery({
     queryKey: executionKeys.detail(executionId, target.key),
     queryFn: async () => {
       const response = await getExecutionById(executionId, target.requestTarget)
@@ -68,26 +75,39 @@ export const useExecutionQuery = (executionId: string) => {
     },
     enabled: !isResolving,
   })
+
+  return {
+    ...executionQuery,
+    isLoading: isResolving || executionQuery.isLoading,
+    isPending: isResolving || executionQuery.isPending,
+  }
 }
 
 export const useExecutionReportQuery = (executionId: string, enabled: boolean) => {
   const { isResolving, target } = useExecutionTarget()
+  const isTargetResolutionBlocking = enabled && isResolving
 
-  return useQuery({
+  const reportQuery = useQuery({
     queryKey: executionKeys.report(executionId, target.key),
     queryFn: async () => {
       const response = await getExecutionReportHtml(executionId, target.requestTarget)
 
       return response.data
     },
-    enabled: enabled && !isResolving,
+    enabled: enabled && !isTargetResolutionBlocking,
   })
+
+  return {
+    ...reportQuery,
+    isLoading: isTargetResolutionBlocking || reportQuery.isLoading,
+    isPending: isTargetResolutionBlocking || reportQuery.isPending,
+  }
 }
 
 export const useExecutionAppStatsQuery = () => {
   const { isResolving, target } = useExecutionTarget()
 
-  return useQuery({
+  const appStatsQuery = useQuery({
     queryKey: executionKeys.appStats(target.key),
     queryFn: async () => {
       const response = await getExecutionAppStats(target.requestTarget)
@@ -96,6 +116,12 @@ export const useExecutionAppStatsQuery = () => {
     },
     enabled: !isResolving,
   })
+
+  return {
+    ...appStatsQuery,
+    isLoading: isResolving || appStatsQuery.isLoading,
+    isPending: isResolving || appStatsQuery.isPending,
+  }
 }
 
 export const useCreateExecutionMutation = (

@@ -4,6 +4,7 @@ import {
   DEFAULT_EXECUTION_TARGET_LABEL,
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
+  getExecutionReportsProxyPath,
   getExecutionTargetSearchSelection,
   resolveExecutionTarget,
 } from './execution-target'
@@ -98,5 +99,11 @@ describe('execution target', () => {
       },
     )
     expect(getExecutionTargetSearchSelection(new URLSearchParams('runtimeId=runtime-1'))).toBeNull()
+  })
+
+  it('builds a same-origin report proxy path with the selected reports origin encoded', () => {
+    expect(getExecutionReportsProxyPath('https://api.controlcentralcarrier.com/reports', 'exe-1')).toBe(
+      '/api/execution-reports/https%3A%2F%2Fapi.controlcentralcarrier.com/reports/exe-1',
+    )
   })
 })

@@ -68,6 +68,7 @@ export {
   encodeExecutionTargetValue,
   getDefaultExecutionApiUrl,
   getDefaultExecutionReportsUrl,
+  getExecutionReportsProxyPath,
   getExecutionTargetKey,
   getExecutionTargetSearchSelection,
   resolveExecutionTarget,
