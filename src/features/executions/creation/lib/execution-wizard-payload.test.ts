@@ -41,8 +41,8 @@ describe('buildExecutionPayload', () => {
     expect(buildExecutionPayload(draft, 'user-1')).toEqual({
       project: 'liberty',
       createdBy: 'user-1',
-      client: 'client-1',
-      clinic: 'clinic-1',
+      client: 'Legacy Dental Care',
+      clinic: 'Legacy Dental Care',
       execution: 'Daily eligibility',
       botName: 'Eligibility Runner',
       meta: {
@@ -106,7 +106,7 @@ describe('buildExecutionPayload', () => {
     expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
   })
 
-  it('submits selected ids from the chosen customer, clinic, and user', () => {
+  it('submits selected display names from the chosen customer, clinic, and user', () => {
     const draft = createEmptyDraft()
 
     draft.context.project = 'liberty'
@@ -121,10 +121,10 @@ describe('buildExecutionPayload', () => {
     draft.bot.password = 'secret'
     draft.bot.verificationType = 'ELG'
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
-      createdBy: 'user-id-7',
-      client: 'customer-id-42',
-      clinic: 'clinic-id-9',
+    expect(buildExecutionPayload(draft, 'Operator One')).toMatchObject({
+      createdBy: 'Operator One',
+      client: 'Sunshine Dental',
+      clinic: 'Main Clinic',
     })
   })
 

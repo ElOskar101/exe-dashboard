@@ -188,8 +188,8 @@ export function BotStep({
             <Input
               id="botName"
               value={bot.botName}
-              onChange={(event) => onBotFieldChange('botName', event.target.value)}
               disabled={!isBotFormEnabled}
+              readOnly={isBotFormEnabled}
               aria-invalid={showBotFieldErrors && Boolean(errors.botName)}
               placeholder={t('placeholders.botName')}
             />
@@ -202,8 +202,8 @@ export function BotStep({
               id="targetUrl"
               type="url"
               value={bot.targetUrl}
-              onChange={(event) => onBotFieldChange('targetUrl', event.target.value)}
               disabled={!isBotFormEnabled}
+              readOnly={isBotFormEnabled}
               aria-invalid={showBotFieldErrors && Boolean(errors.targetUrl)}
               placeholder={t('placeholders.url')}
             />

@@ -72,7 +72,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const { user } = useContext(AuthContext)
-  const createdBy = user?._id ?? ''
+  const createdBy = user?.fullName ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
   const [attemptedSteps, setAttemptedSteps] = useState<Record<number, boolean>>({})

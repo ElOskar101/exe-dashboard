@@ -38,9 +38,9 @@ export const buildExecutionPayload = (
 
   const payload: ExecutionCreatePayload = {
     project: draft.context.project.trim(),
-    createdBy,
-    client: draft.context.client.trim(),
-    clinic: draft.context.clinic.trim(),
+    createdBy: createdBy.trim(),
+    client: draft.context.clientName.trim(),
+    clinic: draft.context.clinicName.trim(),
     botName: draft.bot.botName.trim(),
     meta: {
       bot: {
