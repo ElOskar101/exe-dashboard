@@ -223,8 +223,6 @@ export function SettingsPage() {
       : DEFAULT_EXECUTION_TARGET_KEY
   const effectiveApiUrl =
     target.type === 'runtime-application' ? target.requestTarget.apiUrl : getDefaultExecutionApiUrl()
-  const selectedRuntimeDescription =
-    target.type === 'runtime-application' ? (target.runtime.description ?? t('runtime.noDescription')) : null
   const selectedApplicationDescription =
     target.type === 'runtime-application' ? (target.application.description ?? t('runtime.noDescription')) : null
   const catalogSummary = getCatalogSummary(runtimesQuery.data)
@@ -370,18 +368,10 @@ export function SettingsPage() {
 
               {target.type === 'runtime-application' ? (
                 <div className="flex flex-col gap-3">
-                  <div className="grid min-w-0 gap-3 rounded-lg border p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:items-start">
-                    <div className="flex min-w-0 items-center justify-between gap-3">
-                      <span className="truncate text-base font-semibold">{target.runtime.name}</span>
-                      <Badge variant="secondary" className="sm:hidden">
-                        {t('runtime.runtime')}
-                      </Badge>
-                    </div>
-                    <div className="flex min-w-0 gap-3 sm:items-start sm:justify-between">
-                      <p className="min-w-0 text-sm text-muted-foreground">{selectedRuntimeDescription}</p>
-                      <Badge variant="secondary" className="hidden sm:inline-flex">
-                        {t('runtime.runtime')}
-                      </Badge>
+                  <div className="grid min-w-0 gap-2 rounded-lg border px-3 py-2 sm:grid-cols-2 sm:items-center">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-sm font-medium">{target.runtime.name}</span>
+                      <Badge variant="secondary">{t('runtime.runtime')}</Badge>
                     </div>
                   </div>
                   <div className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
