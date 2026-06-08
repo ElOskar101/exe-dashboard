@@ -1,6 +1,7 @@
 import { useContext, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import {
   IconAlertCircle,
   IconChevronDown,
@@ -44,13 +45,19 @@ import { useMountEffect } from '@/hooks/use-mount-effect'
 import { cn } from '@/lib/utils'
 import { AuthContext } from '@/features/auth'
 import {
+  executionKeys,
+  getExecutions,
   useDeleteExecutionMutation,
-  useExecutionsQuery,
+  useExecutionTarget,
   useExecutionStatusReadModel,
   getExecutionLabel,
   isExecutionRunning,
   normalizeExecutionStatus,
+  syncExecutionsFromListSnapshot,
   useExecutionTargetNavigation,
+  usePlaywrightProjectsQuery,
+  type Execution,
+  type ExecutionQuery,
 } from '@/features/executions/shared'
 import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
 import {
@@ -61,6 +68,7 @@ import {
 } from '../lib/execution-sidebar-display'
 
 const MIN_REFRESH_SPIN_DURATION_MS = 1000
+const SIDEBAR_PROJECT_EXECUTIONS_LIMIT = 5
 
 export function ExecutionsSidebar() {
   const { t } = useTranslation('executions')
@@ -72,13 +80,46 @@ export function ExecutionsSidebar() {
   const { isMobile, setOpenMobile, state } = useSidebar()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
   const [collapsedProjects, setCollapsedProjects] = useState<string[]>([])
+  const [expandedProjectNames, setExpandedProjectNames] = useState<string[]>([])
   const [isRefreshSpinning, setIsRefreshSpinning] = useState(false)
   const refreshSpinnerTimeoutId = useRef<number | null>(null)
   const currentTime = useCurrentTime()
   const userFullName = user?.fullName
   useExecutionStatusUpdates()
-  const executionsQuery = useExecutionsQuery(userFullName ? { by: [userFullName] } : {}, {
-    enabled: !isLoadingUser && Boolean(userFullName),
+  const queryClient = useQueryClient()
+  const { isResolving: isResolvingExecutionTarget, target } = useExecutionTarget()
+  const playwrightProjectsQuery = usePlaywrightProjectsQuery(!isLoadingUser && Boolean(userFullName))
+  const availableProjects = useMemo(
+    () =>
+      [...(playwrightProjectsQuery.data ?? [])]
+        .filter((project) => project.active !== false && project.name.trim())
+        .sort((leftProject, rightProject) => leftProject.name.localeCompare(rightProject.name)),
+    [playwrightProjectsQuery.data],
+  )
+  const expandedProjectNamesSet = useMemo(() => new Set(expandedProjectNames), [expandedProjectNames])
+  const projectExecutionsQueries = useQueries({
+    queries: availableProjects.map((project) => {
+      const query: ExecutionQuery = {
+        by: userFullName ? [userFullName] : [],
+        project: project.name,
+      }
+
+      if (!expandedProjectNamesSet.has(project.name)) {
+        query.limit = SIDEBAR_PROJECT_EXECUTIONS_LIMIT
+      }
+
+      return {
+        queryKey: executionKeys.list(query, target.key),
+        queryFn: async () => {
+          const response = await getExecutions(query, target.requestTarget)
+
+          return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
+        },
+        placeholderData: (previousData: Execution[] | undefined) => previousData,
+        enabled:
+          !isLoadingUser && Boolean(userFullName) && !isResolvingExecutionTarget && playwrightProjectsQuery.isSuccess,
+      }
+    }),
   })
   const executionStatusReadModel = useExecutionStatusReadModel()
   const deleteMutation = useDeleteExecutionMutation({
@@ -91,10 +132,31 @@ export function ExecutionsSidebar() {
     },
   })
   const pendingDeleteId = deleteMutation.variables
-  const executions = executionsQuery.data
-  const executionProjectGroups = useMemo(() => groupExecutionsByProject(executions ?? []), [executions])
+  const executionProjectGroups = useMemo(
+    () =>
+      availableProjects
+        .map((project, index) => {
+          const executions = groupExecutionsByProject(projectExecutionsQueries[index]?.data ?? []).flatMap(
+            (group) => group.executions,
+          )
+
+          return {
+            executions,
+            isFetching: projectExecutionsQueries[index]?.isFetching ?? false,
+            isLimited: !expandedProjectNamesSet.has(project.name),
+            project: project.name,
+          }
+        })
+        .filter((group) => group.executions.length > 0),
+    [availableProjects, expandedProjectNamesSet, projectExecutionsQueries],
+  )
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
   const isCollapsedDesktop = state === 'collapsed' && !isMobile
+  const isExecutionsLoading =
+    playwrightProjectsQuery.isLoading || projectExecutionsQueries.some((query) => query.isLoading)
+  const isExecutionsFetching =
+    playwrightProjectsQuery.isFetching || projectExecutionsQueries.some((query) => query.isFetching)
+  const isExecutionsError = playwrightProjectsQuery.isError || projectExecutionsQueries.some((query) => query.isError)
 
   useMountEffect(() => {
     return () => {
@@ -120,8 +182,20 @@ export function ExecutionsSidebar() {
     )
   }
 
+  const showAllProjectExecutions = (project: string) => {
+    setExpandedProjectNames((currentProjects) =>
+      currentProjects.includes(project) ? currentProjects : [...currentProjects, project],
+    )
+  }
+
+  const refetchProjectExecutions = async () => {
+    const refetches = [playwrightProjectsQuery.refetch(), ...projectExecutionsQueries.map((query) => query.refetch())]
+
+    await Promise.all(refetches)
+  }
+
   const handleRefresh = async () => {
-    if (executionsQuery.isFetching || isRefreshSpinning) {
+    if (isExecutionsFetching || isRefreshSpinning) {
       return
     }
 
@@ -129,7 +203,7 @@ export function ExecutionsSidebar() {
     setIsRefreshSpinning(true)
 
     try {
-      await executionsQuery.refetch()
+      await refetchProjectExecutions()
     } finally {
       const elapsed = Date.now() - refreshStartedAt
       const remainingDuration = Math.max(MIN_REFRESH_SPIN_DURATION_MS - elapsed, 0)
@@ -244,6 +318,19 @@ export function ExecutionsSidebar() {
                             )
                           })}
                         </SidebarMenu>
+                        {group.isLimited && group.executions.length >= SIDEBAR_PROJECT_EXECUTIONS_LIMIT ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-full"
+                            disabled={group.isFetching}
+                            onClick={() => showAllProjectExecutions(group.project)}
+                          >
+                            {group.isFetching ? <Spinner data-icon="inline-start" /> : null}
+                            {group.isFetching ? t('sidebar.loadingMore') : t('sidebar.showAll')}
+                          </Button>
+                        ) : null}
                       </PopoverContent>
                     </Popover>
                   </SidebarMenuItem>
@@ -296,19 +383,19 @@ export function ExecutionsSidebar() {
                   variant="ghost"
                   size="icon-xs"
                   className="mr-3 size-6 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:not-aria-[haspopup]:translate-y-0"
-                  disabled={executionsQuery.isFetching || isRefreshSpinning}
+                  disabled={isExecutionsFetching || isRefreshSpinning}
                   onClick={() => void handleRefresh()}
                 >
                   <IconRefresh
                     className={cn(
                       'size-3.5',
-                      (executionsQuery.isFetching || isRefreshSpinning) && 'animate-spin [animation-direction:reverse]',
+                      (isExecutionsFetching || isRefreshSpinning) && 'animate-spin [animation-direction:reverse]',
                     )}
                   />
                 </Button>
               </div>
               <SidebarGroupContent>
-                {executionsQuery.isLoading ? (
+                {isExecutionsLoading ? (
                   <div className="flex flex-col gap-1">
                     {skeletonRows.map((row) => (
                       <SidebarMenuSkeleton key={row} showIcon />
@@ -316,7 +403,7 @@ export function ExecutionsSidebar() {
                   </div>
                 ) : null}
 
-                {executionsQuery.isError ? (
+                {isExecutionsError ? (
                   <Alert className="m-2">
                     <IconAlertCircle />
                     <AlertTitle>{t('sidebar.loadErrorTitle')}</AlertTitle>
@@ -325,14 +412,14 @@ export function ExecutionsSidebar() {
                       className="mt-3 w-fit"
                       size="sm"
                       variant="outline"
-                      onClick={() => void executionsQuery.refetch()}
+                      onClick={() => void refetchProjectExecutions()}
                     >
                       {t('sidebar.retry')}
                     </Button>
                   </Alert>
                 ) : null}
 
-                {!executionsQuery.isLoading && !executionsQuery.isError && executionProjectGroups.length === 0 ? (
+                {!isExecutionsLoading && !isExecutionsError && executionProjectGroups.length === 0 ? (
                   <div className="px-3 py-2 text-sm text-muted-foreground">{t('sidebar.empty')}</div>
                 ) : null}
 
@@ -462,6 +549,19 @@ export function ExecutionsSidebar() {
                                 )
                               })}
                             </SidebarMenu>
+                            {group.isLimited && group.executions.length >= SIDEBAR_PROJECT_EXECUTIONS_LIMIT ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="ml-7 mt-1 w-[calc(100%-1.75rem)] justify-start"
+                                disabled={group.isFetching}
+                                onClick={() => showAllProjectExecutions(group.project)}
+                              >
+                                {group.isFetching ? <Spinner data-icon="inline-start" /> : null}
+                                {group.isFetching ? t('sidebar.loadingMore') : t('sidebar.showAll')}
+                              </Button>
+                            ) : null}
                           </CollapsibleContent>
                         </Collapsible>
                       )

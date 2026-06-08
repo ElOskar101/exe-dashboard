@@ -88,6 +88,7 @@ describe('execution.service', () => {
       clinic: ['clinic-1'],
       execution: ['execution-1'],
       bot: ['bot-1'],
+      project: 'elg-regression',
       from: new Date('2026-05-01T00:00:00.000Z'),
       to: new Date('2026-05-31T23:59:59.000Z'),
       dateField: 'createdAt',
@@ -104,6 +105,7 @@ describe('execution.service', () => {
     expect(params.getAll('clinic')).toEqual(['clinic-1'])
     expect(params.getAll('execution')).toEqual(['execution-1'])
     expect(params.getAll('bot')).toEqual(['bot-1'])
+    expect(params.get('project')).toBe('elg-regression')
     expect(params.get('from')).toBe('2026-05-01T00:00:00.000Z')
     expect(params.get('to')).toBe('2026-05-31T23:59:59.000Z')
     expect(params.get('dateField')).toBe('createdAt')

@@ -28,7 +28,7 @@ interface ExecutionQueryOptions {
 }
 
 const invalidateExecutionList = async (queryClient: ReturnType<typeof useQueryClient>, targetKey: string) => {
-  await queryClient.invalidateQueries({ queryKey: executionKeys.list(undefined, targetKey) })
+  await queryClient.invalidateQueries({ queryKey: executionKeys.listRoot(targetKey) })
 }
 
 const invalidateExecutionDetail = async (

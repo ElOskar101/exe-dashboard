@@ -151,13 +151,38 @@ function isExecutionListRequest(urlString: string) {
 }
 
 async function stubExecutionList(page: Page, getExecutions: () => ExecutionFixture[]) {
+  await stubPlaywrightProjects(page, getExecutions)
+
   await page.route('**/api/v1/executions**', async (route) => {
-    if (!isExecutionListRequest(route.request().url()) || route.request().method() !== 'GET') {
+    const url = new URL(route.request().url())
+
+    if (!isExecutionListRequest(url.toString()) || route.request().method() !== 'GET') {
       await route.fallback()
       return
     }
 
-    await route.fulfill({ json: getExecutions() })
+    const project = url.searchParams.get('project')
+    const limit = Number(url.searchParams.get('limit'))
+    const executions = getExecutions().filter((execution) => !project || execution.project === project)
+    const limitedExecutions = Number.isInteger(limit) && limit > 0 ? executions.slice(0, limit) : executions
+
+    await route.fulfill({ json: limitedExecutions })
+  })
+}
+
+async function stubPlaywrightProjects(page: Page, getExecutions: () => ExecutionFixture[]) {
+  await page.route('**/api/v2/playwright-projects**', async (route) => {
+    const projects = Array.from(new Set(getExecutions().map((execution) => execution.project)))
+      .filter(Boolean)
+      .sort((leftProject, rightProject) => leftProject.localeCompare(rightProject))
+      .map((project, index) => ({
+        _id: `project-${index + 1}`,
+        name: project,
+        active: true,
+        associatedWith: [],
+      }))
+
+    await route.fulfill({ json: projects })
   })
 }
 
@@ -499,6 +524,7 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     let shouldSucceed = false
 
+    await stubPlaywrightProjects(page, () => [createExecution()])
     await page.route('**/api/v1/executions**', async (route) => {
       if (!isExecutionListRequest(route.request().url())) {
         await route.fallback()

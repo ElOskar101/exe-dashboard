@@ -4,6 +4,7 @@ export interface ExecutionQuery {
   clinic?: readonly string[]
   execution?: readonly string[]
   bot?: readonly string[]
+  project?: string
   from?: Date
   to?: Date
   dateField?: string
@@ -21,6 +22,7 @@ export interface NormalizedExecutionQuery {
   clinic?: readonly string[]
   execution?: readonly string[]
   bot?: readonly string[]
+  project?: string
   from?: string
   to?: string
   dateField?: string
@@ -71,12 +73,14 @@ export const normalizeExecutionQuery = (query: ExecutionQuery = {}): NormalizedE
 
   const from = normalizeDate(query.from)
   const to = normalizeDate(query.to)
+  const project = normalizeString(query.project)
   const dateField = normalizeString(query.dateField)
   const status = normalizeString(query.status)
   const limit = normalizeLimit(query.limit)
 
   if (from) normalizedQuery.from = from
   if (to) normalizedQuery.to = to
+  if (project) normalizedQuery.project = project
   if (dateField) normalizedQuery.dateField = dateField
   if (status) normalizedQuery.status = status
   if (limit) normalizedQuery.limit = limit
