@@ -43,7 +43,7 @@ const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
 
 const Header: () => JSX.Element = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common', 'settings'])
   const { theme, handleTheme } = useTheme()
   const { isMobile, state, toggleSidebar } = useSidebar()
   const { isResolving, target } = useExecutionTarget()
@@ -114,11 +114,11 @@ const Header: () => JSX.Element = () => {
                   </Badge>
                   <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
                     <span>{appStatsQuery.data?.jobs.active ?? '-'}</span>
-                    <span>Active</span>
+                    <span>{t('settings:status.jobs.active')}</span>
                   </Badge>
                   <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
                     <span>{appStatsQuery.data?.jobs.running ?? '-'}</span>
-                    <span title="Running jobs">Run</span>
+                    <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
                   </Badge>
                 </>
               )}
