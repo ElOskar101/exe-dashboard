@@ -282,6 +282,34 @@ test.describe('protected executions route', () => {
     await expect(page.getByRole('button', { name: 'Next' })).toBeVisible()
   })
 
+  test('minimizes the desktop sidebar from the header trigger', async ({ page, request }) => {
+    test.skip(
+      !canLogin,
+      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
+    )
+
+    const token = await login(request)
+
+    await stubProtectedRouteDependencies(page)
+    await page.addInitScript((accessToken) => {
+      window.localStorage.setItem('token', accessToken)
+    }, token)
+
+    await page.goto('/')
+
+    const sidebar = page.locator('[data-slot="sidebar-container"]')
+    await expect(page.getByRole('button', { name: 'Minimize executions sidebar' })).toBeVisible()
+    await expect(sidebar).toBeVisible()
+
+    const expandedSidebarBox = await sidebar.boundingBox()
+    expect(expandedSidebarBox?.width).toBeGreaterThan(200)
+
+    await page.getByRole('button', { name: 'Minimize executions sidebar' }).click()
+    await expect(page.getByRole('button', { name: 'Expand executions sidebar' })).toBeVisible()
+
+    await expect.poll(async () => (await sidebar.boundingBox())?.width).toBeLessThan(100)
+  })
+
   test('validates invalid steps while navigating and supports back navigation', async ({ page, request }) => {
     test.skip(
       !canLogin,

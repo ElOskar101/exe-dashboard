@@ -463,6 +463,38 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Execution details')).toBeVisible()
   })
 
+  test('shows project execution popovers in the minimized sidebar', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({ status: 'queued' })
+    const secondExecution = createExecution({
+      _id: 'execution-2',
+      execution: '2026-05-26',
+      project: 'firefox',
+      status: 'running',
+    })
+
+    await stubExecutionList(page, () => [execution, secondExecution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+    await stubExecutionDetails(page, secondExecution._id, () => secondExecution)
+
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Minimize executions sidebar' }).click()
+    await expect(page.getByRole('button', { name: 'Expand executions sidebar' })).toBeVisible()
+    await expect(page.locator('[data-slot="sidebar-container"]')).toHaveCSS('width', '48px')
+
+    await expect(page.getByRole('button', { name: 'All executions' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Create execution' })).toBeVisible()
+    await expect(page.getByText('No executions yet.')).not.toBeVisible()
+
+    await page.getByRole('button', { name: 'chromium executions' }).click()
+
+    await expect(page.getByRole('heading', { name: 'chromium' })).toBeVisible()
+    await page.getByRole('link', { name: /2026-05-25/ }).click()
+
+    await expect(page).toHaveURL('/execution/execution-1')
+  })
+
   test('shows an executions load error and retries successfully', async ({ page, request }) => {
     await prepareAuthenticatedPage(page, request)
     let shouldSucceed = false

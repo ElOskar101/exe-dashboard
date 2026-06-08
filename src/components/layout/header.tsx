@@ -5,27 +5,44 @@ import { UserCard } from '@/features/auth'
 import { useExecutionTarget, useExecutionTargetNavigation } from '@/features/executions'
 import { useTheme } from '@/hooks/use-theme'
 import { Button } from '@/components/ui/button'
-import { SidebarTrigger } from '@/components/ui/sidebar'
-import { IconBrightnessDown, IconMoon, IconSettings } from '@tabler/icons-react'
+import { useSidebar } from '@/components/ui/sidebar-context'
+import {
+  IconBrightnessDown,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconMoon,
+  IconSettings,
+} from '@tabler/icons-react'
 
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation()
   const { theme, handleTheme } = useTheme()
+  const { isMobile, state, toggleSidebar } = useSidebar()
   const { target } = useExecutionTarget()
   const { getPathWithExecutionTarget, getSettingsPath } = useExecutionTargetNavigation()
   const targetTitle =
     target.type === 'runtime-application' ? `${target.runtime.name} / ${target.application.name}` : target.label
+  const sidebarButtonLabel = isMobile
+    ? 'Open executions sidebar'
+    : state === 'expanded'
+      ? 'Minimize executions sidebar'
+      : 'Expand executions sidebar'
 
   return (
     <>
       <header className="z-1 w-full border-b border-border">
         <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
           <div className="flex items-center gap-2">
-            <SidebarTrigger
-              className="md:hidden"
-              aria-label="Open executions sidebar"
-              title="Open executions sidebar"
-            />
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="ghost"
+              aria-label={sidebarButtonLabel}
+              title={sidebarButtonLabel}
+              onClick={toggleSidebar}
+            >
+              {state === 'expanded' && !isMobile ? <IconLayoutSidebarLeftCollapse /> : <IconLayoutSidebarLeftExpand />}
+            </Button>
             <Link to={getPathWithExecutionTarget('/')} className="transition-colors">
               <img className="h-8 w-auto object-cover" src="/agent-icon.svg" alt={t('project-name')} />
             </Link>
