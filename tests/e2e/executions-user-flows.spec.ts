@@ -424,7 +424,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('columnheader', { name: 'Patients' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Legacy Dental Care' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Downtown Clinic' })).toBeVisible()
-    await expect(page.getByText('Running')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Running' })).toBeVisible()
 
     const patientTrigger = page.getByRole('button', { name: 'View patients for execution 2026-05-25' })
     await expect(patientTrigger).toContainText('Jane Doe, John Smith, +2')
@@ -611,7 +611,7 @@ test.describe('execution user flows', () => {
     await page.goto('/execution/execution-1')
 
     await expect(page.getByText('Eligibility Runner - 2026-05-25')).toBeVisible()
-    await expect(page.getByText('Running')).toBeVisible()
+    await expect(page.locator('[data-slot="card-title"]').getByText('Running')).toBeVisible()
     await expect(page.getByText('Starting carrier login')).toBeVisible()
     await page.getByRole('button', { name: 'Debug' }).click()
     await expect(page.getByText('Execution debug details')).toBeVisible()
