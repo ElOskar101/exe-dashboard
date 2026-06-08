@@ -17,44 +17,6 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
   },
-  server: {
-    proxy: {
-      '/carrier-api': {
-        target: 'https://dev-carrier.dentalautomation.ai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/carrier-api/, ''),
-      },
-      '/execution-api': {
-        target: 'https://api.controlcentralcarrier.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/execution-api/, '/api/v1'),
-      },
-      '/execution-reports': {
-        target: 'https://api.controlcentralcarrier.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/execution-reports/, '/reports'),
-      },
-    },
-  },
-  preview: {
-    proxy: {
-      '/carrier-api': {
-        target: 'https://dev-carrier.dentalautomation.ai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/carrier-api/, ''),
-      },
-      '/execution-api': {
-        target: 'https://api.controlcentralcarrier.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/execution-api/, '/api/v1'),
-      },
-      '/execution-reports': {
-        target: 'https://api.controlcentralcarrier.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/execution-reports/, '/reports'),
-      },
-    },
-  },
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/client'],
     alias: [

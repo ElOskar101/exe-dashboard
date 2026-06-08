@@ -18,15 +18,15 @@ describe('axios URL helpers', () => {
     )
   })
 
-  it('uses the configured Carrier API proxy URL for the CCC client', () => {
-    expect(cccClient.defaults.baseURL).toBe('/carrier-api/api')
+  it('uses the configured Carrier API URL for the CCC client', () => {
+    expect(cccClient.defaults.baseURL).toBe('https://dev-carrier.dentalautomation.ai/api')
   })
 
   it('uses the configured EXE API URL for the EXE client', () => {
-    expect(exeClient.defaults.baseURL).toBe('/execution-api')
+    expect(exeClient.defaults.baseURL).toBe('https://api.controlcentralcarrier.com/api/v1')
   })
 
-  it('uses the configured reports proxy URL for the reports client', () => {
-    expect(exeReportsClient.defaults.baseURL).toBe('/execution-reports')
+  it('uses the configured reports URL for the reports client', () => {
+    expect(exeReportsClient.defaults.baseURL).toBe('https://api.controlcentralcarrier.com/reports')
   })
 })

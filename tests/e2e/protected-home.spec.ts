@@ -372,7 +372,7 @@ test.describe('protected executions route', () => {
     }
 
     await stubProtectedRouteDependencies(page)
-    await page.route('**/execution-api/executions/execution-e2e', async (route) => {
+    await page.route('**/api/v1/executions/execution-e2e', async (route) => {
       await route.fulfill({ json: createdExecution })
     })
     await page.route('**/executions', async (route) => {

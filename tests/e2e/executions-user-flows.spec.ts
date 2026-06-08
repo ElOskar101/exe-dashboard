@@ -147,11 +147,11 @@ async function prepareAuthenticatedPage(page: Page, request: APIRequestContext) 
 function isExecutionListRequest(urlString: string) {
   const url = new URL(urlString)
 
-  return url.pathname.endsWith('/execution-api/executions')
+  return url.pathname.endsWith('/api/v1/executions')
 }
 
 async function stubExecutionList(page: Page, getExecutions: () => ExecutionFixture[]) {
-  await page.route('**/execution-api/executions**', async (route) => {
+  await page.route('**/api/v1/executions**', async (route) => {
     if (!isExecutionListRequest(route.request().url()) || route.request().method() !== 'GET') {
       await route.fallback()
       return
@@ -162,7 +162,7 @@ async function stubExecutionList(page: Page, getExecutions: () => ExecutionFixtu
 }
 
 async function stubExecutionDetails(page: Page, executionId: string, getExecution: () => ExecutionFixture) {
-  await page.route(`**/execution-api/executions/${executionId}`, async (route) => {
+  await page.route(`**/api/v1/executions/${executionId}`, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback()
       return
@@ -467,7 +467,7 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     let shouldSucceed = false
 
-    await page.route('**/execution-api/executions**', async (route) => {
+    await page.route('**/api/v1/executions**', async (route) => {
       if (!isExecutionListRequest(route.request().url())) {
         await route.fallback()
         return
@@ -494,7 +494,7 @@ test.describe('execution user flows', () => {
     let deleteRequested = false
 
     await stubExecutionList(page, () => [createExecution()])
-    await page.route('**/execution-api/executions/execution-1', async (route) => {
+    await page.route('**/api/v1/executions/execution-1', async (route) => {
       if (route.request().method() === 'DELETE') {
         deleteRequested = true
       }
@@ -519,7 +519,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => executions)
     await stubExecutionDetails(page, 'execution-1', () => executions[0])
-    await page.route('**/execution-api/executions/execution-1', async (route) => {
+    await page.route('**/api/v1/executions/execution-1', async (route) => {
       if (route.request().method() !== 'DELETE') {
         await route.fallback()
         return
@@ -566,7 +566,7 @@ test.describe('execution user flows', () => {
     let recreatedPayload: unknown = null
 
     await stubExecutionList(page, () => [originalExecution])
-    await page.route('**/execution-api/executions/execution-1', async (route) => {
+    await page.route('**/api/v1/executions/execution-1', async (route) => {
       if (route.request().method() !== 'GET') {
         await route.fallback()
         return
@@ -574,7 +574,7 @@ test.describe('execution user flows', () => {
 
       await route.fulfill({ json: originalExecution })
     })
-    await page.route('**/execution-api/executions/execution-2', async (route) => {
+    await page.route('**/api/v1/executions/execution-2', async (route) => {
       await route.fulfill({
         json: createExecution({
           _id: 'execution-2',
@@ -585,7 +585,7 @@ test.describe('execution user flows', () => {
         }),
       })
     })
-    await page.route('**/execution-api/executions**', async (route) => {
+    await page.route('**/api/v1/executions**', async (route) => {
       if (!isExecutionListRequest(route.request().url()) || route.request().method() !== 'POST') {
         await route.fallback()
         return
@@ -630,7 +630,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/execution-api/executions/execution-1/stop', async (route) => {
+    await page.route('**/api/v1/executions/execution-1/stop', async (route) => {
       execution.status = 'cancelled'
       await route.fulfill({ json: execution })
     })
@@ -651,7 +651,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/execution-api/executions/execution-1/stop', async (route) => {
+    await page.route('**/api/v1/executions/execution-1/stop', async (route) => {
       await route.fulfill({ status: 409, json: { message: 'Cannot stop execution.' } })
     })
 
@@ -669,7 +669,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/execution-reports/report-1/index.html', async (route) => {
+    await page.route('**/reports/report-1/index.html', async (route) => {
       await route.fulfill({
         contentType: 'text/html',
         body: '<!doctype html><html><body><h1>Completed report</h1><p>Jane Doe passed.</p></body></html>',
@@ -689,7 +689,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/execution-reports/report-1/index.html', async (route) => {
+    await page.route('**/reports/report-1/index.html', async (route) => {
       await route.fulfill({ status: 404, body: 'Missing report' })
     })
 
@@ -703,7 +703,7 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
 
     await stubExecutionList(page, () => [createExecution()])
-    await page.route('**/execution-api/executions/execution-1', async (route) => {
+    await page.route('**/api/v1/executions/execution-1', async (route) => {
       await route.fulfill({ status: 500, json: { message: 'Unavailable' } })
     })
 

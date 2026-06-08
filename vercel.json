@@ -1,18 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/carrier-api/:path*",
-      "destination": "https://dev-carrier.dentalautomation.ai/:path*"
-    },
-    {
-      "source": "/execution-api/:path*",
-      "destination": "https://api.controlcentralcarrier.com/api/v1/:path*"
-    },
-    {
-      "source": "/execution-reports/:path*",
-      "destination": "https://api.controlcentralcarrier.com/reports/:path*"
-    },
-    {
       "source": "/:path*",
       "destination": "/index.html"
     }

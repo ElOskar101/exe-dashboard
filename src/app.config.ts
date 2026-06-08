@@ -1,7 +1,6 @@
 export const APP_CONFIG = {
   cccApiUrl: 'https://dev-carrier.dentalautomation.ai',
-  cccApiProxyUrl: '/carrier-api',
-  exeApiUrl: '/execution-api',
-  exeReportsUrl: '/execution-reports',
+  exeApiUrl: 'https://api.controlcentralcarrier.com/api/v1',
+  exeReportsUrl: 'https://api.controlcentralcarrier.com/reports',
   authLoginMode: 'dev',
 } as const

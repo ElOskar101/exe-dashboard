@@ -22,6 +22,7 @@ Only dig into a deep module's implementation details when you are actively worki
 ## Testing new features
 
 When new endpoints are given try to test them to see an example of their responses. For this, use the TMP_ACCESS_TOKEN env variable for authentication.
+After finished an entire coding task run unit and e2e tests.
 
 ## Agent skills
 
