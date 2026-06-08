@@ -66,6 +66,7 @@ import {
   getStatusDotClassName,
   groupExecutionsByProject,
 } from '../lib/execution-sidebar-display'
+import { UNKNOWN_PROJECT_LABEL } from '../lib/execution-listing-filters'
 
 const MIN_REFRESH_SPIN_DURATION_MS = 1000
 const SIDEBAR_PROJECT_EXECUTIONS_LIMIT = 5
@@ -92,7 +93,7 @@ export function ExecutionsSidebar() {
   const availableProjects = useMemo(
     () =>
       [...(playwrightProjectsQuery.data ?? [])]
-        .filter((project) => project.active !== false && project.name.trim())
+        .filter((project) => project.name.trim())
         .sort((leftProject, rightProject) => leftProject.name.localeCompare(rightProject.name)),
     [playwrightProjectsQuery.data],
   )
@@ -132,24 +133,50 @@ export function ExecutionsSidebar() {
     },
   })
   const pendingDeleteId = deleteMutation.variables
-  const executionProjectGroups = useMemo(
-    () =>
-      availableProjects
-        .map((project, index) => {
-          const executions = groupExecutionsByProject(projectExecutionsQueries[index]?.data ?? []).flatMap(
-            (group) => group.executions,
-          )
+  const executionProjectGroups = useMemo(() => {
+    const unknownExecutionsById = new Map<string, Execution>()
+    const projectGroups = availableProjects
+      .map((project, index) => {
+        const projectExecutions = (projectExecutionsQueries[index]?.data ?? []).filter((execution) => {
+          const executionProject = execution.project?.trim()
 
-          return {
-            executions,
-            isFetching: projectExecutionsQueries[index]?.isFetching ?? false,
-            isLimited: !expandedProjectNamesSet.has(project.name),
-            project: project.name,
+          if (!executionProject) {
+            unknownExecutionsById.set(execution._id, execution)
+            return false
           }
+
+          return executionProject === project.name
         })
-        .filter((group) => group.executions.length > 0),
-    [availableProjects, expandedProjectNamesSet, projectExecutionsQueries],
-  )
+        const executions = groupExecutionsByProject(projectExecutions).flatMap((group) => group.executions)
+
+        return {
+          executions,
+          isFetching: projectExecutionsQueries[index]?.isFetching ?? false,
+          isLimited: !expandedProjectNamesSet.has(project.name),
+          project: project.name,
+        }
+      })
+      .filter((group) => group.executions.length > 0)
+
+    const unknownExecutions = groupExecutionsByProject(
+      Array.from(unknownExecutionsById.values()).map((execution) => ({
+        ...execution,
+        project: '',
+      })),
+    ).flatMap((group) => group.executions)
+
+    return unknownExecutions.length > 0
+      ? [
+          ...projectGroups,
+          {
+            executions: unknownExecutions,
+            isFetching: projectExecutionsQueries.some((query) => query.isFetching),
+            isLimited: false,
+            project: UNKNOWN_PROJECT_LABEL,
+          },
+        ]
+      : projectGroups
+  }, [availableProjects, expandedProjectNamesSet, projectExecutionsQueries])
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
   const isCollapsedDesktop = state === 'collapsed' && !isMobile
   const isExecutionsLoading =
@@ -343,236 +370,253 @@ export function ExecutionsSidebar() {
     </>
   )
 
+  const renderExpandedSidebarContent = () => (
+    <>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link to={getPathWithExecutionTarget('/executions')} onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/executions'}
+              tooltip={t('sidebar.allExecutions')}
+            >
+              <span>{t('sidebar.allExecutions')}</span>
+              <IconListDetails className="ml-auto" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/'}
+              tooltip={t('sidebar.createExecution')}
+            >
+              <span>{t('sidebar.createExecution')}</span>
+              <IconPlus className="ml-auto" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <div className="sticky top-0 z-30 flex items-center justify-between rounded-none bg-sidebar">
+            <SidebarGroupLabel className="rounded-none bg-transparent px-3">{t('sidebar.title')}</SidebarGroupLabel>
+            <Button
+              aria-label={t('sidebar.refreshList')}
+              title={t('sidebar.refreshList')}
+              variant="ghost"
+              size="icon-xs"
+              className="mr-3 size-6 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:not-aria-[haspopup]:translate-y-0"
+              disabled={isExecutionsFetching || isRefreshSpinning}
+              onClick={() => void handleRefresh()}
+            >
+              <IconRefresh
+                className={cn(
+                  'size-3.5',
+                  (isExecutionsFetching || isRefreshSpinning) && 'animate-spin [animation-direction:reverse]',
+                )}
+              />
+            </Button>
+          </div>
+          <SidebarGroupContent>
+            {isExecutionsLoading ? (
+              <div className="flex flex-col gap-1">
+                {skeletonRows.map((row) => (
+                  <SidebarMenuSkeleton key={row} showIcon />
+                ))}
+              </div>
+            ) : null}
+
+            {isExecutionsError ? (
+              <Alert className="m-2">
+                <IconAlertCircle />
+                <AlertTitle>{t('sidebar.loadErrorTitle')}</AlertTitle>
+                <AlertDescription>{t('sidebar.loadErrorDescription')}</AlertDescription>
+                <Button
+                  className="mt-3 w-fit"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void refetchProjectExecutions()}
+                >
+                  {t('sidebar.retry')}
+                </Button>
+              </Alert>
+            ) : null}
+
+            {!isExecutionsLoading && !isExecutionsError && executionProjectGroups.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">{t('sidebar.empty')}</div>
+            ) : null}
+
+            {executionProjectGroups.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {executionProjectGroups.map((group) => {
+                  const isOpen = !collapsedProjects.includes(group.project)
+
+                  return (
+                    <Collapsible
+                      key={group.project}
+                      open={isOpen}
+                      onOpenChange={(open) => setProjectCollapsed(group.project, !open)}
+                      className="min-w-0"
+                    >
+                      <CollapsibleTrigger render={<Button variant="ghost" className="w-full" />}>
+                        <IconChevronDown
+                          className={cn('size-3.5 shrink-0 transition-transform', !isOpen && '-rotate-90')}
+                        />
+                        <span className="truncate">{group.project}</span>
+                        <span className="ml-auto shrink-0 text-xs text-sidebar-foreground/55">
+                          {group.executions.length}
+                        </span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenu>
+                          {group.executions.map((execution) => {
+                            const label = getExecutionLabel(execution)
+                            const executionDayLabel = getExecutionDayLabel(execution)
+                            const relativeCreatedAt = getRelativeCreatedAt(execution.createdAt, currentTime)
+                            const status =
+                              executionStatusReadModel.data[execution._id] ?? normalizeExecutionStatus(execution.status)
+                            const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
+
+                            return (
+                              <SidebarMenuItem key={execution._id}>
+                                <div className="flex items-center">
+                                  <SidebarMenuButton
+                                    render={
+                                      <Link
+                                        to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
+                                        onClick={closeSidebarOnMobile}
+                                      />
+                                    }
+                                    isActive={currentExecutionId === execution._id}
+                                    tooltip={`${group.project} ${label}`}
+                                    className="h-auto min-h-9 items-start"
+                                  >
+                                    <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
+                                      {isExecutionRunning(status) ? (
+                                        <Spinner aria-label={status} className="mt-0.5 size-3 shrink-0 text-blue-500" />
+                                      ) : (
+                                        <span
+                                          aria-label={status}
+                                          className={cn(
+                                            'mt-1 size-2 shrink-0 rounded-full',
+                                            getStatusDotClassName(status),
+                                          )}
+                                        />
+                                      )}
+                                      <div className="min-w-0">
+                                        <div className="truncate">{executionDayLabel}</div>
+                                        {relativeCreatedAt ? (
+                                          <div className="truncate text-xs text-sidebar-foreground/60">
+                                            {relativeCreatedAt}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  </SidebarMenuButton>
+                                  <AlertDialog
+                                    open={openDeleteId === execution._id}
+                                    onOpenChange={(open) => {
+                                      if (isDeleting) return
+
+                                      setOpenDeleteId(open ? execution._id : null)
+                                    }}
+                                  >
+                                    <AlertDialogTrigger
+                                      render={
+                                        <SidebarMenuAction
+                                          className={cn(
+                                            'right-2 !top-1/2 !-translate-y-1/2 hover:bg-sidebar-accent/60',
+                                            isMobile
+                                              ? 'opacity-100'
+                                              : 'opacity-0 hover:opacity-100 aria-expanded:opacity-100 peer-hover/menu-button:opacity-100',
+                                          )}
+                                          aria-label={t('sidebar.deleteAction', {
+                                            execution: executionDayLabel,
+                                          })}
+                                          disabled={isDeleting}
+                                        >
+                                          <IconTrash />
+                                        </SidebarMenuAction>
+                                      }
+                                    />
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('sidebar.deleteTitle')}</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          {t('sidebar.deleteDescription', {
+                                            execution: executionDayLabel,
+                                          })}
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel disabled={isDeleting}>
+                                          {t('sidebar.cancelDelete')}
+                                        </AlertDialogCancel>
+                                        <Button
+                                          variant="destructive"
+                                          disabled={isDeleting}
+                                          onClick={() => deleteMutation.mutate(execution._id)}
+                                        >
+                                          {isDeleting ? <Spinner data-icon="inline-start" /> : null}
+                                          {isDeleting ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
+                                        </Button>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </SidebarMenuItem>
+                            )
+                          })}
+                        </SidebarMenu>
+                        {group.isLimited && group.executions.length >= SIDEBAR_PROJECT_EXECUTIONS_LIMIT ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="ml-7 mt-1 w-[calc(100%-1.75rem)] justify-start"
+                            disabled={group.isFetching}
+                            onClick={() => showAllProjectExecutions(group.project)}
+                          >
+                            {group.isFetching ? <Spinner data-icon="inline-start" /> : null}
+                            {group.isFetching ? t('sidebar.loadingMore') : t('sidebar.showAll')}
+                          </Button>
+                        ) : null}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )
+                })}
+              </div>
+            ) : null}
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </>
+  )
+
   return (
     <Sidebar collapsible="icon">
-      {isCollapsedDesktop ? (
-        renderCollapsedSidebarContent()
-      ) : (
-        <>
-          <SidebarHeader>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<Link to={getPathWithExecutionTarget('/executions')} onClick={closeSidebarOnMobile} />}
-                  isActive={pathname === '/executions'}
-                  tooltip={t('sidebar.allExecutions')}
-                >
-                  <span>{t('sidebar.allExecutions')}</span>
-                  <IconListDetails className="ml-auto" />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
-                  isActive={pathname === '/'}
-                  tooltip={t('sidebar.createExecution')}
-                >
-                  <span>{t('sidebar.createExecution')}</span>
-                  <IconPlus className="ml-auto" />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <div className="sticky top-0 z-30 flex items-center justify-between rounded-none bg-sidebar">
-                <SidebarGroupLabel className="rounded-none bg-transparent px-3">{t('sidebar.title')}</SidebarGroupLabel>
-                <Button
-                  aria-label={t('sidebar.refreshList')}
-                  title={t('sidebar.refreshList')}
-                  variant="ghost"
-                  size="icon-xs"
-                  className="mr-3 size-6 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:not-aria-[haspopup]:translate-y-0"
-                  disabled={isExecutionsFetching || isRefreshSpinning}
-                  onClick={() => void handleRefresh()}
-                >
-                  <IconRefresh
-                    className={cn(
-                      'size-3.5',
-                      (isExecutionsFetching || isRefreshSpinning) && 'animate-spin [animation-direction:reverse]',
-                    )}
-                  />
-                </Button>
-              </div>
-              <SidebarGroupContent>
-                {isExecutionsLoading ? (
-                  <div className="flex flex-col gap-1">
-                    {skeletonRows.map((row) => (
-                      <SidebarMenuSkeleton key={row} showIcon />
-                    ))}
-                  </div>
-                ) : null}
-
-                {isExecutionsError ? (
-                  <Alert className="m-2">
-                    <IconAlertCircle />
-                    <AlertTitle>{t('sidebar.loadErrorTitle')}</AlertTitle>
-                    <AlertDescription>{t('sidebar.loadErrorDescription')}</AlertDescription>
-                    <Button
-                      className="mt-3 w-fit"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => void refetchProjectExecutions()}
-                    >
-                      {t('sidebar.retry')}
-                    </Button>
-                  </Alert>
-                ) : null}
-
-                {!isExecutionsLoading && !isExecutionsError && executionProjectGroups.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">{t('sidebar.empty')}</div>
-                ) : null}
-
-                {executionProjectGroups.length > 0 ? (
-                  <div className="flex flex-col gap-3">
-                    {executionProjectGroups.map((group) => {
-                      const isOpen = !collapsedProjects.includes(group.project)
-
-                      return (
-                        <Collapsible
-                          key={group.project}
-                          open={isOpen}
-                          onOpenChange={(open) => setProjectCollapsed(group.project, !open)}
-                          className="min-w-0"
-                        >
-                          <CollapsibleTrigger render={<Button variant="ghost" className="w-full" />}>
-                            <IconChevronDown
-                              className={cn('size-3.5 shrink-0 transition-transform', !isOpen && '-rotate-90')}
-                            />
-                            <span className="truncate">{group.project}</span>
-                            <span className="ml-auto shrink-0 text-xs text-sidebar-foreground/55">
-                              {group.executions.length}
-                            </span>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <SidebarMenu>
-                              {group.executions.map((execution) => {
-                                const label = getExecutionLabel(execution)
-                                const executionDayLabel = getExecutionDayLabel(execution)
-                                const relativeCreatedAt = getRelativeCreatedAt(execution.createdAt, currentTime)
-                                const status =
-                                  executionStatusReadModel.data[execution._id] ??
-                                  normalizeExecutionStatus(execution.status)
-                                const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
-
-                                return (
-                                  <SidebarMenuItem key={execution._id}>
-                                    <div className="flex items-center">
-                                      <SidebarMenuButton
-                                        render={
-                                          <Link
-                                            to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
-                                            onClick={closeSidebarOnMobile}
-                                          />
-                                        }
-                                        isActive={currentExecutionId === execution._id}
-                                        tooltip={`${group.project} ${label}`}
-                                        className="h-auto min-h-9 items-start"
-                                      >
-                                        <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
-                                          {isExecutionRunning(status) ? (
-                                            <Spinner
-                                              aria-label={status}
-                                              className="mt-0.5 size-3 shrink-0 text-blue-500"
-                                            />
-                                          ) : (
-                                            <span
-                                              aria-label={status}
-                                              className={cn(
-                                                'mt-1 size-2 shrink-0 rounded-full',
-                                                getStatusDotClassName(status),
-                                              )}
-                                            />
-                                          )}
-                                          <div className="min-w-0">
-                                            <div className="truncate">{executionDayLabel}</div>
-                                            {relativeCreatedAt ? (
-                                              <div className="truncate text-xs text-sidebar-foreground/60">
-                                                {relativeCreatedAt}
-                                              </div>
-                                            ) : null}
-                                          </div>
-                                        </div>
-                                      </SidebarMenuButton>
-                                      <AlertDialog
-                                        open={openDeleteId === execution._id}
-                                        onOpenChange={(open) => {
-                                          if (isDeleting) return
-
-                                          setOpenDeleteId(open ? execution._id : null)
-                                        }}
-                                      >
-                                        <AlertDialogTrigger
-                                          render={
-                                            <SidebarMenuAction
-                                              className={cn(
-                                                'right-2 !top-1/2 !-translate-y-1/2 hover:bg-sidebar-accent/60',
-                                                isMobile
-                                                  ? 'opacity-100'
-                                                  : 'opacity-0 hover:opacity-100 aria-expanded:opacity-100 peer-hover/menu-button:opacity-100',
-                                              )}
-                                              aria-label={t('sidebar.deleteAction', {
-                                                execution: executionDayLabel,
-                                              })}
-                                              disabled={isDeleting}
-                                            >
-                                              <IconTrash />
-                                            </SidebarMenuAction>
-                                          }
-                                        />
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>{t('sidebar.deleteTitle')}</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              {t('sidebar.deleteDescription', {
-                                                execution: executionDayLabel,
-                                              })}
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel disabled={isDeleting}>
-                                              {t('sidebar.cancelDelete')}
-                                            </AlertDialogCancel>
-                                            <Button
-                                              variant="destructive"
-                                              disabled={isDeleting}
-                                              onClick={() => deleteMutation.mutate(execution._id)}
-                                            >
-                                              {isDeleting ? <Spinner data-icon="inline-start" /> : null}
-                                              {isDeleting ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
-                                            </Button>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    </div>
-                                  </SidebarMenuItem>
-                                )
-                              })}
-                            </SidebarMenu>
-                            {group.isLimited && group.executions.length >= SIDEBAR_PROJECT_EXECUTIONS_LIMIT ? (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="ml-7 mt-1 w-[calc(100%-1.75rem)] justify-start"
-                                disabled={group.isFetching}
-                                onClick={() => showAllProjectExecutions(group.project)}
-                              >
-                                {group.isFetching ? <Spinner data-icon="inline-start" /> : null}
-                                {group.isFetching ? t('sidebar.loadingMore') : t('sidebar.showAll')}
-                              </Button>
-                            ) : null}
-                          </CollapsibleContent>
-                        </Collapsible>
-                      )
-                    })}
-                  </div>
-                ) : null}
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </>
-      )}
+      <div className="relative size-full overflow-hidden">
+        <div
+          aria-hidden={isCollapsedDesktop}
+          inert={isCollapsedDesktop ? true : undefined}
+          className={cn(
+            'absolute inset-0 flex flex-col transition-[opacity,transform] duration-200 ease-out',
+            isCollapsedDesktop ? 'pointer-events-none -translate-x-2 opacity-0' : 'translate-x-0 opacity-100 delay-75',
+          )}
+        >
+          {renderExpandedSidebarContent()}
+        </div>
+        <div
+          aria-hidden={!isCollapsedDesktop}
+          inert={!isCollapsedDesktop ? true : undefined}
+          className={cn(
+            'absolute inset-0 flex flex-col transition-[opacity,transform] duration-200 ease-out',
+            isCollapsedDesktop ? 'translate-x-0 opacity-100 delay-75' : 'pointer-events-none translate-x-2 opacity-0',
+          )}
+        >
+          {renderCollapsedSidebarContent()}
+        </div>
+      </div>
     </Sidebar>
   )
 }
