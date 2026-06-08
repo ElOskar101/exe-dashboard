@@ -82,6 +82,7 @@ export function ExecutionMultiSelectFilter({
     return selectedCountLabel
   }, [options, placeholder, selectedCountLabel, selectedValues])
   const optionsMaxHeightClass = clearSelectionPlacement === 'bottom' ? 'max-h-56' : 'max-h-72'
+  const hasBottomClearSelection = clearSelectionPlacement === 'bottom' && selectedValues.length > 0
 
   const setOptionSelected = (value: string, selected: boolean) => {
     onSelectedValuesChange(
@@ -132,7 +133,7 @@ export function ExecutionMultiSelectFilter({
         <PopoverContent
           align="start"
           collisionAvoidance={FILTER_POPOVER_COLLISION_AVOIDANCE}
-          className="w-(--anchor-width) min-w-80 gap-3 overflow-hidden pb-0"
+          className={cn('w-(--anchor-width) min-w-80 gap-3 overflow-hidden', hasBottomClearSelection && 'pb-0')}
         >
           <PopoverHeader>
             <PopoverTitle>{label}</PopoverTitle>
@@ -182,9 +183,7 @@ export function ExecutionMultiSelectFilter({
               </div>
             ) : null}
           </ScrollArea>
-          {clearSelectionPlacement === 'bottom' && clearSelectionButton ? (
-            <div className="-mx-4 border-t bg-popover p-3">{clearSelectionButton}</div>
-          ) : null}
+          {hasBottomClearSelection ? <div className="-mx-4 border-t bg-popover p-3">{clearSelectionButton}</div> : null}
         </PopoverContent>
       </Popover>
     </Field>
