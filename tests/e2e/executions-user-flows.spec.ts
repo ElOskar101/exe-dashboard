@@ -11,7 +11,7 @@ const canLogin = Boolean(authLoginUrl && username && password)
 interface ExecutionFixture {
   _id: string
   createdBy: string
-  playwrightProject: string
+  project: string
   status: 'queued' | 'running' | 'completed' | 'cancelled' | 'failed' | 'process'
   client: string
   clinic: string
@@ -90,7 +90,7 @@ const createExecutionMeta = (): NonNullable<ExecutionFixture['meta']> => ({
 const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFixture => ({
   _id: 'execution-1',
   createdBy: 'e2e-user',
-  playwrightProject: 'chromium',
+  project: 'chromium',
   status: 'completed',
   client: 'customer-1',
   clinic: 'clinic-1',

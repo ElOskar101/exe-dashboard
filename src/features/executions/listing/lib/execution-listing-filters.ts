@@ -25,7 +25,7 @@ export const getResolvedExecutionStatus = (
   executionStatusReadModel: Record<string, ExecutionStatus>,
 ) => executionStatusReadModel[execution._id] ?? normalizeExecutionStatus(execution.status)
 
-export const getExecutionProjectLabel = (execution: Execution) => execution.playwrightProject || UNKNOWN_PROJECT_LABEL
+export const getExecutionProjectLabel = (execution: Execution) => execution.project || UNKNOWN_PROJECT_LABEL
 
 export const getExecutionDisplayNames = (
   execution: Execution,

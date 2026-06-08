@@ -354,7 +354,7 @@ test.describe('protected executions route', () => {
     const createdExecution = {
       _id: 'execution-e2e',
       createdBy: 'e2e-user',
-      playwrightProject: 'chromium',
+      project: 'chromium',
       status: 'process',
       note: [],
       attachments: [],

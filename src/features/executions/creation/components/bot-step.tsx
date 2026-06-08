@@ -134,17 +134,13 @@ export function BotStep({
 
         <FieldGroup className="md:grid md:grid-cols-2">
           <Field data-invalid={showErrors && Boolean(projectError)}>
-            <FieldLabel htmlFor="playwrightProject">{t('fields.project')}</FieldLabel>
+            <FieldLabel htmlFor="project">{t('fields.project')}</FieldLabel>
             <Select
               value={context.project}
               onValueChange={(value) => onProjectSelect(value ?? '')}
               disabled={isProjectSelectDisabled}
             >
-              <SelectTrigger
-                id="playwrightProject"
-                aria-invalid={showErrors && Boolean(projectError)}
-                className="w-full"
-              >
+              <SelectTrigger id="project" aria-invalid={showErrors && Boolean(projectError)} className="w-full">
                 <SelectValue placeholder={t('placeholders.project')}>{context.project || undefined}</SelectValue>
               </SelectTrigger>
               <SelectContent align="start">

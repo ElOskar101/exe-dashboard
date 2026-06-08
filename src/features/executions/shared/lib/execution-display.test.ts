@@ -12,7 +12,7 @@ import type { Execution } from '../model/execution'
 const createExecution = (execution: Partial<Execution>): Execution => ({
   _id: 'execution-123456789',
   createdBy: 'user-1',
-  playwrightProject: 'project-a',
+  project: 'project-a',
   status: 'queued',
   client: 'client-1',
   clinic: 'clinic-1',
@@ -44,7 +44,7 @@ describe('execution display helpers', () => {
     expect(
       getExecutionLabel(
         createExecution({
-          playwrightProject: '',
+          project: '',
         }),
       ),
     ).toBe('executio...')

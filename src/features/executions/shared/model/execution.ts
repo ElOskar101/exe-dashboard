@@ -16,7 +16,7 @@ export const EXECUTION_STATUSES = [
 export interface Execution {
   _id: string
   createdBy: string
-  playwrightProject: string
+  project: string
   status: ExecutionRuntimeStatus
   notes?: string[]
   attachments?: unknown[]
