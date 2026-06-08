@@ -28,7 +28,7 @@ describe('execution target', () => {
     expect(target.key).toBe('runtime:runtime-1:application:App 1')
     expect(target.label).toBe('App 1')
     expect(target.requestTarget?.apiUrl).toBe('https://runtime.example.com/api/v1')
-    expect(target.requestTarget?.reportsUrl).toBe('https://runtime.example.com/api/v1/reports')
+    expect(target.requestTarget?.reportsUrl).toBe('https://runtime.example.com/reports')
   })
 
   it('normalizes bare runtime application API hosts to the execution API base URL', () => {
@@ -46,7 +46,7 @@ describe('execution target', () => {
 
     expect(target.type).toBe('runtime-application')
     expect(target.requestTarget?.apiUrl).toBe('https://api.controlcentralcarrier.com/api/v1')
-    expect(target.requestTarget?.reportsUrl).toBe('https://api.controlcentralcarrier.com/api/v1/reports')
+    expect(target.requestTarget?.reportsUrl).toBe('https://api.controlcentralcarrier.com/reports')
     expect(target.requestTarget?.socketUrl).toBe('https://api.controlcentralcarrier.com')
   })
 

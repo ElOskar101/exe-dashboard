@@ -96,6 +96,8 @@ const getSocketUrlFromApiUrl = (apiUrl: string) => {
   }
 }
 
+const getReportsUrlFromApiUrl = (apiUrl: string) => `${getSocketUrlFromApiUrl(apiUrl)}/reports`
+
 export const normalizeSelectedExecutionApiUrl = (apiUrl?: string) => {
   const trimmedApiUrl = apiUrl?.trim()
 
@@ -115,7 +117,7 @@ export const getSelectedExecutionRequestTarget = (
 
   return {
     apiUrl,
-    reportsUrl: `${apiUrl}/reports`,
+    reportsUrl: getReportsUrlFromApiUrl(apiUrl),
     socketUrl: getSocketUrlFromApiUrl(apiUrl),
   }
 }

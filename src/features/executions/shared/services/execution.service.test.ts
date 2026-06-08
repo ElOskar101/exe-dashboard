@@ -57,7 +57,7 @@ const executionPayload: ExecutionCreatePayload = {
 
 const runtimeTarget = {
   apiUrl: 'https://runtime.example.com/api/v1',
-  reportsUrl: 'https://runtime.example.com/api/v1/reports',
+  reportsUrl: 'https://runtime.example.com/reports',
   socketUrl: 'https://runtime.example.com',
 }
 
@@ -201,7 +201,7 @@ describe('execution.service', () => {
     await getExecutionReportHtml('exe-1', runtimeTarget)
 
     expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/index.html', {
-      baseURL: 'https://runtime.example.com/api/v1/reports',
+      baseURL: 'https://runtime.example.com/reports',
     })
   })
 

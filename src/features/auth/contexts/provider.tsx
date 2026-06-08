@@ -1,18 +1,11 @@
 import type { ReactNode } from 'react'
-import { useCallback, useState } from 'react'
-import { useMountEffect } from '@/hooks/use-mount-effect'
-import { getUserData } from '../services/auth.service'
+import { useCallback, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { authKeys, getAndStoreUserData } from '../services/auth.service'
 import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
 import { IUser } from '../models/user.interface'
-import {
-  clearAuthToken,
-  clearStoredUser,
-  getAuthToken,
-  getStoredUser,
-  saveAuthToken,
-  saveStoredUser,
-} from '../lib/auth-session'
+import { clearAuthToken, clearStoredUser, getAuthToken, getStoredUser, saveAuthToken } from '../lib/auth-session'
 
 const getPermissions = (userData: IUser | null) => {
   const newPermissions: Record<string, boolean> = {}
@@ -29,55 +22,31 @@ const getPermissions = (userData: IUser | null) => {
 
 export const AuthProvider = (props: { children: ReactNode }) => {
   const { children } = props
-  const initialToken = getAuthToken()
-  const initialUser = getStoredUser()
-  const [token, setToken] = useState(initialToken)
-  const [permissions, setPermissions] = useState<Record<string, boolean>>(() => getPermissions(initialUser))
-  const [user, setUser] = useState<IUser | null>(initialUser)
-  const [isLoadingUser, setIsLoadingUser] = useState(() => Boolean(initialToken) && !initialUser)
-
-  useMountEffect(() => {
-    if (!token) {
-      setIsLoadingUser(false)
-      return
-    }
-
-    if (user) {
-      setIsLoadingUser(false)
-      return
-    }
-
-    setIsLoadingUser(true)
-
-    getUserData()
-      .then(({ data }) => {
-        saveStoredUser(data)
-        setUser(() => data)
-        setPermissions(() => getPermissions(data))
-      })
-      .catch(() => {
-        clearStoredUser()
-        setUser(null)
-        setPermissions({})
-        redirectToLogin(window.location.origin)
-      })
-      .finally(() => {
-        setIsLoadingUser(false)
-      })
+  const [token, setToken] = useState(getAuthToken)
+  const [storedUser, setStoredUser] = useState<IUser | null>(getStoredUser)
+  const userQuery = useQuery({
+    queryKey: authKeys.currentUser(token),
+    queryFn: getAndStoreUserData,
+    enabled: Boolean(token) && !storedUser,
+    retry: false,
+    staleTime: Infinity,
   })
+  const user = storedUser ?? userQuery.data ?? null
+  const permissions = useMemo(() => getPermissions(user), [user])
+  const isLoadingUser = Boolean(token) && !user && userQuery.isLoading
 
   const saveToken = useCallback((newToken: string) => {
     saveAuthToken(newToken)
+    clearStoredUser()
     setToken(newToken)
+    setStoredUser(null)
   }, [])
 
   const clearToken = useCallback(() => {
     clearAuthToken()
     clearStoredUser()
     setToken('')
-    setUser(null)
-    setPermissions({})
-    setIsLoadingUser(false)
+    setStoredUser(null)
   }, [])
 
   const logout = () => {
