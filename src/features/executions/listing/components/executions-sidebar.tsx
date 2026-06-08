@@ -75,10 +75,10 @@ export function ExecutionsSidebar() {
   const [isRefreshSpinning, setIsRefreshSpinning] = useState(false)
   const refreshSpinnerTimeoutId = useRef<number | null>(null)
   const currentTime = useCurrentTime()
-  const userId = user?._id
+  const userFullName = user?.fullName
   useExecutionStatusUpdates()
-  const executionsQuery = useExecutionsQuery(userId ? { by: [userId] } : {}, {
-    enabled: !isLoadingUser && Boolean(userId),
+  const executionsQuery = useExecutionsQuery(userFullName ? { by: [userFullName] } : {}, {
+    enabled: !isLoadingUser && Boolean(userFullName),
   })
   const executionStatusReadModel = useExecutionStatusReadModel()
   const deleteMutation = useDeleteExecutionMutation({
