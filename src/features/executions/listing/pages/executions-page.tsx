@@ -22,14 +22,12 @@ export default function ExecutionsPage() {
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const {
     clinicOptions,
-    customersById,
     dateRange,
     executionStatusReadModel,
     executionsQuery,
     filteredExecutions,
     isExecutionLimitActive,
     isFiltered,
-    loadingCustomerIds,
     selectedClientIds,
     selectedClinicIds,
     statusFilter,
@@ -60,7 +58,6 @@ export default function ExecutionsPage() {
           <FieldGroup className="gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">
             <ExecutionClientFilter
               clearSelectionLabel={t('list.filters.removeAllClients')}
-              customersById={customersById}
               label={t('list.filters.clientLabel')}
               loadingMessage={t('list.filters.loadingClients')}
               loadingMoreMessage={t('list.filters.loadingMoreClients')}
@@ -134,8 +131,6 @@ export default function ExecutionsPage() {
 
           {!executionsQuery.isLoading && !executionsQuery.isError ? (
             <ExecutionsTable
-              customersById={customersById}
-              loadingCustomerIds={loadingCustomerIds}
               executionStatusReadModel={executionStatusReadModel.data}
               executions={filteredExecutions}
               isExecutionLimitActive={isExecutionLimitActive}
