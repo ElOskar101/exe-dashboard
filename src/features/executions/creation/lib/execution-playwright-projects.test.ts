@@ -3,6 +3,7 @@ import type { PlaywrightProject } from '../../shared'
 import {
   findClinicBotForPlaywrightProjectBot,
   getSelectablePlaywrightProjectBots,
+  getSelectablePlaywrightProjects,
   mapPlaywrightProjectBotToExecutionBot,
   mapPlaywrightProjectBotWithClinicBotToExecutionBot,
 } from './execution-playwright-projects'
@@ -47,6 +48,33 @@ describe('execution playwright projects', () => {
       'Alpha Dental',
       'Zeta Dental',
     ])
+  })
+
+  it('returns no associated bots for inactive projects', () => {
+    const project = createProject({
+      active: false,
+      associatedWith: [
+        {
+          _id: 'bot-1',
+          botName: 'Alpha Dental',
+          isActive: true,
+          type: 'FBD',
+          urlLogin: 'https://alpha.example.com',
+        },
+      ],
+    })
+
+    expect(getSelectablePlaywrightProjectBots(project)).toEqual([])
+  })
+
+  it('sorts selectable active projects by name', () => {
+    expect(
+      getSelectablePlaywrightProjects([
+        createProject({ _id: 'project-2', name: 'Zeta', active: true }),
+        createProject({ _id: 'project-3', name: 'Inactive', active: false }),
+        createProject({ _id: 'project-1', name: 'Alpha' }),
+      ]).map((project) => project.name),
+    ).toEqual(['Alpha', 'Zeta'])
   })
 
   it('maps a project-associated bot into editable execution bot defaults', () => {

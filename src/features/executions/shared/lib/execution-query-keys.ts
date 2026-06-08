@@ -4,6 +4,7 @@ import { DEFAULT_EXECUTION_TARGET_KEY } from './execution-target'
 export const executionKeys = {
   all: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => ['executions', targetKey] as const,
   runtimeCatalog: () => ['playwright-runtime-catalog'] as const,
+  projectCatalog: () => ['playwright-project-catalog'] as const,
   listRoot: (targetKey = DEFAULT_EXECUTION_TARGET_KEY) => [...executionKeys.all(targetKey), 'list'] as const,
   list: (query?: ExecutionQuery, targetKey = DEFAULT_EXECUTION_TARGET_KEY) => {
     const normalizedQuery = normalizeExecutionQuery(query)

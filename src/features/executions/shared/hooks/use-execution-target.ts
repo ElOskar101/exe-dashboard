@@ -12,13 +12,24 @@ import {
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
 import { executionKeys } from '../lib/execution-query-keys'
-import { getPlaywrightRuntimes } from '../services/execution.service'
+import { getPlaywrightProjects, getPlaywrightRuntimes } from '../services/execution.service'
 
 export const usePlaywrightRuntimesQuery = (enabled = true) =>
   useQuery({
     queryKey: executionKeys.runtimeCatalog(),
     queryFn: async () => {
       const response = await getPlaywrightRuntimes()
+
+      return response.data
+    },
+    enabled,
+  })
+
+export const usePlaywrightProjectsQuery = (enabled = true) =>
+  useQuery({
+    queryKey: executionKeys.projectCatalog(),
+    queryFn: async () => {
+      const response = await getPlaywrightProjects()
 
       return response.data
     },

@@ -132,7 +132,8 @@ export const resolveExecutionTarget = (
 
   const runtime = runtimes?.find((candidate) => candidate._id === selection.runtimeId)
   const application = runtime?.applications.find(
-    (candidate) => candidate.name === selection.applicationName && Boolean(candidate.apiUrl?.trim()),
+    (candidate) =>
+      candidate.name === selection.applicationName && candidate.active !== false && Boolean(candidate.apiUrl?.trim()),
   )
 
   if (!runtime || !application) {
