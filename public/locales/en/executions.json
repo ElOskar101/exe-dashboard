@@ -205,6 +205,8 @@
     "loadErrorDescription": "Try again to refresh the executions list.",
     "refreshList": "Refresh executions",
     "retry": "Retry",
+    "showAll": "Show all",
+    "loadingMore": "Loading...",
     "empty": "No executions yet.",
     "deleteAction": "Delete {{execution}}",
     "deleteTitle": "Delete execution?",

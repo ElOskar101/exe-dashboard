@@ -2,12 +2,20 @@ import type { PlaywrightProject, PlaywrightProjectBot } from '../../shared'
 import type { ExecutionBot } from '../model/execution-create'
 import type { ClinicBotRecord } from '../services/ccc.service'
 
-const normalizeBotName = (botName: string) => botName.trim().toLowerCase()
-
 export const getSelectablePlaywrightProjectBots = (project: PlaywrightProject | undefined) => {
+  if (project?.active === false) {
+    return []
+  }
+
   return (project?.associatedWith ?? [])
     .filter((bot) => bot.isActive)
     .sort((leftBot, rightBot) => leftBot.botName.localeCompare(rightBot.botName))
+}
+
+export const getSelectablePlaywrightProjects = (projects: readonly PlaywrightProject[] | undefined) => {
+  return [...(projects ?? [])]
+    .filter((project) => project.active !== false)
+    .sort((leftProject, rightProject) => leftProject.name.localeCompare(rightProject.name))
 }
 
 export const mapPlaywrightProjectBotToExecutionBot = (bot: PlaywrightProjectBot): ExecutionBot => ({
@@ -20,13 +28,13 @@ export const mapPlaywrightProjectBotToExecutionBot = (bot: PlaywrightProjectBot)
 })
 
 export const findClinicBotForPlaywrightProjectBot = (bot: PlaywrightProjectBot, clinicBots: ClinicBotRecord[]) => {
-  const normalizedBotName = normalizeBotName(bot.botName)
+  const botId = bot._id.trim()
 
-  if (!normalizedBotName) {
+  if (!botId) {
     return undefined
   }
 
-  return clinicBots.find((clinicBot) => normalizeBotName(clinicBot.bot?.botName ?? '') === normalizedBotName)
+  return clinicBots.find((clinicBot) => clinicBot.bot?._id === botId)
 }
 
 export const mapPlaywrightProjectBotWithClinicBotToExecutionBot = (

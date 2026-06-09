@@ -4,6 +4,7 @@ import {
   DEFAULT_EXECUTION_TARGET_LABEL,
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
+  getExecutionReportsProxyPath,
   getExecutionTargetSearchSelection,
   resolveExecutionTarget,
 } from './execution-target'
@@ -63,6 +64,27 @@ describe('execution target', () => {
     })
   })
 
+  it('uses the default target when the selected runtime application is inactive', () => {
+    expect(
+      resolveExecutionTarget({ runtimeId: 'runtime-1', applicationName: 'Inactive App' }, [
+        {
+          ...runtime,
+          applications: [
+            {
+              name: 'Inactive App',
+              active: false,
+              apiUrl: 'https://runtime.example.com/api/v1/',
+            },
+          ],
+        },
+      ]),
+    ).toEqual({
+      type: 'default',
+      key: DEFAULT_EXECUTION_TARGET_KEY,
+      label: DEFAULT_EXECUTION_TARGET_LABEL,
+    })
+  })
+
   it('round-trips runtime application option values', () => {
     const selection = { runtimeId: 'runtime-1', applicationName: 'App 1' }
 
@@ -77,5 +99,11 @@ describe('execution target', () => {
       },
     )
     expect(getExecutionTargetSearchSelection(new URLSearchParams('runtimeId=runtime-1'))).toBeNull()
+  })
+
+  it('builds a same-origin report proxy path with the selected reports origin encoded', () => {
+    expect(getExecutionReportsProxyPath('https://api.controlcentralcarrier.com/reports', 'exe-1')).toBe(
+      '/api/execution-reports/https%3A%2F%2Fapi.controlcentralcarrier.com/reports/exe-1',
+    )
   })
 })

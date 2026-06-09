@@ -3,8 +3,15 @@ import { Button } from '@/components/ui/button'
 import { APP_CONFIG } from '@/app.config'
 import { useContext, useState, type FocusEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IconChevronDown, IconLogout2 } from '@tabler/icons-react'
+import { Link } from 'react-router-dom'
+import { IconBrightnessDown, IconChevronDown, IconLogout2, IconMoon, IconSettings } from '@tabler/icons-react'
 import { AuthContext } from '../contexts/context'
+
+interface UserCardProps {
+  onToggleTheme?: () => void
+  settingsPath?: string
+  theme?: 'light' | 'dark'
+}
 
 function getInitials(name: string) {
   return (
@@ -16,7 +23,7 @@ function getInitials(name: string) {
   )
 }
 
-function UserCard() {
+function UserCard({ onToggleTheme, settingsPath, theme }: UserCardProps) {
   const { user, logout } = useContext(AuthContext)
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
@@ -76,6 +83,28 @@ function UserCard() {
 
       {user && isOpen ? (
         <div className="absolute right-0 z-20 mt-2 min-w-56 overflow-hidden rounded-3xl border border-border/70 bg-popover p-2 shadow-lg">
+          {settingsPath ? (
+            <Button
+              nativeButton={false}
+              render={<Link to={settingsPath} />}
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setIsOpen(false)}
+            >
+              <IconSettings data-icon="inline-start" />
+              Settings
+            </Button>
+          ) : null}
+          {onToggleTheme && theme ? (
+            <Button type="button" variant="ghost" className="w-full justify-start" onClick={onToggleTheme}>
+              {theme === 'light' ? (
+                <IconBrightnessDown data-icon="inline-start" />
+              ) : (
+                <IconMoon data-icon="inline-start" />
+              )}
+              {theme === 'light' ? 'Light mode' : 'Dark mode'}
+            </Button>
+          ) : null}
           <Button type="button" variant="ghost" className="w-full justify-start" onClick={logout}>
             <IconLogout2 data-icon="inline-start" />
             {t('logout')}

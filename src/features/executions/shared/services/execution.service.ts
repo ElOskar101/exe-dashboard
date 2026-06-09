@@ -33,6 +33,7 @@ const buildExecutionSearchParams = (query: ExecutionQuery) => {
 
   if (normalizedQuery.from) searchParams.set('from', normalizedQuery.from)
   if (normalizedQuery.to) searchParams.set('to', normalizedQuery.to)
+  if (normalizedQuery.project) searchParams.set('project', normalizedQuery.project)
   if (normalizedQuery.dateField) searchParams.set('dateField', normalizedQuery.dateField)
   if (normalizedQuery.status) searchParams.set('status', normalizedQuery.status)
   if (normalizedQuery.limit) searchParams.set('limit', normalizedQuery.limit.toString())

@@ -22,9 +22,13 @@ import {
   encodeExecutionTargetValue,
   getDefaultExecutionApiUrl,
   type ExecutionAppStats,
+  type PlaywrightProject,
+  type PlaywrightRuntime,
+  type PlaywrightRuntimeApplication,
   useExecutionTarget,
   useExecutionAppStatsQuery,
   useExecutionTargetSetter,
+  usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
 } from '@/features/executions'
 import {
@@ -50,6 +54,34 @@ const isSettingsTab = (value: string | null): value is SettingsTab => SETTINGS_T
 
 const getRuntimeApplicationOptionValue = (runtimeId: string, applicationName: string) =>
   encodeExecutionTargetValue({ runtimeId, applicationName })
+
+const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
+  application.active !== false && Boolean(application.apiUrl?.trim())
+
+const getConfiguredApplicationLimit = (value: number | undefined, fallback: number) => value ?? fallback
+
+const getCatalogSummary = (runtimes: readonly PlaywrightRuntime[] | undefined) => {
+  const applications = runtimes?.flatMap((runtime) => runtime.applications) ?? []
+  const activeApplications = applications.filter((application) => application.active !== false).length
+  const nonProductionApplications = applications.filter((application) => application.nonProduction).length
+
+  return {
+    activeApplications,
+    applications: applications.length,
+    nonProductionApplications,
+    runtimes: runtimes?.length ?? 0,
+  }
+}
+
+const getProjectSummary = (projects: readonly PlaywrightProject[] | undefined) => {
+  const activeProjects = projects?.filter((project) => project.active !== false) ?? []
+
+  return {
+    activeProjects: activeProjects.length,
+    associatedBots: activeProjects.reduce((total, project) => total + project.associatedWith.length, 0),
+    projects: projects?.length ?? 0,
+  }
+}
 
 const formatUptime = (seconds: number) => {
   const totalSeconds = Math.max(0, Math.floor(seconds))
@@ -182,6 +214,7 @@ export function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { target } = useExecutionTarget()
   const runtimesQuery = usePlaywrightRuntimesQuery()
+  const projectsQuery = usePlaywrightProjectsQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
   const selectedValue =
@@ -190,6 +223,10 @@ export function SettingsPage() {
       : DEFAULT_EXECUTION_TARGET_KEY
   const effectiveApiUrl =
     target.type === 'runtime-application' ? target.requestTarget.apiUrl : getDefaultExecutionApiUrl()
+  const selectedApplicationDescription =
+    target.type === 'runtime-application' ? (target.application.description ?? t('runtime.noDescription')) : null
+  const catalogSummary = getCatalogSummary(runtimesQuery.data)
+  const projectSummary = getProjectSummary(projectsQuery.data)
   const selectedSettingsTab = isSettingsTab(searchParams.get(SETTINGS_TAB_SEARCH_PARAM))
     ? searchParams.get(SETTINGS_TAB_SEARCH_PARAM)
     : DEFAULT_SETTINGS_TAB
@@ -285,17 +322,27 @@ export function SettingsPage() {
                           <SelectSeparator />
                           <SelectLabel>{runtime.name}</SelectLabel>
                           {runtime.applications.map((application) => {
-                            const hasApiUrl = Boolean(application.apiUrl?.trim())
+                            const isSelectable = isApplicationSelectable(application)
 
                             return (
                               <SelectItem
                                 key={`${runtime._id}-${application.name}`}
                                 value={getRuntimeApplicationOptionValue(runtime._id, application.name)}
-                                disabled={!hasApiUrl}
+                                disabled={!isSelectable}
                               >
-                                <span className="flex min-w-0 flex-col">
-                                  <span className="truncate">{application.name}</span>
-                                  {!hasApiUrl ? (
+                                <span className="flex min-w-0 flex-col gap-1">
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <span className="truncate">{application.name}</span>
+                                    {application.nonProduction ? (
+                                      <Badge variant="outline">{t('runtime.nonProduction')}</Badge>
+                                    ) : null}
+                                  </span>
+                                  {application.active === false ? (
+                                    <span className="truncate text-xs font-normal text-muted-foreground">
+                                      {t('runtime.inactive')}
+                                    </span>
+                                  ) : null}
+                                  {!application.apiUrl?.trim() ? (
                                     <span className="truncate text-xs font-normal text-muted-foreground">
                                       {t('runtime.noApiUrl')}
                                     </span>
@@ -317,6 +364,87 @@ export function SettingsPage() {
                   <IconServer />
                 </div>
                 <span>{effectiveApiUrl}</span>
+              </div>
+
+              {target.type === 'runtime-application' ? (
+                <div className="flex flex-col gap-3">
+                  <div className="grid min-w-0 gap-2 rounded-lg border px-3 py-2 sm:grid-cols-2 sm:items-center">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-sm font-medium">{target.runtime.name}</span>
+                      <Badge variant="secondary">{t('runtime.runtime')}</Badge>
+                    </div>
+                  </div>
+                  <div className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="min-w-0 truncate text-sm font-medium">{target.application.name}</span>
+                      <Badge variant={target.application.active === false ? 'destructive' : 'success'}>
+                        {target.application.active === false ? t('runtime.inactive') : t('runtime.active')}
+                      </Badge>
+                      <Badge variant={target.application.nonProduction ? 'outline' : 'secondary'}>
+                        {target.application.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{selectedApplicationDescription}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-lg border p-3">
+                        <div className="truncate text-xs text-muted-foreground">{t('runtime.maxWorkers')}</div>
+                        <div className="text-lg font-semibold">
+                          {getConfiguredApplicationLimit(target.application.config?.maxWorkers, 10)}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border p-3">
+                        <div className="truncate text-xs text-muted-foreground">{t('runtime.maxRetries')}</div>
+                        <div className="text-lg font-semibold">
+                          {getConfiguredApplicationLimit(target.application.config?.maxRetries, 3)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border p-4">
+                  <div className="truncate text-sm text-muted-foreground">{t('runtime.catalogRuntimes')}</div>
+                  <div className="text-2xl font-semibold">{catalogSummary.runtimes}</div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <div className="truncate text-sm text-muted-foreground">{t('runtime.catalogApplications')}</div>
+                  <div className="text-2xl font-semibold">
+                    {t('runtime.activeOutOfTotal', {
+                      active: catalogSummary.activeApplications,
+                      total: catalogSummary.applications,
+                    })}
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <div className="truncate text-sm text-muted-foreground">{t('runtime.catalogDevApps')}</div>
+                  <div className="text-2xl font-semibold">{catalogSummary.nonProductionApplications}</div>
+                </div>
+              </div>
+
+              {projectsQuery.isError ? (
+                <Alert variant="destructive">
+                  <IconAlertCircle />
+                  <AlertTitle>{t('projects.loadErrorTitle')}</AlertTitle>
+                  <AlertDescription>{t('projects.loadErrorDescription')}</AlertDescription>
+                </Alert>
+              ) : null}
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border p-4">
+                  <div className="truncate text-sm text-muted-foreground">{t('projects.catalogProjects')}</div>
+                  <div className="text-2xl font-semibold">
+                    {t('projects.activeOutOfTotal', {
+                      active: projectSummary.activeProjects,
+                      total: projectSummary.projects,
+                    })}
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4 sm:col-span-2">
+                  <div className="truncate text-sm text-muted-foreground">{t('projects.associatedBots')}</div>
+                  <div className="text-2xl font-semibold">{projectSummary.associatedBots}</div>
+                </div>
               </div>
             </TabsContent>
 

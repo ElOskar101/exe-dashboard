@@ -5,7 +5,7 @@ import { buildExecutionRerunPayload, getExecutionRerunSummary, prepareExecutionR
 const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-1',
   createdBy: 'user-1',
-  playwrightProject: 'liberty',
+  project: 'liberty',
   status: 'completed',
   client: 'client-1',
   clinic: 'clinic-1',

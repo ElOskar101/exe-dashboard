@@ -56,6 +56,7 @@ export {
   useExecutionTargetNavigation,
   useExecutionTargetSetter,
   useExecutionAppStatsQuery,
+  usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
 } from './shared'
 export type {

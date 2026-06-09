@@ -134,17 +134,13 @@ export function BotStep({
 
         <FieldGroup className="md:grid md:grid-cols-2">
           <Field data-invalid={showErrors && Boolean(projectError)}>
-            <FieldLabel htmlFor="playwrightProject">{t('fields.project')}</FieldLabel>
+            <FieldLabel htmlFor="project">{t('fields.project')}</FieldLabel>
             <Select
               value={context.project}
               onValueChange={(value) => onProjectSelect(value ?? '')}
               disabled={isProjectSelectDisabled}
             >
-              <SelectTrigger
-                id="playwrightProject"
-                aria-invalid={showErrors && Boolean(projectError)}
-                className="w-full"
-              >
+              <SelectTrigger id="project" aria-invalid={showErrors && Boolean(projectError)} className="w-full">
                 <SelectValue placeholder={t('placeholders.project')}>{context.project || undefined}</SelectValue>
               </SelectTrigger>
               <SelectContent align="start">
@@ -192,8 +188,8 @@ export function BotStep({
             <Input
               id="botName"
               value={bot.botName}
-              onChange={(event) => onBotFieldChange('botName', event.target.value)}
               disabled={!isBotFormEnabled}
+              readOnly={isBotFormEnabled}
               aria-invalid={showBotFieldErrors && Boolean(errors.botName)}
               placeholder={t('placeholders.botName')}
             />
@@ -206,8 +202,8 @@ export function BotStep({
               id="targetUrl"
               type="url"
               value={bot.targetUrl}
-              onChange={(event) => onBotFieldChange('targetUrl', event.target.value)}
               disabled={!isBotFormEnabled}
+              readOnly={isBotFormEnabled}
               aria-invalid={showBotFieldErrors && Boolean(errors.targetUrl)}
               placeholder={t('placeholders.url')}
             />

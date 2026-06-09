@@ -5,7 +5,7 @@ import { getExecutionDayLabel, getRelativeCreatedAt, groupExecutionsByProject } 
 const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-123456789',
   createdBy: 'user-1',
-  playwrightProject: 'liberty',
+  project: 'liberty',
   status: 'completed',
   client: 'client-1',
   clinic: 'clinic-1',
@@ -21,10 +21,10 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
 describe('execution sidebar display', () => {
   it('groups executions by project and sorts execution days newest first', () => {
     const groups = groupExecutionsByProject([
-      createExecution({ _id: 'liberty-old', playwrightProject: 'liberty', execution: '2026-04-27' }),
-      createExecution({ _id: 'chromium-new', playwrightProject: 'chromium', execution: '2026-05-29' }),
-      createExecution({ _id: 'liberty-new', playwrightProject: 'liberty', execution: '2026-05-28' }),
-      createExecution({ _id: 'chromium-old', playwrightProject: 'chromium', execution: '2026-05-21' }),
+      createExecution({ _id: 'liberty-old', project: 'liberty', execution: '2026-04-27' }),
+      createExecution({ _id: 'chromium-new', project: 'chromium', execution: '2026-05-29' }),
+      createExecution({ _id: 'liberty-new', project: 'liberty', execution: '2026-05-28' }),
+      createExecution({ _id: 'chromium-old', project: 'chromium', execution: '2026-05-21' }),
     ])
 
     expect(groups).toEqual([

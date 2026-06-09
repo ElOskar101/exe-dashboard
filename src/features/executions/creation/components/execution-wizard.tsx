@@ -17,8 +17,8 @@ export default function ExecutionWizard() {
   const wizard = useExecutionWizard(t)
 
   return (
-    <Card className="mx-auto w-full max-w-5xl">
-      <CardContent className="flex flex-col gap-5 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-6">
+    <Card className="min-h-0 w-full flex-1">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-5 px-4 pb-5 sm:gap-6 sm:px-6 sm:pb-6">
         <ExecutionWizardStepper
           steps={wizard.stepper.steps}
           currentStep={wizard.stepper.currentStep}
@@ -33,7 +33,7 @@ export default function ExecutionWizard() {
           <ExecutionSubmitErrorAlert message={wizard.submission.submitError} t={t} />
         ) : null}
 
-        <div className="flex flex-col gap-6">
+        <div className="flex min-h-0 flex-1 flex-col gap-6">
           {wizard.stepper.currentStep === 0 ? <PatientsStep {...wizard.patientsStep} t={t} /> : null}
 
           {wizard.stepper.currentStep === 1 ? <BotStep {...wizard.botStep} t={t} /> : null}

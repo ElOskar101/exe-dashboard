@@ -109,7 +109,7 @@ async function stubProtectedRouteDependencies(page: Page) {
           name: 'liberty',
           associatedWith: [
             {
-              _id: 'project-bot-1',
+              _id: 'bot-1',
               botName: 'Eligibility Runner',
               isActive: true,
               type: 'ELG',
@@ -244,8 +244,10 @@ async function completeBotStep(
   await page.getByRole('option', { name: associatedBotName }).click()
   await expect(passwordInput).toBeEnabled()
   await expect(passwordInput).toHaveValue('super-secret')
-  await page.getByLabel('Bot name').fill(botName)
-  await page.getByLabel('Portal URL').fill(portalUrl)
+  await expect(page.getByLabel('Bot name')).toHaveValue(botName)
+  await expect(page.getByLabel('Bot name')).toHaveAttribute('readonly', '')
+  await expect(page.getByLabel('Portal URL')).toHaveValue(portalUrl)
+  await expect(page.getByLabel('Portal URL')).toHaveAttribute('readonly', '')
   await page.getByLabel('Username').fill(username)
   await passwordInput.fill(password)
   await page.getByRole('button', { name: 'Next' }).click()
@@ -280,6 +282,34 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL('/')
     await expect(page.getByLabel('Client')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Next' })).toBeVisible()
+  })
+
+  test('minimizes the desktop sidebar from the header trigger', async ({ page, request }) => {
+    test.skip(
+      !canLogin,
+      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
+    )
+
+    const token = await login(request)
+
+    await stubProtectedRouteDependencies(page)
+    await page.addInitScript((accessToken) => {
+      window.localStorage.setItem('token', accessToken)
+    }, token)
+
+    await page.goto('/')
+
+    const sidebar = page.locator('[data-slot="sidebar-container"]')
+    await expect(page.getByRole('button', { name: 'Minimize executions sidebar' })).toBeVisible()
+    await expect(sidebar).toBeVisible()
+
+    const expandedSidebarBox = await sidebar.boundingBox()
+    expect(expandedSidebarBox?.width).toBeGreaterThan(200)
+
+    await page.getByRole('button', { name: 'Minimize executions sidebar' }).click()
+    await expect(page.getByRole('button', { name: 'Expand executions sidebar' })).toBeVisible()
+
+    await expect.poll(async () => (await sidebar.boundingBox())?.width).toBeLessThan(100)
   })
 
   test('validates invalid steps while navigating and supports back navigation', async ({ page, request }) => {
@@ -354,7 +384,7 @@ test.describe('protected executions route', () => {
     const createdExecution = {
       _id: 'execution-e2e',
       createdBy: 'e2e-user',
-      playwrightProject: 'chromium',
+      project: 'chromium',
       status: 'process',
       note: [],
       attachments: [],
@@ -412,9 +442,9 @@ test.describe('protected executions route', () => {
     await expect(viewExecutionButton).toBeVisible()
     expect(submittedPayload).toEqual({
       project: 'liberty',
-      createdBy: 'e2e-user',
-      client: 'customer-1',
-      clinic: 'clinic-1',
+      createdBy: 'E2E Test User',
+      client: 'Legacy Dental Care',
+      clinic: 'Downtown Clinic',
       execution: '2026-04-27',
       botName: 'Eligibility Runner',
       meta: {
@@ -505,8 +535,6 @@ test.describe('protected executions route', () => {
     await importPatientsFromCCC(page)
     await page.getByRole('button', { name: 'Next' }).click()
     await completeBotStep(page, {
-      botName: 'Retry Bot',
-      portalUrl: 'https://retry.example.com',
       username: 'retry.user',
       password: 'retry-secret',
     })

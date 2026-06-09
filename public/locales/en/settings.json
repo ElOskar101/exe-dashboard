@@ -13,6 +13,12 @@
     "defaultDescription": "Uses the dashboard's built-in execution API route.",
     "noDescription": "No description available.",
     "noApiUrl": "No API URL configured",
+    "active": "Active",
+    "inactive": "Inactive",
+    "production": "Production",
+    "nonProduction": "Dev only",
+    "maxWorkers": "Max workers",
+    "maxRetries": "Max retries",
     "loadErrorTitle": "Runtime catalog could not be loaded",
     "loadErrorDescription": "Default App is still available. Try again later to choose a runtime application.",
     "currentTarget": "Current target",
@@ -20,9 +26,20 @@
     "none": "None",
     "catalog": "Catalog",
     "catalogSummary": "{{applications}} apps across {{runtimes}} runtimes",
+    "catalogRuntimes": "Runtimes",
+    "catalogApplications": "Active apps",
+    "catalogDevApps": "Dev-only apps",
+    "activeOutOfTotal": "{{active}}/{{total}}",
     "effectiveApiUrl": "Effective API URL",
     "selected": "Selected",
     "default": "Default"
+  },
+  "projects": {
+    "catalogProjects": "Active projects",
+    "associatedBots": "Associated bots",
+    "activeOutOfTotal": "{{active}}/{{total}}",
+    "loadErrorTitle": "Project catalog could not be loaded",
+    "loadErrorDescription": "Runtime settings are still available. Try again later to see project availability."
   },
   "status": {
     "sidebarTrigger": "App status",

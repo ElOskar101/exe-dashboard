@@ -11,7 +11,7 @@ const canLogin = Boolean(authLoginUrl && username && password)
 interface ExecutionFixture {
   _id: string
   createdBy: string
-  playwrightProject: string
+  project: string
   status: 'queued' | 'running' | 'completed' | 'cancelled' | 'failed' | 'process'
   client: string
   clinic: string
@@ -90,10 +90,10 @@ const createExecutionMeta = (): NonNullable<ExecutionFixture['meta']> => ({
 const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFixture => ({
   _id: 'execution-1',
   createdBy: 'e2e-user',
-  playwrightProject: 'chromium',
+  project: 'chromium',
   status: 'completed',
-  client: 'customer-1',
-  clinic: 'clinic-1',
+  client: 'Legacy Dental Care',
+  clinic: 'Downtown Clinic',
   execution: '2026-05-25',
   botName: 'Eligibility Runner',
   createdAt: '2026-05-25T14:00:00.000Z',
@@ -151,13 +151,38 @@ function isExecutionListRequest(urlString: string) {
 }
 
 async function stubExecutionList(page: Page, getExecutions: () => ExecutionFixture[]) {
+  await stubPlaywrightProjects(page, getExecutions)
+
   await page.route('**/api/v1/executions**', async (route) => {
-    if (!isExecutionListRequest(route.request().url()) || route.request().method() !== 'GET') {
+    const url = new URL(route.request().url())
+
+    if (!isExecutionListRequest(url.toString()) || route.request().method() !== 'GET') {
       await route.fallback()
       return
     }
 
-    await route.fulfill({ json: getExecutions() })
+    const project = url.searchParams.get('project')
+    const limit = Number(url.searchParams.get('limit'))
+    const executions = getExecutions().filter((execution) => !project || execution.project === project)
+    const limitedExecutions = Number.isInteger(limit) && limit > 0 ? executions.slice(0, limit) : executions
+
+    await route.fulfill({ json: limitedExecutions })
+  })
+}
+
+async function stubPlaywrightProjects(page: Page, getExecutions: () => ExecutionFixture[]) {
+  await page.route('**/api/v2/playwright-projects**', async (route) => {
+    const projects = Array.from(new Set(getExecutions().map((execution) => execution.project)))
+      .filter(Boolean)
+      .sort((leftProject, rightProject) => leftProject.localeCompare(rightProject))
+      .map((project, index) => ({
+        _id: `project-${index + 1}`,
+        name: project,
+        active: true,
+        associatedWith: [],
+      }))
+
+    await route.fulfill({ json: projects })
   })
 }
 
@@ -399,7 +424,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('columnheader', { name: 'Patients' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Legacy Dental Care' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Downtown Clinic' })).toBeVisible()
-    await expect(page.getByText('Running')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Running' })).toBeVisible()
 
     const patientTrigger = page.getByRole('button', { name: 'View patients for execution 2026-05-25' })
     await expect(patientTrigger).toContainText('Jane Doe, John Smith, +2')
@@ -463,10 +488,43 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Execution details')).toBeVisible()
   })
 
+  test('shows project execution popovers in the minimized sidebar', async ({ page, request }) => {
+    await prepareAuthenticatedPage(page, request)
+    const execution = createExecution({ status: 'queued' })
+    const secondExecution = createExecution({
+      _id: 'execution-2',
+      execution: '2026-05-26',
+      project: 'firefox',
+      status: 'running',
+    })
+
+    await stubExecutionList(page, () => [execution, secondExecution])
+    await stubExecutionDetails(page, execution._id, () => execution)
+    await stubExecutionDetails(page, secondExecution._id, () => secondExecution)
+
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Minimize executions sidebar' }).click()
+    await expect(page.getByRole('button', { name: 'Expand executions sidebar' })).toBeVisible()
+    await expect(page.locator('[data-slot="sidebar-container"]')).toHaveCSS('width', '48px')
+
+    await expect(page.getByRole('button', { name: 'All executions' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Create execution' })).toBeVisible()
+    await expect(page.getByText('No executions yet.')).not.toBeVisible()
+
+    await page.getByRole('button', { name: 'chromium executions' }).click()
+
+    await expect(page.getByRole('heading', { name: 'chromium' })).toBeVisible()
+    await page.getByRole('link', { name: /2026-05-25/ }).click()
+
+    await expect(page).toHaveURL('/execution/execution-1')
+  })
+
   test('shows an executions load error and retries successfully', async ({ page, request }) => {
     await prepareAuthenticatedPage(page, request)
     let shouldSucceed = false
 
+    await stubPlaywrightProjects(page, () => [createExecution()])
     await page.route('**/api/v1/executions**', async (route) => {
       if (!isExecutionListRequest(route.request().url())) {
         await route.fallback()
@@ -553,7 +611,7 @@ test.describe('execution user flows', () => {
     await page.goto('/execution/execution-1')
 
     await expect(page.getByText('Eligibility Runner - 2026-05-25')).toBeVisible()
-    await expect(page.getByText('Running')).toBeVisible()
+    await expect(page.locator('[data-slot="card-title"]').getByText('Running')).toBeVisible()
     await expect(page.getByText('Starting carrier login')).toBeVisible()
     await page.getByRole('button', { name: 'Debug' }).click()
     await expect(page.getByText('Execution debug details')).toBeVisible()
@@ -616,8 +674,8 @@ test.describe('execution user flows', () => {
     expect(recreatedPayload).toEqual({
       project: 'chromium',
       createdBy: 'e2e-user',
-      client: 'customer-1',
-      clinic: 'clinic-1',
+      client: 'Legacy Dental Care',
+      clinic: 'Downtown Clinic',
       execution: '2026-05-25',
       botName: 'Eligibility Runner',
       meta: createExecutionMeta(),

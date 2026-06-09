@@ -3,6 +3,7 @@ import type { PlaywrightProject } from '../../shared'
 import {
   findClinicBotForPlaywrightProjectBot,
   getSelectablePlaywrightProjectBots,
+  getSelectablePlaywrightProjects,
   mapPlaywrightProjectBotToExecutionBot,
   mapPlaywrightProjectBotWithClinicBotToExecutionBot,
 } from './execution-playwright-projects'
@@ -49,6 +50,33 @@ describe('execution playwright projects', () => {
     ])
   })
 
+  it('returns no associated bots for inactive projects', () => {
+    const project = createProject({
+      active: false,
+      associatedWith: [
+        {
+          _id: 'bot-1',
+          botName: 'Alpha Dental',
+          isActive: true,
+          type: 'FBD',
+          urlLogin: 'https://alpha.example.com',
+        },
+      ],
+    })
+
+    expect(getSelectablePlaywrightProjectBots(project)).toEqual([])
+  })
+
+  it('sorts selectable active projects by name', () => {
+    expect(
+      getSelectablePlaywrightProjects([
+        createProject({ _id: 'project-2', name: 'Zeta', active: true }),
+        createProject({ _id: 'project-3', name: 'Inactive', active: false }),
+        createProject({ _id: 'project-1', name: 'Alpha' }),
+      ]).map((project) => project.name),
+    ).toEqual(['Alpha', 'Zeta'])
+  })
+
   it('maps a project-associated bot into editable execution bot defaults', () => {
     expect(
       mapPlaywrightProjectBotToExecutionBot({
@@ -68,7 +96,7 @@ describe('execution playwright projects', () => {
     })
   })
 
-  it('finds the clinic bot whose nested bot name matches the project-associated bot even when ids differ', () => {
+  it('finds the clinic bot whose nested bot id matches the project-associated bot', () => {
     const bot = {
       _id: 'bot-1',
       botName: 'Liberty Dental Plan',
@@ -102,7 +130,7 @@ describe('execution playwright projects', () => {
           bot: {
             ...matchingClinicBot.bot,
             _id: 'bot-2',
-            botName: 'Another Bot',
+            botName: 'Liberty Dental Plan',
           },
         },
         matchingClinicBot,
@@ -110,7 +138,7 @@ describe('execution playwright projects', () => {
     ).toBe(matchingClinicBot)
   })
 
-  it('matches clinic bots by trimmed bot name without case sensitivity', () => {
+  it('does not match clinic bots by bot name when ids differ', () => {
     const bot = {
       _id: 'bot-1',
       botName: '  Liberty Dental Plan  ',
@@ -139,7 +167,7 @@ describe('execution playwright projects', () => {
       },
     }
 
-    expect(findClinicBotForPlaywrightProjectBot(bot, [matchingClinicBot])).toBe(matchingClinicBot)
+    expect(findClinicBotForPlaywrightProjectBot(bot, [matchingClinicBot])).toBeUndefined()
   })
 
   it('ignores clinic bots whose nested bot definition is missing', () => {
@@ -159,7 +187,7 @@ describe('execution playwright projects', () => {
         description: 'Active',
       },
       bot: {
-        _id: 'legacy-bot-99',
+        _id: 'bot-1',
         botName: 'Liberty Dental Plan',
         isActive: true,
         type: 'ELG' as const,

@@ -59,7 +59,7 @@ export const groupExecutionsByProject = (executions: Execution[]): ExecutionProj
   const groupsByProject = new Map<string, Execution[]>()
 
   for (const execution of executions) {
-    const project = execution.playwrightProject || 'Unknown project'
+    const project = execution.project || 'Unknown project'
     const projectExecutions = groupsByProject.get(project)
 
     if (projectExecutions) {

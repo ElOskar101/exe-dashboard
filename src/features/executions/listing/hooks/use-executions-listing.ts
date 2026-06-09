@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useQueries } from '@tanstack/react-query'
 import { type DateRange } from 'react-day-picker'
 
-import { executionWizardKeys, getCustomerById, type CustomerDetailsResponse } from '@/features/executions/creation'
 import { useExecutionsQuery, useExecutionStatusReadModel, type ExecutionQuery } from '@/features/executions/shared'
 
 import {
@@ -43,58 +41,18 @@ export function useExecutionsListing() {
   const executionStatusReadModel = useExecutionStatusReadModel()
   const groupedExecutions = useMemo(() => groupExecutionsByProject(executionsQuery.data ?? []), [executionsQuery.data])
   const sortedExecutions = useMemo(() => groupedExecutions.flatMap((group) => group.executions), [groupedExecutions])
-  const optionExecutions = useMemo(
-    () => allExecutionsQuery.data ?? sortedExecutions,
-    [allExecutionsQuery.data, sortedExecutions],
-  )
-  const customerIds = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...optionExecutions.map((execution) => execution.client).filter(Boolean),
-          ...sortedExecutions.map((execution) => execution.client).filter(Boolean),
-          ...selectedClientIds,
-        ]),
-      ).sort(),
-    [optionExecutions, selectedClientIds, sortedExecutions],
-  )
-  const customerQueries = useQueries({
-    queries: customerIds.map((customerId) => ({
-      queryKey: executionWizardKeys.customer(customerId),
-      queryFn: async () => {
-        const response = await getCustomerById(customerId)
+  const optionExecutions = useMemo(() => {
+    const executionsById = new Map((allExecutionsQuery.data ?? []).map((execution) => [execution._id, execution]))
 
-        return response.data
-      },
-    })),
-  })
-  const customersById = useMemo(() => {
-    const nextCustomersById = new Map<string, CustomerDetailsResponse>()
-
-    customerQueries.forEach((customerQuery) => {
-      if (customerQuery.data) {
-        nextCustomersById.set(customerQuery.data._id, customerQuery.data)
-      }
+    sortedExecutions.forEach((execution) => {
+      executionsById.set(execution._id, execution)
     })
 
-    return nextCustomersById
-  }, [customerQueries])
-  const loadingCustomerIds = useMemo(() => {
-    const nextLoadingCustomerIds = new Set<string>()
-
-    customerQueries.forEach((customerQuery, index) => {
-      const customerId = customerIds[index]
-
-      if (customerId && customerQuery.isLoading) {
-        nextLoadingCustomerIds.add(customerId)
-      }
-    })
-
-    return nextLoadingCustomerIds
-  }, [customerIds, customerQueries])
+    return Array.from(executionsById.values())
+  }, [allExecutionsQuery.data, sortedExecutions])
   const clinicOptions = useMemo(
-    () => getSelectedClientClinicOptions(customersById, selectedClientIds),
-    [customersById, selectedClientIds],
+    () => getSelectedClientClinicOptions(optionExecutions, selectedClientIds),
+    [optionExecutions, selectedClientIds],
   )
   const updateSelectedClientIds = (nextClientIds: string[]) => {
     setSelectedClientIds(nextClientIds)
@@ -104,8 +62,12 @@ export function useExecutionsListing() {
       return
     }
 
+    const nextClientIdsSet = new Set(nextClientIds)
     const nextClinicIds = new Set(
-      nextClientIds.flatMap((clientId) => customersById.get(clientId)?.clinic.map((clinic) => clinic._id) ?? []),
+      optionExecutions
+        .filter((execution) => nextClientIdsSet.has(execution.client))
+        .map((execution) => execution.clinic)
+        .filter(Boolean),
     )
 
     setSelectedClinicIds((currentClinicIds) => currentClinicIds.filter((clinicId) => nextClinicIds.has(clinicId)))
@@ -141,14 +103,12 @@ export function useExecutionsListing() {
 
   return {
     clinicOptions,
-    customersById,
     dateRange,
     executionStatusReadModel,
     executionsQuery,
     filteredExecutions,
     isFiltered,
     isExecutionLimitActive,
-    loadingCustomerIds,
     selectedClientIds,
     selectedClinicIds,
     statusFilter,

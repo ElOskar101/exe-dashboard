@@ -41,7 +41,7 @@ const normalizeRerunPatients = (patients: ExecutionPayloadPatient[]) => {
 
 export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPreparation => {
   const missingFields: string[] = []
-  const project = getRequiredString(execution.playwrightProject, 'project', missingFields)
+  const project = getRequiredString(execution.project, 'project', missingFields)
   const createdBy = getRequiredString(execution.createdBy, 'createdBy', missingFields)
   const client = getRequiredString(execution.client, 'client', missingFields)
   const clinic = getRequiredString(execution.clinic, 'clinic', missingFields)
@@ -100,7 +100,7 @@ export const getExecutionRerunSummary = (
     clinic: execution.clinic,
     execution: payload?.execution ?? execution.execution ?? null,
     patientCount: payload?.meta.patients.length ?? 0,
-    project: payload?.project || execution.playwrightProject || '',
+    project: payload?.project || execution.project || '',
     retries: payload?.meta.retries ?? 0,
     workers: payload?.meta.workers ?? 0,
   }

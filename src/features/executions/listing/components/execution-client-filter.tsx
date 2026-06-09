@@ -2,7 +2,7 @@ import { useMemo, useState, type Dispatch } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
-import { executionWizardKeys, searchCustomers, type CustomerDetailsResponse } from '@/features/executions/creation'
+import { executionWizardKeys, searchCustomers } from '@/features/executions/creation'
 
 import { getClientFilterOptions } from '../lib/execution-listing-filters'
 import { ExecutionMultiSelectFilter } from './execution-multi-select-filter'
@@ -12,7 +12,6 @@ const CLIENT_FILTER_SEARCH_DELAY_MS = 300
 
 interface ExecutionClientFilterProps {
   clearSelectionLabel: string
-  customersById: Map<string, CustomerDetailsResponse>
   emptyMessage: string
   label: string
   loadingMessage: string
@@ -26,7 +25,6 @@ interface ExecutionClientFilterProps {
 
 export function ExecutionClientFilter({
   clearSelectionLabel,
-  customersById,
   emptyMessage,
   label,
   loadingMessage,
@@ -62,8 +60,8 @@ export function ExecutionClientFilter({
     [clientSearchQuery.data],
   )
   const clientOptions = useMemo(
-    () => getClientFilterOptions(searchedCustomers, customersById, selectedValues),
-    [customersById, searchedCustomers, selectedValues],
+    () => getClientFilterOptions(searchedCustomers, selectedValues),
+    [searchedCustomers, selectedValues],
   )
 
   return (

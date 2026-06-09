@@ -4,7 +4,6 @@ import { IconExternalLink } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   formatExecutionDate,
@@ -12,7 +11,6 @@ import {
   type Execution,
   type ExecutionStatus,
 } from '@/features/executions/shared'
-import { type CustomerDetailsResponse } from '@/features/executions/creation'
 
 import { ExecutionPatientsDialog } from './execution-patients-dialog'
 import { ExecutionStatusLabel } from './execution-status-label'
@@ -24,12 +22,10 @@ import {
 import { getExecutionDayLabel } from '../lib/execution-sidebar-display'
 
 interface ExecutionsTableProps {
-  customersById: Map<string, CustomerDetailsResponse>
   executionStatusReadModel: Record<string, ExecutionStatus>
   executions: Execution[]
   isExecutionLimitActive: boolean
   isFiltered: boolean
-  loadingCustomerIds: Set<string>
   onShowAllExecutions: () => void
 }
 
@@ -58,12 +54,10 @@ function ResponsiveTableRowCell({ children, className }: ResponsiveTableRowCellP
 }
 
 export function ExecutionsTable({
-  customersById,
   executionStatusReadModel,
   executions,
   isExecutionLimitActive,
   isFiltered,
-  loadingCustomerIds,
   onShowAllExecutions,
 }: ExecutionsTableProps) {
   const { t } = useTranslation('executions')
@@ -92,8 +86,7 @@ export function ExecutionsTable({
             {executions.map((execution) => {
               const status = getResolvedExecutionStatus(execution, executionStatusReadModel)
               const executionDayLabel = getExecutionDayLabel(execution)
-              const displayNames = getExecutionDisplayNames(execution, customersById)
-              const isCustomerLoading = loadingCustomerIds.has(execution.client) && !customersById.has(execution.client)
+              const displayNames = getExecutionDisplayNames(execution)
 
               return (
                 <TableRow key={execution._id}>
@@ -106,18 +99,10 @@ export function ExecutionsTable({
                     <ExecutionStatusLabel status={status} />
                   </TableCell>
                   <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                    {isCustomerLoading ? (
-                      <Skeleton className="h-4 w-20" />
-                    ) : (
-                      displayNames.client || t('list.emptyValue')
-                    )}
+                    {displayNames.client || t('list.emptyValue')}
                   </TableCell>
                   <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                    {isCustomerLoading ? (
-                      <Skeleton className="h-4 w-24" />
-                    ) : (
-                      displayNames.clinic || t('list.emptyValue')
-                    )}
+                    {displayNames.clinic || t('list.emptyValue')}
                   </TableCell>
                   <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
                     {getExecutionProjectLabel(execution)}

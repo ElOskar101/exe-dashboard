@@ -13,5 +13,6 @@ export interface PlaywrightProject {
   _id: string
   name: string
   description?: string
+  active?: boolean
   associatedWith: PlaywrightProjectBot[]
 }

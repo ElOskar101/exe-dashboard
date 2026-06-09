@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   getDefaultExecutionReportsUrl,
+  getExecutionReportsProxyPath,
   isExecutionFailed,
   isExecutionSuccessful,
   useExecutionQuery,
@@ -97,7 +98,10 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportBasePath = `${target.requestTarget?.reportsUrl ?? getDefaultExecutionReportsUrl()}/${reportExecutionId}`
+  const reportBasePath = getExecutionReportsProxyPath(
+    target.requestTarget?.reportsUrl ?? getDefaultExecutionReportsUrl(),
+    reportExecutionId,
+  )
   const reportQuery = useExecutionReportQuery(reportExecutionId, showReport)
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])
   const displayStatus = formatExecutionStatusLabel(currentStatus)
@@ -112,7 +116,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     currentStatus: displayStatus,
     description: executionSubtitle,
     execution: executionQuery.data,
-    isLoading: executionQuery.isLoading,
+    isLoading: executionQuery.isPending,
     isPausing: pauseMutation.isPending,
     isReportError: reportQuery.isError,
     isReportLoading: !showReport || reportQuery.isLoading,

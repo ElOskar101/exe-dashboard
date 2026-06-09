@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTheme } from '@/hooks/use-theme'
 import { isolateReportHtml, resolveExecutionReportBaseUrl } from './execution-report-html-utils'
 
 interface ExecutionReportPanelProps {
@@ -14,10 +15,11 @@ interface ExecutionReportPanelProps {
 
 export function ExecutionReportPanel({ isError, isLoading, reportBasePath, reportHtml }: ExecutionReportPanelProps) {
   const { t } = useTranslation('executions')
+  const { theme } = useTheme()
   const reportBaseUrl = useMemo(() => resolveExecutionReportBaseUrl(reportBasePath), [reportBasePath])
   const isolatedReportHtml = useMemo(
-    () => (reportHtml ? isolateReportHtml(reportHtml, reportBaseUrl) : undefined),
-    [reportBaseUrl, reportHtml],
+    () => (reportHtml ? isolateReportHtml(reportHtml, reportBaseUrl, theme) : undefined),
+    [reportBaseUrl, reportHtml, theme],
   )
 
   if (isLoading) {

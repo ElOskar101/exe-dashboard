@@ -1,6 +1,6 @@
 import { endOfDay, isAfter, isBefore, isValid, parseISO, startOfDay } from 'date-fns'
 
-import { type CustomerDetailsResponse, type CustomerSearchItem } from '@/features/executions/creation'
+import { type CustomerSearchItem } from '@/features/executions/creation'
 import { normalizeExecutionStatus, type Execution, type ExecutionStatus } from '@/features/executions/shared'
 
 export const ALL_FILTER_VALUE = 'all'
@@ -25,34 +25,25 @@ export const getResolvedExecutionStatus = (
   executionStatusReadModel: Record<string, ExecutionStatus>,
 ) => executionStatusReadModel[execution._id] ?? normalizeExecutionStatus(execution.status)
 
-export const getExecutionProjectLabel = (execution: Execution) => execution.playwrightProject || UNKNOWN_PROJECT_LABEL
+export const getExecutionProjectLabel = (execution: Execution) => execution.project || UNKNOWN_PROJECT_LABEL
 
-export const getExecutionDisplayNames = (
-  execution: Execution,
-  customersById: Map<string, CustomerDetailsResponse>,
-): ExecutionDisplayNames => {
-  const customer = customersById.get(execution.client)
-  const clinic = customer?.clinic.find((customerClinic) => customerClinic._id === execution.clinic)
-
-  return {
-    client: customer?.clientName || execution.client,
-    clinic: clinic?.clinicName || execution.clinic,
-  }
-}
+export const getExecutionDisplayNames = (execution: Execution): ExecutionDisplayNames => ({
+  client: execution.client,
+  clinic: execution.clinic,
+})
 
 export const getClientFilterOptions = (
   customers: CustomerSearchItem[],
-  customersById: Map<string, CustomerDetailsResponse>,
   selectedClientIds: string[],
 ): ExecutionFilterOption[] => {
   const optionsByValue = new Map<string, ExecutionFilterOption>()
 
   customers.forEach((customer) => {
-    const value = customer._id.trim()
+    const value = customer.clientName.trim()
 
     if (!value) return
 
-    optionsByValue.set(value, { value, label: customer.clientName || value })
+    optionsByValue.set(value, { value, label: value })
   })
 
   selectedClientIds.forEach((clientId) => {
@@ -60,31 +51,29 @@ export const getClientFilterOptions = (
 
     if (!value) return
 
-    const existingOption = optionsByValue.get(value)
-    const label = customersById.get(value)?.clientName || existingOption?.label || value
+    const label = optionsByValue.get(value)?.label || value
 
     optionsByValue.set(value, { value, label })
   })
 
-  return Array.from(optionsByValue.values())
+  return Array.from(optionsByValue.values()).sort(compareFilterOptions)
 }
 
 export const getSelectedClientClinicOptions = (
-  customersById: Map<string, CustomerDetailsResponse>,
+  executions: Execution[],
   selectedClientIds: string[],
 ): ExecutionFilterOption[] => {
   const optionsByValue = new Map<string, ExecutionFilterOption>()
+  const selectedClients = new Set(selectedClientIds)
 
-  selectedClientIds.forEach((clientId) => {
-    const customer = customersById.get(clientId)
+  executions.forEach((execution) => {
+    if (!selectedClients.has(execution.client)) return
 
-    customer?.clinic.forEach((clinic) => {
-      const value = clinic._id.trim()
+    const value = execution.clinic.trim()
 
-      if (!value) return
+    if (!value) return
 
-      optionsByValue.set(value, { value, label: clinic.clinicName || value })
-    })
+    optionsByValue.set(value, { value, label: value })
   })
 
   return Array.from(optionsByValue.values()).sort(compareFilterOptions)
