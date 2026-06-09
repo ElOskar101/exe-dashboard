@@ -380,6 +380,7 @@ export default function HomePage() {
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
+                  <TableHead className="whitespace-normal">{translate('latest.columns.project')}</TableHead>
                   <TableHead className="w-28 whitespace-normal">{translate('latest.columns.execution')}</TableHead>
                   <TableHead className="w-28">{translate('latest.columns.status')}</TableHead>
                   <TableHead className="hidden whitespace-normal lg:table-cell">
@@ -387,9 +388,6 @@ export default function HomePage() {
                   </TableHead>
                   <TableHead className="hidden whitespace-normal lg:table-cell">
                     {translate('latest.columns.clinic')}
-                  </TableHead>
-                  <TableHead className="hidden whitespace-normal xl:table-cell">
-                    {translate('latest.columns.project')}
                   </TableHead>
                   <TableHead className="hidden w-28 whitespace-normal md:table-cell">
                     {translate('latest.columns.createdAt')}
@@ -405,6 +403,9 @@ export default function HomePage() {
                     return (
                       <TableRow key={execution._id}>
                         <TableCell className="font-medium whitespace-normal break-words">
+                          {getExecutionProjectLabel(execution)}
+                        </TableCell>
+                        <TableCell className="whitespace-normal break-words">
                           <Link
                             className="hover:underline"
                             to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
@@ -420,9 +421,6 @@ export default function HomePage() {
                         </TableCell>
                         <TableCell className="hidden whitespace-normal break-words lg:table-cell">
                           {displayNames.clinic || translate('latest.emptyValue')}
-                        </TableCell>
-                        <TableCell className="hidden whitespace-normal break-words xl:table-cell">
-                          {getExecutionProjectLabel(execution)}
                         </TableCell>
                         <TableCell className="hidden whitespace-nowrap md:table-cell">
                           {formatExecutionDate(execution.createdAt)}
