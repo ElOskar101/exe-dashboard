@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { LabelProps } from 'recharts'
-import { Cell, Label, Pie, PieChart } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, XAxis, YAxis } from 'recharts'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   EXECUTION_STATUSES,
   formatExecutionDate,
@@ -27,6 +28,7 @@ import {
   getExecutionProjectLabel,
 } from '@/features/executions/listing/lib/execution-listing-filters'
 import { getExecutionDayLabel } from '@/features/executions/listing/lib/execution-sidebar-display'
+import { getTopDimension, type TopDimensionEntry } from '@/features/home/lib/home-stats'
 
 const LATEST_EXECUTIONS_LIMIT = 5
 
@@ -84,6 +86,9 @@ const renderDonutCenterLabel =
       </text>
     )
   }
+
+const truncateLabel = (value: string, maxLength = 14) =>
+  value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value
 
 export default function HomePage() {
   const { t: translate } = useTranslation('home')
@@ -168,31 +173,67 @@ export default function HomePage() {
     },
   ]
   const jobTotal = jobChartData.reduce((total, item) => total + item.total, 0)
-  const clientClinicTotals = useMemo(() => {
-    const totalsByClientClinic = new Map<string, { client: string; clinic: string; total: number }>()
-
-    sortedExecutions.forEach((execution) => {
-      const client = execution.client.trim() || translate('latest.emptyValue')
-      const clinic = execution.clinic.trim() || translate('latest.emptyValue')
-      const key = `${client}\u0000${clinic}`
-      const current = totalsByClientClinic.get(key)
-
-      totalsByClientClinic.set(key, {
-        client,
-        clinic,
-        total: (current?.total ?? 0) + 1,
-      })
-    })
-
-    return Array.from(totalsByClientClinic.values()).sort(
-      (leftTotal, rightTotal) =>
-        rightTotal.total - leftTotal.total ||
-        leftTotal.client.localeCompare(rightTotal.client) ||
-        leftTotal.clinic.localeCompare(rightTotal.clinic),
-    )
-  }, [sortedExecutions, translate])
+  const noValueLabel = useMemo(() => translate('stats.top.noValue'), [translate])
+  const topClients = useMemo(
+    () => getTopDimension(sortedExecutions, (execution) => execution.client, noValueLabel),
+    [sortedExecutions, noValueLabel],
+  )
+  const topClinics = useMemo(
+    () => getTopDimension(sortedExecutions, (execution) => execution.clinic, noValueLabel),
+    [sortedExecutions, noValueLabel],
+  )
   const statusTotalLabel = translate('stats.status.totalLabel')
   const jobTotalLabel = translate('stats.jobs.totalLabel')
+  const topEmptyLabel = translate('stats.top.empty')
+  const topChartConfig = useMemo(
+    () =>
+      EXECUTION_STATUSES.reduce(
+        (config, status) => ({
+          ...config,
+          [status]: {
+            label: translate(`stats.status.labels.${status}`),
+            color: statusColorMap[status],
+          },
+        }),
+        {} satisfies ChartConfig,
+      ),
+    [translate],
+  )
+  const renderTopDimensionBarChart = (data: TopDimensionEntry[]) => {
+    if (data.length === 0) {
+      return (
+        <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">{topEmptyLabel}</div>
+      )
+    }
+
+    return (
+      <ChartContainer config={topChartConfig} className="h-[260px] w-full">
+        <BarChart data={data} accessibilityLayer margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="name"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value: string) => truncateLabel(value)}
+            interval={0}
+          />
+          <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} width={32} />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                hideIndicator
+                labelFormatter={(_value, payload) => payload?.[0]?.payload?.name ?? ''}
+              />
+            }
+          />
+          {EXECUTION_STATUSES.map((status) => (
+            <Bar key={status} dataKey={status} stackId="executions" fill={`var(--color-${status})`} radius={4} />
+          ))}
+        </BarChart>
+      </ChartContainer>
+    )
+  }
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
@@ -277,47 +318,37 @@ export default function HomePage() {
         </Card>
 
         <Card size="sm">
-          <CardHeader>
-            <CardTitle>{translate('stats.clientClinic.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {executionsQuery.isLoading ? (
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <Skeleton key={index} className="h-10 w-full rounded-2xl" />
-                ))}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{translate('stats.clientClinic.columns.client')}</TableHead>
-                    <TableHead>{translate('stats.clientClinic.columns.clinic')}</TableHead>
-                    <TableHead className="w-20 text-right">{translate('stats.clientClinic.columns.total')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clientClinicTotals.length > 0 ? (
-                    clientClinicTotals.map((item) => (
-                      <TableRow key={`${item.client}-${item.clinic}`}>
-                        <TableCell className="font-medium whitespace-normal break-words">{item.client}</TableCell>
-                        <TableCell className="whitespace-normal break-words">{item.clinic}</TableCell>
-                        <TableCell className="text-right font-medium tabular-nums">
-                          {formatNumber(item.total)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell className="h-28 text-center text-muted-foreground" colSpan={3}>
-                        {translate('stats.clientClinic.empty')}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
+          <Tabs defaultValue="clients" className="gap-0">
+            <CardHeader>
+              <CardTitle>{translate('stats.top.title')}</CardTitle>
+              {!executionsQuery.isLoading ? (
+                <CardAction>
+                  <TabsList className="group-data-horizontal/tabs:h-7 p-0.5">
+                    <TabsTrigger value="clients" className="px-2.5 py-0.5 text-xs">
+                      {translate('stats.top.tabs.clients')}
+                    </TabsTrigger>
+                    <TabsTrigger value="clinics" className="px-2.5 py-0.5 text-xs">
+                      {translate('stats.top.tabs.clinics')}
+                    </TabsTrigger>
+                  </TabsList>
+                </CardAction>
+              ) : null}
+            </CardHeader>
+            <CardContent>
+              {executionsQuery.isLoading ? (
+                <Skeleton className="h-[260px] w-full rounded-2xl" />
+              ) : (
+                <>
+                  <TabsContent value="clients" className="mt-0">
+                    {renderTopDimensionBarChart(topClients)}
+                  </TabsContent>
+                  <TabsContent value="clinics" className="mt-0">
+                    {renderTopDimensionBarChart(topClinics)}
+                  </TabsContent>
+                </>
+              )}
+            </CardContent>
+          </Tabs>
         </Card>
       </div>
 

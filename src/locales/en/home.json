@@ -33,15 +33,15 @@
         "failed": "Failed"
       }
     },
-    "clientClinic": {
-      "title": "Executions by client and clinic",
-      "description": "Total executions for each client and clinic pair.",
+    "top": {
+      "title": "Top executed",
+      "description": "Top 5 most executed clients and clinics, broken down by status.",
       "empty": "No executions yet.",
-      "columns": {
-        "client": "Client",
-        "clinic": "Clinic",
-        "total": "Total"
-      }
+      "tabs": {
+        "clients": "Clients",
+        "clinics": "Clinics"
+      },
+      "noValue": "None"
     }
   },
   "latest": {
