@@ -623,7 +623,7 @@ test.describe('execution user flows', () => {
     await page.getByRole('button', { name: 'Delete', exact: true }).click()
 
     await expect(page).toHaveURL('/executions')
-    await expect(page.getByText('No executions yet.')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'No executions yet.' })).toBeVisible()
     expect(deletedExecutionId).toBe('execution-1')
   })
 
