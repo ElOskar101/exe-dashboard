@@ -17,6 +17,19 @@ import { ExecutionsTable } from '../components/executions-table'
 import { useExecutionsListing } from '../hooks/use-executions-listing'
 import { ALL_FILTER_VALUE } from '../lib/execution-listing-filters'
 
+const executionStatusOptionKeys = {
+  cancelled: 'list.statusOptions.cancelled',
+  completed: 'list.statusOptions.completed',
+  failed: 'list.statusOptions.failed',
+  paused: 'list.statusOptions.paused',
+  queued: 'list.statusOptions.queued',
+  running: 'list.statusOptions.running',
+  unknown: 'list.statusOptions.unknown',
+} as const satisfies Record<
+  (typeof EXECUTION_STATUSES)[number],
+  Parameters<ReturnType<typeof useTranslation<'executions'>>['t']>[0]
+>
+
 export default function ExecutionsPage() {
   const { t } = useTranslation('executions')
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
@@ -38,7 +51,7 @@ export default function ExecutionsPage() {
     updateSelectedClientIds,
   } = useExecutionsListing()
   const selectedStatusFilterLabel =
-    statusFilter === ALL_FILTER_VALUE ? t('list.filters.allStatuses') : t(`list.statusOptions.${statusFilter}`)
+    statusFilter === ALL_FILTER_VALUE ? t('list.filters.allStatuses') : t(executionStatusOptionKeys[statusFilter])
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
@@ -95,7 +108,7 @@ export default function ExecutionsPage() {
                     <SelectItem value={ALL_FILTER_VALUE}>{t('list.filters.allStatuses')}</SelectItem>
                     {EXECUTION_STATUSES.map((status) => (
                       <SelectItem key={status} value={status}>
-                        {t(`list.statusOptions.${status}`)}
+                        {t(executionStatusOptionKeys[status])}
                       </SelectItem>
                     ))}
                   </SelectGroup>

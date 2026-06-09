@@ -7,7 +7,7 @@ interface ExecutionWizardValidationToastCopy {
   description: string
 }
 
-const patientFieldLabels: Record<keyof ExecutionPatient, `fields.${string}`> = {
+const patientFieldLabels = {
   patientName: 'fields.patientName',
   patientLastName: 'fields.patientLastName',
   patientMemberId: 'fields.memberId',
@@ -21,7 +21,7 @@ const patientFieldLabels: Record<keyof ExecutionPatient, `fields.${string}`> = {
   verificationType: 'fields.verificationType',
   filenames: 'fields.filenames',
   otherInformation: 'fields.patientOtherInformation',
-}
+} as const satisfies Record<keyof ExecutionPatient, Parameters<TFunction<'executions'>>[0]>
 
 const addFieldSummary = (
   items: Set<string>,

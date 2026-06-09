@@ -44,9 +44,6 @@ importers:
       i18next:
         specifier: ^26.2.0
         version: 26.2.0(typescript@6.0.3)
-      i18next-http-backend:
-        specifier: ^4.0.0
-        version: 4.0.0
       prism-react-renderer:
         specifier: ^2.4.1
         version: 2.4.1(react@19.2.6)
@@ -1547,10 +1544,6 @@ packages:
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
     engines: {node: '>=18.18.0'}
-
-  i18next-http-backend@4.0.0:
-    resolution: {integrity: sha512-EgSjO3Q1G6f2Q5oy7u9mmxuesE0oSfzAD97NFBjC8EmkK4guBSYLljM0Fng3DarMWIIkU70jfo4+mUzmyVISTA==}
-    engines: {node: '>=18'}
 
   i18next@26.2.0:
     resolution: {integrity: sha512-zwBHldHdTmwN7r6UNc7lC6GWNN+YYg3DrRSeHR5PRRBf5QnJZcYHrQc0uaU26qZeYxR7iFZD+Y315dPnKP47wA==}
@@ -4072,8 +4065,6 @@ snapshots:
   human-signals@2.1.0: {}
 
   human-signals@8.0.1: {}
-
-  i18next-http-backend@4.0.0: {}
 
   i18next@26.2.0(typescript@6.0.3):
     optionalDependencies:

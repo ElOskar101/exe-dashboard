@@ -7,6 +7,16 @@ import { Link } from 'react-router-dom'
 import { IconBrightnessDown, IconChevronDown, IconLogout2, IconMoon, IconSettings } from '@tabler/icons-react'
 import { AuthContext } from '../contexts/context'
 
+const roleTranslationKeys = {
+  QA: 'roles.QA',
+  admin: 'roles.admin',
+  carrier: 'roles.carrier',
+  client: 'roles.client',
+  guest: 'roles.guest',
+  none: 'roles.none',
+  standard: 'roles.standard',
+} as const
+
 interface UserCardProps {
   onToggleTheme?: () => void
   settingsPath?: string
@@ -32,7 +42,9 @@ function UserCard({ onToggleTheme, settingsPath, theme }: UserCardProps) {
   const userData = user
     ? {
         nameAndUser: [displayName, username].filter(Boolean).join('@'),
-        role: user.roles?.[0]?.name ? t(`roles.${user.roles[0].name}`) : '',
+        role: user.roles?.[0]?.name
+          ? t(roleTranslationKeys[user.roles[0].name as keyof typeof roleTranslationKeys] ?? 'roles.none')
+          : '',
       }
     : {
         nameAndUser: '',
@@ -92,7 +104,7 @@ function UserCard({ onToggleTheme, settingsPath, theme }: UserCardProps) {
               onClick={() => setIsOpen(false)}
             >
               <IconSettings data-icon="inline-start" />
-              Settings
+              {t('settings')}
             </Button>
           ) : null}
           {onToggleTheme && theme ? (
@@ -102,7 +114,7 @@ function UserCard({ onToggleTheme, settingsPath, theme }: UserCardProps) {
               ) : (
                 <IconMoon data-icon="inline-start" />
               )}
-              {theme === 'light' ? 'Light mode' : 'Dark mode'}
+              {theme === 'light' ? t('lightMode') : t('darkMode')}
             </Button>
           ) : null}
           <Button type="button" variant="ghost" className="w-full justify-start" onClick={logout}>

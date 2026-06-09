@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
 import { type DateRange } from 'react-day-picker'
 
-import { useExecutionsQuery, useExecutionStatusReadModel, type ExecutionQuery } from '@/features/executions/shared'
+import {
+  useExecutionsQuery,
+  useExecutionStatusReadModel,
+  type ExecutionQuery,
+  type ExecutionStatus,
+} from '@/features/executions/shared'
 
 import {
   ALL_FILTER_VALUE,
@@ -14,12 +19,13 @@ import {
 import { groupExecutionsByProject } from '../lib/execution-sidebar-display'
 
 const DEFAULT_EXECUTIONS_LIMIT = 15
+type ExecutionStatusFilter = typeof ALL_FILTER_VALUE | ExecutionStatus
 
 export function useExecutionsListing() {
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([])
   const [selectedClinicIds, setSelectedClinicIds] = useState<string[]>([])
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
-  const [statusFilter, setStatusFilter] = useState(ALL_FILTER_VALUE)
+  const [statusFilter, setStatusFilter] = useState<ExecutionStatusFilter>(ALL_FILTER_VALUE)
   const [isExecutionLimitActive, setIsExecutionLimitActive] = useState(true)
   const dateFrom = useMemo(() => getDateRangeBoundary(dateRange?.from, 'start'), [dateRange?.from])
   const dateTo = useMemo(() => getDateRangeBoundary(dateRange?.to, 'end'), [dateRange?.to])

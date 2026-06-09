@@ -296,8 +296,8 @@ export function ExecutionsSidebar() {
                             type="button"
                             variant={hasActiveExecution ? 'secondary' : 'ghost'}
                             size="icon-sm"
-                            aria-label={`${group.project} executions`}
-                            title={`${group.project} executions`}
+                            aria-label={t('sidebar.projectExecutions', { project: group.project })}
+                            title={t('sidebar.projectExecutions', { project: group.project })}
                             className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                           >
                             <IconFolder />
@@ -338,7 +338,9 @@ export function ExecutionsSidebar() {
                                     <div className="min-w-0">
                                       <div className="truncate">{executionDayLabel}</div>
                                       <div className="truncate text-xs text-sidebar-foreground/60">
-                                        {relativeCreatedAt ? `${relativeCreatedAt} - ${label}` : label}
+                                        {relativeCreatedAt
+                                          ? t('sidebar.executionRelativeLabel', { relativeCreatedAt, label })
+                                          : label}
                                       </div>
                                     </div>
                                   </div>
@@ -490,7 +492,7 @@ export function ExecutionsSidebar() {
                                       />
                                     }
                                     isActive={currentExecutionId === execution._id}
-                                    tooltip={`${group.project} ${label}`}
+                                    tooltip={t('sidebar.projectExecutionTooltip', { project: group.project, label })}
                                     className="h-auto min-h-9 items-start"
                                   >
                                     <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">

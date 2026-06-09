@@ -16,12 +16,12 @@ interface PatientsStepProps extends ExecutionWizardPatientsStepState {
 
 const patientErrorFieldKeys = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob'] as const
 
-const patientErrorLabels: Record<(typeof patientErrorFieldKeys)[number], string> = {
+const patientErrorLabels = {
   patientName: 'fields.patientName',
   patientLastName: 'fields.patientLastName',
   patientMemberId: 'fields.memberId',
   patientDob: 'fields.patientDob',
-}
+} as const satisfies Record<(typeof patientErrorFieldKeys)[number], Parameters<TFunction<'executions'>>[0]>
 
 export function PatientsStep({
   context,

@@ -41,6 +41,7 @@ import {
   IconServer,
   IconSettings,
 } from '@tabler/icons-react'
+import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
@@ -83,21 +84,21 @@ const getProjectSummary = (projects: readonly PlaywrightProject[] | undefined) =
   }
 }
 
-const formatUptime = (seconds: number) => {
+const formatUptime = (seconds: number, t: TFunction<'settings'>) => {
   const totalSeconds = Math.max(0, Math.floor(seconds))
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const remainingSeconds = totalSeconds % 60
 
   if (hours > 0) {
-    return `${hours}h ${minutes}m ${remainingSeconds}s`
+    return t('status.uptimeHours', { hours, minutes, seconds: remainingSeconds })
   }
 
   if (minutes > 0) {
-    return `${minutes}m ${remainingSeconds}s`
+    return t('status.uptimeMinutes', { minutes, seconds: remainingSeconds })
   }
 
-  return `${remainingSeconds}s`
+  return t('status.uptimeSeconds', { seconds: remainingSeconds })
 }
 
 const formatStatusTimestamp = (timestamp: string) =>
@@ -179,7 +180,7 @@ function AppStatusPanel({ stats }: { stats: ExecutionAppStats }) {
           <IconClock />
           <div className="flex min-w-0 flex-col">
             <span className="text-sm text-muted-foreground">{t('status.uptime')}</span>
-            <span className="truncate font-medium">{formatUptime(stats.uptime)}</span>
+            <span className="truncate font-medium">{formatUptime(stats.uptime, t)}</span>
           </div>
         </div>
         <div className="flex min-w-0 items-center gap-3 rounded-lg border p-4">
