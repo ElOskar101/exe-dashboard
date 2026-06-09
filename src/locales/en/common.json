@@ -1,0 +1,21 @@
+{
+  "project-name": "Agent",
+  "roles": {
+    "admin": "Superadministrator",
+    "standard": "Administrator",
+    "guest": "Guest",
+    "carrier": "#TeamCarrier",
+    "QA": "Operations",
+    "none": "No privileges",
+    "client": "Client"
+  },
+  "logout": "Logout",
+  "settings": "Settings",
+  "lightMode": "Light mode",
+  "darkMode": "Dark mode",
+  "loading": "Loading",
+  "waiting": "Waiting",
+  "customer": "Customer",
+  "clinic": "Clinic",
+  "bot": "Bot"
+}

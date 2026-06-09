@@ -1,0 +1,39 @@
+{
+  "routes": [
+    {
+      "icon": "IconHome",
+      "route": "/",
+      "label": "Home"
+    },
+    {
+      "route": "/executions",
+      "label": "Executions",
+      "icon": "IconListDetails",
+      "subRoutes": [
+        {
+          "route": "/:id",
+          "label": "Edit executions"
+        },
+        {
+          "route": "/create",
+          "label": "Create executions"
+        },
+        {
+          "route": "/history",
+          "label": "Executions history"
+        }
+      ]
+    },
+    {
+      "route": "/customers",
+      "label": "Customers",
+      "icon": "IconBuildingSkyscraper",
+      "subRoutes": [
+        {
+          "route": "/:id",
+          "label": "Customer executions"
+        }
+      ]
+    }
+  ]
+}
