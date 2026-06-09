@@ -7,8 +7,8 @@ import {
   IconChevronDown,
   IconFolder,
   IconListFilled,
-  IconLayoutSidebarLeftCollapseFilled,
-  IconLayoutSidebarLeftExpandFilled,
+  IconLayoutSidebar,
+  IconLayoutSidebarFilled,
   IconPlus,
   IconRefresh,
   IconTrash,
@@ -264,26 +264,56 @@ export function ExecutionsSidebar() {
       <SidebarHeader className="items-center">
         <SidebarMenu className="items-center">
           <SidebarMenuItem>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    nativeButton={false}
-                    render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t('common:project-name')}
-                    title={t('common:project-name')}
-                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  >
-                    <img className="size-5 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
-                  </Button>
-                }
-              />
-              <TooltipContent side="right" align="center">
-                {t('common:project-name')}
-              </TooltipContent>
-            </Tooltip>
+            <div className="group relative">
+              <div className="flex items-center justify-center group-hover:hidden">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        nativeButton={false}
+                        render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={t('common:project-name')}
+                        title={t('common:project-name')}
+                        className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      >
+                        <img
+                          className="h-4 w-auto object-contain"
+                          src="/agent-icon.svg"
+                          alt={t('common:project-name')}
+                        />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="right" align="center">
+                    {t('common:project-name')}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="hidden items-center justify-center group-hover:flex">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="ghost"
+                        aria-label={sidebarButtonLabel}
+                        title={sidebarButtonLabel}
+                        className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        onClick={toggleSidebar}
+                      >
+                        <IconLayoutSidebar className="size-4" />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="right" align="center">
+                    {sidebarButtonLabel}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Tooltip>
@@ -304,28 +334,6 @@ export function ExecutionsSidebar() {
               />
               <TooltipContent side="right" align="center">
                 {t('sidebar.home')}
-              </TooltipContent>
-            </Tooltip>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    aria-label={sidebarButtonLabel}
-                    title={sidebarButtonLabel}
-                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    onClick={toggleSidebar}
-                  >
-                    <IconLayoutSidebarLeftExpandFilled />
-                  </Button>
-                }
-              />
-              <TooltipContent side="right" align="center">
-                {sidebarButtonLabel}
               </TooltipContent>
             </Tooltip>
           </SidebarMenuItem>
@@ -481,7 +489,7 @@ export function ExecutionsSidebar() {
             title={t('common:project-name')}
             className="h-auto w-auto rounded-xl px-2 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
-            <img className="h-5 w-auto object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+            <img className="size-4 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
           </Button>
           <Button
             type="button"
@@ -493,9 +501,9 @@ export function ExecutionsSidebar() {
             onClick={toggleSidebar}
           >
             {isMobile || state === 'expanded' ? (
-              <IconLayoutSidebarLeftCollapseFilled />
+              <IconLayoutSidebar className="size-4" />
             ) : (
-              <IconLayoutSidebarLeftExpandFilled />
+              <IconLayoutSidebarFilled className="size-4" />
             )}
           </Button>
         </div>
