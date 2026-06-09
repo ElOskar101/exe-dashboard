@@ -403,7 +403,7 @@ export default function HomePage() {
                   <TableHead className="w-20 text-right">{translate('latest.columns.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="[&_td:not(:last-child)]:text-muted-foreground">
                 {latestExecutions.length > 0 ? (
                   latestExecutions.map((execution) => {
                     const displayNames = getExecutionDisplayNames(execution)

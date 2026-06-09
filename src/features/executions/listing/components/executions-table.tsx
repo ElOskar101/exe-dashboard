@@ -80,7 +80,7 @@ export function ExecutionsTable({
           <TableHead className="w-16 text-right sm:w-28">{t('list.columns.actions')}</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="[&_td:not(:last-child)]:text-muted-foreground">
         {executions.length > 0 ? (
           <>
             {executions.map((execution) => {
