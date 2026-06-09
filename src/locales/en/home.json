@@ -1,8 +1,39 @@
 {
-  "executionsCard": {
-    "title": "Lastest executions"
+  "title": "Home",
+  "description": "Live execution activity for {{app}}.",
+  "createExecution": "Create execution",
+  "loadErrorTitle": "Dashboard could not be loaded",
+  "loadErrorDescription": "Try again to refresh the execution statistics and latest runs.",
+  "retry": "Retry",
+  "stats": {
+    "queued": {
+      "title": "Queued",
+      "description": "Executions waiting for a worker."
+    },
+    "running": {
+      "title": "Running",
+      "description": "{{active}} active job in progress."
+    },
+    "finished": {
+      "title": "Finished",
+      "description": "{{failed}} failed execution included."
+    }
   },
-  "executionCard": {
-    "title": "Execution data"
+  "latest": {
+    "title": "Latest executions",
+    "description": "The 5 most recent executions for the selected app.",
+    "viewAll": "View all",
+    "viewDetails": "Details",
+    "empty": "No executions yet.",
+    "emptyValue": "None",
+    "columns": {
+      "execution": "Execution",
+      "status": "Status",
+      "project": "Project",
+      "client": "Client",
+      "clinic": "Clinic",
+      "createdAt": "Created at",
+      "actions": "Actions"
+    }
   }
 }

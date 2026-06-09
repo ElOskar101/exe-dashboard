@@ -131,7 +131,7 @@ export function ExecutionsSidebar() {
       setOpenDeleteId((currentOpenId) => (currentOpenId === deletedExecutionId ? null : currentOpenId))
 
       if (deletedExecutionId === currentExecutionId) {
-        navigate(getPathWithExecutionTarget('/'))
+        navigate(getPathWithExecutionTarget('/executions'))
       }
     },
   })
@@ -334,8 +334,8 @@ export function ExecutionsSidebar() {
                 render={
                   <Button
                     nativeButton={false}
-                    render={<Link to={getPathWithExecutionTarget('/')} />}
-                    variant={pathname === '/' ? 'secondary' : 'ghost'}
+                    render={<Link to={getPathWithExecutionTarget('/create')} />}
+                    variant={pathname === '/create' ? 'secondary' : 'ghost'}
                     size="icon-sm"
                     aria-label={t('sidebar.createExecution')}
                     title={t('sidebar.createExecution')}
@@ -489,8 +489,8 @@ export function ExecutionsSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
-              isActive={pathname === '/'}
+              render={<Link to={getPathWithExecutionTarget('/create')} onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/create'}
               tooltip={t('sidebar.createExecution')}
             >
               <span>{t('sidebar.createExecution')}</span>

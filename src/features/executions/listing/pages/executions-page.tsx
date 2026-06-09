@@ -61,7 +61,7 @@ export default function ExecutionsPage() {
           <h1 className="text-3xl font-semibold tracking-tight">{t('list.title')}</h1>
           <p className="max-w-3xl text-muted-foreground">{t('list.description')}</p>
         </div>
-        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/')} />}>
+        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/create')} />}>
           <IconPlus data-icon="inline-start" />
           {t('list.createExecution')}
         </Button>
