@@ -7,7 +7,6 @@ import {
   IconChevronDown,
   IconFolder,
   IconListFilled,
-  IconLayoutDashboardFilled,
   IconLayoutSidebarLeftCollapseFilled,
   IconLayoutSidebarLeftExpandFilled,
   IconPlus,
@@ -295,8 +294,8 @@ export function ExecutionsSidebar() {
                     render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
                     variant={pathname === '/' ? 'secondary' : 'ghost'}
                     size="icon-sm"
-                    aria-label={t('sidebar.dashboard')}
-                    title={t('sidebar.dashboard')}
+                    aria-label={t('sidebar.home')}
+                    title={t('sidebar.home')}
                     className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <IconSmartHome />
@@ -304,7 +303,7 @@ export function ExecutionsSidebar() {
                 }
               />
               <TooltipContent side="right" align="center">
-                {t('sidebar.dashboard')}
+                {t('sidebar.home')}
               </TooltipContent>
             </Tooltip>
           </SidebarMenuItem>
@@ -505,9 +504,9 @@ export function ExecutionsSidebar() {
             <SidebarMenuButton
               render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
               isActive={pathname === '/'}
-              tooltip={t('sidebar.dashboard')}
+              tooltip={t('sidebar.home')}
             >
-              <span>{t('sidebar.dashboard')}</span>
+              <span>{t('sidebar.home')}</span>
               <IconSmartHome className="ml-auto" />
             </SidebarMenuButton>
           </SidebarMenuItem>

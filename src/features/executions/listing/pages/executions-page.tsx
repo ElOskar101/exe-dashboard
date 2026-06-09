@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EXECUTION_STATUSES, useExecutionTargetNavigation } from '@/features/executions/shared'
+import { EXECUTION_STATUSES } from '@/features/executions/shared'
 
 import { ExecutionClientFilter } from '../components/execution-client-filter'
 import { ExecutionDateRangeFilter } from '../components/execution-date-range-filter'
@@ -31,7 +31,6 @@ const executionStatusOptionKeys = {
 
 export default function ExecutionsPage() {
   const { t } = useTranslation('executions')
-  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const {
     clinicOptions,
     dateRange,

@@ -16,7 +16,6 @@ import {
   formatExecutionDate,
   normalizeExecutionStatus,
   useExecutionAppStatsQuery,
-  useExecutionTarget,
   useExecutionTargetNavigation,
   useExecutionsQuery,
   type Execution,
@@ -88,7 +87,6 @@ const renderDonutCenterLabel =
 
 export default function HomePage() {
   const { t: translate } = useTranslation('home')
-  const { target } = useExecutionTarget()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const statsQuery = useExecutionAppStatsQuery()
   const executionsQuery = useExecutionsQuery()
@@ -229,7 +227,14 @@ export default function HomePage() {
               <ChartContainer config={statusChartConfig} className="mx-auto aspect-square max-h-[260px]">
                 <PieChart accessibilityLayer>
                   <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
-                  <Pie data={statusChartData} dataKey="total" nameKey="status" innerRadius={64} strokeWidth={4}>
+                  <Pie
+                    data={statusChartData}
+                    dataKey="total"
+                    nameKey="status"
+                    innerRadius={64}
+                    strokeWidth={4}
+                    animationBegin={0}
+                  >
                     {statusChartData.map((item) => (
                       <Cell key={item.status} fill={item.fill} />
                     ))}
@@ -252,7 +257,14 @@ export default function HomePage() {
               <ChartContainer config={jobChartConfig} className="mx-auto aspect-square max-h-[260px]">
                 <PieChart accessibilityLayer>
                   <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
-                  <Pie data={jobChartData} dataKey="total" nameKey="status" innerRadius={64} strokeWidth={4}>
+                  <Pie
+                    data={jobChartData}
+                    dataKey="total"
+                    nameKey="status"
+                    innerRadius={64}
+                    strokeWidth={4}
+                    animationBegin={0}
+                  >
                     {jobChartData.map((item) => (
                       <Cell key={item.status} fill={item.fill} />
                     ))}
