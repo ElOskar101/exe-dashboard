@@ -219,11 +219,10 @@ export default function HomePage() {
         </Alert>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         <Card size="sm">
           <CardHeader>
             <CardTitle>{translate('stats.status.title')}</CardTitle>
-            <CardDescription>{translate('stats.status.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             {executionsQuery.isLoading ? (
@@ -247,7 +246,6 @@ export default function HomePage() {
         <Card size="sm">
           <CardHeader>
             <CardTitle>{translate('stats.jobs.title')}</CardTitle>
-            <CardDescription>{translate('stats.jobs.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             {statsQuery.isLoading ? (
@@ -271,7 +269,6 @@ export default function HomePage() {
         <Card size="sm">
           <CardHeader>
             <CardTitle>{translate('stats.clientClinic.title')}</CardTitle>
-            <CardDescription>{translate('stats.clientClinic.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             {executionsQuery.isLoading ? (
