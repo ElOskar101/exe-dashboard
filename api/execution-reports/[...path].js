@@ -16,25 +16,28 @@ const getPathSegments = (value) => {
     return value
   }
 
-  return typeof value === 'string' ? [value] : []
+  return typeof value === 'string' ? value.split('/') : []
 }
 
 const getProxyTargetUrl = (request) => {
-  const [encodedOrigin, ...targetPathSegments] = getPathSegments(request.query.path)
+  const proxyPath = getPathSegments(request.query.path).join('/')
 
-  if (!encodedOrigin || targetPathSegments.length === 0) {
+  if (!proxyPath) {
     return null
   }
 
-  const origin = decodeURIComponent(encodedOrigin)
-  const originUrl = new URL(origin)
+  const targetUrl = new URL(decodeURIComponent(proxyPath))
 
-  if (!['http:', 'https:'].includes(originUrl.protocol) || originUrl.username || originUrl.password) {
+  if (
+    !['http:', 'https:'].includes(targetUrl.protocol) ||
+    targetUrl.username ||
+    targetUrl.password ||
+    targetUrl.pathname === '/'
+  ) {
     return null
   }
 
   const requestUrl = new URL(request.url, `https://${request.headers.host}`)
-  const targetUrl = new URL(`/${targetPathSegments.join('/')}`, originUrl.origin)
   targetUrl.search = requestUrl.search
 
   return targetUrl
