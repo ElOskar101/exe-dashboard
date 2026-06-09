@@ -7,11 +7,13 @@ import {
   IconChevronDown,
   IconFolder,
   IconListFilled,
+  IconLayoutDashboardFilled,
   IconLayoutSidebarLeftCollapseFilled,
   IconLayoutSidebarLeftExpandFilled,
   IconPlus,
   IconRefresh,
   IconTrash,
+  IconSmartHome,
 } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -289,6 +291,28 @@ export function ExecutionsSidebar() {
               <TooltipTrigger
                 render={
                   <Button
+                    nativeButton={false}
+                    render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+                    variant={pathname === '/' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    aria-label={t('sidebar.dashboard')}
+                    title={t('sidebar.dashboard')}
+                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  >
+                    <IconSmartHome />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" align="center">
+                {t('sidebar.dashboard')}
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
                     type="button"
                     size="icon"
                     variant="ghost"
@@ -477,6 +501,16 @@ export function ExecutionsSidebar() {
           </Button>
         </div>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/'}
+              tooltip={t('sidebar.dashboard')}
+            >
+              <span>{t('sidebar.dashboard')}</span>
+              <IconSmartHome className="ml-auto" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               render={<Link to={getPathWithExecutionTarget('/executions')} onClick={closeSidebarOnMobile} />}

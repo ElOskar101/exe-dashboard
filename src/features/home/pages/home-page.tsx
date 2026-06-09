@@ -1,26 +1,26 @@
+import { IconAlertCircle, IconExternalLink } from '@tabler/icons-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { IconAlertCircle, IconExternalLink, IconPlus } from '@tabler/icons-react'
-import { Cell, Label, Pie, PieChart } from 'recharts'
 import type { LabelProps } from 'recharts'
+import { Cell, Label, Pie, PieChart } from 'recharts'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   EXECUTION_STATUSES,
-  type Execution,
-  type ExecutionStatus,
   formatExecutionDate,
   normalizeExecutionStatus,
   useExecutionAppStatsQuery,
   useExecutionTarget,
   useExecutionTargetNavigation,
   useExecutionsQuery,
+  type Execution,
+  type ExecutionStatus,
 } from '@/features/executions'
 import { ExecutionStatusLabel } from '@/features/executions/listing/components/execution-status-label'
 import {
@@ -44,7 +44,8 @@ const statusColorMap = {
 } as const satisfies Record<ExecutionStatus, string>
 
 const jobColorMap = {
-  finished: 'var(--success)',
+  completed: 'var(--success)',
+  failed: 'var(--destructive)',
   queued: 'var(--muted-foreground)',
   running: 'oklch(54.6% 0.245 262.881)',
 } as const
@@ -93,7 +94,6 @@ export default function HomePage() {
   const executionsQuery = useExecutionsQuery()
   const sortedExecutions = useMemo(() => getSortedExecutions(executionsQuery.data), [executionsQuery.data])
   const latestExecutions = sortedExecutions.slice(0, LATEST_EXECUTIONS_LIMIT)
-  const finishedExecutions = (statsQuery.data?.jobs.completed ?? 0) + (statsQuery.data?.jobs.failed ?? 0)
   const statusChartConfig = useMemo(
     () =>
       EXECUTION_STATUSES.reduce(
@@ -125,9 +125,13 @@ export default function HomePage() {
   const jobChartConfig = useMemo(
     () =>
       ({
-        finished: {
-          label: translate('stats.jobs.labels.finished'),
-          color: jobColorMap.finished,
+        completed: {
+          label: translate('stats.jobs.labels.completed'),
+          color: jobColorMap.completed,
+        },
+        failed: {
+          label: translate('stats.jobs.labels.failed'),
+          color: jobColorMap.failed,
         },
         jobs: {
           label: translate('stats.jobs.valueLabel'),
@@ -155,9 +159,14 @@ export default function HomePage() {
       total: statsQuery.data?.jobs.running ?? 0,
     },
     {
-      fill: 'var(--color-finished)',
-      status: 'finished',
-      total: finishedExecutions,
+      fill: 'var(--color-completed)',
+      status: 'completed',
+      total: statsQuery.data?.jobs.completed ?? 0,
+    },
+    {
+      fill: 'var(--color-failed)',
+      status: 'failed',
+      total: statsQuery.data?.jobs.failed ?? 0,
     },
   ]
   const jobTotal = jobChartData.reduce((total, item) => total + item.total, 0)
@@ -189,17 +198,6 @@ export default function HomePage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col">
-          <h1 className="text-3xl font-semibold tracking-tight">{translate('title')}</h1>
-          <p className="max-w-3xl text-muted-foreground">{translate('description', { app: target.label })}</p>
-        </div>
-        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/create')} />}>
-          <IconPlus data-icon="inline-start" />
-          {translate('createExecution')}
-        </Button>
-      </div>
-
       {statsQuery.isError || executionsQuery.isError ? (
         <Alert variant="destructive">
           <IconAlertCircle />
@@ -314,7 +312,6 @@ export default function HomePage() {
       <Card size="sm">
         <CardHeader>
           <CardTitle>{translate('latest.title')}</CardTitle>
-          <CardDescription>{translate('latest.description')}</CardDescription>
           <CardAction>
             <Button
               nativeButton={false}

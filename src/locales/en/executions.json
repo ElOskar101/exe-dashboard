@@ -199,6 +199,7 @@
   },
   "sidebar": {
     "title": "Executions",
+    "dashboard": "Dashboard",
     "createExecution": "Create execution",
     "allExecutions": "All executions",
     "loadErrorTitle": "Executions could not be loaded",

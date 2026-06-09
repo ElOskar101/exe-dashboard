@@ -1,6 +1,5 @@
+import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -56,17 +55,6 @@ export default function ExecutionsPage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col">
-          <h1 className="text-3xl font-semibold tracking-tight">{t('list.title')}</h1>
-          <p className="max-w-3xl text-muted-foreground">{t('list.description')}</p>
-        </div>
-        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/create')} />}>
-          <IconPlus data-icon="inline-start" />
-          {t('list.createExecution')}
-        </Button>
-      </div>
-
       <Card size="sm">
         <CardContent className="flex flex-col gap-4">
           <FieldGroup className="gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">

@@ -23,13 +23,14 @@
     },
     "jobs": {
       "title": "Jobs by state",
-      "description": "Queued, running, and finished jobs.",
+      "description": "Queued, running, completed, and failed jobs.",
       "valueLabel": "Jobs",
       "totalLabel": "jobs",
       "labels": {
         "queued": "Queued",
         "running": "Running",
-        "finished": "Finished"
+        "completed": "Completed",
+        "failed": "Failed"
       }
     },
     "clientClinic": {
