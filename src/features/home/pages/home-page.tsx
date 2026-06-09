@@ -16,8 +16,8 @@ import {
   EXECUTION_STATUSES,
   formatExecutionDate,
   normalizeExecutionStatus,
-  useExecutionAppStatsQuery,
   useExecutionTargetNavigation,
+  useExecutionAppStatsQuery,
   useExecutionsQuery,
   type Execution,
   type ExecutionStatus,
@@ -239,14 +239,9 @@ export default function HomePage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-normal">{translate('title')}</h1>
-          <p className="text-sm text-muted-foreground">{translate('description', { app: 'Exe Dashboard' })}</p>
-        </div>
-        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/create')} />} size="sm">
-          {translate('createExecution')}
-        </Button>
+      <div className="sr-only">
+        <h1>{translate('title')}</h1>
+        <p>{translate('description', { app: 'Exe Dashboard' })}</p>
       </div>
 
       {statsQuery.isError || executionsQuery.isError ? (

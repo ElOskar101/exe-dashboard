@@ -54,9 +54,9 @@ export default function ExecutionsPage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-normal">{t('list.title')}</h1>
-        <p className="text-sm text-muted-foreground">{t('list.description')}</p>
+      <div className="sr-only">
+        <h1>{t('list.title')}</h1>
+        <p>{t('list.description')}</p>
       </div>
 
       <Card size="sm">

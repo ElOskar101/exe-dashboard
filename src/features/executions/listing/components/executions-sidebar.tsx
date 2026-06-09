@@ -42,6 +42,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
+  SidebarSeparator,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/sidebar-context'
 import { useCurrentTime } from '@/hooks/use-current-time'
@@ -459,7 +460,7 @@ export function ExecutionsSidebar() {
             title={t('common:project-name')}
             className="h-auto w-auto rounded-xl px-2 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
-            <img className="size-4 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+            <img className="h-auto w-12 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
           </Button>
           <Button
             type="button"
@@ -510,6 +511,7 @@ export function ExecutionsSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <SidebarSeparator />
       <SidebarContent>
         <SidebarGroup>
           <div className="sticky top-0 z-30 flex items-center justify-between rounded-none bg-sidebar">
