@@ -1,7 +1,13 @@
 import { differenceInMilliseconds, isValid, parseISO } from 'date-fns'
 
 export const _base64Encode = (data: string) => globalThis.btoa(data)
-export const _base64Decode = (data: string) => globalThis.atob(data)
+
+export const _base64Decode = (data: string) => {
+  const normalizedData = data.replaceAll('-', '+').replaceAll('_', '/')
+  const paddingLength = (4 - (normalizedData.length % 4)) % 4
+
+  return globalThis.atob(`${normalizedData}${'='.repeat(paddingLength)}`)
+}
 
 export const getDiffDates = (date1: string, date2: string, unit: 's' | 'm' | 'h' | 'd' | 'w' = 's') => {
   const firstDate = parseISO(date1)

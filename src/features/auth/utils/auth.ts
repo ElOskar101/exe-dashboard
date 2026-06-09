@@ -8,5 +8,5 @@ export const redirectToLogin = (customUrl?: string) => {
   const returnUrl = customUrl || window.location.href
   storeAuthReturnUrl(returnUrl)
 
-  window.location.href = `${loginUrl}?url=${_base64Encode(returnUrl)}&mode=${APP_CONFIG.authLoginMode}`
+  window.location.href = `${loginUrl}?url=${encodeURIComponent(_base64Encode(returnUrl))}&mode=${APP_CONFIG.authLoginMode}`
 }
