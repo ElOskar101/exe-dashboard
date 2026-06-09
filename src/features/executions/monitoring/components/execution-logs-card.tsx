@@ -251,8 +251,7 @@ interface ExecutionLogsCardProps {
   onResumeExecution: () => void
   onStopExecution: () => void
   rawExecutionJson: string
-  reportBasePath: string
-  reportHtml?: string
+  reportSource: string
   rerunSummary: ExecutionRerunSummary | null
   showReport: boolean
   title: string
@@ -281,8 +280,7 @@ export function ExecutionLogsCard({
   onResumeExecution,
   onStopExecution,
   rawExecutionJson,
-  reportBasePath,
-  reportHtml,
+  reportSource,
   rerunSummary,
   showReport,
   title,
@@ -421,12 +419,7 @@ export function ExecutionLogsCard({
             </div>
           </TabsContent>
           <TabsContent value="report" className="min-h-0 min-w-0">
-            <ExecutionReportPanel
-              isError={isReportError}
-              isLoading={isReportLoading}
-              reportBasePath={reportBasePath}
-              reportHtml={reportHtml}
-            />
+            <ExecutionReportPanel isError={isReportError} isLoading={isReportLoading} reportSource={reportSource} />
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -1,13 +1,13 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   getDefaultExecutionReportsUrl,
-  getExecutionReportsProxyPath,
+  getExecutionReportIndexProxyPath,
+  executionKeys,
   isExecutionFailed,
   isExecutionSuccessful,
   useExecutionQuery,
-  useExecutionReportQuery,
   useExecutionStatusValue,
   usePauseExecutionMutation,
   useResumeExecutionMutation,
@@ -49,8 +49,7 @@ export interface ExecutionDetailSession {
   onStopExecution: () => void
   pauseError: boolean
   rawExecutionJson: string
-  reportBasePath: string
-  reportHtml?: string
+  reportSource: string
   rerunErrorMessage: string | null
   rerunSummary: ExecutionRerunSummary | null
   resumeError: boolean
@@ -98,11 +97,24 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportBasePath = getExecutionReportsProxyPath(
+  const reportSource = getExecutionReportIndexProxyPath(
     target.requestTarget?.reportsUrl ?? getDefaultExecutionReportsUrl(),
     reportExecutionId,
   )
-  const reportQuery = useExecutionReportQuery(reportExecutionId, showReport)
+  const reportAvailabilityQuery = useQuery({
+    queryKey: [...executionKeys.report(reportExecutionId, target.key), 'availability'],
+    queryFn: async () => {
+      const response = await fetch(reportSource, { method: 'HEAD' })
+
+      if (!response.ok) {
+        throw new Error(`Execution report returned ${response.status}.`)
+      }
+
+      return true
+    },
+    enabled: showReport,
+    retry: false,
+  })
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])
   const displayStatus = formatExecutionStatusLabel(currentStatus)
   const { canPauseExecution, canResumeExecution, canStopExecution } = getExecutionControlAvailability(currentStatus)
@@ -118,8 +130,8 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     execution: executionQuery.data,
     isLoading: executionQuery.isPending,
     isPausing: pauseMutation.isPending,
-    isReportError: reportQuery.isError,
-    isReportLoading: !showReport || reportQuery.isLoading,
+    isReportError: reportAvailabilityQuery.isError,
+    isReportLoading: showReport && reportAvailabilityQuery.isLoading,
     isResuming: resumeMutation.isPending,
     isRerunAvailable: rerun.isRerunAvailable,
     isRerunning: rerun.isRerunning,
@@ -133,8 +145,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     onStopExecution: () => stopMutation.mutate(),
     pauseError: pauseMutation.isError,
     rawExecutionJson,
-    reportBasePath,
-    reportHtml: reportQuery.data,
+    reportSource,
     rerunErrorMessage: rerun.rerunErrorMessage,
     rerunSummary: rerun.rerunSummary,
     resumeError: resumeMutation.isError,

@@ -19,8 +19,41 @@ const getPathSegments = (value) => {
   return typeof value === 'string' ? value.split('/') : []
 }
 
-const getProxyTargetUrl = (request) => {
-  const proxyPath = getPathSegments(request.query.path).join('/')
+const decodeReportProxyOrigin = (value) => {
+  try {
+    const origin = Buffer.from(value, 'base64url').toString('utf8')
+    const originUrl = new URL(origin)
+
+    if (['http:', 'https:'].includes(originUrl.protocol) && originUrl.pathname === '/') {
+      return originUrl.origin
+    }
+  } catch {
+    // Fall back to the legacy percent-encoded origin format.
+  }
+
+  return decodeURIComponent(value)
+}
+
+const isValidProxyTargetUrl = (targetUrl) =>
+  ['http:', 'https:'].includes(targetUrl.protocol) &&
+  !targetUrl.username &&
+  !targetUrl.password &&
+  targetUrl.pathname !== '/'
+
+const getProxyTargetUrlFromOriginSegment = (pathSegments) => {
+  const [encodedOrigin, ...targetPathSegments] = pathSegments
+
+  if (!encodedOrigin || targetPathSegments.length === 0) {
+    return null
+  }
+
+  const targetUrl = new URL(`/${targetPathSegments.join('/')}`, decodeReportProxyOrigin(encodedOrigin))
+
+  return isValidProxyTargetUrl(targetUrl) ? targetUrl : null
+}
+
+const getProxyTargetUrlFromLegacyFullPath = (pathSegments) => {
+  const proxyPath = pathSegments.join('/')
 
   if (!proxyPath) {
     return null
@@ -28,12 +61,15 @@ const getProxyTargetUrl = (request) => {
 
   const targetUrl = new URL(decodeURIComponent(proxyPath))
 
-  if (
-    !['http:', 'https:'].includes(targetUrl.protocol) ||
-    targetUrl.username ||
-    targetUrl.password ||
-    targetUrl.pathname === '/'
-  ) {
+  return isValidProxyTargetUrl(targetUrl) ? targetUrl : null
+}
+
+const getProxyTargetUrl = (request) => {
+  const pathSegments = getPathSegments(request.query.path)
+  const targetUrl =
+    getProxyTargetUrlFromOriginSegment(pathSegments) ?? getProxyTargetUrlFromLegacyFullPath(pathSegments)
+
+  if (!targetUrl) {
     return null
   }
 
@@ -63,7 +99,7 @@ export default async function handler(request, response) {
     return
   }
 
-  const upstreamResponse = await fetch(targetUrl)
+  const upstreamResponse = await fetch(targetUrl, { method: request.method })
 
   response.status(upstreamResponse.status)
   upstreamResponse.headers.forEach((value, key) => {

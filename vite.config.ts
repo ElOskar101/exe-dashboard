@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { Buffer } from 'node:buffer'
 import { fileURLToPath, URL } from 'node:url'
 import { APP_CONFIG } from './src/app.config'
 
@@ -13,13 +14,28 @@ const reactDomClientPath = fileURLToPath(new URL('./node_modules/react-dom/clien
 const exeReportsProxyTarget = new URL(APP_CONFIG.exeReportsUrl).origin
 const executionReportsProxyPrefix = '/api/execution-reports'
 
+const decodeReportProxyOrigin = (value: string) => {
+  try {
+    const origin = Buffer.from(value, 'base64url').toString('utf8')
+    const originUrl = new URL(origin)
+
+    if (['http:', 'https:'].includes(originUrl.protocol) && originUrl.pathname === '/') {
+      return originUrl.origin
+    }
+  } catch {
+    // Fall back to the legacy percent-encoded origin format.
+  }
+
+  return decodeURIComponent(value)
+}
+
 const getExecutionReportsProxyParts = (path: string) => {
   const proxyPath = path.slice(executionReportsProxyPrefix.length + 1)
   const [encodedOrigin = '', ...targetPathSegments] = proxyPath.split('/')
 
   return {
     encodedOrigin,
-    origin: decodeURIComponent(encodedOrigin),
+    origin: decodeReportProxyOrigin(encodedOrigin),
     targetPath: `/${targetPathSegments.join('/')}`,
   }
 }

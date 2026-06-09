@@ -1,26 +1,16 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTheme } from '@/hooks/use-theme'
-import { isolateReportHtml, resolveExecutionReportBaseUrl } from './execution-report-html-utils'
 
 interface ExecutionReportPanelProps {
   isError: boolean
   isLoading: boolean
-  reportBasePath: string
-  reportHtml?: string
+  reportSource: string
 }
 
-export function ExecutionReportPanel({ isError, isLoading, reportBasePath, reportHtml }: ExecutionReportPanelProps) {
+export function ExecutionReportPanel({ isError, isLoading, reportSource }: ExecutionReportPanelProps) {
   const { t } = useTranslation('executions')
-  const { theme } = useTheme()
-  const reportBaseUrl = useMemo(() => resolveExecutionReportBaseUrl(reportBasePath), [reportBasePath])
-  const isolatedReportHtml = useMemo(
-    () => (reportHtml ? isolateReportHtml(reportHtml, reportBaseUrl, theme) : undefined),
-    [reportBaseUrl, reportHtml, theme],
-  )
 
   if (isLoading) {
     return (
@@ -28,7 +18,7 @@ export function ExecutionReportPanel({ isError, isLoading, reportBasePath, repor
     )
   }
 
-  if (isError || !reportHtml) {
+  if (isError) {
     return (
       <Alert variant="destructive">
         <IconAlertCircle />
@@ -41,8 +31,9 @@ export function ExecutionReportPanel({ isError, isLoading, reportBasePath, repor
   return (
     <iframe
       className="h-[calc(100vh-16rem)] min-h-96 w-full rounded-2xl border border-border bg-background"
+      loading="lazy"
       referrerPolicy="no-referrer"
-      srcDoc={isolatedReportHtml}
+      src={reportSource}
       title={t('detail.reportFrameTitle')}
     />
   )

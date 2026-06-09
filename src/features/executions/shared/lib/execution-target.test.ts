@@ -4,6 +4,7 @@ import {
   DEFAULT_EXECUTION_TARGET_LABEL,
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
+  getExecutionReportIndexProxyPath,
   getExecutionReportsProxyPath,
   getExecutionTargetSearchSelection,
   resolveExecutionTarget,
@@ -103,7 +104,13 @@ describe('execution target', () => {
 
   it('builds a same-origin report proxy path with the selected reports origin encoded', () => {
     expect(getExecutionReportsProxyPath('https://api.controlcentralcarrier.com/reports', 'exe-1')).toBe(
-      '/api/execution-reports/https%3A%2F%2Fapi.controlcentralcarrier.com/reports/exe-1',
+      '/api/execution-reports/aHR0cHM6Ly9hcGkuY29udHJvbGNlbnRyYWxjYXJyaWVyLmNvbQ/reports/exe-1',
+    )
+  })
+
+  it('builds a same-origin report proxy path for the report index page', () => {
+    expect(getExecutionReportIndexProxyPath('https://api.controlcentralcarrier.com/reports', 'exe-1')).toBe(
+      '/api/execution-reports/aHR0cHM6Ly9hcGkuY29udHJvbGNlbnRyYWxjYXJyaWVyLmNvbQ/reports/exe-1/index.html',
     )
   })
 })
