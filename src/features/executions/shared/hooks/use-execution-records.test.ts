@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  useCreateExecutionMutation,
+  useDeleteExecutionMutation,
   useExecutionAppStatsQuery,
   useExecutionQuery,
   useExecutionReportQuery,
   useExecutionsQuery,
+  usePauseExecutionMutation,
 } from './use-execution-records'
 
 const mocks = vi.hoisted(() => ({
@@ -41,13 +44,27 @@ vi.mock('../services/execution.service', () => ({
 }))
 
 describe('useExecutionsQuery', () => {
+  const invalidateQueries = vi.fn()
+
+  const getLastMutationSuccessHandler = () => {
+    const mutationOptions = mocks.useMutation.mock.lastCall?.[0] as { onSuccess?: unknown }
+
+    if (typeof mutationOptions.onSuccess !== 'function') {
+      throw new Error('Expected useMutation to receive an onSuccess handler.')
+    }
+
+    return mutationOptions.onSuccess
+  }
+
   beforeEach(() => {
+    vi.clearAllMocks()
     mocks.useExecutionTarget.mockReturnValue({
       isResolving: false,
       target: { key: 'default', requestTarget: undefined },
     })
+    mocks.useMutation.mockImplementation((options) => options)
     mocks.useQuery.mockImplementation((options) => options)
-    mocks.useQueryClient.mockReturnValue({})
+    mocks.useQueryClient.mockReturnValue({ invalidateQueries })
   })
 
   it('allows callers to disable the query until prerequisites are ready', () => {
@@ -170,5 +187,33 @@ describe('useExecutionsQuery', () => {
     )
     expect(query.isLoading).toBeUndefined()
     expect(query.isPending).toBeUndefined()
+  })
+
+  it('invalidates execution list and app stats after creating an execution', async () => {
+    useCreateExecutionMutation()
+
+    await getLastMutationSuccessHandler()({ data: {} }, {})
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'list'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'app-stats'] })
+  })
+
+  it('invalidates execution list and app stats after deleting an execution', async () => {
+    useDeleteExecutionMutation()
+
+    await getLastMutationSuccessHandler()({ data: {} }, 'execution-1')
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'list'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'app-stats'] })
+  })
+
+  it('invalidates execution detail, list, and app stats after modifying an execution', async () => {
+    usePauseExecutionMutation('execution-1')
+
+    await getLastMutationSuccessHandler()({ data: {} })
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'detail', 'execution-1'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'list'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'app-stats'] })
   })
 })

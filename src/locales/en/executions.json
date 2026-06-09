@@ -199,6 +199,7 @@
   },
   "sidebar": {
     "title": "Executions",
+    "home": "Home",
     "createExecution": "Create execution",
     "allExecutions": "All executions",
     "loadErrorTitle": "Executions could not be loaded",
@@ -235,6 +236,8 @@
     "patientsDialogTitle": "Patients",
     "patientsDialogDescription": "Review the patients stored for execution {{execution}}.",
     "patientTriggerAriaLabel": "View patients for execution {{execution}}",
+    "expandFilename": "Show more",
+    "minimizeFilename": "Show less",
     "closePatientsDialog": "Close",
     "noPatients": "No patients are stored for this execution.",
     "filters": {

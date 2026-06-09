@@ -7,11 +7,12 @@ import {
   IconChevronDown,
   IconFolder,
   IconListFilled,
-  IconLayoutSidebarLeftCollapseFilled,
-  IconLayoutSidebarLeftExpandFilled,
+  IconLayoutSidebar,
+  IconLayoutSidebarFilled,
   IconPlus,
   IconRefresh,
   IconTrash,
+  IconSmartHome,
 } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -41,6 +42,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
+  SidebarSeparator,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/sidebar-context'
 import { useCurrentTime } from '@/hooks/use-current-time'
@@ -73,6 +75,17 @@ import { UNKNOWN_PROJECT_LABEL } from '../lib/execution-listing-filters'
 
 const MIN_REFRESH_SPIN_DURATION_MS = 1000
 const SIDEBAR_PROJECT_EXECUTIONS_LIMIT = 5
+
+const getCreatedAtTime = (execution: Execution) => {
+  const createdAtTime = new Date(execution.createdAt).getTime()
+
+  return Number.isNaN(createdAtTime) ? 0 : createdAtTime
+}
+
+const sortExecutionsByCreatedAtDescending = (executions: Execution[]) =>
+  [...executions].sort(
+    (leftExecution, rightExecution) => getCreatedAtTime(rightExecution) - getCreatedAtTime(leftExecution),
+  )
 
 export function ExecutionsSidebar() {
   const { t } = useTranslation(['executions', 'common'])
@@ -131,7 +144,7 @@ export function ExecutionsSidebar() {
       setOpenDeleteId((currentOpenId) => (currentOpenId === deletedExecutionId ? null : currentOpenId))
 
       if (deletedExecutionId === currentExecutionId) {
-        navigate(getPathWithExecutionTarget('/'))
+        navigate(getPathWithExecutionTarget('/executions'))
       }
     },
   })
@@ -150,7 +163,9 @@ export function ExecutionsSidebar() {
 
           return executionProject === project.name
         })
-        const executions = groupExecutionsByProject(projectExecutions).flatMap((group) => group.executions)
+        const executions = sortExecutionsByCreatedAtDescending(
+          groupExecutionsByProject(projectExecutions).flatMap((group) => group.executions),
+        )
 
         return {
           executions,
@@ -161,12 +176,14 @@ export function ExecutionsSidebar() {
       })
       .filter((group) => group.executions.length > 0)
 
-    const unknownExecutions = groupExecutionsByProject(
-      Array.from(unknownExecutionsById.values()).map((execution) => ({
-        ...execution,
-        project: '',
-      })),
-    ).flatMap((group) => group.executions)
+    const unknownExecutions = sortExecutionsByCreatedAtDescending(
+      groupExecutionsByProject(
+        Array.from(unknownExecutionsById.values()).map((execution) => ({
+          ...execution,
+          project: '',
+        })),
+      ).flatMap((group) => group.executions),
+    )
 
     return unknownExecutions.length > 0
       ? [
@@ -267,20 +284,20 @@ export function ExecutionsSidebar() {
               <TooltipTrigger
                 render={
                   <Button
-                    nativeButton={false}
-                    render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
-                    variant="ghost"
+                    type="button"
                     size="icon-sm"
-                    aria-label={t('common:project-name')}
-                    title={t('common:project-name')}
+                    variant="ghost"
+                    aria-label={sidebarButtonLabel}
+                    title={sidebarButtonLabel}
                     className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={toggleSidebar}
                   >
-                    <img className="size-5 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+                    <IconLayoutSidebar />
                   </Button>
                 }
               />
               <TooltipContent side="right" align="center">
-                {t('common:project-name')}
+                {sidebarButtonLabel}
               </TooltipContent>
             </Tooltip>
           </SidebarMenuItem>
@@ -289,20 +306,20 @@ export function ExecutionsSidebar() {
               <TooltipTrigger
                 render={
                   <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    aria-label={sidebarButtonLabel}
-                    title={sidebarButtonLabel}
+                    nativeButton={false}
+                    render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+                    variant={pathname === '/' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    aria-label={t('sidebar.home')}
+                    title={t('sidebar.home')}
                     className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    onClick={toggleSidebar}
                   >
-                    <IconLayoutSidebarLeftExpandFilled />
+                    <IconSmartHome />
                   </Button>
                 }
               />
               <TooltipContent side="right" align="center">
-                {sidebarButtonLabel}
+                {t('sidebar.home')}
               </TooltipContent>
             </Tooltip>
           </SidebarMenuItem>
@@ -334,8 +351,8 @@ export function ExecutionsSidebar() {
                 render={
                   <Button
                     nativeButton={false}
-                    render={<Link to={getPathWithExecutionTarget('/')} />}
-                    variant={pathname === '/' ? 'secondary' : 'ghost'}
+                    render={<Link to={getPathWithExecutionTarget('/create')} />}
+                    variant={pathname === '/create' ? 'secondary' : 'ghost'}
                     size="icon-sm"
                     aria-label={t('sidebar.createExecution')}
                     title={t('sidebar.createExecution')}
@@ -458,7 +475,7 @@ export function ExecutionsSidebar() {
             title={t('common:project-name')}
             className="h-auto w-auto rounded-xl px-2 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
-            <img className="h-5 w-auto object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+            <img className="h-auto w-12 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
           </Button>
           <Button
             type="button"
@@ -470,13 +487,23 @@ export function ExecutionsSidebar() {
             onClick={toggleSidebar}
           >
             {isMobile || state === 'expanded' ? (
-              <IconLayoutSidebarLeftCollapseFilled />
+              <IconLayoutSidebar className="size-4" />
             ) : (
-              <IconLayoutSidebarLeftExpandFilled />
+              <IconLayoutSidebarFilled className="size-4" />
             )}
           </Button>
         </div>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/'}
+              tooltip={t('sidebar.home')}
+            >
+              <span>{t('sidebar.home')}</span>
+              <IconSmartHome className="ml-auto" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               render={<Link to={getPathWithExecutionTarget('/executions')} onClick={closeSidebarOnMobile} />}
@@ -489,8 +516,8 @@ export function ExecutionsSidebar() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
-              isActive={pathname === '/'}
+              render={<Link to={getPathWithExecutionTarget('/create')} onClick={closeSidebarOnMobile} />}
+              isActive={pathname === '/create'}
               tooltip={t('sidebar.createExecution')}
             >
               <span>{t('sidebar.createExecution')}</span>
@@ -499,6 +526,7 @@ export function ExecutionsSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <SidebarSeparator />
       <SidebarContent>
         <SidebarGroup>
           <div className="sticky top-0 z-30 flex items-center justify-between rounded-none bg-sidebar">

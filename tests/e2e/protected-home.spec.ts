@@ -121,6 +121,59 @@ async function stubProtectedRouteDependencies(page: Page) {
     })
   })
 
+  await page.route('**/api/v1/stats', async (route) => {
+    await route.fulfill({
+      json: {
+        status: 'ok',
+        timestamp: '2026-05-21T14:00:00.000Z',
+        uptime: 120,
+        server: { status: 'up' },
+        mongo: { status: 'up', readyState: 1, state: 'connected' },
+        redis: { status: 'up' },
+        jobs: {
+          waiting: 1,
+          active: 1,
+          completed: 8,
+          failed: 2,
+          delayed: 0,
+          paused: 0,
+          prioritized: 0,
+          waitingChildren: 0,
+          queued: 1,
+          running: 1,
+        },
+      },
+    })
+  })
+
+  await page.route('**/api/v1/executions**', async (route) => {
+    const url = new URL(route.request().url())
+
+    if (!url.pathname.endsWith('/api/v1/executions') || route.request().method() !== 'GET') {
+      await route.fallback()
+      return
+    }
+
+    await route.fulfill({
+      json: [
+        {
+          _id: 'execution-home',
+          createdBy: 'e2e-user',
+          project: 'liberty',
+          status: 'completed',
+          client: 'Legacy Dental Care',
+          clinic: 'Downtown Clinic',
+          execution: '2026-04-27',
+          botName: 'Eligibility Runner',
+          createdAt: '2026-05-21T14:00:00.000Z',
+          updatedAt: '2026-05-21T14:00:00.000Z',
+          jobId: 'job-home',
+          playwrightExecutionId: 'playwright-home',
+        },
+      ],
+    })
+  })
+
   await page.route('**/api/clinicbots/decrypt/**', async (route) => {
     await route.fulfill({
       body: '"super-secret"',
@@ -264,7 +317,7 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL(/https:\/\/auth\.controlcentralcarrier\.com\/\?url=.+&mode=dev/)
   })
 
-  test('allows logged in users to see the execution wizard', async ({ page, request }) => {
+  test('allows logged in users to see the home dashboard', async ({ page, request }) => {
     test.skip(
       !canLogin,
       'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
@@ -280,8 +333,11 @@ test.describe('protected executions route', () => {
     await page.goto('/')
 
     await expect(page).toHaveURL('/')
-    await expect(page.getByLabel('Client')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Next' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
+    await expect(page.getByText('Latest executions')).toBeVisible()
+    await expect(
+      page.getByRole('row', { name: /liberty\s+2026-04-27\s+Completed\s+Legacy Dental Care\s+Downtown Clinic/ }),
+    ).toBeVisible()
   })
 
   test('minimizes the desktop sidebar from the header trigger', async ({ page, request }) => {
@@ -297,7 +353,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/')
+    await page.goto('/create')
 
     const sidebar = page.locator('[data-slot="sidebar-container"]')
     await expect(page.getByRole('button', { name: 'Minimize executions sidebar' })).toBeVisible()
@@ -325,7 +381,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/')
+    await page.goto('/create')
 
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByText('Select a client and clinic in the patients step before choosing a bot.')).toBeVisible()
@@ -362,7 +418,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/')
+    await page.goto('/create')
 
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -421,7 +477,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/')
+    await page.goto('/create')
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)
@@ -436,7 +492,7 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('"workers": 4')).toBeVisible()
     await page.getByRole('button', { name: 'Create execution' }).click()
 
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL('/create')
     await expect(page.getByText('Execution created')).toBeVisible()
     const viewExecutionButton = page.getByRole('button', { name: 'View execution' })
     await expect(viewExecutionButton).toBeVisible()
@@ -529,7 +585,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/')
+    await page.goto('/create')
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)

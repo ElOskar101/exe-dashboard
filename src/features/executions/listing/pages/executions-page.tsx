@@ -1,6 +1,5 @@
+import { IconAlertCircle } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -8,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EXECUTION_STATUSES, useExecutionTargetNavigation } from '@/features/executions/shared'
+import { EXECUTION_STATUSES } from '@/features/executions/shared'
 
 import { ExecutionClientFilter } from '../components/execution-client-filter'
 import { ExecutionDateRangeFilter } from '../components/execution-date-range-filter'
@@ -32,7 +31,6 @@ const executionStatusOptionKeys = {
 
 export default function ExecutionsPage() {
   const { t } = useTranslation('executions')
-  const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const {
     clinicOptions,
     dateRange,
@@ -56,15 +54,9 @@ export default function ExecutionsPage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col">
-          <h1 className="text-3xl font-semibold tracking-tight">{t('list.title')}</h1>
-          <p className="max-w-3xl text-muted-foreground">{t('list.description')}</p>
-        </div>
-        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/')} />}>
-          <IconPlus data-icon="inline-start" />
-          {t('list.createExecution')}
-        </Button>
+      <div className="sr-only">
+        <h1>{t('list.title')}</h1>
+        <p>{t('list.description')}</p>
       </div>
 
       <Card size="sm">

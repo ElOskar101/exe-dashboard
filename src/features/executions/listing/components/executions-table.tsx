@@ -69,20 +69,18 @@ export function ExecutionsTable({
     <Table className="table-fixed">
       <TableHeader>
         <TableRow>
+          <TableHead className="whitespace-normal">{t('list.columns.project')}</TableHead>
           <TableHead className="w-28 whitespace-normal">{t('list.columns.execution')}</TableHead>
           <TableHead className="w-28">{t('list.columns.status')}</TableHead>
           <TableHead className="hidden whitespace-normal lg:table-cell xl:w-36">{t('list.columns.client')}</TableHead>
           <TableHead className="hidden whitespace-normal lg:table-cell xl:w-36">{t('list.columns.clinic')}</TableHead>
-          <TableHead className="hidden whitespace-normal 2xl:table-cell 2xl:w-28">
-            {t('list.columns.project')}
-          </TableHead>
           <TableHead className="w-[11rem] whitespace-normal sm:w-[14rem]">{t('list.columns.patients')}</TableHead>
           <TableHead className="hidden whitespace-normal 2xl:table-cell 2xl:w-36">{t('list.columns.bot')}</TableHead>
           <TableHead className="hidden w-24 whitespace-nowrap md:table-cell">{t('list.columns.createdAt')}</TableHead>
           <TableHead className="w-16 text-right sm:w-28">{t('list.columns.actions')}</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="[&_td:not(:last-child)]:text-foreground/80">
         {executions.length > 0 ? (
           <>
             {executions.map((execution) => {
@@ -93,6 +91,9 @@ export function ExecutionsTable({
               return (
                 <TableRow key={execution._id}>
                   <TableCell className="font-medium whitespace-normal break-words">
+                    {getExecutionProjectLabel(execution)}
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words">
                     <Link className="hover:underline" to={getPathWithExecutionTarget(`/execution/${execution._id}`)}>
                       {executionDayLabel}
                     </Link>
@@ -105,9 +106,6 @@ export function ExecutionsTable({
                   </TableCell>
                   <TableCell className="hidden whitespace-normal break-words lg:table-cell">
                     {displayNames.clinic || t('list.emptyValue')}
-                  </TableCell>
-                  <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
-                    {getExecutionProjectLabel(execution)}
                   </TableCell>
                   <TableCell className="whitespace-normal break-words">
                     <ExecutionPatientsDialog execution={execution} executionLabel={executionDayLabel} />
