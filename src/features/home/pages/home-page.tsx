@@ -95,6 +95,8 @@ export default function HomePage() {
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const statsQuery = useExecutionAppStatsQuery()
   const executionsQuery = useExecutionsQuery()
+  const shouldShowExecutionsFallback = executionsQuery.isLoading || executionsQuery.isError
+  const shouldShowStatsFallback = statsQuery.isLoading || statsQuery.isError
   const sortedExecutions = useMemo(() => getSortedExecutions(executionsQuery.data), [executionsQuery.data])
   const latestExecutions = sortedExecutions.slice(0, LATEST_EXECUTIONS_LIMIT)
   const statusChartConfig = useMemo(
@@ -237,6 +239,16 @@ export default function HomePage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-normal">{translate('title')}</h1>
+          <p className="text-sm text-muted-foreground">{translate('description', { app: 'Exe Dashboard' })}</p>
+        </div>
+        <Button nativeButton={false} render={<Link to={getPathWithExecutionTarget('/create')} />} size="sm">
+          {translate('createExecution')}
+        </Button>
+      </div>
+
       {statsQuery.isError || executionsQuery.isError ? (
         <Alert variant="destructive">
           <IconAlertCircle />
@@ -262,7 +274,7 @@ export default function HomePage() {
             <CardTitle>{translate('stats.status.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            {executionsQuery.isLoading ? (
+            {shouldShowExecutionsFallback ? (
               <Skeleton className="h-[260px] w-full rounded-2xl" />
             ) : (
               <ChartContainer config={statusChartConfig} className="mx-auto aspect-square max-h-[260px]">
@@ -292,7 +304,7 @@ export default function HomePage() {
             <CardTitle>{translate('stats.jobs.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            {statsQuery.isLoading ? (
+            {shouldShowStatsFallback ? (
               <Skeleton className="h-[260px] w-full rounded-2xl" />
             ) : (
               <ChartContainer config={jobChartConfig} className="mx-auto aspect-square max-h-[260px]">
@@ -321,7 +333,7 @@ export default function HomePage() {
           <Tabs defaultValue="clients" className="gap-0">
             <CardHeader>
               <CardTitle>{translate('stats.top.title')}</CardTitle>
-              {!executionsQuery.isLoading ? (
+              {!shouldShowExecutionsFallback ? (
                 <CardAction>
                   <TabsList className="group-data-horizontal/tabs:h-7 p-0.5">
                     <TabsTrigger value="clients" className="px-2.5 py-0.5 text-xs">
@@ -335,7 +347,7 @@ export default function HomePage() {
               ) : null}
             </CardHeader>
             <CardContent>
-              {executionsQuery.isLoading ? (
+              {shouldShowExecutionsFallback ? (
                 <Skeleton className="h-[260px] w-full rounded-2xl" />
               ) : (
                 <>
@@ -368,7 +380,7 @@ export default function HomePage() {
           </CardAction>
         </CardHeader>
         <CardContent>
-          {executionsQuery.isLoading ? (
+          {shouldShowExecutionsFallback ? (
             <div className="flex flex-col gap-2">
               {Array.from({ length: LATEST_EXECUTIONS_LIMIT }, (_, index) => (
                 <Skeleton key={index} className="h-12 w-full rounded-2xl" />
@@ -376,7 +388,7 @@ export default function HomePage() {
             </div>
           ) : null}
 
-          {!executionsQuery.isLoading ? (
+          {!shouldShowExecutionsFallback ? (
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>

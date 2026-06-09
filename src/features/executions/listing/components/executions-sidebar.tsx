@@ -264,56 +264,26 @@ export function ExecutionsSidebar() {
       <SidebarHeader className="items-center">
         <SidebarMenu className="items-center">
           <SidebarMenuItem>
-            <div className="group relative">
-              <div className="flex items-center justify-center group-hover:hidden">
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        nativeButton={false}
-                        render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={t('common:project-name')}
-                        title={t('common:project-name')}
-                        className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      >
-                        <img
-                          className="h-4 w-auto object-contain"
-                          src="/agent-icon.svg"
-                          alt={t('common:project-name')}
-                        />
-                      </Button>
-                    }
-                  />
-                  <TooltipContent side="right" align="center">
-                    {t('common:project-name')}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <div className="hidden items-center justify-center group-hover:flex">
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        type="button"
-                        size="icon-sm"
-                        variant="ghost"
-                        aria-label={sidebarButtonLabel}
-                        title={sidebarButtonLabel}
-                        className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        onClick={toggleSidebar}
-                      >
-                        <IconLayoutSidebar className="size-4" />
-                      </Button>
-                    }
-                  />
-                  <TooltipContent side="right" align="center">
-                    {sidebarButtonLabel}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={sidebarButtonLabel}
+                    title={sidebarButtonLabel}
+                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={toggleSidebar}
+                  >
+                    <IconLayoutSidebar />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" align="center">
+                {sidebarButtonLabel}
+              </TooltipContent>
+            </Tooltip>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Tooltip>

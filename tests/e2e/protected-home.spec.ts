@@ -147,7 +147,9 @@ async function stubProtectedRouteDependencies(page: Page) {
   })
 
   await page.route('**/api/v1/executions**', async (route) => {
-    if (route.request().method() !== 'GET') {
+    const url = new URL(route.request().url())
+
+    if (!url.pathname.endsWith('/api/v1/executions') || route.request().method() !== 'GET') {
       await route.fallback()
       return
     }
@@ -333,7 +335,9 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL('/')
     await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
     await expect(page.getByText('Latest executions')).toBeVisible()
-    await expect(page.getByRole('row', { name: /Legacy Dental Care\s+Downtown Clinic\s+1/ })).toBeVisible()
+    await expect(
+      page.getByRole('row', { name: /liberty\s+2026-04-27\s+Completed\s+Legacy Dental Care\s+Downtown Clinic/ }),
+    ).toBeVisible()
   })
 
   test('minimizes the desktop sidebar from the header trigger', async ({ page, request }) => {
