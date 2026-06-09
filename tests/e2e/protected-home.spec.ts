@@ -333,7 +333,7 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL('/')
     await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
     await expect(page.getByText('Latest executions')).toBeVisible()
-    await expect(page.getByRole('cell', { name: 'Legacy Dental Care' })).toBeVisible()
+    await expect(page.getByRole('row', { name: /Legacy Dental Care\s+Downtown Clinic\s+1/ })).toBeVisible()
   })
 
   test('minimizes the desktop sidebar from the header trigger', async ({ page, request }) => {

@@ -6,17 +6,41 @@
   "loadErrorDescription": "Try again to refresh the execution statistics and latest runs.",
   "retry": "Retry",
   "stats": {
-    "queued": {
-      "title": "Queued",
-      "description": "Executions waiting for a worker."
+    "status": {
+      "title": "Executions by status",
+      "description": "Total executions grouped by their current status.",
+      "valueLabel": "Executions",
+      "totalLabel": "executions",
+      "labels": {
+        "queued": "Queued",
+        "running": "Running",
+        "paused": "Paused",
+        "completed": "Completed",
+        "unknown": "Unknown",
+        "cancelled": "Cancelled",
+        "failed": "Failed"
+      }
     },
-    "running": {
-      "title": "Running",
-      "description": "{{active}} active job in progress."
+    "jobs": {
+      "title": "Jobs by state",
+      "description": "Queued, running, and finished jobs.",
+      "valueLabel": "Jobs",
+      "totalLabel": "jobs",
+      "labels": {
+        "queued": "Queued",
+        "running": "Running",
+        "finished": "Finished"
+      }
     },
-    "finished": {
-      "title": "Finished",
-      "description": "{{failed}} failed execution included."
+    "clientClinic": {
+      "title": "Executions by client and clinic",
+      "description": "Total executions for each client and clinic pair.",
+      "empty": "No executions yet.",
+      "columns": {
+        "client": "Client",
+        "clinic": "Clinic",
+        "total": "Total"
+      }
     }
   },
   "latest": {
