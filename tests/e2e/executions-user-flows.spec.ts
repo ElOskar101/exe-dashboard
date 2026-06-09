@@ -450,8 +450,9 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('cell', { name: 'Downtown Clinic' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Running' })).toBeVisible()
 
+    await expect(page.getByText('Jane Doe, John Smith, +2')).toBeVisible()
+
     const patientTrigger = page.getByRole('button', { name: 'View patients for execution 2026-05-25' })
-    await expect(patientTrigger).toContainText('Jane Doe, John Smith, +2')
     await patientTrigger.click()
 
     await expect(page.getByRole('heading', { name: 'Patients' })).toBeFocused()
