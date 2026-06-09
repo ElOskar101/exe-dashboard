@@ -6,7 +6,9 @@ import {
   IconAlertCircle,
   IconChevronDown,
   IconFolder,
-  IconListDetails,
+  IconListFilled,
+  IconLayoutSidebarLeftCollapseFilled,
+  IconLayoutSidebarLeftExpandFilled,
   IconPlus,
   IconRefresh,
   IconTrash,
@@ -26,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from '@/components/ui/popover'
 import { Spinner } from '@/components/ui/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Sidebar,
   SidebarContent,
@@ -72,13 +75,13 @@ const MIN_REFRESH_SPIN_DURATION_MS = 1000
 const SIDEBAR_PROJECT_EXECUTIONS_LIMIT = 5
 
 export function ExecutionsSidebar() {
-  const { t } = useTranslation('executions')
+  const { t } = useTranslation(['executions', 'common'])
   const { id: currentExecutionId } = useParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { isLoadingUser, user } = useContext(AuthContext)
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
-  const { isMobile, setOpenMobile, state } = useSidebar()
+  const { isMobile, openMobile, setOpenMobile, state, toggleSidebar } = useSidebar()
   const [openDeleteId, setOpenDeleteId] = useState<string | null>(null)
   const [collapsedProjects, setCollapsedProjects] = useState<string[]>([])
   const [expandedProjectNames, setExpandedProjectNames] = useState<string[]>([])
@@ -186,6 +189,13 @@ export function ExecutionsSidebar() {
   const isExecutionsFetching =
     playwrightProjectsQuery.isFetching || projectExecutionsQueries.some((query) => query.isFetching)
   const isExecutionsError = playwrightProjectsQuery.isError || projectExecutionsQueries.some((query) => query.isError)
+  const sidebarButtonLabel = isMobile
+    ? openMobile
+      ? 'Close executions sidebar'
+      : 'Open executions sidebar'
+    : state === 'expanded'
+      ? 'Minimize executions sidebar'
+      : 'Expand executions sidebar'
 
   useMountEffect(() => {
     return () => {
@@ -253,30 +263,92 @@ export function ExecutionsSidebar() {
       <SidebarHeader className="items-center">
         <SidebarMenu className="items-center">
           <SidebarMenuItem>
-            <Button
-              nativeButton={false}
-              render={<Link to={getPathWithExecutionTarget('/executions')} />}
-              variant={pathname === '/executions' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              aria-label={t('sidebar.allExecutions')}
-              title={t('sidebar.allExecutions')}
-              className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              <IconListDetails />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    nativeButton={false}
+                    render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('common:project-name')}
+                    title={t('common:project-name')}
+                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  >
+                    <img className="size-5 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" align="center">
+                {t('common:project-name')}
+              </TooltipContent>
+            </Tooltip>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Button
-              nativeButton={false}
-              render={<Link to={getPathWithExecutionTarget('/')} />}
-              variant={pathname === '/' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              aria-label={t('sidebar.createExecution')}
-              title={t('sidebar.createExecution')}
-              className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              <IconPlus />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    aria-label={sidebarButtonLabel}
+                    title={sidebarButtonLabel}
+                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={toggleSidebar}
+                  >
+                    <IconLayoutSidebarLeftExpandFilled />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" align="center">
+                {sidebarButtonLabel}
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    nativeButton={false}
+                    render={<Link to={getPathWithExecutionTarget('/executions')} />}
+                    variant={pathname === '/executions' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    aria-label={t('sidebar.allExecutions')}
+                    title={t('sidebar.allExecutions')}
+                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  >
+                    <IconListFilled />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" align="center">
+                {t('sidebar.allExecutions')}
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    nativeButton={false}
+                    render={<Link to={getPathWithExecutionTarget('/')} />}
+                    variant={pathname === '/' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    aria-label={t('sidebar.createExecution')}
+                    title={t('sidebar.createExecution')}
+                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  >
+                    <IconPlus />
+                  </Button>
+                }
+              />
+              <TooltipContent side="right" align="center">
+                {t('sidebar.createExecution')}
+              </TooltipContent>
+            </Tooltip>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
@@ -377,6 +449,33 @@ export function ExecutionsSidebar() {
   const renderExpandedSidebarContent = () => (
     <>
       <SidebarHeader>
+        <div className="flex items-center justify-between gap-2 px-1">
+          <Button
+            nativeButton={false}
+            render={<Link to={getPathWithExecutionTarget('/')} onClick={closeSidebarOnMobile} />}
+            variant="ghost"
+            aria-label={t('common:project-name')}
+            title={t('common:project-name')}
+            className="h-auto w-auto rounded-xl px-2 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <img className="h-5 w-auto object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+          </Button>
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            aria-label={sidebarButtonLabel}
+            title={sidebarButtonLabel}
+            className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            onClick={toggleSidebar}
+          >
+            {isMobile || state === 'expanded' ? (
+              <IconLayoutSidebarLeftCollapseFilled />
+            ) : (
+              <IconLayoutSidebarLeftExpandFilled />
+            )}
+          </Button>
+        </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -385,7 +484,7 @@ export function ExecutionsSidebar() {
               tooltip={t('sidebar.allExecutions')}
             >
               <span>{t('sidebar.allExecutions')}</span>
-              <IconListDetails className="ml-auto" />
+              <IconListFilled className="ml-auto" />
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

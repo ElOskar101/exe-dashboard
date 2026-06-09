@@ -26,6 +26,7 @@ interface ExecutionsTableProps {
   executions: Execution[]
   isExecutionLimitActive: boolean
   isFiltered: boolean
+  shouldShowAllExecutions: boolean
   onShowAllExecutions: () => void
 }
 
@@ -58,6 +59,7 @@ export function ExecutionsTable({
   executions,
   isExecutionLimitActive,
   isFiltered,
+  shouldShowAllExecutions,
   onShowAllExecutions,
 }: ExecutionsTableProps) {
   const { t } = useTranslation('executions')
@@ -132,7 +134,7 @@ export function ExecutionsTable({
                 </TableRow>
               )
             })}
-            {isExecutionLimitActive ? (
+            {isExecutionLimitActive && shouldShowAllExecutions ? (
               <TableRow>
                 <ResponsiveTableRowCell className="h-16 text-center">
                   <Button variant="ghost" onClick={onShowAllExecutions}>

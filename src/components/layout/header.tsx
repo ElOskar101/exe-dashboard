@@ -1,8 +1,6 @@
 import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -13,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useSidebar } from '@/components/ui/sidebar-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { UserCard } from '@/features/auth'
 import {
@@ -29,12 +26,7 @@ import {
   usePlaywrightRuntimesQuery,
 } from '@/features/executions'
 import { useTheme } from '@/hooks/use-theme'
-import {
-  IconDeviceDesktop,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-  IconServer,
-} from '@tabler/icons-react'
+import { IconDeviceDesktop, IconServer } from '@tabler/icons-react'
 
 const getRuntimeApplicationOptionValue = (runtimeId: string, applicationName: string) =>
   encodeExecutionTargetValue({ runtimeId, applicationName })
@@ -45,9 +37,8 @@ const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, handleTheme } = useTheme()
-  const { isMobile, state, toggleSidebar } = useSidebar()
   const { isResolving, target } = useExecutionTarget()
-  const { getPathWithExecutionTarget, getSettingsPath } = useExecutionTargetNavigation()
+  const { getSettingsPath } = useExecutionTargetNavigation()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
@@ -60,11 +51,6 @@ const Header: () => JSX.Element = () => {
   const serverStatus = appStatsQuery.data?.server.status.toLowerCase()
   const isServerUp = serverStatus === 'up'
   const isLoadingStats = isResolving || appStatsQuery.isLoading
-  const sidebarButtonLabel = isMobile
-    ? 'Open executions sidebar'
-    : state === 'expanded'
-      ? 'Minimize executions sidebar'
-      : 'Expand executions sidebar'
 
   const handleTargetChange = (value: string | null) => {
     if (!value || value === DEFAULT_EXECUTION_TARGET_KEY) {
@@ -80,49 +66,34 @@ const Header: () => JSX.Element = () => {
     <>
       <header className="z-1 w-full border-b border-border">
         <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
-          <div className="flex min-w-0 items-center gap-2">
-            <Button
-              type="button"
-              size="icon-sm"
-              variant="ghost"
-              aria-label={sidebarButtonLabel}
-              title={sidebarButtonLabel}
-              onClick={toggleSidebar}
-            >
-              {state === 'expanded' && !isMobile ? <IconLayoutSidebarLeftCollapse /> : <IconLayoutSidebarLeftExpand />}
-            </Button>
-            <Link to={getPathWithExecutionTarget('/')} className="transition-colors">
-              <img className="h-8 w-auto object-cover" src="/agent-icon.svg" alt={t('project-name')} />
-            </Link>
-            <div className="hidden min-w-0 items-center gap-1.5 sm:flex">
-              {isLoadingStats ? (
-                <>
-                  <Skeleton className="h-6 w-20 rounded-3xl" />
-                  <Skeleton className="h-6 w-16 rounded-3xl" />
-                  <Skeleton className="h-6 w-14 rounded-3xl" />
-                </>
-              ) : (
-                <>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                    <IconServer data-icon="inline-start" />
-                    <span>Server</span>
-                    <span
-                      aria-label={isServerUp ? 'Server up' : 'Server unavailable'}
-                      className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
-                      title={appStatsQuery.data?.server.status ?? 'Unknown'}
-                    />
-                  </Badge>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                    <span>{appStatsQuery.data?.jobs.active ?? '-'}</span>
-                    <span>{t('settings:status.jobs.active')}</span>
-                  </Badge>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                    <span>{appStatsQuery.data?.jobs.running ?? '-'}</span>
-                    <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
-                  </Badge>
-                </>
-              )}
-            </div>
+          <div className="hidden min-w-0 items-center gap-1.5 sm:flex">
+            {isLoadingStats ? (
+              <>
+                <Skeleton className="h-6 w-20 rounded-3xl" />
+                <Skeleton className="h-6 w-16 rounded-3xl" />
+                <Skeleton className="h-6 w-14 rounded-3xl" />
+              </>
+            ) : (
+              <>
+                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                  <IconServer data-icon="inline-start" />
+                  <span>Server</span>
+                  <span
+                    aria-label={isServerUp ? 'Server up' : 'Server unavailable'}
+                    className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
+                    title={appStatsQuery.data?.server.status ?? 'Unknown'}
+                  />
+                </Badge>
+                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                  <span>{appStatsQuery.data?.jobs.active ?? '-'}</span>
+                  <span>{t('settings:status.jobs.active')}</span>
+                </Badge>
+                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                  <span>{appStatsQuery.data?.jobs.running ?? '-'}</span>
+                  <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
+                </Badge>
+              </>
+            )}
           </div>
 
           <div className="ms-auto flex min-w-0 items-center gap-x-2">

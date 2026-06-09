@@ -106,6 +106,8 @@ export function useExecutionsListing() {
     Boolean(dateRange?.from) ||
     Boolean(dateRange?.to) ||
     statusFilter !== ALL_FILTER_VALUE
+  const shouldShowAllExecutions =
+    isExecutionLimitActive && (executionsQuery.data?.length ?? 0) >= DEFAULT_EXECUTIONS_LIMIT
 
   return {
     clinicOptions,
@@ -117,6 +119,7 @@ export function useExecutionsListing() {
     isExecutionLimitActive,
     selectedClientIds,
     selectedClinicIds,
+    shouldShowAllExecutions,
     statusFilter,
     setDateRange,
     setSelectedClinicIds,

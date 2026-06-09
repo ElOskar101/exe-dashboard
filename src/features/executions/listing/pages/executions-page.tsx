@@ -43,6 +43,7 @@ export default function ExecutionsPage() {
     isFiltered,
     selectedClientIds,
     selectedClinicIds,
+    shouldShowAllExecutions,
     statusFilter,
     setDateRange,
     setSelectedClinicIds,
@@ -148,6 +149,7 @@ export default function ExecutionsPage() {
               executions={filteredExecutions}
               isExecutionLimitActive={isExecutionLimitActive}
               isFiltered={isFiltered}
+              shouldShowAllExecutions={shouldShowAllExecutions}
               onShowAllExecutions={showAllExecutions}
             />
           ) : null}
