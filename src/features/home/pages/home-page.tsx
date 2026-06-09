@@ -31,6 +31,7 @@ import { getExecutionDayLabel } from '@/features/executions/listing/lib/executio
 import { getTopDimension, type TopDimensionEntry } from '@/features/home/lib/home-stats'
 
 const LATEST_EXECUTIONS_LIMIT = 5
+const TOP_DIMENSION_LABEL_MAX_LENGTH = 10
 
 const formatNumber = (value: number | undefined) => new Intl.NumberFormat().format(value ?? 0)
 
@@ -217,7 +218,7 @@ export default function HomePage() {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tickFormatter={(value: string) => truncateLabel(value)}
+            tickFormatter={(value: string) => truncateLabel(value, TOP_DIMENSION_LABEL_MAX_LENGTH)}
             interval={0}
           />
           <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} width={32} />

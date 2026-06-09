@@ -76,6 +76,17 @@ import { UNKNOWN_PROJECT_LABEL } from '../lib/execution-listing-filters'
 const MIN_REFRESH_SPIN_DURATION_MS = 1000
 const SIDEBAR_PROJECT_EXECUTIONS_LIMIT = 5
 
+const getCreatedAtTime = (execution: Execution) => {
+  const createdAtTime = new Date(execution.createdAt).getTime()
+
+  return Number.isNaN(createdAtTime) ? 0 : createdAtTime
+}
+
+const sortExecutionsByCreatedAtDescending = (executions: Execution[]) =>
+  [...executions].sort(
+    (leftExecution, rightExecution) => getCreatedAtTime(rightExecution) - getCreatedAtTime(leftExecution),
+  )
+
 export function ExecutionsSidebar() {
   const { t } = useTranslation(['executions', 'common'])
   const { id: currentExecutionId } = useParams()
@@ -152,7 +163,9 @@ export function ExecutionsSidebar() {
 
           return executionProject === project.name
         })
-        const executions = groupExecutionsByProject(projectExecutions).flatMap((group) => group.executions)
+        const executions = sortExecutionsByCreatedAtDescending(
+          groupExecutionsByProject(projectExecutions).flatMap((group) => group.executions),
+        )
 
         return {
           executions,
@@ -163,12 +176,14 @@ export function ExecutionsSidebar() {
       })
       .filter((group) => group.executions.length > 0)
 
-    const unknownExecutions = groupExecutionsByProject(
-      Array.from(unknownExecutionsById.values()).map((execution) => ({
-        ...execution,
-        project: '',
-      })),
-    ).flatMap((group) => group.executions)
+    const unknownExecutions = sortExecutionsByCreatedAtDescending(
+      groupExecutionsByProject(
+        Array.from(unknownExecutionsById.values()).map((execution) => ({
+          ...execution,
+          project: '',
+        })),
+      ).flatMap((group) => group.executions),
+    )
 
     return unknownExecutions.length > 0
       ? [

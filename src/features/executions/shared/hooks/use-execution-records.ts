@@ -31,6 +31,10 @@ const invalidateExecutionList = async (queryClient: ReturnType<typeof useQueryCl
   await queryClient.invalidateQueries({ queryKey: executionKeys.listRoot(targetKey) })
 }
 
+const invalidateExecutionAppStats = async (queryClient: ReturnType<typeof useQueryClient>, targetKey: string) => {
+  await queryClient.invalidateQueries({ queryKey: executionKeys.appStats(targetKey) })
+}
+
 const invalidateExecutionDetail = async (
   queryClient: ReturnType<typeof useQueryClient>,
   executionId: string,
@@ -139,7 +143,10 @@ export const useCreateExecutionMutation = (
       return createExecution(payload, target.requestTarget)
     },
     onSuccess: async (response, variables) => {
-      await invalidateExecutionList(queryClient, target.key)
+      await Promise.all([
+        invalidateExecutionList(queryClient, target.key),
+        invalidateExecutionAppStats(queryClient, target.key),
+      ])
       await options.onSuccess?.([response, variables])
     },
   })
@@ -160,7 +167,10 @@ export const useDeleteExecutionMutation = (
       return deleteExecution(executionId, target.requestTarget)
     },
     onSuccess: async (response, executionId) => {
-      await invalidateExecutionList(queryClient, target.key)
+      await Promise.all([
+        invalidateExecutionList(queryClient, target.key),
+        invalidateExecutionAppStats(queryClient, target.key),
+      ])
       await options.onSuccess?.([response, executionId])
     },
   })
@@ -188,6 +198,7 @@ const useExecutionActionMutation = (
       await Promise.all([
         invalidateExecutionDetail(queryClient, executionId, target.key),
         invalidateExecutionList(queryClient, target.key),
+        invalidateExecutionAppStats(queryClient, target.key),
       ])
       await options.onSuccess?.([response, executionId])
     },
