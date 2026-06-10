@@ -96,10 +96,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportSource =
-    target.type === 'runtime-application'
-      ? getExecutionReportIndexUrl(target.requestTarget.reportsUrl, reportExecutionId)
-      : ''
+  const reportSource = getExecutionReportIndexUrl(target.requestTarget.reportsUrl, reportExecutionId)
   const reportAvailabilityQuery = useQuery({
     queryKey: [...executionKeys.report(reportExecutionId, target.key), 'availability'],
     queryFn: async () => {
@@ -111,7 +108,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
 
       return true
     },
-    enabled: showReport && target.type === 'runtime-application',
+    enabled: showReport,
     retry: false,
   })
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])

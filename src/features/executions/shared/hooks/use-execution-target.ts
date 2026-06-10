@@ -6,7 +6,6 @@ import {
   EXECUTION_RUNTIME_SEARCH_PARAM,
   EXECUTION_TARGET_URL_SEARCH_PARAM,
   getExecutionTargetSearchSelection,
-  missingExecutionTarget,
   resolveExecutionTarget,
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
@@ -38,18 +37,16 @@ export const usePlaywrightProjectsQuery = (enabled = true) =>
 export const useExecutionTarget = () => {
   const [searchParams] = useSearchParams()
   const selection = getExecutionTargetSearchSelection(searchParams)
-  const isResolving = false
 
   const target = useMemo(() => {
     if (!selection) {
-      return missingExecutionTarget
+      throw new Error('Execution target URL params are required before loading execution data.')
     }
 
     return resolveExecutionTarget(selection, undefined)
   }, [selection])
 
   return {
-    isResolving,
     requestedSelection: selection,
     target,
   }
@@ -83,14 +80,11 @@ export const useExecutionTargetNavigation = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { target } = useExecutionTarget()
-  const selectedTarget =
-    target.type === 'runtime-application'
-      ? {
-          runtimeId: target.runtimeId,
-          applicationName: target.applicationName,
-          targetUrl: target.requestTarget.apiUrl,
-        }
-      : null
+  const selectedTarget = {
+    runtimeId: target.runtimeId,
+    applicationName: target.applicationName,
+    targetUrl: target.requestTarget.apiUrl,
+  }
 
   const getPathWithExecutionTarget = (to: string) => applyExecutionTargetSearch(to, selectedTarget, location.search)
 
@@ -103,7 +97,7 @@ export const useExecutionTargetNavigation = () => {
   return {
     getPathWithExecutionTarget,
     getSettingsPath,
-    hasSelectedExecutionTarget: target.type === 'runtime-application',
+    hasSelectedExecutionTarget: true,
     navigateWithExecutionTarget,
   }
 }

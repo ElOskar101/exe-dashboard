@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
+import { useMemo, useState, type Dispatch, type ReactNode } from 'react'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,13 +25,17 @@ import { IconAlertCircle, IconRefresh, IconServer } from '@tabler/icons-react'
 import {
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
+  EXECUTION_APPLICATION_SEARCH_PARAM,
+  EXECUTION_RUNTIME_SEARCH_PARAM,
+  EXECUTION_TARGET_URL_SEARCH_PARAM,
   getExecutionTargetSearchSelection,
   getSelectedExecutionRequestTarget,
-  hasPartialExecutionTargetSearchSelection,
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
 import type { PlaywrightRuntime, PlaywrightRuntimeApplication } from '../model/playwright-runtime'
-import { useExecutionTargetSetter, usePlaywrightRuntimesQuery } from '../hooks/use-execution-target'
+import { usePlaywrightRuntimesQuery } from '../hooks/use-execution-target'
+
+const SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM = 'returnTo'
 
 const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
@@ -63,19 +67,20 @@ const findFirstSelection = (
 
 function RuntimeApplicationTargetDialogContent({
   defaultValue,
+  onSelectionConfirmed,
   runtimes,
 }: {
   defaultValue: string
+  onSelectionConfirmed: Dispatch<ExecutionTargetSearchSelection>
   runtimes: readonly PlaywrightRuntime[]
 }) {
   const [selectedValue, setSelectedValue] = useState(defaultValue)
-  const setExecutionTarget = useExecutionTargetSetter()
   const selectedSelection = decodeExecutionTargetValue(selectedValue)
 
   const handleConfirm = () => {
     if (!selectedSelection) return
 
-    setExecutionTarget(selectedSelection)
+    onSelectionConfirmed(selectedSelection)
   }
 
   return (
@@ -131,33 +136,21 @@ function RuntimeApplicationTargetDialogContent({
   )
 }
 
-const getCleanTargetSearch = (search: string) => {
-  const searchParams = new URLSearchParams(search)
-
-  searchParams.delete('runtime')
-  searchParams.delete('app')
-  searchParams.delete('targetUrl')
-
-  const nextSearch = searchParams.toString()
-
-  return nextSearch ? `?${nextSearch}` : ''
-}
-
 export function RuntimeApplicationTargetGate() {
-  const location = useLocation()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const runtimesQuery = usePlaywrightRuntimesQuery()
-  const hasCompleteTarget = Boolean(getExecutionTargetSearchSelection(searchParams))
-  const shouldCleanTargetParams = hasPartialExecutionTargetSearchSelection(searchParams)
   const firstSelection = useMemo(() => findFirstSelection(runtimesQuery.data), [runtimesQuery.data])
   const defaultValue = firstSelection ? encodeExecutionTargetValue(firstSelection) : ''
+  const returnTo = searchParams.get(SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM) || '/'
 
-  if (shouldCleanTargetParams) {
-    return <Navigate to={`${location.pathname}${getCleanTargetSearch(location.search)}${location.hash}`} replace />
-  }
+  const handleSelectionConfirmed = (selection: ExecutionTargetSearchSelection) => {
+    const nextUrl = new URL(returnTo, window.location.origin)
 
-  if (hasCompleteTarget) {
-    return null
+    nextUrl.searchParams.set(EXECUTION_RUNTIME_SEARCH_PARAM, selection.runtimeId)
+    nextUrl.searchParams.set(EXECUTION_APPLICATION_SEARCH_PARAM, selection.applicationName)
+    nextUrl.searchParams.set(EXECUTION_TARGET_URL_SEARCH_PARAM, selection.targetUrl)
+    navigate(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`, { replace: true })
   }
 
   return (
@@ -205,10 +198,26 @@ export function RuntimeApplicationTargetGate() {
           <RuntimeApplicationTargetDialogContent
             key={defaultValue}
             defaultValue={defaultValue}
+            onSelectionConfirmed={handleSelectionConfirmed}
             runtimes={runtimesQuery.data}
           />
         ) : null}
       </DialogContent>
     </Dialog>
   )
+}
+
+export function RequireExecutionTarget({ children }: { children: ReactNode }) {
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const hasCompleteTarget = Boolean(getExecutionTargetSearchSelection(searchParams))
+
+  if (hasCompleteTarget) {
+    return children
+  }
+
+  const returnTo = `${location.pathname}${location.search}${location.hash}`
+  const selectorSearchParams = new URLSearchParams({ [SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM]: returnTo })
+
+  return <Navigate to={`/select-runtime-application?${selectorSearchParams.toString()}`} replace />
 }

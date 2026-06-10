@@ -13,7 +13,6 @@ export {
 export {
   normalizeExecutionRecord,
   syncExecutionFromDetailSnapshot,
-  syncExecutionStatusReadModel,
   syncExecutionStatusReadModelForTarget,
   syncExecutionsFromListSnapshot,
   type ExecutionStatusReadModel,
@@ -70,9 +69,6 @@ export {
   getExecutionTargetSearchSelection,
   getSelectedExecutionRequestTarget,
   hasPartialExecutionTargetSearchSelection,
-  MISSING_EXECUTION_TARGET_KEY,
-  MISSING_EXECUTION_TARGET_LABEL,
-  missingExecutionTarget,
   normalizeSelectedExecutionApiUrl,
   resolveExecutionTarget,
   type ExecutionApiRequestTarget,
@@ -106,4 +102,4 @@ export {
   usePlaywrightRuntimesQuery,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
-export { RuntimeApplicationTargetGate } from './components/runtime-application-target-gate'
+export { RequireExecutionTarget, RuntimeApplicationTargetGate } from './components/runtime-application-target-gate'

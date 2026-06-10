@@ -220,17 +220,17 @@ export function SettingsPage() {
   const projectsQuery = usePlaywrightProjectsQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
-  const selectedValue =
-    target.type === 'runtime-application'
-      ? encodeExecutionTargetValue({
-          runtimeId: target.runtimeId,
-          applicationName: target.applicationName,
-          targetUrl: target.requestTarget.apiUrl,
-        })
-      : undefined
-  const effectiveApiUrl = target.type === 'runtime-application' ? target.requestTarget.apiUrl : t('runtime.none')
-  const selectedApplicationDescription =
-    target.type === 'runtime-application' ? (target.application?.description ?? t('runtime.noDescription')) : null
+  const selectedRuntime = runtimesQuery.data?.find((runtime) => runtime._id === target.runtimeId)
+  const selectedApplication = selectedRuntime?.applications.find(
+    (application) => application.name === target.applicationName,
+  )
+  const selectedValue = encodeExecutionTargetValue({
+    runtimeId: target.runtimeId,
+    applicationName: target.applicationName,
+    targetUrl: target.requestTarget.apiUrl,
+  })
+  const effectiveApiUrl = target.requestTarget.apiUrl
+  const selectedApplicationDescription = selectedApplication?.description ?? t('runtime.noDescription')
   const catalogSummary = getCatalogSummary(runtimesQuery.data)
   const projectSummary = getProjectSummary(projectsQuery.data)
   const selectedSettingsTab = isSettingsTab(searchParams.get(SETTINGS_TAB_SEARCH_PARAM))
@@ -366,42 +366,40 @@ export function SettingsPage() {
                 <span>{effectiveApiUrl}</span>
               </div>
 
-              {target.type === 'runtime-application' ? (
-                <div className="flex flex-col gap-3">
-                  <div className="grid min-w-0 gap-2 rounded-lg border px-3 py-2 sm:grid-cols-2 sm:items-center">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="truncate text-sm font-medium">{target.runtime?.name ?? target.runtimeId}</span>
-                      <Badge variant="secondary">{t('runtime.runtime')}</Badge>
-                    </div>
+              <div className="flex flex-col gap-3">
+                <div className="grid min-w-0 gap-2 rounded-lg border px-3 py-2 sm:grid-cols-2 sm:items-center">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate text-sm font-medium">{selectedRuntime?.name ?? target.runtimeId}</span>
+                    <Badge variant="secondary">{t('runtime.runtime')}</Badge>
                   </div>
-                  <div className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="min-w-0 truncate text-sm font-medium">{target.applicationName}</span>
-                      <Badge variant={target.application?.active === false ? 'destructive' : 'success'}>
-                        {target.application?.active === false ? t('runtime.inactive') : t('runtime.active')}
-                      </Badge>
-                      <Badge variant={target.application?.nonProduction ? 'outline' : 'secondary'}>
-                        {target.application?.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{selectedApplicationDescription}</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-lg border p-3">
-                        <div className="truncate text-xs text-muted-foreground">{t('runtime.maxWorkers')}</div>
-                        <div className="text-lg font-semibold">
-                          {getConfiguredApplicationLimit(target.application?.config?.maxWorkers, 10)}
-                        </div>
+                </div>
+                <div className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="min-w-0 truncate text-sm font-medium">{target.applicationName}</span>
+                    <Badge variant={selectedApplication?.active === false ? 'destructive' : 'success'}>
+                      {selectedApplication?.active === false ? t('runtime.inactive') : t('runtime.active')}
+                    </Badge>
+                    <Badge variant={selectedApplication?.nonProduction ? 'outline' : 'secondary'}>
+                      {selectedApplication?.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{selectedApplicationDescription}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-3">
+                      <div className="truncate text-xs text-muted-foreground">{t('runtime.maxWorkers')}</div>
+                      <div className="text-lg font-semibold">
+                        {getConfiguredApplicationLimit(selectedApplication?.config?.maxWorkers, 10)}
                       </div>
-                      <div className="rounded-lg border p-3">
-                        <div className="truncate text-xs text-muted-foreground">{t('runtime.maxRetries')}</div>
-                        <div className="text-lg font-semibold">
-                          {getConfiguredApplicationLimit(target.application?.config?.maxRetries, 3)}
-                        </div>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                      <div className="truncate text-xs text-muted-foreground">{t('runtime.maxRetries')}</div>
+                      <div className="text-lg font-semibold">
+                        {getConfiguredApplicationLimit(selectedApplication?.config?.maxRetries, 3)}
                       </div>
                     </div>
                   </div>
                 </div>
-              ) : null}
+              </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-lg border p-4">

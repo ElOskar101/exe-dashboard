@@ -6,8 +6,6 @@ import {
   getExecutionReportUrl,
   getExecutionTargetSearchSelection,
   hasPartialExecutionTargetSearchSelection,
-  MISSING_EXECUTION_TARGET_KEY,
-  MISSING_EXECUTION_TARGET_LABEL,
   resolveExecutionTarget,
 } from './execution-target'
 import type { PlaywrightRuntime } from '../model/playwright-runtime'
@@ -30,11 +28,10 @@ describe('execution target', () => {
       [runtime],
     )
 
-    expect(target.type).toBe('runtime-application')
     expect(target.key).toBe('runtime:runtime-1:application:App 1')
     expect(target.label).toBe('App 1')
-    expect(target.requestTarget?.apiUrl).toBe('https://runtime.example.com/api/v1')
-    expect(target.requestTarget?.reportsUrl).toBe('https://runtime.example.com/reports')
+    expect(target.requestTarget.apiUrl).toBe('https://runtime.example.com/api/v1')
+    expect(target.requestTarget.reportsUrl).toBe('https://runtime.example.com/reports')
   })
 
   it('normalizes bare runtime application API hosts to the execution API base URL', () => {
@@ -47,18 +44,9 @@ describe('execution target', () => {
       undefined,
     )
 
-    expect(target.type).toBe('runtime-application')
-    expect(target.requestTarget?.apiUrl).toBe('https://api.runtime.example.com/api/v1')
-    expect(target.requestTarget?.reportsUrl).toBe('https://api.runtime.example.com/reports')
-    expect(target.requestTarget?.socketUrl).toBe('https://api.runtime.example.com')
-  })
-
-  it('uses the missing target when URL params are missing', () => {
-    expect(resolveExecutionTarget(null, [runtime])).toEqual({
-      type: 'missing',
-      key: MISSING_EXECUTION_TARGET_KEY,
-      label: MISSING_EXECUTION_TARGET_LABEL,
-    })
+    expect(target.requestTarget.apiUrl).toBe('https://api.runtime.example.com/api/v1')
+    expect(target.requestTarget.reportsUrl).toBe('https://api.runtime.example.com/reports')
+    expect(target.requestTarget.socketUrl).toBe('https://api.runtime.example.com')
   })
 
   it('resolves from targetUrl without requiring runtime catalog lookup', () => {
@@ -70,11 +58,6 @@ describe('execution target', () => {
       },
       [runtime],
     )
-
-    expect(target.type).toBe('runtime-application')
-    if (target.type !== 'runtime-application') {
-      throw new Error('Expected runtime application target.')
-    }
 
     expect(target.runtime).toBeUndefined()
     expect(target.application).toBeUndefined()

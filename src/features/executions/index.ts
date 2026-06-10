@@ -12,7 +12,7 @@ export type {
   ExecutionPatient,
   ExecutionWizardDraft,
 } from './creation'
-export { RuntimeApplicationTargetGate } from './shared'
+export { RequireExecutionTarget, RuntimeApplicationTargetGate } from './shared'
 export { ExecutionsSidebar } from './listing'
 export { ExecutionDetailPage } from './monitoring'
 export {
@@ -46,9 +46,6 @@ export {
   isExecutionRunning,
   isExecutionStatus,
   isExecutionSuccessful,
-  MISSING_EXECUTION_TARGET_KEY,
-  MISSING_EXECUTION_TARGET_LABEL,
-  missingExecutionTarget,
   normalizeSelectedExecutionApiUrl,
   normalizeExecutionStatus,
   pauseExecution,

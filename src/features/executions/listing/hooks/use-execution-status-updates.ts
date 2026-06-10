@@ -17,10 +17,6 @@ export const useExecutionStatusUpdates = () => {
   )
 
   useMountEffect(() => {
-    if (target.type !== 'runtime-application') {
-      return
-    }
-
     let isInitialConnect = true
 
     const handleConnect = () => {

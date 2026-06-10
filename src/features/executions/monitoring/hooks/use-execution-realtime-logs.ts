@@ -49,12 +49,6 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
   }, [historyContent, updateBuffer])
 
   useMountEffect(() => {
-    if (target.type !== 'runtime-application') {
-      setConnectionState('disconnected')
-
-      return
-    }
-
     const unsubscribe = subscribeToExecutionRoom({
       executionId,
       onConnect: () => {

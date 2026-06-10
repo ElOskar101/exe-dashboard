@@ -4,10 +4,12 @@ import type { Execution } from '../model/execution'
 import { executionKeys } from './execution-query-keys'
 import {
   syncExecutionFromDetailSnapshot,
-  syncExecutionStatusReadModel,
   syncExecutionsFromListSnapshot,
+  syncExecutionStatusReadModelForTarget,
   type ExecutionStatusReadModel,
 } from './execution-status-cache'
+
+const targetKey = 'runtime:runtime-1:application:app-1'
 
 const createExecution = (execution: Partial<Execution>): Execution => ({
   _id: 'execution-123456789',
@@ -38,18 +40,18 @@ describe('execution status cache', () => {
     const queryClient = createQueryClient()
     const execution = createExecution({ status: 'queued' })
 
-    queryClient.setQueryData(executionKeys.list(), [execution])
-    queryClient.setQueryData(executionKeys.detail(execution._id), execution)
+    queryClient.setQueryData(executionKeys.list(undefined, targetKey), [execution])
+    queryClient.setQueryData(executionKeys.detail(execution._id, targetKey), execution)
 
-    syncExecutionStatusReadModel(queryClient, execution._id, 'COMPLETED')
+    syncExecutionStatusReadModelForTarget(queryClient, execution._id, 'COMPLETED', targetKey)
 
-    expect(queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses())).toEqual({
+    expect(queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey))).toEqual({
       [execution._id]: 'completed',
     })
-    expect(queryClient.getQueryData<Execution[]>(executionKeys.list())).toEqual([
+    expect(queryClient.getQueryData<Execution[]>(executionKeys.list(undefined, targetKey))).toEqual([
       createExecution({ status: 'completed' }),
     ])
-    expect(queryClient.getQueryData<Execution>(executionKeys.detail(execution._id))).toEqual(
+    expect(queryClient.getQueryData<Execution>(executionKeys.detail(execution._id, targetKey))).toEqual(
       createExecution({ status: 'completed' }),
     )
   })
@@ -63,9 +65,9 @@ describe('execution status cache', () => {
       notes: ['other'],
     })
 
-    queryClient.setQueryData(executionKeys.list(), [staleExecution])
-    queryClient.setQueryData(executionKeys.list({ client: ['client-1'] }), [staleExecution])
-    queryClient.setQueryData(executionKeys.list({ client: ['client-2'] }), [otherExecution])
+    queryClient.setQueryData(executionKeys.list(undefined, targetKey), [staleExecution])
+    queryClient.setQueryData(executionKeys.list({ client: ['client-1'] }, targetKey), [staleExecution])
+    queryClient.setQueryData(executionKeys.list({ client: ['client-2'] }, targetKey), [otherExecution])
 
     const normalizedExecution = syncExecutionFromDetailSnapshot(
       queryClient,
@@ -74,6 +76,7 @@ describe('execution status cache', () => {
         notes: ['fresh'],
         finishedAt: '2026-05-23T00:05:00.000Z',
       }),
+      targetKey,
     )
 
     expect(normalizedExecution).toEqual(
@@ -83,24 +86,24 @@ describe('execution status cache', () => {
         finishedAt: '2026-05-23T00:05:00.000Z',
       }),
     )
-    expect(queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses())).toEqual({
+    expect(queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey))).toEqual({
       'execution-123456789': 'running',
     })
-    expect(queryClient.getQueryData<Execution[]>(executionKeys.list())).toEqual([
+    expect(queryClient.getQueryData<Execution[]>(executionKeys.list(undefined, targetKey))).toEqual([
       createExecution({
         status: 'running',
         notes: ['fresh'],
         finishedAt: '2026-05-23T00:05:00.000Z',
       }),
     ])
-    expect(queryClient.getQueryData<Execution[]>(executionKeys.list({ client: ['client-1'] }))).toEqual([
+    expect(queryClient.getQueryData<Execution[]>(executionKeys.list({ client: ['client-1'] }, targetKey))).toEqual([
       createExecution({
         status: 'running',
         notes: ['fresh'],
         finishedAt: '2026-05-23T00:05:00.000Z',
       }),
     ])
-    expect(queryClient.getQueryData<Execution[]>(executionKeys.list({ client: ['client-2'] }))).toEqual([
+    expect(queryClient.getQueryData<Execution[]>(executionKeys.list({ client: ['client-2'] }, targetKey))).toEqual([
       otherExecution,
     ])
   })
@@ -109,18 +112,22 @@ describe('execution status cache', () => {
     const queryClient = createQueryClient()
     const execution = createExecution({ logs: 'historical logs', status: 'queued' })
 
-    queryClient.setQueryData(executionKeys.detail(execution._id), execution)
+    queryClient.setQueryData(executionKeys.detail(execution._id, targetKey), execution)
 
-    const normalizedExecutions = syncExecutionsFromListSnapshot(queryClient, [
-      createExecution({
-        status: 'completed',
-        execution: 'Daily eligibility',
-      }),
-      createExecution({
-        _id: 'execution-2',
-        status: 'process',
-      }),
-    ])
+    const normalizedExecutions = syncExecutionsFromListSnapshot(
+      queryClient,
+      [
+        createExecution({
+          status: 'completed',
+          execution: 'Daily eligibility',
+        }),
+        createExecution({
+          _id: 'execution-2',
+          status: 'process',
+        }),
+      ],
+      targetKey,
+    )
 
     expect(normalizedExecutions).toEqual([
       createExecution({
@@ -132,11 +139,11 @@ describe('execution status cache', () => {
         status: 'running',
       }),
     ])
-    expect(queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses())).toEqual({
+    expect(queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey))).toEqual({
       'execution-123456789': 'completed',
       'execution-2': 'running',
     })
-    expect(queryClient.getQueryData<Execution>(executionKeys.detail(execution._id))).toEqual(
+    expect(queryClient.getQueryData<Execution>(executionKeys.detail(execution._id, targetKey))).toEqual(
       createExecution({
         logs: 'historical logs',
         status: 'completed',

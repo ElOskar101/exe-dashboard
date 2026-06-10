@@ -40,26 +40,21 @@ const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, handleTheme } = useTheme()
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
   const { getSettingsPath } = useExecutionTargetNavigation()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
-  const targetTitle =
-    target.type === 'runtime-application'
-      ? `${target.runtime?.name ?? target.runtimeId} / ${target.applicationName}`
-      : target.label
-  const selectedValue =
-    target.type === 'runtime-application'
-      ? encodeExecutionTargetValue({
-          runtimeId: target.runtimeId,
-          applicationName: target.applicationName,
-          targetUrl: target.requestTarget.apiUrl,
-        })
-      : undefined
+  const selectedRuntime = runtimesQuery.data?.find((runtime) => runtime._id === target.runtimeId)
+  const targetTitle = `${selectedRuntime?.name ?? target.runtimeId} / ${target.applicationName}`
+  const selectedValue = encodeExecutionTargetValue({
+    runtimeId: target.runtimeId,
+    applicationName: target.applicationName,
+    targetUrl: target.requestTarget.apiUrl,
+  })
   const serverStatus = appStatsQuery.data?.server.status.toLowerCase()
   const isServerUp = serverStatus === 'up'
-  const isLoadingStats = isResolving || appStatsQuery.isLoading
+  const isLoadingStats = appStatsQuery.isLoading
 
   const handleTargetChange = (value: string | null) => {
     if (!value) {
@@ -115,11 +110,9 @@ const Header: () => JSX.Element = () => {
                 <SelectValue placeholder="Choose app">
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate">{target.label}</span>
-                    {target.type === 'runtime-application' ? (
-                      <span className="truncate text-xs font-normal text-muted-foreground">
-                        {target.runtime?.name ?? target.runtimeId}
-                      </span>
-                    ) : null}
+                    <span className="truncate text-xs font-normal text-muted-foreground">
+                      {selectedRuntime?.name ?? target.runtimeId}
+                    </span>
                   </span>
                 </SelectValue>
               </SelectTrigger>

@@ -4,8 +4,6 @@ import type { PlaywrightRuntime, PlaywrightRuntimeApplication } from '../model/p
 export const EXECUTION_RUNTIME_SEARCH_PARAM = 'runtime'
 export const EXECUTION_APPLICATION_SEARCH_PARAM = 'app'
 export const EXECUTION_TARGET_URL_SEARCH_PARAM = 'targetUrl'
-export const MISSING_EXECUTION_TARGET_KEY = 'missing'
-export const MISSING_EXECUTION_TARGET_LABEL = 'Choose app'
 
 export interface ExecutionApiRequestTarget {
   apiUrl: string
@@ -13,37 +11,15 @@ export interface ExecutionApiRequestTarget {
   socketUrl: string
 }
 
-export type ExecutionTarget =
-  | {
-      type: 'missing'
-      key: typeof MISSING_EXECUTION_TARGET_KEY
-      label: typeof MISSING_EXECUTION_TARGET_LABEL
-      requestTarget?: undefined
-      runtime?: undefined
-      application?: undefined
-      runtimeId?: undefined
-      applicationName?: undefined
-    }
-  | {
-      type: 'runtime-application'
-      key: string
-      label: string
-      requestTarget: ExecutionApiRequestTarget
-      runtime?: PlaywrightRuntime
-      application?: PlaywrightRuntimeApplication
-      runtimeId: string
-      applicationName: string
-    }
-  | {
-      type: 'resolving'
-      key: string
-      label: string
-      requestTarget?: undefined
-      runtime?: undefined
-      application?: undefined
-      runtimeId: string
-      applicationName: string
-    }
+export interface ExecutionTarget {
+  key: string
+  label: string
+  requestTarget: ExecutionApiRequestTarget
+  runtime?: PlaywrightRuntime
+  application?: PlaywrightRuntimeApplication
+  runtimeId: string
+  applicationName: string
+}
 
 export interface ExecutionTargetSearchSelection {
   runtimeId: string
@@ -54,25 +30,8 @@ export interface ExecutionTargetSearchSelection {
 const EXECUTION_TARGET_VALUE_SEPARATOR = '\u001f'
 const URL_PROTOCOL_PATTERN = /^[a-z][a-z\d+\-.]*:\/\//i
 
-export const missingExecutionTarget: ExecutionTarget = {
-  type: 'missing',
-  key: MISSING_EXECUTION_TARGET_KEY,
-  label: MISSING_EXECUTION_TARGET_LABEL,
-}
-
 export const getExecutionTargetKey = (runtimeId: string, applicationName: string) =>
   `runtime:${runtimeId}:application:${applicationName}`
-
-export const getResolvingExecutionTarget = (
-  runtimeId: string,
-  applicationName: string,
-): Extract<ExecutionTarget, { type: 'resolving' }> => ({
-  type: 'resolving',
-  key: `resolving:${getExecutionTargetKey(runtimeId, applicationName)}`,
-  label: 'Loading app...',
-  runtimeId,
-  applicationName,
-})
 
 export const encodeExecutionTargetValue = (selection: ExecutionTargetSearchSelection) =>
   `${selection.runtimeId}${EXECUTION_TARGET_VALUE_SEPARATOR}${selection.applicationName}${EXECUTION_TARGET_VALUE_SEPARATOR}${selection.targetUrl}`
@@ -149,13 +108,9 @@ export const getSelectedExecutionRequestTarget = (
 }
 
 export const resolveExecutionTarget = (
-  selection: ExecutionTargetSearchSelection | null,
+  selection: ExecutionTargetSearchSelection,
   runtimes: readonly PlaywrightRuntime[] | undefined,
 ): ExecutionTarget => {
-  if (!selection) {
-    return missingExecutionTarget
-  }
-
   const runtime = runtimes?.find((candidate) => candidate._id === selection.runtimeId)
   const application = runtime?.applications.find(
     (candidate) =>
@@ -163,7 +118,6 @@ export const resolveExecutionTarget = (
   )
 
   return {
-    type: 'runtime-application',
     key: getExecutionTargetKey(selection.runtimeId, selection.applicationName),
     label: application?.name ?? selection.applicationName,
     requestTarget: getSelectedExecutionRequestTarget(selection.targetUrl),
