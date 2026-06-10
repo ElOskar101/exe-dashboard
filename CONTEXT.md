@@ -44,9 +44,9 @@ _Avoid_: Service, integration target
 The **Playwright Runtime Application** chosen by the user for the current dashboard URL, which determines which execution API the dashboard uses.
 _Avoid_: Global runtime preference, environment switcher
 
-**Default Execution API**:
-The dashboard's built-in execution API target used when no **Selected Playwright Runtime Application** is chosen for the current URL. The user-facing label is "Default App".
-_Avoid_: Default runtime, default application
+**Selected Execution Target URL**:
+The API URL recorded with the **Selected Playwright Runtime Application** for the current dashboard URL.
+_Avoid_: Default execution API, fallback app URL
 
 **Default Carrier API**:
 The dashboard's built-in carrier API target used for authentication, customer data, clinic data, and Playwright catalog discovery.
@@ -62,8 +62,9 @@ _Avoid_: Execution API, selected app API
 - A **Playwright Project** can be associated with many bots
 - A **Playwright Runtime** can expose many **Playwright Runtime Applications**
 - A **Selected Playwright Runtime Application** belongs to one **Playwright Runtime**
-- Execution API requests use the API URL of the **Selected Playwright Runtime Application**
-- Execution API requests use the **Default Execution API** when no **Selected Playwright Runtime Application** is chosen
+- A **Selected Playwright Runtime Application** has one **Selected Execution Target URL**
+- Execution API requests use the **Selected Execution Target URL**
+- Execution API requests require a **Selected Playwright Runtime Application**
 - Execution realtime subscriptions follow the same execution target as execution API requests
 - Execution reports follow the same execution target as execution API requests
 - The **Default Carrier API** provides the catalog of available **Playwright Runtimes**

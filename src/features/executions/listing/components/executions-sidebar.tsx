@@ -105,6 +105,7 @@ export function ExecutionsSidebar() {
   useExecutionStatusUpdates()
   const queryClient = useQueryClient()
   const { isResolving: isResolvingExecutionTarget, target } = useExecutionTarget()
+  const isExecutionTargetReady = target.type === 'runtime-application'
   const playwrightProjectsQuery = usePlaywrightProjectsQuery(!isLoadingUser && Boolean(userFullName))
   const availableProjects = useMemo(
     () =>
@@ -128,13 +129,21 @@ export function ExecutionsSidebar() {
       return {
         queryKey: executionKeys.list(query, target.key),
         queryFn: async () => {
-          const response = await getExecutions(query, target.requestTarget)
+          if (!isExecutionTargetReady) {
+            throw new Error('Choose a runtime application before loading executions.')
+          }
+
+          const response = await getExecutions(target.requestTarget, query)
 
           return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
         },
         placeholderData: (previousData: Execution[] | undefined) => previousData,
         enabled:
-          !isLoadingUser && Boolean(userFullName) && !isResolvingExecutionTarget && playwrightProjectsQuery.isSuccess,
+          !isLoadingUser &&
+          Boolean(userFullName) &&
+          !isResolvingExecutionTarget &&
+          isExecutionTargetReady &&
+          playwrightProjectsQuery.isSuccess,
       }
     }),
   })

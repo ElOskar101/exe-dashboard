@@ -16,11 +16,9 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  DEFAULT_EXECUTION_TARGET_KEY,
   decodeExecutionTargetValue,
-  defaultExecutionTarget,
   encodeExecutionTargetValue,
-  getDefaultExecutionApiUrl,
+  getSelectedExecutionRequestTarget,
   type ExecutionAppStats,
   type PlaywrightProject,
   type PlaywrightRuntime,
@@ -53,8 +51,12 @@ type SettingsTab = (typeof SETTINGS_TABS)[number]
 
 const isSettingsTab = (value: string | null): value is SettingsTab => SETTINGS_TABS.some((tab) => tab === value)
 
-const getRuntimeApplicationOptionValue = (runtimeId: string, applicationName: string) =>
-  encodeExecutionTargetValue({ runtimeId, applicationName })
+const getRuntimeApplicationOptionValue = (runtimeId: string, application: PlaywrightRuntimeApplication) =>
+  encodeExecutionTargetValue({
+    runtimeId,
+    applicationName: application.name,
+    targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
+  })
 
 const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
@@ -220,12 +222,15 @@ export function SettingsPage() {
   const setExecutionTarget = useExecutionTargetSetter()
   const selectedValue =
     target.type === 'runtime-application'
-      ? getRuntimeApplicationOptionValue(target.runtime._id, target.application.name)
-      : DEFAULT_EXECUTION_TARGET_KEY
-  const effectiveApiUrl =
-    target.type === 'runtime-application' ? target.requestTarget.apiUrl : getDefaultExecutionApiUrl()
+      ? encodeExecutionTargetValue({
+          runtimeId: target.runtimeId,
+          applicationName: target.applicationName,
+          targetUrl: target.requestTarget.apiUrl,
+        })
+      : undefined
+  const effectiveApiUrl = target.type === 'runtime-application' ? target.requestTarget.apiUrl : t('runtime.none')
   const selectedApplicationDescription =
-    target.type === 'runtime-application' ? (target.application.description ?? t('runtime.noDescription')) : null
+    target.type === 'runtime-application' ? (target.application?.description ?? t('runtime.noDescription')) : null
   const catalogSummary = getCatalogSummary(runtimesQuery.data)
   const projectSummary = getProjectSummary(projectsQuery.data)
   const selectedSettingsTab = isSettingsTab(searchParams.get(SETTINGS_TAB_SEARCH_PARAM))
@@ -252,9 +257,7 @@ export function SettingsPage() {
   }
 
   const handleTargetChange = (value: string | null) => {
-    if (!value || value === DEFAULT_EXECUTION_TARGET_KEY) {
-      setExecutionTarget(null)
-
+    if (!value) {
       return
     }
 
@@ -314,13 +317,9 @@ export function SettingsPage() {
                       <SelectValue placeholder={t('runtime.targetPlaceholder')}>{target.label}</SelectValue>
                     </SelectTrigger>
                     <SelectContent align="start">
-                      <SelectGroup>
-                        <SelectItem value={DEFAULT_EXECUTION_TARGET_KEY}>{defaultExecutionTarget.label}</SelectItem>
-                      </SelectGroup>
-
-                      {runtimesQuery.data?.map((runtime) => (
+                      {runtimesQuery.data?.map((runtime, runtimeIndex) => (
                         <SelectGroup key={runtime._id}>
-                          <SelectSeparator />
+                          {runtimeIndex > 0 ? <SelectSeparator /> : null}
                           <SelectLabel>{runtime.name}</SelectLabel>
                           {runtime.applications.map((application) => {
                             const isSelectable = isApplicationSelectable(application)
@@ -328,7 +327,7 @@ export function SettingsPage() {
                             return (
                               <SelectItem
                                 key={`${runtime._id}-${application.name}`}
-                                value={getRuntimeApplicationOptionValue(runtime._id, application.name)}
+                                value={getRuntimeApplicationOptionValue(runtime._id, application)}
                                 disabled={!isSelectable}
                               >
                                 <span className="flex min-w-0 flex-col gap-1">
@@ -371,18 +370,18 @@ export function SettingsPage() {
                 <div className="flex flex-col gap-3">
                   <div className="grid min-w-0 gap-2 rounded-lg border px-3 py-2 sm:grid-cols-2 sm:items-center">
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="truncate text-sm font-medium">{target.runtime.name}</span>
+                      <span className="truncate text-sm font-medium">{target.runtime?.name ?? target.runtimeId}</span>
                       <Badge variant="secondary">{t('runtime.runtime')}</Badge>
                     </div>
                   </div>
                   <div className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="min-w-0 truncate text-sm font-medium">{target.application.name}</span>
-                      <Badge variant={target.application.active === false ? 'destructive' : 'success'}>
-                        {target.application.active === false ? t('runtime.inactive') : t('runtime.active')}
+                      <span className="min-w-0 truncate text-sm font-medium">{target.applicationName}</span>
+                      <Badge variant={target.application?.active === false ? 'destructive' : 'success'}>
+                        {target.application?.active === false ? t('runtime.inactive') : t('runtime.active')}
                       </Badge>
-                      <Badge variant={target.application.nonProduction ? 'outline' : 'secondary'}>
-                        {target.application.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
+                      <Badge variant={target.application?.nonProduction ? 'outline' : 'secondary'}>
+                        {target.application?.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{selectedApplicationDescription}</p>
@@ -390,13 +389,13 @@ export function SettingsPage() {
                       <div className="rounded-lg border p-3">
                         <div className="truncate text-xs text-muted-foreground">{t('runtime.maxWorkers')}</div>
                         <div className="text-lg font-semibold">
-                          {getConfiguredApplicationLimit(target.application.config?.maxWorkers, 10)}
+                          {getConfiguredApplicationLimit(target.application?.config?.maxWorkers, 10)}
                         </div>
                       </div>
                       <div className="rounded-lg border p-3">
                         <div className="truncate text-xs text-muted-foreground">{t('runtime.maxRetries')}</div>
                         <div className="text-lg font-semibold">
-                          {getConfiguredApplicationLimit(target.application.config?.maxRetries, 3)}
+                          {getConfiguredApplicationLimit(target.application?.config?.maxRetries, 3)}
                         </div>
                       </div>
                     </div>

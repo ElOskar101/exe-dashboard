@@ -1,11 +1,11 @@
-import { APP_CONFIG } from '@/app.config'
 import { ensurePathSuffix, stripTrailingSlash } from '@/lib/axios'
 import type { PlaywrightRuntime, PlaywrightRuntimeApplication } from '../model/playwright-runtime'
 
-export const EXECUTION_RUNTIME_SEARCH_PARAM = 'runtimeId'
-export const EXECUTION_APPLICATION_SEARCH_PARAM = 'applicationName'
-export const DEFAULT_EXECUTION_TARGET_KEY = 'default'
-export const DEFAULT_EXECUTION_TARGET_LABEL = 'Default App'
+export const EXECUTION_RUNTIME_SEARCH_PARAM = 'runtime'
+export const EXECUTION_APPLICATION_SEARCH_PARAM = 'app'
+export const EXECUTION_TARGET_URL_SEARCH_PARAM = 'targetUrl'
+export const MISSING_EXECUTION_TARGET_KEY = 'missing'
+export const MISSING_EXECUTION_TARGET_LABEL = 'Choose app'
 
 export interface ExecutionApiRequestTarget {
   apiUrl: string
@@ -15,20 +15,24 @@ export interface ExecutionApiRequestTarget {
 
 export type ExecutionTarget =
   | {
-      type: 'default'
-      key: typeof DEFAULT_EXECUTION_TARGET_KEY
-      label: typeof DEFAULT_EXECUTION_TARGET_LABEL
+      type: 'missing'
+      key: typeof MISSING_EXECUTION_TARGET_KEY
+      label: typeof MISSING_EXECUTION_TARGET_LABEL
       requestTarget?: undefined
       runtime?: undefined
       application?: undefined
+      runtimeId?: undefined
+      applicationName?: undefined
     }
   | {
       type: 'runtime-application'
       key: string
       label: string
       requestTarget: ExecutionApiRequestTarget
-      runtime: PlaywrightRuntime
-      application: PlaywrightRuntimeApplication
+      runtime?: PlaywrightRuntime
+      application?: PlaywrightRuntimeApplication
+      runtimeId: string
+      applicationName: string
     }
   | {
       type: 'resolving'
@@ -37,53 +41,73 @@ export type ExecutionTarget =
       requestTarget?: undefined
       runtime?: undefined
       application?: undefined
+      runtimeId: string
+      applicationName: string
     }
 
 export interface ExecutionTargetSearchSelection {
   runtimeId: string
   applicationName: string
+  targetUrl: string
 }
 
 const EXECUTION_TARGET_VALUE_SEPARATOR = '\u001f'
 const URL_PROTOCOL_PATTERN = /^[a-z][a-z\d+\-.]*:\/\//i
 
-export const defaultExecutionTarget: ExecutionTarget = {
-  type: 'default',
-  key: DEFAULT_EXECUTION_TARGET_KEY,
-  label: DEFAULT_EXECUTION_TARGET_LABEL,
+export const missingExecutionTarget: ExecutionTarget = {
+  type: 'missing',
+  key: MISSING_EXECUTION_TARGET_KEY,
+  label: MISSING_EXECUTION_TARGET_LABEL,
 }
 
 export const getExecutionTargetKey = (runtimeId: string, applicationName: string) =>
   `runtime:${runtimeId}:application:${applicationName}`
 
-export const getResolvingExecutionTarget = (runtimeId: string, applicationName: string): ExecutionTarget => ({
+export const getResolvingExecutionTarget = (
+  runtimeId: string,
+  applicationName: string,
+): Extract<ExecutionTarget, { type: 'resolving' }> => ({
   type: 'resolving',
   key: `resolving:${getExecutionTargetKey(runtimeId, applicationName)}`,
   label: 'Loading app...',
+  runtimeId,
+  applicationName,
 })
 
 export const encodeExecutionTargetValue = (selection: ExecutionTargetSearchSelection) =>
-  `${selection.runtimeId}${EXECUTION_TARGET_VALUE_SEPARATOR}${selection.applicationName}`
+  `${selection.runtimeId}${EXECUTION_TARGET_VALUE_SEPARATOR}${selection.applicationName}${EXECUTION_TARGET_VALUE_SEPARATOR}${selection.targetUrl}`
 
 export const decodeExecutionTargetValue = (value: string): ExecutionTargetSearchSelection | null => {
-  const [runtimeId, applicationName, ...rest] = value.split(EXECUTION_TARGET_VALUE_SEPARATOR)
+  const [runtimeId, applicationName, targetUrl, ...rest] = value.split(EXECUTION_TARGET_VALUE_SEPARATOR)
 
-  if (!runtimeId || !applicationName || rest.length > 0) {
+  if (!runtimeId || !applicationName || !targetUrl || rest.length > 0) {
     return null
   }
 
-  return { runtimeId, applicationName }
+  return { runtimeId, applicationName, targetUrl }
 }
 
 export const getExecutionTargetSearchSelection = (searchParams: URLSearchParams) => {
   const runtimeId = searchParams.get(EXECUTION_RUNTIME_SEARCH_PARAM)?.trim()
   const applicationName = searchParams.get(EXECUTION_APPLICATION_SEARCH_PARAM)?.trim()
+  const targetUrl = searchParams.get(EXECUTION_TARGET_URL_SEARCH_PARAM)?.trim()
 
-  if (!runtimeId || !applicationName) {
+  if (!runtimeId || !applicationName || !targetUrl) {
     return null
   }
 
-  return { runtimeId, applicationName }
+  return { runtimeId, applicationName, targetUrl }
+}
+
+export const hasPartialExecutionTargetSearchSelection = (searchParams: URLSearchParams) => {
+  const values = [
+    searchParams.get(EXECUTION_RUNTIME_SEARCH_PARAM)?.trim(),
+    searchParams.get(EXECUTION_APPLICATION_SEARCH_PARAM)?.trim(),
+    searchParams.get(EXECUTION_TARGET_URL_SEARCH_PARAM)?.trim(),
+  ]
+  const presentCount = values.filter(Boolean).length
+
+  return presentCount > 0 && presentCount < values.length
 }
 
 const getSocketUrlFromApiUrl = (apiUrl: string) => {
@@ -111,9 +135,11 @@ export const normalizeSelectedExecutionApiUrl = (apiUrl?: string) => {
 }
 
 export const getSelectedExecutionRequestTarget = (
-  application: PlaywrightRuntimeApplication,
+  applicationOrTargetUrl: PlaywrightRuntimeApplication | string,
 ): ExecutionApiRequestTarget => {
-  const apiUrl = normalizeSelectedExecutionApiUrl(application.apiUrl)
+  const apiUrl = normalizeSelectedExecutionApiUrl(
+    typeof applicationOrTargetUrl === 'string' ? applicationOrTargetUrl : applicationOrTargetUrl.apiUrl,
+  )
 
   return {
     apiUrl,
@@ -127,7 +153,7 @@ export const resolveExecutionTarget = (
   runtimes: readonly PlaywrightRuntime[] | undefined,
 ): ExecutionTarget => {
   if (!selection) {
-    return defaultExecutionTarget
+    return missingExecutionTarget
   }
 
   const runtime = runtimes?.find((candidate) => candidate._id === selection.runtimeId)
@@ -136,22 +162,17 @@ export const resolveExecutionTarget = (
       candidate.name === selection.applicationName && candidate.active !== false && Boolean(candidate.apiUrl?.trim()),
   )
 
-  if (!runtime || !application) {
-    return defaultExecutionTarget
-  }
-
   return {
     type: 'runtime-application',
-    key: getExecutionTargetKey(runtime._id, application.name),
-    label: application.name,
-    requestTarget: getSelectedExecutionRequestTarget(application),
+    key: getExecutionTargetKey(selection.runtimeId, selection.applicationName),
+    label: application?.name ?? selection.applicationName,
+    requestTarget: getSelectedExecutionRequestTarget(selection.targetUrl),
     runtime,
     application,
+    runtimeId: selection.runtimeId,
+    applicationName: selection.applicationName,
   }
 }
-
-export const getDefaultExecutionApiUrl = () => APP_CONFIG.exeApiUrl
-export const getDefaultExecutionReportsUrl = () => APP_CONFIG.exeReportsUrl
 
 export const getExecutionReportUrl = (reportsUrl: string, executionId: string) =>
   `${stripTrailingSlash(reportsUrl)}/${executionId}`

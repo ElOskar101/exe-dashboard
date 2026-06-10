@@ -74,15 +74,17 @@ describe('execution.service', () => {
   it('getExecutions requests the executions list', async () => {
     vi.mocked(exeClient.get).mockResolvedValueOnce({ data: [] })
 
-    await getExecutions()
+    await getExecutions(runtimeTarget)
 
-    expect(exeClient.get).toHaveBeenCalledWith('executions')
+    expect(exeClient.get).toHaveBeenCalledWith('executions', {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 
   it('getExecutions sends supported filters as query params', async () => {
     vi.mocked(exeClient.get).mockResolvedValueOnce({ data: [] })
 
-    await getExecutions({
+    await getExecutions(runtimeTarget, {
       by: ['user-2', 'user-1'],
       client: ['client-1'],
       clinic: ['clinic-1'],
@@ -99,7 +101,10 @@ describe('execution.service', () => {
     const [, config] = vi.mocked(exeClient.get).mock.calls[0]
     const params = config?.params as URLSearchParams
 
-    expect(exeClient.get).toHaveBeenCalledWith('executions', { params })
+    expect(exeClient.get).toHaveBeenCalledWith('executions', {
+      baseURL: 'https://runtime.example.com/api/v1',
+      params,
+    })
     expect(params.getAll('by')).toEqual(['user-1', 'user-2'])
     expect(params.getAll('client')).toEqual(['client-1'])
     expect(params.getAll('clinic')).toEqual(['clinic-1'])
@@ -113,14 +118,6 @@ describe('execution.service', () => {
     expect(params.get('limit')).toBe('15')
   })
 
-  it('createExecution posts the execution payload', async () => {
-    vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
-
-    await createExecution(executionPayload)
-
-    expect(exeClient.post).toHaveBeenCalledWith('executions', executionPayload)
-  })
-
   it('createExecution posts to a selected runtime application API URL', async () => {
     vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
@@ -131,20 +128,14 @@ describe('execution.service', () => {
     })
   })
 
-  it('getExecutionById requests execution details with logs', async () => {
+  it('getExecutionById requests execution details with logs from the selected app', async () => {
     vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
-    await getExecutionById('exe-1')
+    await getExecutionById('exe-1', runtimeTarget)
 
-    expect(exeClient.get).toHaveBeenCalledWith('executions/exe-1')
-  })
-
-  it('getExecutionAppStats requests the selected app stats', async () => {
-    vi.mocked(exeClient.get).mockResolvedValueOnce({ data: { status: 'ok' } })
-
-    await getExecutionAppStats()
-
-    expect(exeClient.get).toHaveBeenCalledWith('stats')
+    expect(exeClient.get).toHaveBeenCalledWith('executions/exe-1', {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 
   it('getExecutionAppStats requests stats from a selected runtime application API URL', async () => {
@@ -189,14 +180,6 @@ describe('execution.service', () => {
     expect(cccClient.get).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1')
   })
 
-  it('getExecutionReportHtml requests the execution HTML report', async () => {
-    vi.mocked(exeReportsClient.get).mockResolvedValueOnce({ data: '<html></html>' })
-
-    await getExecutionReportHtml('exe-1')
-
-    expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/index.html')
-  })
-
   it('getExecutionReportHtml requests reports from a selected runtime application API URL', async () => {
     vi.mocked(exeReportsClient.get).mockResolvedValueOnce({ data: '<html></html>' })
 
@@ -210,11 +193,17 @@ describe('execution.service', () => {
   it('updateExecution patches the selected execution', async () => {
     vi.mocked(exeClient.patch).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
-    await updateExecution('exe-1', { status: 'cancelled' })
+    await updateExecution('exe-1', { status: 'cancelled' }, runtimeTarget)
 
-    expect(exeClient.patch).toHaveBeenCalledWith('executions/exe-1', {
-      status: 'cancelled',
-    })
+    expect(exeClient.patch).toHaveBeenCalledWith(
+      'executions/exe-1',
+      {
+        status: 'cancelled',
+      },
+      {
+        baseURL: 'https://runtime.example.com/api/v1',
+      },
+    )
   })
 
   it('deleteExecution deletes the selected execution', async () => {
@@ -222,32 +211,40 @@ describe('execution.service', () => {
       data: { _id: 'exe-1' },
     })
 
-    await deleteExecution('exe-1')
+    await deleteExecution('exe-1', runtimeTarget)
 
-    expect(exeClient.delete).toHaveBeenCalledWith('executions/exe-1')
+    expect(exeClient.delete).toHaveBeenCalledWith('executions/exe-1', {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 
   it('stopExecution posts to the execution stop endpoint', async () => {
     vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
-    await stopExecution('exe-1')
+    await stopExecution('exe-1', runtimeTarget)
 
-    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/stop')
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/stop', undefined, {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 
   it('pauseExecution posts to the execution pause endpoint', async () => {
     vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
-    await pauseExecution('exe-1')
+    await pauseExecution('exe-1', runtimeTarget)
 
-    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/pause')
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/pause', undefined, {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 
   it('resumeExecution posts to the execution resume endpoint', async () => {
     vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
 
-    await resumeExecution('exe-1')
+    await resumeExecution('exe-1', runtimeTarget)
 
-    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/resume')
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/resume', undefined, {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
   })
 })

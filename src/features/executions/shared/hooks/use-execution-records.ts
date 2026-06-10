@@ -43,16 +43,26 @@ const invalidateExecutionDetail = async (
   await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId, targetKey) })
 }
 
+const isExecutionTargetReady = (
+  target: ReturnType<typeof useExecutionTarget>['target'],
+): target is Extract<ReturnType<typeof useExecutionTarget>['target'], { type: 'runtime-application' }> =>
+  target.type === 'runtime-application'
+
 export const useExecutionsQuery = (query: ExecutionQuery = {}, options: ExecutionQueryOptions = {}) => {
   const queryClient = useQueryClient()
   const { isResolving, target } = useExecutionTarget()
   const isEnabled = options.enabled ?? true
-  const isTargetResolutionBlocking = isEnabled && isResolving
+  const isTargetReady = isExecutionTargetReady(target)
+  const isTargetResolutionBlocking = isEnabled && (isResolving || !isTargetReady)
 
   const executionsQuery = useQuery({
     queryKey: executionKeys.list(query, target.key),
     queryFn: async () => {
-      const response = await getExecutions(query, target.requestTarget)
+      if (!isTargetReady) {
+        throw new Error('Choose a runtime application before loading executions.')
+      }
+
+      const response = await getExecutions(target.requestTarget, query)
 
       return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
     },
@@ -69,15 +79,20 @@ export const useExecutionsQuery = (query: ExecutionQuery = {}, options: Executio
 export const useExecutionQuery = (executionId: string) => {
   const queryClient = useQueryClient()
   const { isResolving, target } = useExecutionTarget()
+  const isTargetReady = isExecutionTargetReady(target)
 
   const executionQuery = useQuery({
     queryKey: executionKeys.detail(executionId, target.key),
     queryFn: async () => {
+      if (!isTargetReady) {
+        throw new Error('Choose a runtime application before loading execution details.')
+      }
+
       const response = await getExecutionById(executionId, target.requestTarget)
 
       return syncExecutionFromDetailSnapshot(queryClient, response.data, target.key)
     },
-    enabled: !isResolving,
+    enabled: !isResolving && isTargetReady,
   })
 
   return {
@@ -89,11 +104,16 @@ export const useExecutionQuery = (executionId: string) => {
 
 export const useExecutionReportQuery = (executionId: string, enabled: boolean) => {
   const { isResolving, target } = useExecutionTarget()
-  const isTargetResolutionBlocking = enabled && isResolving
+  const isTargetReady = isExecutionTargetReady(target)
+  const isTargetResolutionBlocking = enabled && (isResolving || !isTargetReady)
 
   const reportQuery = useQuery({
     queryKey: executionKeys.report(executionId, target.key),
     queryFn: async () => {
+      if (!isTargetReady) {
+        throw new Error('Choose a runtime application before loading execution reports.')
+      }
+
       const response = await getExecutionReportHtml(executionId, target.requestTarget)
 
       return response.data
@@ -110,15 +130,20 @@ export const useExecutionReportQuery = (executionId: string, enabled: boolean) =
 
 export const useExecutionAppStatsQuery = () => {
   const { isResolving, target } = useExecutionTarget()
+  const isTargetReady = isExecutionTargetReady(target)
 
   const appStatsQuery = useQuery({
     queryKey: executionKeys.appStats(target.key),
     queryFn: async () => {
+      if (!isTargetReady) {
+        throw new Error('Choose a runtime application before loading app stats.')
+      }
+
       const response = await getExecutionAppStats(target.requestTarget)
 
       return response.data
     },
-    enabled: !isResolving,
+    enabled: !isResolving && isTargetReady,
   })
 
   return {
@@ -136,8 +161,8 @@ export const useCreateExecutionMutation = (
 
   return useMutation({
     mutationFn: (payload: ExecutionCreatePayload) => {
-      if (isResolving) {
-        throw new Error('Execution target is still loading.')
+      if (isResolving || !isExecutionTargetReady(target)) {
+        throw new Error('Choose a runtime application before creating an execution.')
       }
 
       return createExecution(payload, target.requestTarget)
@@ -160,8 +185,8 @@ export const useDeleteExecutionMutation = (
 
   return useMutation({
     mutationFn: (executionId: string) => {
-      if (isResolving) {
-        throw new Error('Execution target is still loading.')
+      if (isResolving || !isExecutionTargetReady(target)) {
+        throw new Error('Choose a runtime application before deleting an execution.')
       }
 
       return deleteExecution(executionId, target.requestTarget)
@@ -188,8 +213,8 @@ const useExecutionActionMutation = (
 
   return useMutation({
     mutationFn: async () => {
-      if (isResolving) {
-        throw new Error('Execution target is still loading.')
+      if (isResolving || !isExecutionTargetReady(target)) {
+        throw new Error('Choose a runtime application before changing an execution.')
       }
 
       return mutationFn(executionId, target.requestTarget)

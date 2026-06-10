@@ -7,6 +7,9 @@ const username = process.env.E2E_TEST_USERNAME || e2eEnv.E2E_TEST_USERNAME
 const password = process.env.E2E_TEST_PASSWORD || e2eEnv.E2E_TEST_PASSWORD
 
 const canLogin = Boolean(authLoginUrl && username && password)
+const executionTargetSearch = 'runtime=runtime-1&app=App+1&targetUrl=https%3A%2F%2Fruntime.example.com%2Fapi%2Fv1'
+
+const withExecutionTarget = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${executionTargetSearch}`
 
 async function login(request: APIRequestContext) {
   const response = await request.post(authLoginUrl, {
@@ -330,9 +333,9 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/')
+    await page.goto(withExecutionTarget('/'))
 
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL(withExecutionTarget('/'))
     await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
     await expect(page.getByText('Latest executions')).toBeVisible()
     await expect(
@@ -353,7 +356,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     const sidebar = page.locator('[data-slot="sidebar-container"]')
     await expect(page.getByRole('button', { name: 'Minimize executions sidebar' })).toBeVisible()
@@ -381,7 +384,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByText('Select a client and clinic in the patients step before choosing a bot.')).toBeVisible()
@@ -418,7 +421,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -477,7 +480,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)
@@ -492,7 +495,7 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('"workers": 4')).toBeVisible()
     await page.getByRole('button', { name: 'Create execution' }).click()
 
-    await expect(page).toHaveURL('/create')
+    await expect(page).toHaveURL(withExecutionTarget('/create'))
     await expect(page.getByText('Execution created')).toBeVisible()
     const viewExecutionButton = page.getByRole('button', { name: 'View execution' })
     await expect(viewExecutionButton).toBeVisible()
@@ -556,7 +559,7 @@ test.describe('protected executions route', () => {
     })
 
     await viewExecutionButton.click()
-    await expect(page).toHaveURL('/execution/execution-e2e')
+    await expect(page).toHaveURL(withExecutionTarget('/execution/execution-e2e'))
   })
 
   test('keeps the review state after a failed submission', async ({ page, request }) => {
@@ -585,7 +588,7 @@ test.describe('protected executions route', () => {
       window.localStorage.setItem('token', accessToken)
     }, token)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)

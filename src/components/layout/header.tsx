@@ -14,10 +14,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { UserCard } from '@/features/auth'
 import {
-  DEFAULT_EXECUTION_TARGET_KEY,
   decodeExecutionTargetValue,
-  defaultExecutionTarget,
   encodeExecutionTargetValue,
+  getSelectedExecutionRequestTarget,
   type PlaywrightRuntimeApplication,
   useExecutionAppStatsQuery,
   useExecutionTarget,
@@ -28,8 +27,12 @@ import {
 import { useTheme } from '@/hooks/use-theme'
 import { IconDeviceDesktop, IconServer } from '@tabler/icons-react'
 
-const getRuntimeApplicationOptionValue = (runtimeId: string, applicationName: string) =>
-  encodeExecutionTargetValue({ runtimeId, applicationName })
+const getRuntimeApplicationOptionValue = (runtimeId: string, application: PlaywrightRuntimeApplication) =>
+  encodeExecutionTargetValue({
+    runtimeId,
+    applicationName: application.name,
+    targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
+  })
 
 const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
@@ -43,19 +46,23 @@ const Header: () => JSX.Element = () => {
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
   const targetTitle =
-    target.type === 'runtime-application' ? `${target.runtime.name} / ${target.application.name}` : target.label
+    target.type === 'runtime-application'
+      ? `${target.runtime?.name ?? target.runtimeId} / ${target.applicationName}`
+      : target.label
   const selectedValue =
     target.type === 'runtime-application'
-      ? getRuntimeApplicationOptionValue(target.runtime._id, target.application.name)
-      : DEFAULT_EXECUTION_TARGET_KEY
+      ? encodeExecutionTargetValue({
+          runtimeId: target.runtimeId,
+          applicationName: target.applicationName,
+          targetUrl: target.requestTarget.apiUrl,
+        })
+      : undefined
   const serverStatus = appStatsQuery.data?.server.status.toLowerCase()
   const isServerUp = serverStatus === 'up'
   const isLoadingStats = isResolving || appStatsQuery.isLoading
 
   const handleTargetChange = (value: string | null) => {
-    if (!value || value === DEFAULT_EXECUTION_TARGET_KEY) {
-      setExecutionTarget(null)
-
+    if (!value) {
       return
     }
 
@@ -109,24 +116,22 @@ const Header: () => JSX.Element = () => {
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate">{target.label}</span>
                     {target.type === 'runtime-application' ? (
-                      <span className="truncate text-xs font-normal text-muted-foreground">{target.runtime.name}</span>
+                      <span className="truncate text-xs font-normal text-muted-foreground">
+                        {target.runtime?.name ?? target.runtimeId}
+                      </span>
                     ) : null}
                   </span>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectGroup>
-                  <SelectItem value={DEFAULT_EXECUTION_TARGET_KEY}>{defaultExecutionTarget.label}</SelectItem>
-                </SelectGroup>
-
-                {runtimesQuery.data?.map((runtime) => (
+                {runtimesQuery.data?.map((runtime, runtimeIndex) => (
                   <SelectGroup key={runtime._id}>
-                    <SelectSeparator />
+                    {runtimeIndex > 0 ? <SelectSeparator /> : null}
                     <SelectLabel>{runtime.name}</SelectLabel>
                     {runtime.applications.map((application) => (
                       <SelectItem
                         key={`${runtime._id}-${application.name}`}
-                        value={getRuntimeApplicationOptionValue(runtime._id, application.name)}
+                        value={getRuntimeApplicationOptionValue(runtime._id, application)}
                         disabled={!isApplicationSelectable(application)}
                       >
                         <span className="flex min-w-0 flex-col gap-0.5">

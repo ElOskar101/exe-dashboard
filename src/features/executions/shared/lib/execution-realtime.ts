@@ -90,10 +90,10 @@ const createExecutionRealtimeSubscription = ({
 export const subscribeToExecutionStatus = (options: {
   onConnect?: () => void
   onStatus: Dispatch<ExecutionStatusPayload>
-  socketUrl?: string
+  socketUrl: string
 }) => {
   const socket = getExecutionSocket(options.socketUrl)
-  const socketKey = options.socketUrl ?? 'default'
+  const socketKey = options.socketUrl
 
   return createExecutionRealtimeSubscription({
     handleConnect: options.onConnect,
@@ -123,10 +123,10 @@ export const subscribeToExecutionRoom = (options: {
   onHistory?: Dispatch<ExecutionLogsHistoryPayload>
   onLog?: Dispatch<ExecutionLogPayload>
   onStatus?: Dispatch<ExecutionStatusPayload>
-  socketUrl?: string
+  socketUrl: string
 }) => {
   const socket = getExecutionSocket(options.socketUrl)
-  const socketKey = options.socketUrl ?? 'default'
+  const socketKey = options.socketUrl
 
   const joinExecutionRoom = () => {
     socket.emit('execution:join', { executionId: options.executionId })

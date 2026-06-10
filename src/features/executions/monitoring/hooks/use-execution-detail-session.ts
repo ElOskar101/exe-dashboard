@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  getDefaultExecutionReportsUrl,
   getExecutionReportIndexUrl,
   executionKeys,
   isExecutionFailed,
@@ -97,10 +96,10 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportSource = getExecutionReportIndexUrl(
-    target.requestTarget?.reportsUrl ?? getDefaultExecutionReportsUrl(),
-    reportExecutionId,
-  )
+  const reportSource =
+    target.type === 'runtime-application'
+      ? getExecutionReportIndexUrl(target.requestTarget.reportsUrl, reportExecutionId)
+      : ''
   const reportAvailabilityQuery = useQuery({
     queryKey: [...executionKeys.report(reportExecutionId, target.key), 'availability'],
     queryFn: async () => {
@@ -112,7 +111,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
 
       return true
     },
-    enabled: showReport,
+    enabled: showReport && target.type === 'runtime-application',
     retry: false,
   })
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])

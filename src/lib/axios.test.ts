@@ -57,12 +57,12 @@ describe('axios URL helpers', () => {
     expect(cccClient.defaults.baseURL).toBe('https://dev-carrier.dentalautomation.ai/api')
   })
 
-  it('uses the configured EXE API URL for the EXE client', () => {
-    expect(exeClient.defaults.baseURL).toBe('https://api.controlcentralcarrier.com/api/v1')
+  it('does not configure a fallback base URL for the EXE client', () => {
+    expect(exeClient.defaults.baseURL).toBeUndefined()
   })
 
-  it('uses the configured reports URL for the reports client', () => {
-    expect(exeReportsClient.defaults.baseURL).toBe('https://api.controlcentralcarrier.com/reports')
+  it('does not configure a fallback base URL for the reports client', () => {
+    expect(exeReportsClient.defaults.baseURL).toBeUndefined()
   })
 
   it('keeps auth headers while opting out of the fetch adapter User-Agent header', async () => {

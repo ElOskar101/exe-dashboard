@@ -5,9 +5,7 @@ export const getSocketAuth = () => getSocketAuthPayload()
 
 const sockets = new Map<string, Socket>()
 
-export const getDefaultSocketUrl = () => import.meta.env.VITE_SOCKET_URL
-
-export const getExecutionSocket = (socketUrl = getDefaultSocketUrl()) => {
+export const getExecutionSocket = (socketUrl: string) => {
   const existingSocket = sockets.get(socketUrl)
 
   if (existingSocket) {
@@ -24,5 +22,3 @@ export const getExecutionSocket = (socketUrl = getDefaultSocketUrl()) => {
 
   return socket
 }
-
-export const socket = getExecutionSocket()

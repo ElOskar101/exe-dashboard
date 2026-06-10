@@ -59,19 +59,21 @@ export {
 export type { ExecutionUpdatePayload } from './services/execution.service'
 export { executionKeys } from './lib/execution-query-keys'
 export {
-  DEFAULT_EXECUTION_TARGET_KEY,
-  DEFAULT_EXECUTION_TARGET_LABEL,
   EXECUTION_APPLICATION_SEARCH_PARAM,
   EXECUTION_RUNTIME_SEARCH_PARAM,
+  EXECUTION_TARGET_URL_SEARCH_PARAM,
   decodeExecutionTargetValue,
-  defaultExecutionTarget,
   encodeExecutionTargetValue,
-  getDefaultExecutionApiUrl,
-  getDefaultExecutionReportsUrl,
   getExecutionReportIndexUrl,
   getExecutionReportUrl,
   getExecutionTargetKey,
   getExecutionTargetSearchSelection,
+  getSelectedExecutionRequestTarget,
+  hasPartialExecutionTargetSearchSelection,
+  MISSING_EXECUTION_TARGET_KEY,
+  MISSING_EXECUTION_TARGET_LABEL,
+  missingExecutionTarget,
+  normalizeSelectedExecutionApiUrl,
   resolveExecutionTarget,
   type ExecutionApiRequestTarget,
   type ExecutionTarget,
@@ -104,3 +106,4 @@ export {
   usePlaywrightRuntimesQuery,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
+export { RuntimeApplicationTargetGate } from './components/runtime-application-target-gate'

@@ -17,6 +17,10 @@ export const useExecutionStatusUpdates = () => {
   )
 
   useMountEffect(() => {
+    if (target.type !== 'runtime-application') {
+      return
+    }
+
     let isInitialConnect = true
 
     const handleConnect = () => {
@@ -39,7 +43,7 @@ export const useExecutionStatusUpdates = () => {
       onStatus: (payload) => {
         syncExecutionStatusReadModelForTarget(queryClient, payload.executionId, payload.status, target.key)
       },
-      socketUrl: target.requestTarget?.socketUrl,
+      socketUrl: target.requestTarget.socketUrl,
     })
 
     return () => {

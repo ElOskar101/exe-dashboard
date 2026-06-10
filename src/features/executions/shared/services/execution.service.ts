@@ -9,19 +9,13 @@ import type { ExecutionApiRequestTarget } from '../lib/execution-target'
 
 export type ExecutionUpdatePayload = Partial<Omit<Execution, '_id'>>
 
-const getExecutionRequestConfig = (target?: ExecutionApiRequestTarget) =>
-  target
-    ? {
-        baseURL: target.apiUrl,
-      }
-    : undefined
+const getExecutionRequestConfig = (target: ExecutionApiRequestTarget) => ({
+  baseURL: target.apiUrl,
+})
 
-const getExecutionReportsRequestConfig = (target?: ExecutionApiRequestTarget) =>
-  target
-    ? {
-        baseURL: target.reportsUrl,
-      }
-    : undefined
+const getExecutionReportsRequestConfig = (target: ExecutionApiRequestTarget) => ({
+  baseURL: target.reportsUrl,
+})
 
 const buildExecutionSearchParams = (query: ExecutionQuery) => {
   const normalizedQuery = normalizeExecutionQuery(query)
@@ -41,35 +35,33 @@ const buildExecutionSearchParams = (query: ExecutionQuery) => {
   return searchParams
 }
 
-export const getExecutions = (query: ExecutionQuery = {}, target?: ExecutionApiRequestTarget) => {
+export const getExecutions = (target: ExecutionApiRequestTarget, query: ExecutionQuery = {}) => {
   const params = buildExecutionSearchParams(query)
   const config = getExecutionRequestConfig(target)
 
   if (params.size === 0) {
-    return config ? exeClient.get<Execution[]>('executions', config) : exeClient.get<Execution[]>('executions')
+    return exeClient.get<Execution[]>('executions', config)
   }
 
   return exeClient.get<Execution[]>('executions', { ...config, params })
 }
 
-export const getExecutionAppStats = (target?: ExecutionApiRequestTarget) => {
+export const getExecutionAppStats = (target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config ? exeClient.get<ExecutionAppStats>('stats', config) : exeClient.get<ExecutionAppStats>('stats')
+  return exeClient.get<ExecutionAppStats>('stats', config)
 }
 
-export const createExecution = (data: ExecutionCreatePayload, target?: ExecutionApiRequestTarget) => {
+export const createExecution = (data: ExecutionCreatePayload, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config ? exeClient.post<Execution>('executions', data, config) : exeClient.post<Execution>('executions', data)
+  return exeClient.post<Execution>('executions', data, config)
 }
 
-export const getExecutionById = (executionId: string, target?: ExecutionApiRequestTarget) => {
+export const getExecutionById = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config
-    ? exeClient.get<Execution>(`executions/${executionId}`, config)
-    : exeClient.get<Execution>(`executions/${executionId}`)
+  return exeClient.get<Execution>(`executions/${executionId}`, config)
 }
 
 export const getPlaywrightProjects = () => cccClient.get<PlaywrightProject[]>('v2/playwright-projects')
@@ -82,54 +74,42 @@ export const getPlaywrightRuntimes = () => cccClient.get<PlaywrightRuntime[]>('v
 export const getPlaywrightRuntimeById = (playwrightRuntimeId: string) =>
   cccClient.get<PlaywrightRuntime>(`v2/playwright-runtimes/${playwrightRuntimeId}`)
 
-export const getExecutionReportHtml = (executionId: string, target?: ExecutionApiRequestTarget) => {
+export const getExecutionReportHtml = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionReportsRequestConfig(target)
 
-  return config
-    ? exeReportsClient.get<string>(`${executionId}/index.html`, config)
-    : exeReportsClient.get<string>(`${executionId}/index.html`)
+  return exeReportsClient.get<string>(`${executionId}/index.html`, config)
 }
 
 export const updateExecution = (
   executionId: string,
   data: ExecutionUpdatePayload,
-  target?: ExecutionApiRequestTarget,
+  target: ExecutionApiRequestTarget,
 ) => {
   const config = getExecutionRequestConfig(target)
 
-  return config
-    ? exeClient.patch<Execution>(`executions/${executionId}`, data, config)
-    : exeClient.patch<Execution>(`executions/${executionId}`, data)
+  return exeClient.patch<Execution>(`executions/${executionId}`, data, config)
 }
 
-export const deleteExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+export const deleteExecution = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config
-    ? exeClient.delete<Execution>(`executions/${executionId}`, config)
-    : exeClient.delete<Execution>(`executions/${executionId}`)
+  return exeClient.delete<Execution>(`executions/${executionId}`, config)
 }
 
-export const stopExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+export const stopExecution = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config
-    ? exeClient.post<Execution>(`executions/${executionId}/stop`, undefined, config)
-    : exeClient.post<Execution>(`executions/${executionId}/stop`)
+  return exeClient.post<Execution>(`executions/${executionId}/stop`, undefined, config)
 }
 
-export const pauseExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+export const pauseExecution = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config
-    ? exeClient.post<Execution>(`executions/${executionId}/pause`, undefined, config)
-    : exeClient.post<Execution>(`executions/${executionId}/pause`)
+  return exeClient.post<Execution>(`executions/${executionId}/pause`, undefined, config)
 }
 
-export const resumeExecution = (executionId: string, target?: ExecutionApiRequestTarget) => {
+export const resumeExecution = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 
-  return config
-    ? exeClient.post<Execution>(`executions/${executionId}/resume`, undefined, config)
-    : exeClient.post<Execution>(`executions/${executionId}/resume`)
+  return exeClient.post<Execution>(`executions/${executionId}/resume`, undefined, config)
 }
