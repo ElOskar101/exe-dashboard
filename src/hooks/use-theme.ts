@@ -6,7 +6,12 @@ const THEME_STORAGE_KEY = 'theme'
 const THEME_CHANGE_EVENT = 'themechange'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
-const isTheme = (theme: string | null): theme is ThemeType => theme === 'light' || theme === 'dark'
+const normalizeTheme = (theme: string | null): ThemeType | null => {
+  if (theme === 'light' || theme === 'light-mode') return 'light'
+  if (theme === 'dark' || theme === 'dark-mode') return 'dark'
+
+  return null
+}
 
 const getSystemTheme = (): ThemeType => (window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light')
 
@@ -14,7 +19,7 @@ const getStoredTheme = (): ThemeType | null => {
   try {
     const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
 
-    return isTheme(storedTheme) ? storedTheme : null
+    return normalizeTheme(storedTheme)
   } catch {
     return null
   }

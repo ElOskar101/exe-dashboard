@@ -1,7 +1,9 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTheme } from '@/hooks/use-theme'
 
 interface ExecutionReportPanelProps {
   isError: boolean
@@ -11,6 +13,12 @@ interface ExecutionReportPanelProps {
 
 export function ExecutionReportPanel({ isError, isLoading, reportSource }: ExecutionReportPanelProps) {
   const { t } = useTranslation('executions')
+  const { theme } = useTheme()
+  const themedReportSource = useMemo(() => {
+    const searchSeparator = reportSource.includes('?') ? '&' : '?'
+
+    return `${reportSource}${searchSeparator}reportTheme=${theme}`
+  }, [reportSource, theme])
 
   if (isLoading) {
     return (
@@ -33,7 +41,7 @@ export function ExecutionReportPanel({ isError, isLoading, reportSource }: Execu
       className="h-[calc(100vh-16rem)] min-h-96 w-full rounded-2xl border border-border bg-background"
       loading="lazy"
       referrerPolicy="no-referrer"
-      src={reportSource}
+      src={themedReportSource}
       title={t('detail.reportFrameTitle')}
     />
   )

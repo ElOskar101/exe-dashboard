@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "source": "/api/execution-reports/:path*",
+      "destination": "/api/execution-reports?path=:path*"
     },
     {
       "source": "/:path*",
