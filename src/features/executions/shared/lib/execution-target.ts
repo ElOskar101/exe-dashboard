@@ -153,16 +153,8 @@ export const resolveExecutionTarget = (
 export const getDefaultExecutionApiUrl = () => APP_CONFIG.exeApiUrl
 export const getDefaultExecutionReportsUrl = () => APP_CONFIG.exeReportsUrl
 
-const encodeReportProxyOrigin = (origin: string) =>
-  btoa(origin).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '')
+export const getExecutionReportUrl = (reportsUrl: string, executionId: string) =>
+  `${stripTrailingSlash(reportsUrl)}/${executionId}`
 
-export const getExecutionReportsProxyPath = (reportsUrl: string, executionId: string) => {
-  const reportUrl = new URL(reportsUrl)
-  const encodedOrigin = encodeReportProxyOrigin(reportUrl.origin)
-  const reportPath = `${stripTrailingSlash(reportUrl.pathname)}/${executionId}`
-
-  return `/api/execution-reports/${encodedOrigin}${reportPath}`
-}
-
-export const getExecutionReportIndexProxyPath = (reportsUrl: string, executionId: string) =>
-  `${getExecutionReportsProxyPath(reportsUrl, executionId)}/index.html`
+export const getExecutionReportIndexUrl = (reportsUrl: string, executionId: string) =>
+  `${getExecutionReportUrl(reportsUrl, executionId)}/index.html`

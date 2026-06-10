@@ -24,6 +24,10 @@ _Avoid_: Status change, confirmed status
 The shared client-side representation of confirmed **Execution Status** that every execution view reads from.
 _Avoid_: View-local status state, detail-only status, sidebar-only status
 
+**Execution Report**:
+A Playwright HTML test report produced for an **Execution** and served by that execution target under `/reports/<execution-id>/index.html`.
+_Avoid_: Report artifact, test output, iframe report
+
 **Playwright Project**:
 A named automation project that can group **Executions** and can be associated with one or more bots.
 _Avoid_: Suite, script set

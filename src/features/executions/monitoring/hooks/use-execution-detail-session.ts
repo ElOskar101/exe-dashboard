@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   getDefaultExecutionReportsUrl,
-  getExecutionReportIndexProxyPath,
+  getExecutionReportIndexUrl,
   executionKeys,
   isExecutionFailed,
   isExecutionSuccessful,
@@ -97,7 +97,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
   const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportSource = getExecutionReportIndexProxyPath(
+  const reportSource = getExecutionReportIndexUrl(
     target.requestTarget?.reportsUrl ?? getDefaultExecutionReportsUrl(),
     reportExecutionId,
   )
