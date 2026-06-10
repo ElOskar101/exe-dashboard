@@ -2,14 +2,7 @@ import { useMemo, useState, type Dispatch, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldLabel } from '@/components/ui/field'
 import {
   Select,
@@ -21,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconAlertCircle, IconRefresh, IconServer } from '@tabler/icons-react'
+import { IconAlertCircle, IconDeviceDesktop, IconRefresh } from '@tabler/icons-react'
 import {
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
@@ -65,7 +58,7 @@ const findFirstSelection = (
   return null
 }
 
-function RuntimeApplicationTargetDialogContent({
+function RuntimeApplicationTargetCardContent({
   defaultValue,
   onSelectionConfirmed,
   runtimes,
@@ -76,6 +69,7 @@ function RuntimeApplicationTargetDialogContent({
 }) {
   const [selectedValue, setSelectedValue] = useState(defaultValue)
   const selectedSelection = decodeExecutionTargetValue(selectedValue)
+  const selectedRuntime = runtimes.find((runtime) => runtime._id === selectedSelection?.runtimeId)
 
   const handleConfirm = () => {
     if (!selectedSelection) return
@@ -85,53 +79,64 @@ function RuntimeApplicationTargetDialogContent({
 
   return (
     <>
-      <Field>
-        <FieldLabel htmlFor="required-execution-target">Runtime application</FieldLabel>
-        <Select
-          value={selectedValue}
-          onValueChange={(value) => {
-            if (value) setSelectedValue(value)
-          }}
-        >
-          <SelectTrigger id="required-execution-target" className="w-full">
-            <IconServer />
-            <SelectValue placeholder="Choose an app" />
-          </SelectTrigger>
-          <SelectContent align="start">
-            {runtimes.map((runtime, runtimeIndex) => (
-              <SelectGroup key={runtime._id}>
-                {runtimeIndex > 0 ? <SelectSeparator /> : null}
-                <SelectLabel>{runtime.name}</SelectLabel>
-                {runtime.applications.map((application) => (
-                  <SelectItem
-                    key={`${runtime._id}-${application.name}`}
-                    value={getRuntimeApplicationOptionValue(runtime._id, application)}
-                    disabled={!isApplicationSelectable(application)}
-                  >
-                    <span className="flex min-w-0 flex-col gap-0.5">
-                      <span className="truncate">{application.name}</span>
-                      {application.active === false ? (
-                        <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
-                      ) : null}
-                      {!application.apiUrl?.trim() ? (
-                        <span className="truncate text-xs font-normal text-muted-foreground">
-                          No API URL configured
-                        </span>
-                      ) : null}
+      <CardContent className="gap-4">
+        <Field>
+          <FieldLabel htmlFor="required-execution-target">Runtime application</FieldLabel>
+          <Select
+            value={selectedValue}
+            onValueChange={(value) => {
+              if (value) setSelectedValue(value)
+            }}
+          >
+            <SelectTrigger id="required-execution-target" className="w-full">
+              <IconDeviceDesktop className="size-4" />
+              <SelectValue placeholder="Choose an app">
+                {selectedSelection ? (
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate">{selectedSelection.applicationName}</span>
+                    <span className="truncate text-xs font-normal text-muted-foreground">
+                      {selectedRuntime?.name ?? selectedSelection.runtimeId}
                     </span>
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+                  </span>
+                ) : null}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent align="start">
+              {runtimes.map((runtime, runtimeIndex) => (
+                <SelectGroup key={runtime._id}>
+                  {runtimeIndex > 0 ? <SelectSeparator /> : null}
+                  <SelectLabel>{runtime.name}</SelectLabel>
+                  {runtime.applications.map((application) => (
+                    <SelectItem
+                      key={`${runtime._id}-${application.name}`}
+                      value={getRuntimeApplicationOptionValue(runtime._id, application)}
+                      disabled={!isApplicationSelectable(application)}
+                    >
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="truncate">{application.name}</span>
+                        {application.active === false ? (
+                          <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
+                        ) : null}
+                        {!application.apiUrl?.trim() ? (
+                          <span className="truncate text-xs font-normal text-muted-foreground">
+                            No API URL configured
+                          </span>
+                        ) : null}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      </CardContent>
 
-      <DialogFooter>
+      <CardFooter>
         <Button type="button" onClick={handleConfirm} disabled={!selectedSelection}>
           Use selected app
         </Button>
-      </DialogFooter>
+      </CardFooter>
     </>
   )
 }
@@ -154,56 +159,62 @@ export function RuntimeApplicationTargetGate() {
   }
 
   return (
-    <Dialog open modal>
-      <DialogContent showCloseButton={false} className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Choose runtime application</DialogTitle>
-          <DialogDescription>
-            Execution requests require an explicit runtime application for this URL.
-          </DialogDescription>
-        </DialogHeader>
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Choose runtime application</CardTitle>
+          <CardDescription>Execution requests require an explicit runtime application for this URL.</CardDescription>
+        </CardHeader>
 
         {runtimesQuery.isError ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>Runtime catalog could not be loaded</AlertTitle>
-            <AlertDescription className="flex flex-col items-start gap-3">
-              <span>Reload the catalog to choose the runtime application for this dashboard.</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  void runtimesQuery.refetch()
-                }}
-              >
-                <IconRefresh data-icon="inline-start" />
-                Retry
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <CardContent>
+            <Alert variant="destructive">
+              <IconAlertCircle />
+              <AlertTitle>Runtime catalog could not be loaded</AlertTitle>
+              <AlertDescription className="flex flex-col items-start gap-3">
+                <span>Reload the catalog to choose the runtime application for this dashboard.</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    void runtimesQuery.refetch()
+                  }}
+                >
+                  <IconRefresh data-icon="inline-start" />
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
         ) : null}
 
-        {runtimesQuery.isLoading ? <div className="text-sm text-muted-foreground">Loading apps...</div> : null}
+        {runtimesQuery.isLoading ? (
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Loading apps...</div>
+          </CardContent>
+        ) : null}
 
         {!runtimesQuery.isLoading && runtimesQuery.data && !firstSelection ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>No selectable apps</AlertTitle>
-            <AlertDescription>Every runtime application is inactive or missing an API URL.</AlertDescription>
-          </Alert>
+          <CardContent>
+            <Alert variant="destructive">
+              <IconAlertCircle />
+              <AlertTitle>No selectable apps</AlertTitle>
+              <AlertDescription>Every runtime application is inactive or missing an API URL.</AlertDescription>
+            </Alert>
+          </CardContent>
         ) : null}
 
         {runtimesQuery.data && firstSelection ? (
-          <RuntimeApplicationTargetDialogContent
+          <RuntimeApplicationTargetCardContent
             key={defaultValue}
             defaultValue={defaultValue}
             onSelectionConfirmed={handleSelectionConfirmed}
             runtimes={runtimesQuery.data}
           />
         ) : null}
-      </DialogContent>
-    </Dialog>
+      </Card>
+    </div>
   )
 }
 
