@@ -1,7 +1,42 @@
-import { describe, expect, it } from 'vitest'
+import type { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import cccClient, { ensurePathSuffix, exeClient, exeReportsClient, stripTrailingSlash } from './axios'
 
+const createStorageMock = (): Storage => {
+  const storage = new Map<string, string>()
+
+  return {
+    clear() {
+      storage.clear()
+    },
+    getItem(key) {
+      return storage.get(key) ?? null
+    },
+    key(index) {
+      return Array.from(storage.keys())[index] ?? null
+    },
+    get length() {
+      return storage.size
+    },
+    removeItem(key) {
+      storage.delete(key)
+    },
+    setItem(key, value) {
+      storage.set(key, value)
+    },
+  }
+}
+
 describe('axios URL helpers', () => {
+  beforeEach(() => {
+    vi.stubGlobal('localStorage', createStorageMock())
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('strips trailing slashes from configured URLs', () => {
     expect(stripTrailingSlash('https://carrier.dentalautomation.ai///')).toBe('https://carrier.dentalautomation.ai')
   })
@@ -28,5 +63,24 @@ describe('axios URL helpers', () => {
 
   it('uses the configured reports URL for the reports client', () => {
     expect(exeReportsClient.defaults.baseURL).toBe('https://api.controlcentralcarrier.com/reports')
+  })
+
+  it('keeps auth headers while opting out of the fetch adapter User-Agent header', async () => {
+    localStorage.setItem('token', 'token-123')
+
+    await cccClient.get('users/me', {
+      adapter: async (config): Promise<AxiosResponse> => {
+        expect(config.headers.get('x-access-token')).toBe('token-123')
+        expect(config.headers.get('User-Agent')).toBe(false)
+
+        return {
+          config,
+          data: {},
+          headers: {},
+          status: 200,
+          statusText: 'OK',
+        }
+      },
+    } satisfies AxiosRequestConfig)
   })
 })

@@ -29,6 +29,8 @@ export const exeReportsClient = axios.create({
 })
 
 const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
+  config.headers.set('User-Agent', false)
+
   for (const [headerName, value] of Object.entries(getAuthRequestHeaders())) {
     config.headers.set(headerName, value)
   }
