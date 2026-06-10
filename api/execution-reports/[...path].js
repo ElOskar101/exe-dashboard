@@ -10,18 +10,10 @@ const HOP_BY_HOP_HEADERS = new Set([
 ])
 
 const BLOCKING_EMBED_HEADERS = new Set(['content-security-policy', 'x-frame-options'])
-const PROXY_QUERY_PARAMS = new Set(['path', 'reportTheme'])
-const REPORT_THEMES = new Set(['dark', 'light'])
-
-const getReportTheme = (requestUrl) => {
-  const reportTheme = requestUrl.searchParams.get('reportTheme')
-
-  return REPORT_THEMES.has(reportTheme) ? reportTheme : null
-}
 
 const getPathSegments = (value) => {
   if (Array.isArray(value)) {
-    return value.flatMap(getPathSegments)
+    return value
   }
 
   return typeof value === 'string' ? value.split('/') : []
@@ -72,14 +64,6 @@ const getProxyTargetUrlFromLegacyFullPath = (pathSegments) => {
   return isValidProxyTargetUrl(targetUrl) ? targetUrl : null
 }
 
-const appendForwardedSearchParams = (targetUrl, requestUrl) => {
-  for (const [key, value] of requestUrl.searchParams) {
-    if (!PROXY_QUERY_PARAMS.has(key)) {
-      targetUrl.searchParams.append(key, value)
-    }
-  }
-}
-
 const getProxyTargetUrl = (request) => {
   const pathSegments = getPathSegments(request.query.path)
   const targetUrl =
@@ -90,27 +74,9 @@ const getProxyTargetUrl = (request) => {
   }
 
   const requestUrl = new URL(request.url, `https://${request.headers.host}`)
-  appendForwardedSearchParams(targetUrl, requestUrl)
+  targetUrl.search = requestUrl.search
 
-  return {
-    reportTheme: getReportTheme(requestUrl),
-    targetUrl,
-  }
-}
-
-const getThemedHtml = (html, reportTheme) => {
-  if (!reportTheme) {
-    return html
-  }
-
-  const playwrightTheme = `${reportTheme}-mode`
-  const themeScript = `<script>(()=>{const theme=${JSON.stringify(playwrightTheme)};try{localStorage.theme=theme}catch{}document.documentElement.classList.remove('dark','light','dark-mode','light-mode');document.documentElement.classList.add(theme);document.documentElement.style.colorScheme=${JSON.stringify(reportTheme)}})();</script>`
-
-  if (/<head[\s>]/i.test(html)) {
-    return html.replace(/<head([^>]*)>/i, `<head$1>${themeScript}`)
-  }
-
-  return `${themeScript}${html}`
+  return targetUrl
 }
 
 export default async function handler(request, response) {
@@ -120,20 +86,20 @@ export default async function handler(request, response) {
     return
   }
 
-  let proxyTarget
+  let targetUrl
 
   try {
-    proxyTarget = getProxyTargetUrl(request)
+    targetUrl = getProxyTargetUrl(request)
   } catch {
-    proxyTarget = null
+    targetUrl = null
   }
 
-  if (!proxyTarget) {
+  if (!targetUrl) {
     response.status(400).send('Invalid execution report proxy target.')
     return
   }
 
-  const upstreamResponse = await fetch(proxyTarget.targetUrl, { method: request.method })
+  const upstreamResponse = await fetch(targetUrl, { method: request.method })
 
   response.status(upstreamResponse.status)
   upstreamResponse.headers.forEach((value, key) => {
@@ -146,15 +112,6 @@ export default async function handler(request, response) {
 
   if (request.method === 'HEAD') {
     response.end()
-    return
-  }
-
-  const contentType = upstreamResponse.headers.get('content-type') ?? ''
-
-  if (contentType.includes('text/html')) {
-    const body = getThemedHtml(await upstreamResponse.text(), proxyTarget.reportTheme)
-
-    response.send(body)
     return
   }
 

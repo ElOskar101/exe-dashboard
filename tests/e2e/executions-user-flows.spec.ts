@@ -754,12 +754,9 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     const execution = createExecution()
 
-    await page.addInitScript(() => {
-      window.localStorage.setItem('theme', 'dark')
-    })
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/reports/report-1/index.html**', async (route) => {
+    await page.route('**/reports/report-1/index.html', async (route) => {
       await route.fulfill({
         contentType: 'text/html',
         body: '<!doctype html><html><body><h1>Completed report</h1><p>Jane Doe passed.</p></body></html>',
@@ -770,7 +767,6 @@ test.describe('execution user flows', () => {
     await page.getByRole('tab', { name: 'Report' }).click()
 
     await expect(page.getByTitle('Execution report')).toBeVisible()
-    await expect(page.getByTitle('Execution report')).toHaveAttribute('src', /[?&]reportTheme=dark(?:&|$)/)
     await expect(page.frameLocator('iframe[title="Execution report"]').getByText('Completed report')).toBeVisible()
   })
 
@@ -780,7 +776,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/reports/report-1/index.html**', async (route) => {
+    await page.route('**/reports/report-1/index.html', async (route) => {
       await route.fulfill({ status: 404, body: 'Missing report' })
     })
 
