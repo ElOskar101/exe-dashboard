@@ -349,10 +349,8 @@ export function SettingsPage() {
                                 <IconBox className="size-4 shrink-0 text-muted-foreground" />
                                 <span className="truncate">{application.name}</span>
                                 <Badge
-                                  variant={application.active === false ? 'destructive' : 'success'}
-                                  className={
-                                    application.active === false ? 'text-destructive!' : 'text-success-foreground!'
-                                  }
+                                  variant="outline"
+                                  className={application.active === false ? 'text-destructive!' : 'text-success!'}
                                 >
                                   {application.active === false ? t('runtime.inactive') : t('runtime.active')}
                                 </Badge>
@@ -388,7 +386,10 @@ export function SettingsPage() {
                           <span className="text-muted-foreground">{selectedApplicationDescription}</span>
                         </div>
                         <div className="flex shrink-0 flex-wrap gap-2">
-                          <Badge variant={selectedApplication.active === false ? 'destructive' : 'success'}>
+                          <Badge
+                            variant="outline"
+                            className={selectedApplication.active === false ? 'text-destructive' : 'text-success'}
+                          >
                             {selectedApplication.active === false ? t('runtime.inactive') : t('runtime.active')}
                           </Badge>
                           <Badge variant="outline">

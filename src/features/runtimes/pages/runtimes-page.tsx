@@ -141,7 +141,10 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1.5">
-                      <Badge variant={application.active === false ? 'destructive' : 'success'}>
+                      <Badge
+                        variant="outline"
+                        className={application.active === false ? 'text-destructive' : 'text-success'}
+                      >
                         {application.active === false ? t('status.inactive') : t('status.active')}
                       </Badge>
                     </div>
