@@ -5,7 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { type PlaywrightRuntime, usePlaywrightRuntimesQuery } from '@/features/executions'
+import {
+  getPlaywrightRuntimeApplications,
+  type PlaywrightRuntime,
+  usePlaywrightRuntimesQuery,
+} from '@/features/executions'
 import {
   IconAlertCircle,
   IconBox,
@@ -101,6 +105,7 @@ export function RuntimesPage() {
 
 function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
   const { t } = useTranslation('runtimes')
+  const applications = getPlaywrightRuntimeApplications(runtime)
 
   return (
     <Card size="default">
@@ -130,8 +135,8 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {runtime.applications.length > 0 ? (
-              runtime.applications.map((application) => (
+            {applications.length > 0 ? (
+              applications.map((application) => (
                 <TableRow key={`${runtime._id}-${application.name}`}>
                   <TableCell className="whitespace-normal break-words text-white/80">
                     <span className="flex min-w-0 items-center gap-2">

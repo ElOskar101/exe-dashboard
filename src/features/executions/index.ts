@@ -36,6 +36,7 @@ export {
   getExecutionRequestErrorMessage,
   getPlaywrightProjectById,
   getPlaywrightProjects,
+  getPlaywrightRuntimeApplications,
   getPlaywrightRuntimeById,
   getPlaywrightRuntimes,
   getSelectedExecutionRequestTarget,

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   getSelectedExecutionRequestTarget,
+  getPlaywrightRuntimeApplications,
   useExecutionAppStatsQuery,
   useExecutionTarget,
   useExecutionTargetSetter,
@@ -43,7 +44,7 @@ const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
 
 const getFirstSelectableApplication = (runtime: PlaywrightRuntime | undefined) =>
-  runtime?.applications.find(isApplicationSelectable)
+  getPlaywrightRuntimeApplications(runtime).find(isApplicationSelectable)
 
 const getApplicationSelection = (runtimeId: string, application: PlaywrightRuntimeApplication) => ({
   runtimeId,
@@ -197,7 +198,7 @@ export function SettingsPage() {
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
   const selectedRuntime = runtimesQuery.data?.find((runtime) => runtime._id === target.runtimeId)
-  const selectedApplication = selectedRuntime?.applications.find(
+  const selectedApplication = getPlaywrightRuntimeApplications(selectedRuntime).find(
     (application) => application.name === target.applicationName,
   )
   const effectiveApiUrl = target.requestTarget.apiUrl
@@ -242,7 +243,9 @@ export function SettingsPage() {
   }
 
   const handleApplicationChange = (applicationName: string | null) => {
-    const application = selectedRuntime?.applications.find((candidate) => candidate.name === applicationName)
+    const application = getPlaywrightRuntimeApplications(selectedRuntime).find(
+      (candidate) => candidate.name === applicationName,
+    )
 
     if (!selectedRuntime || !application || !isApplicationSelectable(application)) {
       return
@@ -339,7 +342,7 @@ export function SettingsPage() {
                       <SelectValue placeholder={t('runtime.targetPlaceholder')}>{target.label}</SelectValue>
                     </SelectTrigger>
                     <SelectContent align="start">
-                      {selectedRuntime?.applications.map((application) => {
+                      {getPlaywrightRuntimeApplications(selectedRuntime).map((application) => {
                         const isSelectable = isApplicationSelectable(application)
 
                         return (

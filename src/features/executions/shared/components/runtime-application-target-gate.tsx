@@ -15,7 +15,11 @@ import {
   getSelectedExecutionRequestTarget,
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
-import type { PlaywrightRuntime, PlaywrightRuntimeApplication } from '../model/playwright-runtime'
+import {
+  getPlaywrightRuntimeApplications,
+  type PlaywrightRuntime,
+  type PlaywrightRuntimeApplication,
+} from '../model/playwright-runtime'
 import { usePlaywrightRuntimesQuery } from '../hooks/use-execution-target'
 
 const SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM = 'returnTo'
@@ -24,7 +28,7 @@ const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
 
 const getFirstSelectableApplication = (runtime: PlaywrightRuntime | undefined) =>
-  runtime?.applications.find(isApplicationSelectable)
+  getPlaywrightRuntimeApplications(runtime).find(isApplicationSelectable)
 
 const getApplicationSelection = (
   runtimeId: string,
@@ -55,7 +59,7 @@ const findApplicationSelection = (
   applicationName: string,
 ): ExecutionTargetSearchSelection | null => {
   const runtime = runtimes.find((candidate) => candidate._id === runtimeId)
-  const application = runtime?.applications.find((candidate) => candidate.name === applicationName)
+  const application = getPlaywrightRuntimeApplications(runtime).find((candidate) => candidate.name === applicationName)
 
   if (!runtime || !application || !isApplicationSelectable(application)) {
     return null
@@ -128,7 +132,7 @@ function RuntimeApplicationTargetCardContent({
 }) {
   const [selectedSelection, setSelectedSelection] = useState(defaultValue)
   const selectedRuntime = runtimes.find((runtime) => runtime._id === selectedSelection?.runtimeId)
-  const selectedApplication = selectedRuntime?.applications.find(
+  const selectedApplication = getPlaywrightRuntimeApplications(selectedRuntime).find(
     (application) => application.name === selectedSelection?.applicationName,
   )
 
@@ -212,7 +216,7 @@ function RuntimeApplicationTargetCardContent({
               </SelectTrigger>
               <SelectContent align="start">
                 <SelectGroup>
-                  {selectedRuntime?.applications.map((application) => {
+                  {getPlaywrightRuntimeApplications(selectedRuntime).map((application) => {
                     const isSelectable = isApplicationSelectable(application)
 
                     return (

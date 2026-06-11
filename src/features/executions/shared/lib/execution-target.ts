@@ -1,5 +1,9 @@
 import { ensurePathSuffix, stripTrailingSlash } from '@/lib/axios'
-import type { PlaywrightRuntime, PlaywrightRuntimeApplication } from '../model/playwright-runtime'
+import {
+  getPlaywrightRuntimeApplications,
+  type PlaywrightRuntime,
+  type PlaywrightRuntimeApplication,
+} from '../model/playwright-runtime'
 
 export const EXECUTION_RUNTIME_SEARCH_PARAM = 'runtime'
 export const EXECUTION_APPLICATION_SEARCH_PARAM = 'app'
@@ -112,7 +116,7 @@ export const resolveExecutionTarget = (
   runtimes: readonly PlaywrightRuntime[] | undefined,
 ): ExecutionTarget => {
   const runtime = runtimes?.find((candidate) => candidate._id === selection.runtimeId)
-  const application = runtime?.applications.find(
+  const application = getPlaywrightRuntimeApplications(runtime).find(
     (candidate) =>
       candidate.name === selection.applicationName && candidate.active !== false && Boolean(candidate.apiUrl?.trim()),
   )

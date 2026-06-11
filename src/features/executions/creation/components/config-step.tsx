@@ -25,7 +25,7 @@ export function ConfigStep({
   return (
     <FieldSet>
       <FieldGroup className="md:grid md:grid-cols-2">
-        <Field className="md:col-span-2">
+        <Field>
           <FieldLabel>{t('fields.scheduleMode')}</FieldLabel>
           <ToggleGroup
             value={[scheduleMode]}
@@ -49,20 +49,22 @@ export function ConfigStep({
           </ToggleGroup>
         </Field>
 
-        {scheduleMode === 'scheduled' ? (
-          <Field data-invalid={showErrors && Boolean(errors.scheduledAt)} className="md:col-span-2">
-            <FieldLabel htmlFor="scheduledAt">{t('fields.scheduledAt')}</FieldLabel>
-            <Input
-              id="scheduledAt"
-              type="datetime-local"
-              step="60"
-              value={draft.execution.scheduledAt}
-              onChange={(event) => onScheduledAtChange(event.target.value)}
-              aria-invalid={showErrors && Boolean(errors.scheduledAt)}
-            />
-            <FieldError>{showErrors ? errors.scheduledAt : null}</FieldError>
-          </Field>
-        ) : null}
+        <Field
+          data-disabled={scheduleMode === 'instant' ? true : undefined}
+          data-invalid={showErrors && Boolean(errors.scheduledAt)}
+        >
+          <FieldLabel htmlFor="scheduledAt">{t('fields.scheduledAt')}</FieldLabel>
+          <Input
+            id="scheduledAt"
+            type="datetime-local"
+            step="60"
+            disabled={scheduleMode === 'instant'}
+            value={draft.execution.scheduledAt}
+            onChange={(event) => onScheduledAtChange(event.target.value)}
+            aria-invalid={showErrors && Boolean(errors.scheduledAt)}
+          />
+          <FieldError>{showErrors ? errors.scheduledAt : null}</FieldError>
+        </Field>
 
         <Field data-invalid={showErrors && Boolean(errors.workers)}>
           <FieldLabel htmlFor="workers">{t('fields.workers')}</FieldLabel>

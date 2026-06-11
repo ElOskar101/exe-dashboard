@@ -16,6 +16,7 @@ import { UserCard } from '@/features/auth'
 import {
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
+  getPlaywrightRuntimeApplications,
   getSelectedExecutionRequestTarget,
   type PlaywrightRuntimeApplication,
   useExecutionAppStatsQuery,
@@ -46,7 +47,7 @@ const Header: () => JSX.Element = () => {
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
   const selectedRuntime = runtimesQuery.data?.find((runtime) => runtime._id === target.runtimeId)
-  const selectedApplication = selectedRuntime?.applications.find(
+  const selectedApplication = getPlaywrightRuntimeApplications(selectedRuntime).find(
     (application) => application.name === target.applicationName,
   )
   const targetTitle = `${selectedRuntime?.name ?? target.runtimeId} / ${target.applicationName}`
@@ -145,7 +146,7 @@ const Header: () => JSX.Element = () => {
                   <SelectGroup key={runtime._id}>
                     {runtimeIndex > 0 ? <SelectSeparator /> : null}
                     <SelectLabel>{runtime.name}</SelectLabel>
-                    {runtime.applications.map((application) => (
+                    {getPlaywrightRuntimeApplications(runtime).map((application) => (
                       <SelectItem
                         key={`${runtime._id}-${application.name}`}
                         value={getRuntimeApplicationOptionValue(runtime._id, application)}

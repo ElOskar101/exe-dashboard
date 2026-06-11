@@ -37,6 +37,7 @@ export type {
 } from './model/app-stats'
 export type { PlaywrightProject, PlaywrightProjectBot } from './model/playwright-project'
 export type { PlaywrightRuntime, PlaywrightRuntimeApplication } from './model/playwright-runtime'
+export { getPlaywrightRuntimeApplications } from './model/playwright-runtime'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'

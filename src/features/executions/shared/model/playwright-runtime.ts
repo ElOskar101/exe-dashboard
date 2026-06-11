@@ -24,5 +24,7 @@ export interface PlaywrightRuntime {
   name: string
   description?: string
   accessInfo: PlaywrightRuntimeAccessInfo
-  applications: PlaywrightRuntimeApplication[]
+  applications?: PlaywrightRuntimeApplication[]
 }
+
+export const getPlaywrightRuntimeApplications = (runtime: PlaywrightRuntime | undefined) => runtime?.applications ?? []
