@@ -56,6 +56,7 @@
       "project": "Project",
       "client": "Client",
       "clinic": "Clinic",
+      "bot": "Robot",
       "createdAt": "Created at"
     }
   }

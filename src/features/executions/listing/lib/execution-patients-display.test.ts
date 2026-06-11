@@ -36,7 +36,7 @@ describe('execution patients display', () => {
     )
   })
 
-  it('limits the summary text to the first two patients and shows the remaining count', () => {
+  it('limits the summary text to the first patient and shows the remaining count', () => {
     expect(
       getExecutionPatientsSummary(
         [
@@ -46,7 +46,7 @@ describe('execution patients display', () => {
         ],
         emptyValue,
       ),
-    ).toBe('Jane Doe, John Smith, +1')
+    ).toBe('Jane Doe, +2')
   })
 
   it('formats patient other information as readable JSON', () => {

@@ -25,6 +25,8 @@ import { getTopDimension, type TopDimensionEntry } from '@/features/home/lib/hom
 
 const LATEST_EXECUTIONS_LIMIT = 5
 const TOP_DIMENSION_LABEL_MAX_LENGTH = 10
+const CHART_HEIGHT_CLASS = 'h-[220px]'
+const DONUT_CHART_CLASS = 'mx-auto size-[220px] max-w-full'
 
 const formatNumber = (value: number | undefined) => new Intl.NumberFormat().format(value ?? 0)
 
@@ -71,10 +73,10 @@ const renderDonutCenterLabel =
 
     return (
       <text x={center.cx} y={center.cy} textAnchor="middle" dominantBaseline="middle">
-        <tspan x={center.cx} y={center.cy} className="fill-foreground text-3xl font-bold">
+        <tspan x={center.cx} y={center.cy} className="fill-foreground text-2xl font-bold">
           {formatNumber(total)}
         </tspan>
-        <tspan x={center.cx} y={center.cy + 24} className="fill-muted-foreground text-xs">
+        <tspan x={center.cx} y={center.cy + 22} className="fill-muted-foreground text-xs">
           {label}
         </tspan>
       </text>
@@ -198,12 +200,14 @@ export default function HomePage() {
   const renderTopDimensionBarChart = (data: TopDimensionEntry[]) => {
     if (data.length === 0) {
       return (
-        <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">{topEmptyLabel}</div>
+        <div className={`flex ${CHART_HEIGHT_CLASS} items-center justify-center text-sm text-muted-foreground`}>
+          {topEmptyLabel}
+        </div>
       )
     }
 
     return (
-      <ChartContainer config={topChartConfig} className="h-[260px] w-full">
+      <ChartContainer config={topChartConfig} className={`${CHART_HEIGHT_CLASS} w-full`}>
         <BarChart data={data} accessibilityLayer margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
           <CartesianGrid vertical={false} />
           <XAxis
@@ -258,22 +262,22 @@ export default function HomePage() {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card size="sm">
+        <Card size="sm" className="gap-3">
           <CardHeader>
             <CardTitle>{translate('stats.status.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             {shouldShowExecutionsFallback ? (
-              <Skeleton className="h-[260px] w-full rounded-2xl" />
+              <Skeleton className={`${CHART_HEIGHT_CLASS} w-full rounded-2xl`} />
             ) : (
-              <ChartContainer config={statusChartConfig} className="mx-auto aspect-square max-h-[260px]">
+              <ChartContainer config={statusChartConfig} className={DONUT_CHART_CLASS}>
                 <PieChart accessibilityLayer>
                   <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
                   <Pie
                     data={statusChartData}
                     dataKey="total"
                     nameKey="status"
-                    innerRadius={64}
+                    innerRadius={56}
                     strokeWidth={4}
                     animationBegin={0}
                   >
@@ -288,22 +292,22 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <Card size="sm">
+        <Card size="sm" className="gap-3">
           <CardHeader>
             <CardTitle>{translate('stats.jobs.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             {shouldShowStatsFallback ? (
-              <Skeleton className="h-[260px] w-full rounded-2xl" />
+              <Skeleton className={`${CHART_HEIGHT_CLASS} w-full rounded-2xl`} />
             ) : (
-              <ChartContainer config={jobChartConfig} className="mx-auto aspect-square max-h-[260px]">
+              <ChartContainer config={jobChartConfig} className={DONUT_CHART_CLASS}>
                 <PieChart accessibilityLayer>
                   <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
                   <Pie
                     data={jobChartData}
                     dataKey="total"
                     nameKey="status"
-                    innerRadius={64}
+                    innerRadius={56}
                     strokeWidth={4}
                     animationBegin={0}
                   >
@@ -318,7 +322,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <Card size="sm">
+        <Card size="sm" className="gap-3">
           <Tabs defaultValue="clients" className="gap-0">
             <CardHeader>
               <CardTitle>{translate('stats.top.title')}</CardTitle>
@@ -337,7 +341,7 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               {shouldShowExecutionsFallback ? (
-                <Skeleton className="h-[260px] w-full rounded-2xl" />
+                <Skeleton className={`${CHART_HEIGHT_CLASS} w-full rounded-2xl`} />
               ) : (
                 <>
                   <TabsContent value="clients" className="mt-0">
@@ -389,6 +393,7 @@ export default function HomePage() {
                   status: translate('latest.columns.status'),
                   client: translate('latest.columns.client'),
                   clinic: translate('latest.columns.clinic'),
+                  bot: translate('latest.columns.bot'),
                   createdAt: translate('latest.columns.createdAt'),
                 },
                 emptyValue: translate('latest.emptyValue'),

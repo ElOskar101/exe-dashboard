@@ -11,6 +11,7 @@ import {
   type ExecutionStatus,
 } from '@/features/executions/shared'
 
+import { ExecutionBotDialog } from './execution-bot-dialog'
 import { ExecutionPatientsDialog } from './execution-patients-dialog'
 import { ExecutionStatusLabel } from './execution-status-label'
 import {
@@ -60,13 +61,13 @@ interface ResponsiveTableRowCellProps {
 function ResponsiveTableRowCell({ children, className }: ResponsiveTableRowCellProps) {
   return (
     <>
-      <TableCell className={`md:hidden ${className}`} colSpan={3}>
+      <TableCell className={`md:hidden ${className}`} colSpan={8}>
         {children}
       </TableCell>
-      <TableCell className={`hidden md:table-cell lg:hidden ${className}`} colSpan={4}>
+      <TableCell className={`hidden md:table-cell lg:hidden ${className}`} colSpan={8}>
         {children}
       </TableCell>
-      <TableCell className={`hidden lg:table-cell 2xl:hidden ${className}`} colSpan={6}>
+      <TableCell className={`hidden lg:table-cell 2xl:hidden ${className}`} colSpan={8}>
         {children}
       </TableCell>
       <TableCell className={`hidden 2xl:table-cell ${className}`} colSpan={8}>
@@ -96,7 +97,8 @@ export function ExecutionsTable({
     : '[&_td:not(:last-child)]:text-white/80'
   const executionHeadClassName = isLatest ? 'w-28 whitespace-normal' : 'whitespace-normal'
   const projectCellClassName = isLatest ? 'font-medium whitespace-normal break-words' : 'whitespace-normal break-words'
-  const statusHeadClassName = isLatest ? 'w-28' : ''
+  const statusHeadClassName = isLatest ? 'w-24' : ''
+  const botHeadClassName = isLatest ? 'w-48 whitespace-normal' : 'whitespace-normal'
   const clientClinicHeadClassName = isLatest
     ? 'hidden whitespace-normal lg:table-cell'
     : 'hidden whitespace-normal lg:table-cell lg:w-32'
@@ -114,11 +116,7 @@ export function ExecutionsTable({
           <TableHead className={clientClinicHeadClassName}>{translations.columns.client}</TableHead>
           <TableHead className={clientClinicHeadClassName}>{translations.columns.clinic}</TableHead>
           {isList ? <TableHead className="whitespace-normal">{translations.columns.patients}</TableHead> : null}
-          {isList ? (
-            <TableHead className="hidden whitespace-normal 2xl:table-cell 2xl:w-36">
-              {translations.columns.bot}
-            </TableHead>
-          ) : null}
+          <TableHead className={botHeadClassName}>{translations.columns.bot}</TableHead>
           <TableHead className={createdAtHeadClassName}>{translations.columns.createdAt}</TableHead>
         </TableRow>
       </TableHeader>
@@ -155,11 +153,13 @@ export function ExecutionsTable({
                       <ExecutionPatientsDialog execution={execution} executionLabel={executionDayLabel} />
                     </TableCell>
                   ) : null}
-                  {isList ? (
-                    <TableCell className="hidden whitespace-normal break-words 2xl:table-cell">
-                      {execution.botName || execution.bot || translations.emptyValue}
-                    </TableCell>
-                  ) : null}
+                  <TableCell className={isLatest ? 'whitespace-normal break-words' : ''}>
+                    <ExecutionBotDialog
+                      execution={execution}
+                      executionLabel={executionDayLabel}
+                      emptyValue={translations.emptyValue}
+                    />
+                  </TableCell>
                   <TableCell className="hidden whitespace-nowrap md:table-cell">
                     {formatExecutionDate(execution.createdAt)}
                   </TableCell>
@@ -184,7 +184,7 @@ export function ExecutionsTable({
           </TableRow>
         ) : (
           <TableRow>
-            <TableCell className="h-28 text-center text-muted-foreground" colSpan={6}>
+            <TableCell className="h-28 text-center text-muted-foreground" colSpan={7}>
               {translations.empty}
             </TableCell>
           </TableRow>

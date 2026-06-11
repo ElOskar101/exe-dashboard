@@ -449,11 +449,13 @@ test.describe('execution user flows', () => {
     await expect(page).toHaveURL(withExecutionTarget('/executions'))
     await expect(page.getByRole('heading', { name: 'All executions' })).toBeVisible()
     await expect(page.getByRole('columnheader', { name: 'Patients' })).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Robot' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Legacy Dental Care' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Downtown Clinic' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Running' })).toBeVisible()
 
-    await expect(page.getByText('Jane Doe, John Smith, +2')).toBeVisible()
+    await expect(page.getByText('Jane Doe, +3')).toBeVisible()
+    await expect(page.getByText('Eligibility Runner')).toBeVisible()
 
     const patientTrigger = page.getByRole('button', { name: 'View patients for execution 2026-05-25' })
     await patientTrigger.click()
@@ -467,6 +469,17 @@ test.describe('execution user flows', () => {
 
     await page.getByRole('dialog', { name: 'Patients' }).getByRole('button', { name: 'Close' }).first().click()
     await expect(page.getByRole('heading', { name: 'Patients' })).not.toBeVisible()
+
+    const robotTrigger = page.getByRole('button', { name: 'View robot information for execution 2026-05-25' })
+    await robotTrigger.click()
+
+    await expect(page.getByRole('heading', { name: 'Robot' })).toBeFocused()
+    await expect(page.getByText('Review the robot information stored for execution 2026-05-25.')).toBeVisible()
+    await expect(page.getByText('https://carrier.example.com')).toBeVisible()
+    await expect(page.getByText('qa.operator')).toBeVisible()
+
+    await page.getByRole('dialog', { name: 'Robot' }).getByRole('button', { name: 'Close' }).first().click()
+    await expect(page.getByRole('heading', { name: 'Robot' })).not.toBeVisible()
   })
 
   test('navigates to execution details from the executions table details action', async ({ page, request }) => {
@@ -484,10 +497,7 @@ test.describe('execution user flows', () => {
     await stubExecutionDetails(page, execution._id, () => execution)
 
     await page.goto(withExecutionTarget('/executions'))
-    await page
-      .getByRole('row', { name: /2026-05-25 Queued Legacy Dental Care Downtown Clinic .* Details/ })
-      .getByRole('button', { name: 'Details' })
-      .click()
+    await page.getByRole('link', { name: '2026-05-25', exact: true }).click()
 
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
     await expect(page.getByText('Execution details')).toBeVisible()
