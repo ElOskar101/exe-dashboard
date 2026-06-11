@@ -1,7 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -38,7 +38,6 @@ import {
   IconDeviceDesktop,
   IconRefresh,
   IconServer,
-  IconSettings,
 } from '@tabler/icons-react'
 import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
@@ -209,11 +208,11 @@ function AppStatusPanel({ runtimeName, stats }: { runtimeName: string; stats: Ex
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {JOB_STAT_KEYS.map((key) => (
-            <div key={key} className="rounded-lg border p-4">
+            <div key={key} className="">
               <div className="truncate font-medium text-sm" title={t(`status.jobs.${key}`)}>
                 {t(`status.jobs.${key}`)}
               </div>
-              <div className="text-2xl text-white/80 font-normal">{stats.jobs[key]}</div>
+              <div className="text-lg text-white/80 font-normal">{stats.jobs[key]}</div>
             </div>
           ))}
         </div>
@@ -292,7 +291,7 @@ export function SettingsPage() {
                 value="runtime-application"
                 className="after:hidden data-active:font-semibold data-active:text-foreground"
               >
-                <IconServer data-icon="inline-start" />
+                <IconDeviceDesktop data-icon="inline-start" />
                 {t('runtime.sidebarTrigger')}
               </TabsTrigger>
               <TabsTrigger
@@ -364,64 +363,7 @@ export function SettingsPage() {
 
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t('runtime.effectiveApiUrl')}</span>
-                  <IconServer />
-                </div>
-                <span>{effectiveApiUrl}</span>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div className="grid min-w-0 gap-2 rounded-lg border px-3 py-2 sm:grid-cols-2 sm:items-center">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-medium">{selectedRuntime?.name ?? target.runtimeId}</span>
-                    <Badge variant="secondary">{t('runtime.runtime')}</Badge>
-                  </div>
-                </div>
-                <div className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="min-w-0 truncate text-sm font-medium">{target.applicationName}</span>
-                    <Badge variant={selectedApplication?.active === false ? 'destructive' : 'success'}>
-                      {selectedApplication?.active === false ? t('runtime.inactive') : t('runtime.active')}
-                    </Badge>
-                    <Badge variant={selectedApplication?.nonProduction ? 'outline' : 'secondary'}>
-                      {selectedApplication?.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{selectedApplicationDescription}</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border p-3">
-                      <div className="truncate text-xs text-muted-foreground">{t('runtime.maxWorkers')}</div>
-                      <div className="text-lg font-semibold">
-                        {getConfiguredApplicationLimit(selectedApplication?.config?.maxWorkers, 10)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="truncate text-xs text-muted-foreground">{t('runtime.maxRetries')}</div>
-                      <div className="text-lg font-semibold">
-                        {getConfiguredApplicationLimit(selectedApplication?.config?.maxRetries, 3)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border p-4">
-                  <div className="truncate text-sm text-muted-foreground">{t('runtime.catalogRuntimes')}</div>
-                  <div className="text-2xl font-semibold">{catalogSummary.runtimes}</div>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <div className="truncate text-sm text-muted-foreground">{t('runtime.catalogApplications')}</div>
-                  <div className="text-2xl font-semibold">
-                    {t('runtime.activeOutOfTotal', {
-                      active: catalogSummary.activeApplications,
-                      total: catalogSummary.applications,
-                    })}
-                  </div>
-                </div>
-                <div className="rounded-lg border p-4">
-                  <div className="truncate text-sm text-muted-foreground">{t('runtime.catalogDevApps')}</div>
-                  <div className="text-2xl font-semibold">{catalogSummary.nonProductionApplications}</div>
+                  <span>{effectiveApiUrl}</span>
                 </div>
               </div>
 
@@ -432,22 +374,6 @@ export function SettingsPage() {
                   <AlertDescription>{t('projects.loadErrorDescription')}</AlertDescription>
                 </Alert>
               ) : null}
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border p-4">
-                  <div className="truncate text-sm text-muted-foreground">{t('projects.catalogProjects')}</div>
-                  <div className="text-2xl font-semibold">
-                    {t('projects.activeOutOfTotal', {
-                      active: projectSummary.activeProjects,
-                      total: projectSummary.projects,
-                    })}
-                  </div>
-                </div>
-                <div className="rounded-lg border p-4 sm:col-span-2">
-                  <div className="truncate text-sm text-muted-foreground">{t('projects.associatedBots')}</div>
-                  <div className="text-2xl font-semibold">{projectSummary.associatedBots}</div>
-                </div>
-              </div>
             </TabsContent>
 
             <TabsContent value="app-status" className="flex min-w-0 flex-col gap-6">

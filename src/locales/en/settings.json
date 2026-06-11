@@ -5,7 +5,7 @@
     "description": "Choose which runtime application this browser tab uses for executions."
   },
   "runtime": {
-    "sidebarTrigger": "Runtime and application",
+    "sidebarTrigger": "Runtime and app",
     "title": "Runtime application",
     "description": "Execution requests, realtime updates, projects, and reports use the selected application.",
     "targetLabel": "Choose executions app",
@@ -41,7 +41,7 @@
     "loadErrorDescription": "Runtime settings are still available. Try again later to see project availability."
   },
   "status": {
-    "sidebarTrigger": "App status",
+    "sidebarTrigger": "Runtime status",
     "title": "App status",
     "description": "Live health details for {{app}}.",
     "loadErrorTitle": "App status could not be loaded",
