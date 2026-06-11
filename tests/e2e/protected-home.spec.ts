@@ -1,43 +1,13 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
-import { loadEnv } from 'vite'
+import { expect, test, type Page } from '@playwright/test'
+import { e2eUser, prepareAuthenticatedPage } from './auth-fixture'
 
-const e2eEnv = loadEnv('e2e', process.cwd(), '')
-const authLoginUrl = process.env.E2E_AUTH_LOGIN_URL || e2eEnv.E2E_AUTH_LOGIN_URL
-const username = process.env.E2E_TEST_USERNAME || e2eEnv.E2E_TEST_USERNAME
-const password = process.env.E2E_TEST_PASSWORD || e2eEnv.E2E_TEST_PASSWORD
-
-const canLogin = Boolean(authLoginUrl && username && password)
 const executionTargetSearch = 'runtime=runtime-1&app=App+1&targetUrl=https%3A%2F%2Fruntime.example.com%2Fapi%2Fv1'
 
 const withExecutionTarget = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${executionTargetSearch}`
 
-async function login(request: APIRequestContext) {
-  const response = await request.post(authLoginUrl, {
-    data: {
-      username,
-      password,
-    },
-  })
-
-  expect(response.ok()).toBeTruthy()
-
-  const body = (await response.json()) as { token?: string }
-  expect(body.token).toBeTruthy()
-
-  return body.token as string
-}
-
 async function stubProtectedRouteDependencies(page: Page) {
   await page.route('**/users/me', async (route) => {
-    await route.fulfill({
-      json: {
-        _id: 'e2e-user',
-        username: 'e2e',
-        fullName: 'E2E Test User',
-        area: 'QA',
-        roles: [{ name: 'admin', permission: [] }],
-      },
-    })
+    await route.fulfill({ json: e2eUser })
   })
 
   await page.route('**/api/v2/customers**', async (route) => {
@@ -320,18 +290,9 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL(/https:\/\/auth\.controlcentralcarrier\.com\/\?url=.+&mode=dev/)
   })
 
-  test('allows logged in users to see the home dashboard', async ({ page, request }) => {
-    test.skip(
-      !canLogin,
-      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-    )
-
-    const token = await login(request)
-
+  test('allows logged in users to see the home dashboard', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubProtectedRouteDependencies(page)
-    await page.addInitScript((accessToken) => {
-      window.localStorage.setItem('token', accessToken)
-    }, token)
 
     await page.goto(withExecutionTarget('/'))
 
@@ -343,18 +304,9 @@ test.describe('protected executions route', () => {
     await expect(page.getByRole('cell', { name: 'Completed' })).toBeVisible()
   })
 
-  test('minimizes the desktop sidebar from the header trigger', async ({ page, request }) => {
-    test.skip(
-      !canLogin,
-      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-    )
-
-    const token = await login(request)
-
+  test('minimizes the desktop sidebar from the header trigger', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubProtectedRouteDependencies(page)
-    await page.addInitScript((accessToken) => {
-      window.localStorage.setItem('token', accessToken)
-    }, token)
 
     await page.goto(withExecutionTarget('/create'))
 
@@ -371,18 +323,9 @@ test.describe('protected executions route', () => {
     await expect.poll(async () => (await sidebar.boundingBox())?.width).toBeLessThan(100)
   })
 
-  test('validates invalid steps while navigating and supports back navigation', async ({ page, request }) => {
-    test.skip(
-      !canLogin,
-      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-    )
-
-    const token = await login(request)
-
+  test('validates invalid steps while navigating and supports back navigation', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubProtectedRouteDependencies(page)
-    await page.addInitScript((accessToken) => {
-      window.localStorage.setItem('token', accessToken)
-    }, token)
 
     await page.goto(withExecutionTarget('/create'))
 
@@ -408,18 +351,9 @@ test.describe('protected executions route', () => {
     await expect(page.getByLabel('Bot name')).toHaveValue('Eligibility Runner')
   })
 
-  test('shows review content for an empty draft', async ({ page, request }) => {
-    test.skip(
-      !canLogin,
-      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-    )
-
-    const token = await login(request)
-
+  test('shows review content for an empty draft', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubProtectedRouteDependencies(page)
-    await page.addInitScript((accessToken) => {
-      window.localStorage.setItem('token', accessToken)
-    }, token)
 
     await page.goto(withExecutionTarget('/create'))
 
@@ -432,13 +366,8 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('"retries": 1')).toBeVisible()
   })
 
-  test('submits the built payload with multiple patients', async ({ page, request }) => {
-    test.skip(
-      !canLogin,
-      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-    )
-
-    const token = await login(request)
+  test('submits the built payload with multiple patients', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     let submittedPayload: unknown = null
     const createdExecution = {
       _id: 'execution-e2e',
@@ -476,9 +405,6 @@ test.describe('protected executions route', () => {
         json: createdExecution,
       })
     })
-    await page.addInitScript((accessToken) => {
-      window.localStorage.setItem('token', accessToken)
-    }, token)
 
     await page.goto(withExecutionTarget('/create'))
 
@@ -562,14 +488,8 @@ test.describe('protected executions route', () => {
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-e2e'))
   })
 
-  test('keeps the review state after a failed submission', async ({ page, request }) => {
-    test.skip(
-      !canLogin,
-      'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-    )
-
-    const token = await login(request)
-
+  test('keeps the review state after a failed submission', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubProtectedRouteDependencies(page)
     await page.route('**/executions', async (route) => {
       if (route.request().method() !== 'POST') {
@@ -584,9 +504,6 @@ test.describe('protected executions route', () => {
         },
       })
     })
-    await page.addInitScript((accessToken) => {
-      window.localStorage.setItem('token', accessToken)
-    }, token)
 
     await page.goto(withExecutionTarget('/create'))
 
