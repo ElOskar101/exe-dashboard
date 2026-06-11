@@ -451,10 +451,7 @@ Content-Type: application/json
     "accessInfo": {
       "type": "private",
       "createdBy": "622f79263ccdc854030a3999",
-      "sharedWith": [
-        "622f79263ccdc854030a3998",
-        "622f79263ccdc854030a3997"
-      ]
+      "sharedWith": ["622f79263ccdc854030a3998", "622f79263ccdc854030a3997"]
     },
     "message": "Members added successfully"
   },
@@ -500,9 +497,7 @@ Content-Type: application/json
     "accessInfo": {
       "type": "private",
       "createdBy": "622f79263ccdc854030a3999",
-      "sharedWith": [
-        "622f79263ccdc854030a3997"
-      ]
+      "sharedWith": ["622f79263ccdc854030a3997"]
     },
     "message": "Members removed successfully"
   },
@@ -522,36 +517,36 @@ Content-Type: application/json
 ### React Hook: Fetch Runtimes
 
 ```javascript
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 
 function usePlaywrightRuntimes(token) {
-  const [runtimes, setRuntimes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [runtimes, setRuntimes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetch('/api/v2/playwright-runtimes/', {
       headers: {
         'x-access-token': token,
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.success) {
-          setRuntimes(data.data);
+          setRuntimes(data.data)
         } else {
-          setError(data.message);
+          setError(data.message)
         }
-        setLoading(false);
+        setLoading(false)
       })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [token]);
+      .catch((err) => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [token])
 
-  return { runtimes, loading, error };
+  return { runtimes, loading, error }
 }
 ```
 
@@ -563,16 +558,16 @@ async function createRuntime(token, runtime) {
     method: 'POST',
     headers: {
       'x-access-token': token,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(runtime)
-  });
+    body: JSON.stringify(runtime),
+  })
 
-  const result = await response.json();
+  const result = await response.json()
   if (!result.success) {
-    throw new Error(result.message);
+    throw new Error(result.message)
   }
-  return result.data;
+  return result.data
 }
 ```
 
@@ -582,21 +577,21 @@ async function createRuntime(token, runtime) {
 async function updateRuntimeApplications(token, runtimeId, updatedRuntime) {
   // IMPORTANT: Send all applications you want to keep
   // The applications array is fully replaced
-  
+
   const response = await fetch(`/api/v2/playwright-runtimes/${runtimeId}`, {
     method: 'PUT',
     headers: {
       'x-access-token': token,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(updatedRuntime)
-  });
+    body: JSON.stringify(updatedRuntime),
+  })
 
-  const result = await response.json();
+  const result = await response.json()
   if (!result.success) {
-    throw new Error(result.message);
+    throw new Error(result.message)
   }
-  return result.data;
+  return result.data
 }
 ```
 
@@ -608,16 +603,16 @@ async function shareRuntimeWithMembers(token, runtimeId, memberIds) {
     method: 'POST',
     headers: {
       'x-access-token': token,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ memberIds })
-  });
+    body: JSON.stringify({ memberIds }),
+  })
 
-  const result = await response.json();
+  const result = await response.json()
   if (!result.success) {
-    throw new Error(result.message);
+    throw new Error(result.message)
   }
-  return result.data;
+  return result.data
 }
 ```
 
@@ -625,13 +620,13 @@ async function shareRuntimeWithMembers(token, runtimeId, memberIds) {
 
 ## Access Control Summary
 
-| Scenario | Can View | Can Update | Can Delete | Can Share |
-|----------|----------|-----------|-----------|-----------|
-| I own it (private) | ✅ | ✅ | ✅ | ✅ |
-| I own it (public) | ✅ | ✅ | ✅ | ✅ |
-| Shared with me | ✅ (limited apps) | ❌ | ❌ | ❌ |
-| Public runtime | ✅ (limited apps) | ❌ | ❌ | ❌ |
-| Other's private | ❌ | ❌ | ❌ | ❌ |
+| Scenario           | Can View          | Can Update | Can Delete | Can Share |
+| ------------------ | ----------------- | ---------- | ---------- | --------- |
+| I own it (private) | ✅                | ✅         | ✅         | ✅        |
+| I own it (public)  | ✅                | ✅         | ✅         | ✅        |
+| Shared with me     | ✅ (limited apps) | ❌         | ❌         | ❌        |
+| Public runtime     | ✅ (limited apps) | ❌         | ❌         | ❌        |
+| Other's private    | ❌                | ❌         | ❌         | ❌        |
 
 ---
 
@@ -649,14 +644,14 @@ All error responses follow this format:
 
 ### Common Error Codes
 
-| Code | Status | Description |
-|------|--------|-------------|
-| UNAUTHORIZED | 401 | Invalid or missing token |
-| FORBIDDEN | 403 | You don't have permission (not owner) |
-| NOT_FOUND | 404 | Runtime or resource doesn't exist |
-| BAD_REQUEST | 400 | Validation failed (missing fields, invalid data) |
-| CONFLICT | 409 | Public app cannot be in private runtime |
-| SERVER_ERROR | 500 | Internal server error |
+| Code         | Status | Description                                      |
+| ------------ | ------ | ------------------------------------------------ |
+| UNAUTHORIZED | 401    | Invalid or missing token                         |
+| FORBIDDEN    | 403    | You don't have permission (not owner)            |
+| NOT_FOUND    | 404    | Runtime or resource doesn't exist                |
+| BAD_REQUEST  | 400    | Validation failed (missing fields, invalid data) |
+| CONFLICT     | 409    | Public app cannot be in private runtime          |
+| SERVER_ERROR | 500    | Internal server error                            |
 
 ---
 
@@ -674,5 +669,3 @@ All error responses follow this format:
 ## Testing with REST Client
 
 See `/src/.http` for example requests you can use in JetBrains HTTP Client or VS Code REST Client.
-
-

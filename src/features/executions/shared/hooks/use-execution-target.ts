@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   EXECUTION_APPLICATION_SEARCH_PARAM,
   EXECUTION_RUNTIME_SEARCH_PARAM,
@@ -10,7 +10,18 @@ import {
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
 import { executionKeys } from '../lib/execution-query-keys'
-import { getPlaywrightProjects, getPlaywrightRuntimes } from '../services/execution.service'
+import {
+  getPlaywrightProjects,
+  getPlaywrightRuntimeResponseData,
+  getPlaywrightRuntimes,
+  updatePlaywrightRuntime,
+} from '../services/execution.service'
+import type { PlaywrightRuntimeUpdatePayload } from '../model/playwright-runtime'
+
+interface PlaywrightRuntimeUpdateMutationVariables {
+  runtimeId: string
+  payload: PlaywrightRuntimeUpdatePayload
+}
 
 export const usePlaywrightRuntimesQuery = (enabled = true) =>
   useQuery({
@@ -18,7 +29,7 @@ export const usePlaywrightRuntimesQuery = (enabled = true) =>
     queryFn: async () => {
       const response = await getPlaywrightRuntimes()
 
-      return response.data
+      return getPlaywrightRuntimeResponseData(response.data)
     },
     enabled,
   })
@@ -33,6 +44,18 @@ export const usePlaywrightProjectsQuery = (enabled = true) =>
     },
     enabled,
   })
+
+export const useUpdatePlaywrightRuntimeMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ runtimeId, payload }: PlaywrightRuntimeUpdateMutationVariables) =>
+      updatePlaywrightRuntime(runtimeId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
+    },
+  })
+}
 
 export const useExecutionTarget = () => {
   const [searchParams] = useSearchParams()
