@@ -4,7 +4,14 @@ import { APP_CONFIG } from '@/app.config'
 import { useContext, useState, type FocusEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { IconBrightnessDown, IconChevronDown, IconLogout2, IconMoon, IconSettings } from '@tabler/icons-react'
+import {
+  IconBrightnessDown,
+  IconChevronDown,
+  IconLogout2,
+  IconMoon,
+  IconServer,
+  IconSettings,
+} from '@tabler/icons-react'
 import { AuthContext } from '../contexts/context'
 
 const roleTranslationKeys = {
@@ -19,6 +26,7 @@ const roleTranslationKeys = {
 
 interface UserCardProps {
   onToggleTheme?: () => void
+  runtimesPath?: string
   settingsPath?: string
   theme?: 'light' | 'dark'
 }
@@ -33,7 +41,7 @@ function getInitials(name: string) {
   )
 }
 
-function UserCard({ onToggleTheme, settingsPath, theme }: UserCardProps) {
+function UserCard({ onToggleTheme, runtimesPath, settingsPath, theme }: UserCardProps) {
   const { user, logout } = useContext(AuthContext)
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
@@ -105,6 +113,18 @@ function UserCard({ onToggleTheme, settingsPath, theme }: UserCardProps) {
             >
               <IconSettings data-icon="inline-start" />
               {t('settings')}
+            </Button>
+          ) : null}
+          {runtimesPath ? (
+            <Button
+              nativeButton={false}
+              render={<Link to={runtimesPath} />}
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => setIsOpen(false)}
+            >
+              <IconServer data-icon="inline-start" />
+              {t('runtimes')}
             </Button>
           ) : null}
           {onToggleTheme && theme ? (

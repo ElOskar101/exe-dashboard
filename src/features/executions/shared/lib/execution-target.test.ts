@@ -13,9 +13,19 @@ import type { PlaywrightRuntime } from '../model/playwright-runtime'
 const runtime: PlaywrightRuntime = {
   _id: 'runtime-1',
   name: 'Runtime 1',
+  accessInfo: {
+    createdBy: 'user-1',
+    sharedWith: [],
+    type: 'private',
+  },
   applications: [
     {
       name: 'App 1',
+      accessInfo: {
+        createdBy: 'user-1',
+        sharedWith: [],
+        type: 'private',
+      },
       apiUrl: 'https://runtime.example.com/api/v1/',
     },
   ],

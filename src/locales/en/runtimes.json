@@ -1,0 +1,51 @@
+{
+  "page": {
+    "title": "Runtimes",
+    "description": "Read-only catalog of Playwright Runtimes and the applications they expose."
+  },
+  "loadErrorTitle": "Runtime catalog could not be loaded",
+  "loadErrorDescription": "The Default Carrier API did not return the runtime catalog. Try again in a moment.",
+  "retry": "Retry",
+  "noApiUrl": "No API URL configured",
+  "noDescription": "No description available.",
+  "summary": {
+    "runtimes": "Runtimes",
+    "applications": "Applications",
+    "activeApplications": "Active apps",
+    "nonProductionApplications": "Dev-only apps",
+    "missingApiUrlApplications": "Missing API URL"
+  },
+  "runtimeSummary": {
+    "total": "{{count}} apps",
+    "active": "{{count}} active",
+    "nonProduction": "{{count}} dev-only",
+    "missingApiUrl": "{{count}} missing API URL",
+    "emptyApplications": "This runtime does not expose any applications."
+  },
+  "columns": {
+    "application": "Application",
+    "status": "Status",
+    "access": "Access",
+    "config": "Config",
+    "apiUrl": "API URL",
+    "description": "Description"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "production": "Production",
+    "nonProduction": "Dev only"
+  },
+  "access": {
+    "public": "Public",
+    "private": "Private"
+  },
+  "config": {
+    "maxWorkers": "{{count}} workers",
+    "maxRetries": "{{count}} retries"
+  },
+  "empty": {
+    "title": "No runtimes available",
+    "description": "The catalog did not include any Playwright Runtimes."
+  }
+}

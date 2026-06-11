@@ -41,7 +41,7 @@ const Header: () => JSX.Element = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, handleTheme } = useTheme()
   const { target } = useExecutionTarget()
-  const { getSettingsPath } = useExecutionTargetNavigation()
+  const { getPathWithExecutionTarget, getSettingsPath } = useExecutionTargetNavigation()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
@@ -144,7 +144,12 @@ const Header: () => JSX.Element = () => {
                 ))}
               </SelectContent>
             </Select>
-            <UserCard theme={theme} settingsPath={getSettingsPath()} onToggleTheme={handleTheme} />
+            <UserCard
+              theme={theme}
+              runtimesPath={getPathWithExecutionTarget('/runtimes')}
+              settingsPath={getSettingsPath()}
+              onToggleTheme={handleTheme}
+            />
           </div>
         </nav>
       </header>
