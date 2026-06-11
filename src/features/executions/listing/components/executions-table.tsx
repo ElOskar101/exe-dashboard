@@ -96,7 +96,7 @@ export function ExecutionsTable({
     ? '[&_td:not(:last-child)]:text-foreground/80'
     : '[&_td:not(:last-child)]:text-white/80'
   const executionHeadClassName = isLatest ? 'w-28 whitespace-normal' : 'whitespace-normal'
-  const projectCellClassName = isLatest ? 'font-medium whitespace-normal break-words' : 'whitespace-normal break-words'
+  const projectCellClassName = isLatest ? 'whitespace-normal break-words' : 'whitespace-normal break-words'
   const statusHeadClassName = isLatest ? 'w-24' : ''
   const botHeadClassName = isLatest ? 'w-48 whitespace-normal' : 'whitespace-normal'
   const clientClinicHeadClassName = isLatest
