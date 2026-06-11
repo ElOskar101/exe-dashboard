@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
 import type { Dispatch } from 'react'
 import type { Execution } from '../model/execution'
-import type { ExecutionCreatePayload } from '../model/execution-create-payload'
+import type { ExecutionCreatePayload, ExecutionSchedulePayload } from '../model/execution-create-payload'
 import type { ExecutionQuery } from '../model/execution-query'
 import { executionKeys } from '../lib/execution-query-keys'
 import { syncExecutionFromDetailSnapshot, syncExecutionsFromListSnapshot } from '../lib/execution-status-cache'
@@ -16,6 +16,7 @@ import {
   getExecutions,
   pauseExecution,
   resumeExecution,
+  scheduleExecution,
   stopExecution,
 } from '../services/execution.service'
 
@@ -110,15 +111,19 @@ export const useExecutionAppStatsQuery = () => {
   return appStatsQuery
 }
 
-export const useCreateExecutionMutation = (
-  options: ExecutionMutationOptions<AxiosResponse<Execution>, ExecutionCreatePayload> = {},
+const useExecutionCreateMutation = <TPayload extends ExecutionCreatePayload>(
+  mutationFn: (
+    payload: TPayload,
+    target: ReturnType<typeof useExecutionTarget>['target']['requestTarget'],
+  ) => Promise<AxiosResponse<Execution>>,
+  options: ExecutionMutationOptions<AxiosResponse<Execution>, TPayload> = {},
 ) => {
   const queryClient = useQueryClient()
   const { target } = useExecutionTarget()
 
   return useMutation({
-    mutationFn: (payload: ExecutionCreatePayload) => {
-      return createExecution(payload, target.requestTarget)
+    mutationFn: (payload: TPayload) => {
+      return mutationFn(payload, target.requestTarget)
     },
     onSuccess: async (response, variables) => {
       await Promise.all([
@@ -129,6 +134,14 @@ export const useCreateExecutionMutation = (
     },
   })
 }
+
+export const useCreateExecutionMutation = (
+  options: ExecutionMutationOptions<AxiosResponse<Execution>, ExecutionCreatePayload> = {},
+) => useExecutionCreateMutation(createExecution, options)
+
+export const useScheduleExecutionMutation = (
+  options: ExecutionMutationOptions<AxiosResponse<Execution>, ExecutionSchedulePayload> = {},
+) => useExecutionCreateMutation(scheduleExecution, options)
 
 export const useDeleteExecutionMutation = (
   options: ExecutionMutationOptions<AxiosResponse<Execution>, string> = {},

@@ -15,6 +15,7 @@ export type StepErrors = {
     workers?: string
     retries?: string
     config?: string
+    scheduledAt?: string
   }
 }
 
@@ -138,6 +139,14 @@ export const getExecutionWizardValidationErrors = (
     config.config = t('validation.validJsonObject')
   }
 
+  if (draft.execution.scheduleMode === 'scheduled') {
+    if (!draft.execution.scheduledAt.trim()) {
+      config.scheduledAt = t('validation.required')
+    } else if (!isFutureDateTimeLocalValue(draft.execution.scheduledAt)) {
+      config.scheduledAt = t('validation.futureDateTime')
+    }
+  }
+
   return {
     context,
     patients: {
@@ -147,6 +156,12 @@ export const getExecutionWizardValidationErrors = (
     bot,
     config,
   }
+}
+
+export const isFutureDateTimeLocalValue = (value: string) => {
+  const scheduledAt = new Date(value)
+
+  return !Number.isNaN(scheduledAt.getTime()) && scheduledAt.getTime() > Date.now()
 }
 
 const isUrlValid = (value: string) => {

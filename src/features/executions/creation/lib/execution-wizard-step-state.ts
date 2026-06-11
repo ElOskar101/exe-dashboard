@@ -44,6 +44,8 @@ export const isConfigStepDirty = (draft: ExecutionWizardDraft) => {
   return (
     draft.execution.workers !== emptyDraft.execution.workers ||
     draft.execution.retries !== emptyDraft.execution.retries ||
-    draft.execution.config !== emptyDraft.execution.config
+    draft.execution.config !== emptyDraft.execution.config ||
+    draft.execution.scheduleMode !== emptyDraft.execution.scheduleMode ||
+    draft.execution.scheduledAt !== emptyDraft.execution.scheduledAt
   )
 }

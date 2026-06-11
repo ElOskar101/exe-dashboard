@@ -5,6 +5,7 @@ import {
   useExecutionAppStatsQuery,
   useExecutionsQuery,
   usePauseExecutionMutation,
+  useScheduleExecutionMutation,
 } from './use-execution-records'
 
 const mocks = vi.hoisted(() => ({
@@ -38,6 +39,7 @@ vi.mock('../services/execution.service', () => ({
   getExecutions: vi.fn(),
   pauseExecution: vi.fn(),
   resumeExecution: vi.fn(),
+  scheduleExecution: vi.fn(),
   stopExecution: vi.fn(),
 }))
 
@@ -103,6 +105,19 @@ describe('useExecutionsQuery', () => {
     useCreateExecutionMutation()
 
     await getLastMutationSuccessHandler()({ data: {} }, {})
+
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'list'],
+    })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'app-stats'],
+    })
+  })
+
+  it('invalidates execution list and app stats after scheduling an execution', async () => {
+    useScheduleExecutionMutation()
+
+    await getLastMutationSuccessHandler()({ data: {} }, { scheduledAt: '2026-06-03T15:52:00.000Z' })
 
     expect(invalidateQueries).toHaveBeenCalledWith({
       queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'list'],

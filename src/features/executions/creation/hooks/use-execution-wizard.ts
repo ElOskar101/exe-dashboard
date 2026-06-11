@@ -6,6 +6,7 @@ import {
   getExecutionRequestErrorMessage,
   useCreateExecutionMutation,
   useExecutionTargetNavigation,
+  useScheduleExecutionMutation,
 } from '@/features/executions/shared'
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
@@ -27,7 +28,7 @@ import {
   isPatientsStepDirty,
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
-import type { ExecutionWizardDraft } from '../model/execution-create'
+import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
 import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem } from '../services/ccc.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
 
@@ -156,7 +157,28 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const submitExecutionMutation = useCreateExecutionMutation({
     onSuccess: async ([response]) => {
       const executionId = response.data._id
-      const successToastCopy = getExecutionWizardSuccessToastCopy(t, response.data.execution)
+      const successToastCopy = getExecutionWizardSuccessToastCopy(t, response.data.execution, 'instant')
+
+      toast.success(successToastCopy.title, {
+        description: successToastCopy.description,
+        action: {
+          label: successToastCopy.actionLabel,
+          onClick: () => {
+            navigate(getPathWithExecutionTarget(`/execution/${executionId}`))
+          },
+        },
+      })
+    },
+  })
+  const scheduleExecutionMutation = useScheduleExecutionMutation({
+    onSuccess: async ([response, payload]) => {
+      const executionId = response.data._id
+      const successToastCopy = getExecutionWizardSuccessToastCopy(
+        t,
+        response.data.execution,
+        'scheduled',
+        payload.scheduledAt,
+      )
 
       toast.success(successToastCopy.title, {
         description: successToastCopy.description,
@@ -404,6 +426,26 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     }))
   }
 
+  const updateScheduleMode = (scheduleMode: ExecutionScheduleMode) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      execution: {
+        ...previousDraft.execution,
+        scheduleMode,
+      },
+    }))
+  }
+
+  const updateScheduledAt = (value: string) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      execution: {
+        ...previousDraft.execution,
+        scheduledAt: value,
+      },
+    }))
+  }
+
   const importPatients = () => {
     wizardData.importPatients(draft.execution.execution)
   }
@@ -474,6 +516,15 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     setSubmitError(null)
 
     try {
+      if (draft.execution.scheduleMode === 'scheduled') {
+        if (!('scheduledAt' in payloadPreview)) {
+          return
+        }
+
+        await scheduleExecutionMutation.mutateAsync(payloadPreview as ExecutionSchedulePayload)
+        return
+      }
+
       await submitExecutionMutation.mutateAsync(payloadPreview)
     } catch (error) {
       setSubmitError(getExecutionRequestErrorMessage(error, t('submit.errorDescription')))
@@ -512,6 +563,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       errors: validationErrors.config,
       onConfigChange: updateConfig,
       onRetriesChange: updateRetries,
+      onScheduleModeChange: updateScheduleMode,
+      onScheduledAtChange: updateScheduledAt,
       onWorkersChange: updateWorkers,
       showErrors: showErrors.config,
     },
@@ -564,7 +617,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       steps: executionWizardSteps,
     },
     submission: {
-      isSubmitting: submitExecutionMutation.isPending,
+      isSubmitting: submitExecutionMutation.isPending || scheduleExecutionMutation.isPending,
       onReset: resetWizard,
       onSubmit: handleSubmit,
       submitError,

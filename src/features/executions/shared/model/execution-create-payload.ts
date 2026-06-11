@@ -44,3 +44,7 @@ export interface ExecutionCreatePayload {
   botName: string
   meta: ExecutionPayloadMeta
 }
+
+export interface ExecutionSchedulePayload extends ExecutionCreatePayload {
+  scheduledAt: string
+}

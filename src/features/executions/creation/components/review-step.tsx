@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { ExecutionCreatePayload, ExecutionWizardDraft } from '../model/execution-create'
+import type { ExecutionCreatePayload, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
 import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
 import {
   getExecutionWizardDisplayValue,
@@ -9,7 +9,7 @@ import {
 
 interface ReviewStepProps {
   draft: ExecutionWizardDraft
-  payload: ExecutionCreatePayload | null
+  payload: ExecutionCreatePayload | ExecutionSchedulePayload | null
   t: TFunction<'executions'>
 }
 
@@ -23,6 +23,9 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
     clinic: draft.context.clinic.trim(),
     ...(selectedExecution ? { execution: selectedExecution } : {}),
     botName: draft.bot.botName.trim(),
+    ...(draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt
+      ? { scheduledAt: new Date(draft.execution.scheduledAt).toISOString() }
+      : {}),
     meta: {
       bot: {
         botName: draft.bot.botName.trim(),
@@ -95,6 +98,22 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                 {getExecutionWizardDisplayValue(draft.execution.executionName || draft.execution.execution, emptyValue)}
               </dd>
             </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.scheduleMode')}</dt>
+              <dd className="mt-1 font-medium">
+                {draft.execution.scheduleMode === 'scheduled'
+                  ? t('options.scheduleScheduled')
+                  : t('options.scheduleInstant')}
+              </dd>
+            </div>
+            {draft.execution.scheduleMode === 'scheduled' ? (
+              <div>
+                <dt className="text-sm text-muted-foreground">{t('fields.scheduledAt')}</dt>
+                <dd className="mt-1 font-medium">
+                  {getExecutionWizardDisplayValue(draft.execution.scheduledAt, emptyValue)}
+                </dd>
+              </div>
+            ) : null}
           </dl>
         </div>
 

@@ -45,6 +45,22 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.config.config).toBe('validation.validJsonObject')
   })
 
+  it('requires a future scheduled time when scheduled mode is selected', () => {
+    const draft = createEmptyDraft()
+
+    draft.execution.scheduleMode = 'scheduled'
+
+    expect(getExecutionWizardValidationErrors(draft, 'user-1', t as never).config.scheduledAt).toBe(
+      'validation.required',
+    )
+
+    draft.execution.scheduledAt = '2020-01-01T09:00'
+
+    expect(getExecutionWizardValidationErrors(draft, 'user-1', t as never).config.scheduledAt).toBe(
+      'validation.futureDateTime',
+    )
+  })
+
   it('requires a selected associated bot after a Playwright Project is chosen', () => {
     const draft = createEmptyDraft()
 

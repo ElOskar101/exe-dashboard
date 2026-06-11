@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { createEmptyDraft } from './execution-wizard-draft'
 import { buildExecutionPayload } from './execution-wizard-payload'
 
+const toDateTimeLocalValue = (date: Date) => {
+  const pad = (value: number) => value.toString().padStart(2, '0')
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(
+    date.getMinutes(),
+  )}`
+}
+
 describe('buildExecutionPayload', () => {
   it('builds the new create execution payload shape using the selected sheet name for execution', () => {
     const draft = createEmptyDraft()
@@ -229,5 +237,48 @@ describe('buildExecutionPayload', () => {
       },
     })
     expect(buildExecutionPayload(draft, 'user-1')?.meta.patients[0]).not.toHaveProperty('clinic')
+  })
+
+  it('adds scheduledAt when the execution is scheduled', () => {
+    const draft = createEmptyDraft()
+    const scheduledAt = toDateTimeLocalValue(new Date(Date.now() + 60 * 60 * 1000))
+
+    draft.context.project = 'liberty'
+    draft.context.client = 'customer-id-42'
+    draft.context.clientName = 'Sunshine Dental'
+    draft.context.clinic = 'clinic-id-9'
+    draft.context.clinicName = 'Main Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
+    draft.execution.scheduleMode = 'scheduled'
+    draft.execution.scheduledAt = scheduledAt
+
+    expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
+      scheduledAt: new Date(scheduledAt).toISOString(),
+    })
+  })
+
+  it('returns null when a scheduled execution has a past scheduledAt value', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.project = 'liberty'
+    draft.context.client = 'customer-id-42'
+    draft.context.clientName = 'Sunshine Dental'
+    draft.context.clinic = 'clinic-id-9'
+    draft.context.clinicName = 'Main Clinic'
+    draft.bot.clinicBotId = 'clinic-bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
+    draft.execution.scheduleMode = 'scheduled'
+    draft.execution.scheduledAt = '2020-01-01T09:00'
+
+    expect(buildExecutionPayload(draft, 'user-id-7')).toBeNull()
   })
 })

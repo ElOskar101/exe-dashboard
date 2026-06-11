@@ -1,5 +1,11 @@
-import type { ExecutionCreatePayload, ExecutionMetadata, ExecutionWizardDraft } from '../model/execution-create'
+import type {
+  ExecutionCreatePayload,
+  ExecutionMetadata,
+  ExecutionSchedulePayload,
+  ExecutionWizardDraft,
+} from '../model/execution-create'
 import { parseExecutionMetadata } from './execution-metadata'
+import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
 export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({
   specifyPayer: 'None',
@@ -8,7 +14,7 @@ export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({
 export const buildExecutionPayload = (
   draft: ExecutionWizardDraft,
   createdBy: string,
-): ExecutionCreatePayload | null => {
+): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
   if (
     !createdBy ||
     !draft.context.project.trim() ||
@@ -76,6 +82,17 @@ export const buildExecutionPayload = (
 
   if (execution) {
     payload.execution = execution
+  }
+
+  if (draft.execution.scheduleMode === 'scheduled') {
+    if (!isFutureDateTimeLocalValue(draft.execution.scheduledAt)) {
+      return null
+    }
+
+    return {
+      ...payload,
+      scheduledAt: new Date(draft.execution.scheduledAt).toISOString(),
+    }
   }
 
   return payload

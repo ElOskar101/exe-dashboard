@@ -39,5 +39,7 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
     workers: '2',
     retries: '1',
     config: '{}',
+    scheduleMode: 'instant',
+    scheduledAt: '',
   },
 })

@@ -1,6 +1,8 @@
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { TFunction } from 'i18next'
+import type { ExecutionScheduleMode } from '../model/execution-create'
 import type { ExecutionWizardConfigStepState } from '../hooks/use-execution-wizard'
 
 interface ConfigStepProps extends ExecutionWizardConfigStepState {
@@ -14,11 +16,54 @@ export function ConfigStep({
   onWorkersChange,
   onRetriesChange,
   onConfigChange,
+  onScheduleModeChange,
+  onScheduledAtChange,
   t,
 }: ConfigStepProps) {
+  const scheduleMode = draft.execution.scheduleMode
+
   return (
     <FieldSet>
       <FieldGroup className="md:grid md:grid-cols-2">
+        <Field className="md:col-span-2">
+          <FieldLabel>{t('fields.scheduleMode')}</FieldLabel>
+          <ToggleGroup
+            value={[scheduleMode]}
+            onValueChange={(value) => {
+              const nextMode = value[0]
+
+              if (nextMode === 'instant' || nextMode === 'scheduled') {
+                onScheduleModeChange(nextMode as ExecutionScheduleMode)
+              }
+            }}
+            variant="outline"
+            spacing={0}
+            className="w-full max-w-sm"
+          >
+            <ToggleGroupItem value="instant" className="flex-1">
+              {t('options.scheduleInstant')}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="scheduled" className="flex-1">
+              {t('options.scheduleScheduled')}
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </Field>
+
+        {scheduleMode === 'scheduled' ? (
+          <Field data-invalid={showErrors && Boolean(errors.scheduledAt)} className="md:col-span-2">
+            <FieldLabel htmlFor="scheduledAt">{t('fields.scheduledAt')}</FieldLabel>
+            <Input
+              id="scheduledAt"
+              type="datetime-local"
+              step="60"
+              value={draft.execution.scheduledAt}
+              onChange={(event) => onScheduledAtChange(event.target.value)}
+              aria-invalid={showErrors && Boolean(errors.scheduledAt)}
+            />
+            <FieldError>{showErrors ? errors.scheduledAt : null}</FieldError>
+          </Field>
+        ) : null}
+
         <Field data-invalid={showErrors && Boolean(errors.workers)}>
           <FieldLabel htmlFor="workers">{t('fields.workers')}</FieldLabel>
           <Input

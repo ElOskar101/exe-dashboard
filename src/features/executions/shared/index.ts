@@ -25,6 +25,7 @@ export type {
   ExecutionPayloadBot,
   ExecutionPayloadMeta,
   ExecutionPayloadPatient,
+  ExecutionSchedulePayload,
   ExecutionVerificationType,
 } from './model/execution-create-payload'
 export type { ExecutionQuery } from './model/execution-query'
@@ -52,6 +53,7 @@ export {
   getExecutions,
   pauseExecution,
   resumeExecution,
+  scheduleExecution,
   stopExecution,
   updateExecution,
 } from './services/execution.service'
@@ -92,6 +94,7 @@ export {
   useExecutionsQuery,
   usePauseExecutionMutation,
   useResumeExecutionMutation,
+  useScheduleExecutionMutation,
   useStopExecutionMutation,
 } from './hooks/use-execution-records'
 export {

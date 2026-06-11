@@ -1,6 +1,6 @@
 import cccClient, { exeClient, exeReportsClient } from '@/lib/axios'
 import type { Execution } from '../model/execution'
-import type { ExecutionCreatePayload } from '../model/execution-create-payload'
+import type { ExecutionCreatePayload, ExecutionSchedulePayload } from '../model/execution-create-payload'
 import { EXECUTION_ARRAY_QUERY_KEYS, normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
 import type { ExecutionAppStats } from '../model/app-stats'
 import type { PlaywrightProject } from '../model/playwright-project'
@@ -56,6 +56,12 @@ export const createExecution = (data: ExecutionCreatePayload, target: ExecutionA
   const config = getExecutionRequestConfig(target)
 
   return exeClient.post<Execution>('executions', data, config)
+}
+
+export const scheduleExecution = (data: ExecutionSchedulePayload, target: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return exeClient.post<Execution>('executions/schedule', data, config)
 }
 
 export const getExecutionById = (executionId: string, target: ExecutionApiRequestTarget) => {

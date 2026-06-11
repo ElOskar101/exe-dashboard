@@ -1,5 +1,7 @@
 import type { ExecutionVerificationType } from '../../shared/model/execution-create-payload'
 
+export type ExecutionScheduleMode = 'instant' | 'scheduled'
+
 export interface ExecutionBot {
   clinicBotId: string
   botName: string
@@ -41,11 +43,14 @@ export interface ExecutionWizardDraft {
     workers: string
     retries: string
     config: string
+    scheduleMode: ExecutionScheduleMode
+    scheduledAt: string
   }
 }
 
 export type {
   ExecutionCreatePayload,
   ExecutionMetadata,
+  ExecutionSchedulePayload,
   ExecutionVerificationType,
 } from '../../shared/model/execution-create-payload'

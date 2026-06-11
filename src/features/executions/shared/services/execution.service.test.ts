@@ -13,6 +13,7 @@ import {
   getExecutions,
   pauseExecution,
   resumeExecution,
+  scheduleExecution,
   stopExecution,
   updateExecution,
 } from './execution.service'
@@ -126,6 +127,29 @@ describe('execution.service', () => {
     expect(exeClient.post).toHaveBeenCalledWith('executions', executionPayload, {
       baseURL: 'https://runtime.example.com/api/v1',
     })
+  })
+
+  it('scheduleExecution posts to the selected runtime application schedule endpoint', async () => {
+    vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
+
+    await scheduleExecution(
+      {
+        ...executionPayload,
+        scheduledAt: '2026-06-03T15:52:00.000Z',
+      },
+      runtimeTarget,
+    )
+
+    expect(exeClient.post).toHaveBeenCalledWith(
+      'executions/schedule',
+      {
+        ...executionPayload,
+        scheduledAt: '2026-06-03T15:52:00.000Z',
+      },
+      {
+        baseURL: 'https://runtime.example.com/api/v1',
+      },
+    )
   })
 
   it('getExecutionById requests execution details with logs from the selected app', async () => {

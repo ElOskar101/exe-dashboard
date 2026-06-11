@@ -89,6 +89,7 @@ export const getExecutionWizardValidationToastCopy = (
 
   addFieldSummary(items, errors.config.workers, t('fields.workers'), passthroughErrors)
   addFieldSummary(items, errors.config.retries, t('fields.retries'), passthroughErrors)
+  addFieldSummary(items, errors.config.scheduledAt, t('fields.scheduledAt'), passthroughErrors)
   addFieldSummary(items, errors.config.config, t('fields.otherConfig'), passthroughErrors)
 
   const summaries = Array.from(items)
