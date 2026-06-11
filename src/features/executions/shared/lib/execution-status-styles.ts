@@ -1,6 +1,6 @@
 import { normalizeExecutionStatus } from './execution-display'
 
-export const getStatusTextClassName = (status?: string | null) => {
+export const getStatusBadgeClassName = (status?: string | null) => {
   const normalizedStatus = normalizeExecutionStatus(status)
 
   if (normalizedStatus === 'completed') {

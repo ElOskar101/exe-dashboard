@@ -21,6 +21,7 @@ import {
   type WheelEventHandler,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -28,13 +29,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { isExecutionRunning } from '@/features/executions/shared'
-import { cn } from '@/lib/utils'
 import { IconArrowDown, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../lib/execution-log-buffer'
 import { getCanScrollToBottom, getIsScrolledToBottom } from '../lib/execution-log-scroll'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
-import { getStatusTextClassName } from './execution-detail-styles'
+import { getStatusBadgeClassName } from './execution-detail-styles'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
 import { ExecutionRerunDialog } from './execution-rerun-dialog'
@@ -301,17 +301,12 @@ export function ExecutionLogsCard({
               <IconTerminal2 className="text-muted-foreground" />
               {title}
               {isStatusLoading ? (
-                <Skeleton aria-hidden="true" className="h-6 w-24 rounded-full" />
+                <Skeleton aria-hidden="true" className="h-5 w-24 rounded-full" />
               ) : (
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1 text-sm font-medium',
-                    getStatusTextClassName(currentStatus),
-                  )}
-                >
+                <Badge variant="outline" className={getStatusBadgeClassName(currentStatus)}>
                   {currentStatus ?? t('detail.statusUnknown')}
                   {isCurrentExecutionRunning ? <Spinner aria-hidden="true" data-icon="inline-end" /> : null}
-                </span>
+                </Badge>
               )}
             </CardTitle>
             {isLoading ? (

@@ -31,7 +31,7 @@ const sortEntries = (leftEntry: TopDimensionEntry, rightEntry: TopDimensionEntry
 
 export const getTopDimension = (
   executions: Execution[],
-  pickValue: (execution: Execution) => string, // eslint-disable-line no-unused-vars
+  pickValue: (execution: Execution) => string,
   noValueLabel: string,
 ): TopDimensionEntry[] => {
   const totalsByDimension = new Map<string, { name: string; totals: Partial<Record<ExecutionStatus, number>> }>()

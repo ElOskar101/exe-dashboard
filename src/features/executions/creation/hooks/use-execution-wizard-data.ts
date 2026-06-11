@@ -20,7 +20,6 @@ import {
 interface UseExecutionWizardDataOptions {
   context: ExecutionWizardDraft['context']
   customerSearch: string
-  // eslint-disable-next-line no-unused-vars
   onPatientsImported: (result: { executionId: string; patients: ExecutionPatient[] }) => void
 }
 

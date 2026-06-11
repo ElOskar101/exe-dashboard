@@ -137,8 +137,26 @@ export default function ExecutionsPage() {
 
           {!executionsQuery.isLoading && !executionsQuery.isError ? (
             <ExecutionsTable
+              variant="list"
               executionStatusReadModel={executionStatusReadModel.data}
               executions={filteredExecutions}
+              translations={{
+                columns: {
+                  project: t('list.columns.project'),
+                  execution: t('list.columns.execution'),
+                  status: t('list.columns.status'),
+                  client: t('list.columns.client'),
+                  clinic: t('list.columns.clinic'),
+                  patients: t('list.columns.patients'),
+                  bot: t('list.columns.bot'),
+                  createdAt: t('list.columns.createdAt'),
+                },
+                emptyValue: t('list.emptyValue'),
+                empty: t('list.noExecutions'),
+                noExecutions: t('list.noExecutions'),
+                noFilteredExecutions: t('list.noFilteredExecutions'),
+                showAll: t('list.showAll'),
+              }}
               isExecutionLimitActive={isExecutionLimitActive}
               isFiltered={isFiltered}
               shouldShowAllExecutions={shouldShowAllExecutions}

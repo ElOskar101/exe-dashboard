@@ -18,7 +18,7 @@ export {
   type ExecutionStatusReadModel,
 } from './lib/execution-status-cache'
 export { formatExecutionDate, formatExecutionDateTime } from './lib/format-execution-date-time'
-export { getStatusTextClassName } from './lib/execution-status-styles'
+export { getStatusBadgeClassName } from './lib/execution-status-styles'
 export type {
   ExecutionCreatePayload,
   ExecutionMetadata,

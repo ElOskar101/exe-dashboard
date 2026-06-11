@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { cn } from '@/lib/utils'
 import { IconBug } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
-import { getConnectionBadgeVariant, getStatusTextClassName } from './execution-detail-styles'
+import { getConnectionBadgeVariant, getStatusBadgeClassName } from './execution-detail-styles'
 
 interface ExecutionDebugSheetProps {
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
@@ -34,14 +34,12 @@ export function ExecutionDebugSheet({ connectionState, currentStatus, rawExecuti
         <div className="min-h-0 flex-1 overflow-auto px-6 pb-6">
           <div className="grid grid-cols-2 gap-3">
             <DebugField label={t('detail.debugFields.status')}>
-              <span
-                className={cn(
-                  'inline-flex max-w-full items-center truncate text-sm font-medium',
-                  getStatusTextClassName(currentStatus),
-                )}
+              <Badge
+                variant="outline"
+                className={cn('max-w-full justify-center truncate', getStatusBadgeClassName(currentStatus))}
               >
                 {currentStatus ?? t('detail.statusUnknown')}
-              </span>
+              </Badge>
             </DebugField>
             <DebugField label={t('detail.debugFields.connection')}>
               <Badge

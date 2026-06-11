@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import { Badge } from '@/components/ui/badge'
-export { getStatusTextClassName } from '@/features/executions/shared'
+export { getStatusBadgeClassName } from '@/features/executions/shared'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 
 type BadgeVariant = ComponentProps<typeof Badge>['variant']

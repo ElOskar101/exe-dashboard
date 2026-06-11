@@ -226,7 +226,6 @@
     "tableTitle": "Executions",
     "tableDescription": "Showing {{count}} of {{total}} executions.",
     "emptyValue": "None",
-    "viewDetails": "Details",
     "showAll": "Show all",
     "loadErrorTitle": "Executions could not be loaded",
     "loadErrorDescription": "Try again to refresh the executions table.",

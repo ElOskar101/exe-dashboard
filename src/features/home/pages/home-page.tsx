@@ -10,11 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   EXECUTION_STATUSES,
-  formatExecutionDate,
   normalizeExecutionStatus,
   useExecutionTargetNavigation,
   useExecutionAppStatsQuery,
@@ -22,12 +20,7 @@ import {
   type Execution,
   type ExecutionStatus,
 } from '@/features/executions'
-import { ExecutionStatusLabel } from '@/features/executions/listing/components/execution-status-label'
-import {
-  getExecutionDisplayNames,
-  getExecutionProjectLabel,
-} from '@/features/executions/listing/lib/execution-listing-filters'
-import { getExecutionDayLabel } from '@/features/executions/listing/lib/execution-sidebar-display'
+import { ExecutionsTable } from '@/features/executions/listing/components/executions-table'
 import { getTopDimension, type TopDimensionEntry } from '@/features/home/lib/home-stats'
 
 const LATEST_EXECUTIONS_LIMIT = 5
@@ -385,79 +378,23 @@ export default function HomePage() {
           ) : null}
 
           {!shouldShowExecutionsFallback ? (
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-normal">{translate('latest.columns.project')}</TableHead>
-                  <TableHead className="w-28 whitespace-normal">{translate('latest.columns.execution')}</TableHead>
-                  <TableHead className="w-28">{translate('latest.columns.status')}</TableHead>
-                  <TableHead className="hidden whitespace-normal lg:table-cell">
-                    {translate('latest.columns.client')}
-                  </TableHead>
-                  <TableHead className="hidden whitespace-normal lg:table-cell">
-                    {translate('latest.columns.clinic')}
-                  </TableHead>
-                  <TableHead className="hidden w-28 whitespace-normal md:table-cell">
-                    {translate('latest.columns.createdAt')}
-                  </TableHead>
-                  <TableHead className="w-20 text-right">{translate('latest.columns.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="[&_td:not(:last-child)]:text-foreground/80">
-                {latestExecutions.length > 0 ? (
-                  latestExecutions.map((execution) => {
-                    const displayNames = getExecutionDisplayNames(execution)
-
-                    return (
-                      <TableRow key={execution._id}>
-                        <TableCell className="font-medium whitespace-normal break-words">
-                          {getExecutionProjectLabel(execution)}
-                        </TableCell>
-                        <TableCell className="whitespace-normal break-words">
-                          <Link
-                            className="hover:underline"
-                            to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
-                          >
-                            {getExecutionDayLabel(execution)}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <ExecutionStatusLabel status={normalizeExecutionStatus(execution.status)} />
-                        </TableCell>
-                        <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                          {displayNames.client || translate('latest.emptyValue')}
-                        </TableCell>
-                        <TableCell className="hidden whitespace-normal break-words lg:table-cell">
-                          {displayNames.clinic || translate('latest.emptyValue')}
-                        </TableCell>
-                        <TableCell className="hidden whitespace-nowrap md:table-cell">
-                          {formatExecutionDate(execution.createdAt)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-end">
-                            <Button
-                              nativeButton={false}
-                              variant="outline"
-                              size="sm"
-                              render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
-                            >
-                              <span className="sr-only sm:not-sr-only">{translate('latest.viewDetails')}</span>
-                              <IconExternalLink data-icon="inline-end" className="not-sr-only sm:sr-only" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell className="h-28 text-center text-muted-foreground" colSpan={7}>
-                      {translate('latest.empty')}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <ExecutionsTable
+              variant="latest"
+              executions={latestExecutions}
+              getStatusLabel={(status) => translate(`stats.status.labels.${status}`)}
+              translations={{
+                columns: {
+                  project: translate('latest.columns.project'),
+                  execution: translate('latest.columns.execution'),
+                  status: translate('latest.columns.status'),
+                  client: translate('latest.columns.client'),
+                  clinic: translate('latest.columns.clinic'),
+                  createdAt: translate('latest.columns.createdAt'),
+                },
+                emptyValue: translate('latest.emptyValue'),
+                empty: translate('latest.empty'),
+              }}
+            />
           ) : null}
         </CardContent>
       </Card>

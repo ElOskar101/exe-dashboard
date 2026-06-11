@@ -14,7 +14,6 @@ interface UseClinicBotPasswordRequestOptions {
   clinicBotOptions: ClinicBotRecord[]
   currentClinicBotId: string
   onCleared: () => void
-  // eslint-disable-next-line no-unused-vars
   onResolved: (clinicBot: ClinicBotRecord, password: string) => void
 }
 

@@ -3,7 +3,6 @@ import { IUser } from '../models/user.interface'
 
 export interface IAuthContext {
   token: string
-  // eslint-disable-next-line no-unused-vars
   saveToken: (token: string) => void
   clearToken: () => void
   logout: () => void

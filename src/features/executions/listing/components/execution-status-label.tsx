@@ -1,18 +1,17 @@
 import { useTranslation } from 'react-i18next'
 
+import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { getStatusTextClassName, isExecutionRunning, type ExecutionStatus } from '@/features/executions/shared'
-import { cn } from '@/lib/utils'
+import { getStatusBadgeClassName, isExecutionRunning, type ExecutionStatus } from '@/features/executions/shared'
 
-export function ExecutionStatusLabel({ status }: { status: ExecutionStatus }) {
+export function ExecutionStatusLabel({ status, label }: { status: ExecutionStatus; label?: string }) {
   const { t } = useTranslation('executions')
+  const resolvedLabel = label ?? t(`list.statusOptions.${status}`)
 
   return (
-    <span
-      className={cn('inline-flex items-center gap-1 text-sm font-medium capitalize', getStatusTextClassName(status))}
-    >
+    <Badge variant="outline" className={getStatusBadgeClassName(status)}>
       {isExecutionRunning(status) ? <Spinner data-icon="inline-start" /> : null}
-      {t(`list.statusOptions.${status}`)}
-    </span>
+      {resolvedLabel}
+    </Badge>
   )
 }
