@@ -1,6 +1,6 @@
-# Exe Dashboard
+# Agent
 
-Exe Dashboard manages automation runs for carrier and clinic workflows, with a strong focus on observing each run as it moves through its lifecycle.
+Agent manages automation runs for carrier and clinic workflows, with a strong focus on observing each run as it moves through its lifecycle.
 
 ## Language
 
