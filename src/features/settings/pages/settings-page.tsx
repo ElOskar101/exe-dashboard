@@ -3,41 +3,29 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  decodeExecutionTargetValue,
-  encodeExecutionTargetValue,
   getSelectedExecutionRequestTarget,
-  type ExecutionAppStats,
-  type PlaywrightProject,
-  type PlaywrightRuntime,
-  type PlaywrightRuntimeApplication,
-  useExecutionTarget,
   useExecutionAppStatsQuery,
+  useExecutionTarget,
   useExecutionTargetSetter,
   usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
+  type ExecutionAppStats,
+  type PlaywrightRuntime,
+  type PlaywrightRuntimeApplication,
 } from '@/features/executions'
 import {
   IconActivity,
   IconAlertCircle,
+  IconBox,
   IconBriefcase,
   IconClock,
   IconDatabase,
   IconDeviceDesktop,
   IconRefresh,
-  IconServer,
 } from '@tabler/icons-react'
 import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
@@ -51,40 +39,19 @@ type SettingsTab = (typeof SETTINGS_TABS)[number]
 
 const isSettingsTab = (value: string | null): value is SettingsTab => SETTINGS_TABS.some((tab) => tab === value)
 
-const getRuntimeApplicationOptionValue = (runtimeId: string, application: PlaywrightRuntimeApplication) =>
-  encodeExecutionTargetValue({
-    runtimeId,
-    applicationName: application.name,
-    targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
-  })
-
 const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
 
+const getFirstSelectableApplication = (runtime: PlaywrightRuntime | undefined) =>
+  runtime?.applications.find(isApplicationSelectable)
+
+const getApplicationSelection = (runtimeId: string, application: PlaywrightRuntimeApplication) => ({
+  runtimeId,
+  applicationName: application.name,
+  targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
+})
+
 const getConfiguredApplicationLimit = (value: number | undefined, fallback: number) => value ?? fallback
-
-const getCatalogSummary = (runtimes: readonly PlaywrightRuntime[] | undefined) => {
-  const applications = runtimes?.flatMap((runtime) => runtime.applications) ?? []
-  const activeApplications = applications.filter((application) => application.active !== false).length
-  const nonProductionApplications = applications.filter((application) => application.nonProduction).length
-
-  return {
-    activeApplications,
-    applications: applications.length,
-    nonProductionApplications,
-    runtimes: runtimes?.length ?? 0,
-  }
-}
-
-const getProjectSummary = (projects: readonly PlaywrightProject[] | undefined) => {
-  const activeProjects = projects?.filter((project) => project.active !== false) ?? []
-
-  return {
-    activeProjects: activeProjects.length,
-    associatedBots: activeProjects.reduce((total, project) => total + project.associatedWith.length, 0),
-    projects: projects?.length ?? 0,
-  }
-}
 
 const formatUptime = (seconds: number, t: TFunction<'settings'>) => {
   const totalSeconds = Math.max(0, Math.floor(seconds))
@@ -233,21 +200,19 @@ export function SettingsPage() {
   const selectedApplication = selectedRuntime?.applications.find(
     (application) => application.name === target.applicationName,
   )
-  const selectedValue = encodeExecutionTargetValue({
-    runtimeId: target.runtimeId,
-    applicationName: target.applicationName,
-    targetUrl: target.requestTarget.apiUrl,
-  })
   const effectiveApiUrl = target.requestTarget.apiUrl
-  const selectedApplicationDescription = selectedApplication?.description ?? t('runtime.noDescription')
-  const catalogSummary = getCatalogSummary(runtimesQuery.data)
-  const projectSummary = getProjectSummary(projectsQuery.data)
+  const selectedRuntimeDescription = selectedRuntime?.description?.trim() || t('runtime.noDescription')
+  const selectedApplicationDescription = selectedApplication?.description?.trim() || t('runtime.noDescription')
   const selectedSettingsTab = isSettingsTab(searchParams.get(SETTINGS_TAB_SEARCH_PARAM))
     ? searchParams.get(SETTINGS_TAB_SEARCH_PARAM)
     : DEFAULT_SETTINGS_TAB
 
   const handleSettingsTabChange = (value: string | null) => {
     const nextTab = isSettingsTab(value) ? value : DEFAULT_SETTINGS_TAB
+
+    if (nextTab === 'app-status') {
+      void appStatsQuery.refetch()
+    }
 
     setSearchParams(
       (currentSearchParams) => {
@@ -265,12 +230,25 @@ export function SettingsPage() {
     )
   }
 
-  const handleTargetChange = (value: string | null) => {
-    if (!value) {
+  const handleRuntimeChange = (runtimeId: string | null) => {
+    const runtime = runtimesQuery.data?.find((candidate) => candidate._id === runtimeId)
+    const application = getFirstSelectableApplication(runtime)
+
+    if (!runtime || !application) {
       return
     }
 
-    setExecutionTarget(decodeExecutionTargetValue(value))
+    setExecutionTarget(getApplicationSelection(runtime._id, application))
+  }
+
+  const handleApplicationChange = (applicationName: string | null) => {
+    const application = selectedRuntime?.applications.find((candidate) => candidate.name === applicationName)
+
+    if (!selectedRuntime || !application || !isApplicationSelectable(application)) {
+      return
+    }
+
+    setExecutionTarget(getApplicationSelection(selectedRuntime._id, application))
   }
 
   return (
@@ -314,58 +292,142 @@ export function SettingsPage() {
 
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="execution-target">{t('runtime.targetLabel')}</FieldLabel>
-                  <Select value={selectedValue} onValueChange={handleTargetChange}>
-                    <SelectTrigger id="execution-target" className="w-full">
-                      <SelectValue placeholder={t('runtime.targetPlaceholder')}>{target.label}</SelectValue>
+                  <FieldLabel htmlFor="execution-runtime">
+                    <IconDeviceDesktop data-icon="inline-start" />
+                    {t('runtime.selectRuntimeLabel')}
+                  </FieldLabel>
+                  <Select value={target.runtimeId} onValueChange={handleRuntimeChange}>
+                    <SelectTrigger id="execution-runtime" className="w-full">
+                      <SelectValue placeholder={t('runtime.runtime')}>
+                        {selectedRuntime?.name ?? target.runtimeId}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent align="start">
-                      {runtimesQuery.data?.map((runtime, runtimeIndex) => (
-                        <SelectGroup key={runtime._id}>
-                          {runtimeIndex > 0 ? <SelectSeparator /> : null}
-                          <SelectLabel>{runtime.name}</SelectLabel>
-                          {runtime.applications.map((application) => {
-                            const isSelectable = isApplicationSelectable(application)
-
-                            return (
-                              <SelectItem
-                                key={`${runtime._id}-${application.name}`}
-                                value={getRuntimeApplicationOptionValue(runtime._id, application)}
-                                disabled={!isSelectable}
-                              >
-                                <span className="flex min-w-0 flex-col gap-1">
-                                  <span className="flex min-w-0 items-center gap-2">
-                                    <span className="truncate">{application.name}</span>
-                                    {application.nonProduction ? (
-                                      <Badge variant="outline">{t('runtime.nonProduction')}</Badge>
-                                    ) : null}
-                                  </span>
-                                  {application.active === false ? (
-                                    <span className="truncate text-xs font-normal text-muted-foreground">
-                                      {t('runtime.inactive')}
-                                    </span>
-                                  ) : null}
-                                  {!application.apiUrl?.trim() ? (
-                                    <span className="truncate text-xs font-normal text-muted-foreground">
-                                      {t('runtime.noApiUrl')}
-                                    </span>
-                                  ) : null}
-                                </span>
-                              </SelectItem>
-                            )
-                          })}
-                        </SelectGroup>
+                      {runtimesQuery.data?.map((runtime) => (
+                        <SelectItem
+                          key={runtime._id}
+                          value={runtime._id}
+                          disabled={!getFirstSelectableApplication(runtime)}
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="truncate">{runtime.name}</span>
+                            <Badge variant="outline">{t(`runtime.access.${runtime.accessInfo.type}`)}</Badge>
+                          </span>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                    <span>{selectedRuntimeDescription}</span>
+                    {selectedRuntime ? (
+                      <Badge variant="outline">{t(`runtime.access.${selectedRuntime.accessInfo.type}`)}</Badge>
+                    ) : null}
+                  </div>
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="execution-application">
+                    <IconBox data-icon="inline-start" />
+                    {t('runtime.selectApplicationLabel', { runtime: selectedRuntime?.name ?? target.runtimeId })}
+                  </FieldLabel>
+                  <Select
+                    value={target.applicationName}
+                    onValueChange={handleApplicationChange}
+                    disabled={!selectedRuntime}
+                  >
+                    <SelectTrigger id="execution-application" className="w-full">
+                      <SelectValue placeholder={t('runtime.targetPlaceholder')}>{target.label}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      {selectedRuntime?.applications.map((application) => {
+                        const isSelectable = isApplicationSelectable(application)
+
+                        return (
+                          <SelectItem key={application.name} value={application.name} disabled={!isSelectable}>
+                            <span className="flex min-w-0 flex-col gap-1">
+                              <span className="flex min-w-0 items-center gap-2">
+                                <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                                <span className="truncate">{application.name}</span>
+                                <Badge
+                                  variant={application.active === false ? 'destructive' : 'success'}
+                                  className={
+                                    application.active === false ? 'text-destructive!' : 'text-success-foreground!'
+                                  }
+                                >
+                                  {application.active === false ? t('runtime.inactive') : t('runtime.active')}
+                                </Badge>
+                                <Badge variant="outline">
+                                  {application.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
+                                </Badge>
+                                <Badge variant="outline">{t(`runtime.access.${application.accessInfo.type}`)}</Badge>
+                              </span>
+                              {application.active === false ? (
+                                <span className="truncate text-xs font-normal text-muted-foreground">
+                                  {t('runtime.inactive')}
+                                </span>
+                              ) : null}
+                              {!application.apiUrl?.trim() ? (
+                                <span className="truncate text-xs font-normal text-muted-foreground">
+                                  {t('runtime.noApiUrl')}
+                                </span>
+                              ) : null}
+                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {selectedApplication ? (
+                    <div className="mt-2 rounded-lg border bg-muted/20 p-4 text-sm">
+                      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex min-w-0 flex-col gap-1">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate font-medium text-foreground">{selectedApplication.name}</span>
+                          </div>
+                          <span className="text-muted-foreground">{selectedApplicationDescription}</span>
+                        </div>
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <Badge variant={selectedApplication.active === false ? 'destructive' : 'success'}>
+                            {selectedApplication.active === false ? t('runtime.inactive') : t('runtime.active')}
+                          </Badge>
+                          <Badge variant="outline">
+                            {selectedApplication.nonProduction ? t('runtime.nonProduction') : t('runtime.production')}
+                          </Badge>
+                          <Badge variant="outline">{t(`runtime.access.${selectedApplication.accessInfo.type}`)}</Badge>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_10rem_10rem]">
+                        <div className="flex min-w-0 items-start gap-3 rounded-md border bg-background/40 p-3">
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <span className="text-xs font-medium uppercase text-muted-foreground">
+                              {t('runtime.effectiveApiUrl')}
+                            </span>
+                            <span className="break-all font-mono text-foreground text-xs">{effectiveApiUrl}</span>
+                          </div>
+                        </div>
+                        <div className="rounded-md border bg-background/40 p-3">
+                          <span className="text-xs font-medium uppercase text-muted-foreground">
+                            {t('runtime.maxWorkers')}
+                          </span>
+                          <div className="mt-1 text-2xl font-semibold text-foreground">
+                            {getConfiguredApplicationLimit(selectedApplication.config?.maxWorkers, 10)}
+                          </div>
+                        </div>
+                        <div className="rounded-md border bg-background/40 p-3">
+                          <span className="text-xs font-medium uppercase text-muted-foreground">
+                            {t('runtime.maxRetries')}
+                          </span>
+                          <div className="mt-1 text-2xl font-semibold text-foreground">
+                            {getConfiguredApplicationLimit(selectedApplication.config?.maxRetries, 3)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </Field>
               </FieldGroup>
-
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <span>{effectiveApiUrl}</span>
-                </div>
-              </div>
 
               {projectsQuery.isError ? (
                 <Alert variant="destructive">

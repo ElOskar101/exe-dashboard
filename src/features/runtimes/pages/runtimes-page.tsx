@@ -6,7 +6,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { type PlaywrightRuntime, usePlaywrightRuntimesQuery } from '@/features/executions'
-import { IconAlertCircle, IconDeviceDesktop, IconRefresh, IconShieldLock, IconShieldCheck } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconBox,
+  IconDeviceDesktop,
+  IconRefresh,
+  IconShieldLock,
+  IconShieldCheck,
+} from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 
 const DESCRIPTION_PREVIEW_LENGTH = 20
@@ -126,7 +133,12 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
             {runtime.applications.length > 0 ? (
               runtime.applications.map((application) => (
                 <TableRow key={`${runtime._id}-${application.name}`}>
-                  <TableCell className="whitespace-normal break-words text-white/80">{application.name}</TableCell>
+                  <TableCell className="whitespace-normal break-words text-white/80">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                      <span>{application.name}</span>
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1.5">
                       <Badge variant={application.active === false ? 'destructive' : 'success'}>

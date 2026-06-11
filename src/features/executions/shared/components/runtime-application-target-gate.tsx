@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconAlertCircle, IconDeviceDesktop, IconRefresh } from '@tabler/icons-react'
+import { IconAlertCircle, IconBox, IconRefresh } from '@tabler/icons-react'
 import {
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
@@ -89,7 +89,7 @@ function RuntimeApplicationTargetCardContent({
             }}
           >
             <SelectTrigger id="required-execution-target" className="w-full">
-              <IconDeviceDesktop className="size-4" />
+              <IconBox className="size-4" />
               <SelectValue placeholder="Choose an app">
                 {selectedSelection ? (
                   <span className="flex min-w-0 items-center gap-1.5">
@@ -113,7 +113,10 @@ function RuntimeApplicationTargetCardContent({
                       disabled={!isApplicationSelectable(application)}
                     >
                       <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="truncate">{application.name}</span>
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{application.name}</span>
+                        </span>
                         {application.active === false ? (
                           <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
                         ) : null}
