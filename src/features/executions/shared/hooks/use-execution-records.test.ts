@@ -3,8 +3,6 @@ import {
   useCreateExecutionMutation,
   useDeleteExecutionMutation,
   useExecutionAppStatsQuery,
-  useExecutionQuery,
-  useExecutionReportQuery,
   useExecutionsQuery,
   usePauseExecutionMutation,
 } from './use-execution-records'
@@ -45,6 +43,17 @@ vi.mock('../services/execution.service', () => ({
 
 describe('useExecutionsQuery', () => {
   const invalidateQueries = vi.fn()
+  const selectedTarget = {
+    key: 'runtime:runtime-1:application:app-1',
+    runtimeId: 'runtime-1',
+    applicationName: 'app-1',
+    label: 'app-1',
+    requestTarget: {
+      apiUrl: 'https://runtime.example.com/api/v1',
+      reportsUrl: 'https://runtime.example.com/reports',
+      socketUrl: 'https://runtime.example.com',
+    },
+  } as const
 
   const getLastMutationSuccessHandler = () => {
     const mutationOptions = mocks.useMutation.mock.lastCall?.[0] as { onSuccess?: unknown }
@@ -59,8 +68,7 @@ describe('useExecutionsQuery', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.useExecutionTarget.mockReturnValue({
-      isResolving: false,
-      target: { key: 'default', requestTarget: undefined },
+      target: selectedTarget,
     })
     mocks.useMutation.mockImplementation((options) => options)
     mocks.useQuery.mockImplementation((options) => options)
@@ -73,40 +81,14 @@ describe('useExecutionsQuery', () => {
     expect(mocks.useQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: false,
-        queryKey: ['executions', 'default', 'list', { by: ['user-1'] }],
+        queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'list', { by: ['user-1'] }],
       }),
     )
     expect(query.isLoading).toBeUndefined()
     expect(query.isPending).toBeUndefined()
   })
 
-  it('keeps the query disabled while the execution target is resolving', () => {
-    mocks.useExecutionTarget.mockReturnValue({
-      isResolving: true,
-      target: { key: 'runtime-1', requestTarget: undefined },
-    })
-
-    const query = useExecutionsQuery({ by: ['user-1'] }, { enabled: true })
-
-    expect(mocks.useQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
-        queryKey: ['executions', 'runtime-1', 'list', { by: ['user-1'] }],
-      }),
-    )
-    expect(query.isLoading).toBe(true)
-    expect(query.isPending).toBe(true)
-  })
-
   it('uses the selected execution target for app stats queries', () => {
-    mocks.useExecutionTarget.mockReturnValue({
-      isResolving: false,
-      target: {
-        key: 'runtime:runtime-1:application:app-1',
-        requestTarget: { apiUrl: 'https://runtime.example.com/api/v1' },
-      },
-    })
-
     useExecutionAppStatsQuery()
 
     expect(mocks.useQuery).toHaveBeenCalledWith(
@@ -117,85 +99,17 @@ describe('useExecutionsQuery', () => {
     )
   })
 
-  it('reports app stats as loading while the execution target is resolving', () => {
-    mocks.useExecutionTarget.mockReturnValue({
-      isResolving: true,
-      target: { key: 'runtime-1', requestTarget: undefined },
-    })
-
-    const query = useExecutionAppStatsQuery()
-
-    expect(mocks.useQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
-        queryKey: ['executions', 'runtime-1', 'app-stats'],
-      }),
-    )
-    expect(query.isLoading).toBe(true)
-    expect(query.isPending).toBe(true)
-  })
-
-  it('reports execution details as loading while the execution target is resolving', () => {
-    mocks.useExecutionTarget.mockReturnValue({
-      isResolving: true,
-      target: { key: 'runtime-1', requestTarget: undefined },
-    })
-
-    const query = useExecutionQuery('execution-1')
-
-    expect(mocks.useQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
-        queryKey: ['executions', 'runtime-1', 'detail', 'execution-1'],
-      }),
-    )
-    expect(query.isLoading).toBe(true)
-    expect(query.isPending).toBe(true)
-  })
-
-  it('reports execution reports as loading while the execution target is resolving and reports are enabled', () => {
-    mocks.useExecutionTarget.mockReturnValue({
-      isResolving: true,
-      target: { key: 'runtime-1', requestTarget: undefined },
-    })
-
-    const query = useExecutionReportQuery('execution-1', true)
-
-    expect(mocks.useQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
-        queryKey: ['executions', 'runtime-1', 'report', 'execution-1'],
-      }),
-    )
-    expect(query.isLoading).toBe(true)
-    expect(query.isPending).toBe(true)
-  })
-
-  it('does not report execution reports as loading when reports are disabled by the caller', () => {
-    mocks.useExecutionTarget.mockReturnValue({
-      isResolving: true,
-      target: { key: 'runtime-1', requestTarget: undefined },
-    })
-
-    const query = useExecutionReportQuery('execution-1', false)
-
-    expect(mocks.useQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
-        queryKey: ['executions', 'runtime-1', 'report', 'execution-1'],
-      }),
-    )
-    expect(query.isLoading).toBeUndefined()
-    expect(query.isPending).toBeUndefined()
-  })
-
   it('invalidates execution list and app stats after creating an execution', async () => {
     useCreateExecutionMutation()
 
     await getLastMutationSuccessHandler()({ data: {} }, {})
 
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'list'] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'app-stats'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'list'],
+    })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'app-stats'],
+    })
   })
 
   it('invalidates execution list and app stats after deleting an execution', async () => {
@@ -203,8 +117,12 @@ describe('useExecutionsQuery', () => {
 
     await getLastMutationSuccessHandler()({ data: {} }, 'execution-1')
 
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'list'] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'app-stats'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'list'],
+    })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'app-stats'],
+    })
   })
 
   it('invalidates execution detail, list, and app stats after modifying an execution', async () => {
@@ -212,8 +130,14 @@ describe('useExecutionsQuery', () => {
 
     await getLastMutationSuccessHandler()({ data: {} })
 
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'detail', 'execution-1'] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'list'] })
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['executions', 'default', 'app-stats'] })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'detail', 'execution-1'],
+    })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'list'],
+    })
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['executions', 'runtime:runtime-1:application:app-1', 'app-stats'],
+    })
   })
 })

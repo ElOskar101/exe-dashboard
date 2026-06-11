@@ -104,7 +104,7 @@ export function ExecutionsSidebar() {
   const userFullName = user?.fullName
   useExecutionStatusUpdates()
   const queryClient = useQueryClient()
-  const { isResolving: isResolvingExecutionTarget, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
   const playwrightProjectsQuery = usePlaywrightProjectsQuery(!isLoadingUser && Boolean(userFullName))
   const availableProjects = useMemo(
     () =>
@@ -128,13 +128,12 @@ export function ExecutionsSidebar() {
       return {
         queryKey: executionKeys.list(query, target.key),
         queryFn: async () => {
-          const response = await getExecutions(query, target.requestTarget)
+          const response = await getExecutions(target.requestTarget, query)
 
           return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
         },
         placeholderData: (previousData: Execution[] | undefined) => previousData,
-        enabled:
-          !isLoadingUser && Boolean(userFullName) && !isResolvingExecutionTarget && playwrightProjectsQuery.isSuccess,
+        enabled: !isLoadingUser && Boolean(userFullName) && playwrightProjectsQuery.isSuccess,
       }
     }),
   })
@@ -200,9 +199,7 @@ export function ExecutionsSidebar() {
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
   const isCollapsedDesktop = state === 'collapsed' && !isMobile
   const isExecutionsLoading =
-    isResolvingExecutionTarget ||
-    playwrightProjectsQuery.isLoading ||
-    projectExecutionsQueries.some((query) => query.isLoading)
+    playwrightProjectsQuery.isLoading || projectExecutionsQueries.some((query) => query.isLoading)
   const isExecutionsFetching =
     playwrightProjectsQuery.isFetching || projectExecutionsQueries.some((query) => query.isFetching)
   const isExecutionsError = playwrightProjectsQuery.isError || projectExecutionsQueries.some((query) => query.isError)

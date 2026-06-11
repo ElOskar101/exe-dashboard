@@ -45,30 +45,25 @@ const invalidateExecutionDetail = async (
 
 export const useExecutionsQuery = (query: ExecutionQuery = {}, options: ExecutionQueryOptions = {}) => {
   const queryClient = useQueryClient()
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
   const isEnabled = options.enabled ?? true
-  const isTargetResolutionBlocking = isEnabled && isResolving
 
   const executionsQuery = useQuery({
     queryKey: executionKeys.list(query, target.key),
     queryFn: async () => {
-      const response = await getExecutions(query, target.requestTarget)
+      const response = await getExecutions(target.requestTarget, query)
 
       return syncExecutionsFromListSnapshot(queryClient, response.data, target.key)
     },
-    enabled: isEnabled && !isTargetResolutionBlocking,
+    enabled: isEnabled,
   })
 
-  return {
-    ...executionsQuery,
-    isLoading: isTargetResolutionBlocking || executionsQuery.isLoading,
-    isPending: isTargetResolutionBlocking || executionsQuery.isPending,
-  }
+  return executionsQuery
 }
 
 export const useExecutionQuery = (executionId: string) => {
   const queryClient = useQueryClient()
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
 
   const executionQuery = useQuery({
     queryKey: executionKeys.detail(executionId, target.key),
@@ -77,19 +72,14 @@ export const useExecutionQuery = (executionId: string) => {
 
       return syncExecutionFromDetailSnapshot(queryClient, response.data, target.key)
     },
-    enabled: !isResolving,
+    enabled: true,
   })
 
-  return {
-    ...executionQuery,
-    isLoading: isResolving || executionQuery.isLoading,
-    isPending: isResolving || executionQuery.isPending,
-  }
+  return executionQuery
 }
 
 export const useExecutionReportQuery = (executionId: string, enabled: boolean) => {
-  const { isResolving, target } = useExecutionTarget()
-  const isTargetResolutionBlocking = enabled && isResolving
+  const { target } = useExecutionTarget()
 
   const reportQuery = useQuery({
     queryKey: executionKeys.report(executionId, target.key),
@@ -98,18 +88,14 @@ export const useExecutionReportQuery = (executionId: string, enabled: boolean) =
 
       return response.data
     },
-    enabled: enabled && !isTargetResolutionBlocking,
+    enabled,
   })
 
-  return {
-    ...reportQuery,
-    isLoading: isTargetResolutionBlocking || reportQuery.isLoading,
-    isPending: isTargetResolutionBlocking || reportQuery.isPending,
-  }
+  return reportQuery
 }
 
 export const useExecutionAppStatsQuery = () => {
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
 
   const appStatsQuery = useQuery({
     queryKey: executionKeys.appStats(target.key),
@@ -118,28 +104,20 @@ export const useExecutionAppStatsQuery = () => {
 
       return response.data
     },
-    enabled: !isResolving,
+    enabled: true,
   })
 
-  return {
-    ...appStatsQuery,
-    isLoading: isResolving || appStatsQuery.isLoading,
-    isPending: isResolving || appStatsQuery.isPending,
-  }
+  return appStatsQuery
 }
 
 export const useCreateExecutionMutation = (
   options: ExecutionMutationOptions<AxiosResponse<Execution>, ExecutionCreatePayload> = {},
 ) => {
   const queryClient = useQueryClient()
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
 
   return useMutation({
     mutationFn: (payload: ExecutionCreatePayload) => {
-      if (isResolving) {
-        throw new Error('Execution target is still loading.')
-      }
-
       return createExecution(payload, target.requestTarget)
     },
     onSuccess: async (response, variables) => {
@@ -156,14 +134,10 @@ export const useDeleteExecutionMutation = (
   options: ExecutionMutationOptions<AxiosResponse<Execution>, string> = {},
 ) => {
   const queryClient = useQueryClient()
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
 
   return useMutation({
     mutationFn: (executionId: string) => {
-      if (isResolving) {
-        throw new Error('Execution target is still loading.')
-      }
-
       return deleteExecution(executionId, target.requestTarget)
     },
     onSuccess: async (response, executionId) => {
@@ -184,14 +158,10 @@ const useExecutionActionMutation = (
   options: ExecutionActionMutationOptions = {},
 ) => {
   const queryClient = useQueryClient()
-  const { isResolving, target } = useExecutionTarget()
+  const { target } = useExecutionTarget()
 
   return useMutation({
     mutationFn: async () => {
-      if (isResolving) {
-        throw new Error('Execution target is still loading.')
-      }
-
       return mutationFn(executionId, target.requestTarget)
     },
     onSuccess: async (response) => {

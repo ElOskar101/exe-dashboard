@@ -78,7 +78,7 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
         setStatus(nextStatus)
         options.onStatus?.(nextStatus)
       },
-      socketUrl: target.requestTarget?.socketUrl,
+      socketUrl: target.requestTarget.socketUrl,
     })
 
     return () => {

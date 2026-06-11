@@ -7,6 +7,9 @@ const username = process.env.E2E_TEST_USERNAME || e2eEnv.E2E_TEST_USERNAME
 const password = process.env.E2E_TEST_PASSWORD || e2eEnv.E2E_TEST_PASSWORD
 
 const canLogin = Boolean(authLoginUrl && username && password)
+const executionTargetSearch = 'runtime=runtime-1&app=App+1&targetUrl=https%3A%2F%2Fruntime.example.com%2Fapi%2Fv1'
+
+const withExecutionTarget = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${executionTargetSearch}`
 
 interface ExecutionFixture {
   _id: string
@@ -372,7 +375,7 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     await stubExecutionList(page, () => [])
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await expect(page.getByText('No executions yet.')).toBeVisible()
   })
@@ -441,9 +444,9 @@ test.describe('execution user flows', () => {
       },
     })
 
-    await page.goto('/executions')
+    await page.goto(withExecutionTarget('/executions'))
 
-    await expect(page).toHaveURL('/executions')
+    await expect(page).toHaveURL(withExecutionTarget('/executions'))
     await expect(page.getByRole('heading', { name: 'All executions' })).toBeVisible()
     await expect(page.getByRole('columnheader', { name: 'Patients' })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Legacy Dental Care' })).toBeVisible()
@@ -480,13 +483,13 @@ test.describe('execution user flows', () => {
     })
     await stubExecutionDetails(page, execution._id, () => execution)
 
-    await page.goto('/executions')
+    await page.goto(withExecutionTarget('/executions'))
     await page
       .getByRole('row', { name: /2026-05-25 Queued Legacy Dental Care Downtown Clinic .* Details/ })
       .getByRole('button', { name: 'Details' })
       .click()
 
-    await expect(page).toHaveURL('/execution/execution-1')
+    await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
     await expect(page.getByText('Execution details')).toBeVisible()
   })
 
@@ -500,7 +503,7 @@ test.describe('execution user flows', () => {
     ])
     await stubExecutionDetails(page, execution._id, () => execution)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await expect(page.getByText('chromium')).toBeVisible()
     await expect(page.getByText('2026-05-26')).toBeVisible()
@@ -509,7 +512,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByLabel('running')).toBeVisible()
     await page.getByText('2026-05-25').click()
 
-    await expect(page).toHaveURL('/execution/execution-1')
+    await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
     await expect(page.getByText('Execution details')).toBeVisible()
   })
 
@@ -527,7 +530,7 @@ test.describe('execution user flows', () => {
     await stubExecutionDetails(page, execution._id, () => execution)
     await stubExecutionDetails(page, secondExecution._id, () => secondExecution)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
 
     await page.getByRole('button', { name: 'Minimize executions sidebar' }).click()
     await expect(page.getByRole('button', { name: 'Expand executions sidebar' })).toBeVisible()
@@ -542,7 +545,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('heading', { name: 'chromium' })).toBeVisible()
     await page.getByRole('link', { name: /2026-05-25/ }).click()
 
-    await expect(page).toHaveURL('/execution/execution-1')
+    await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
   })
 
   test('shows an executions load error and retries successfully', async ({ page, request }) => {
@@ -564,7 +567,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({ json: [createExecution()] })
     })
 
-    await page.goto('/')
+    await page.goto(withExecutionTarget('/'))
 
     await expect(page.getByText('Executions could not be loaded')).toBeVisible({ timeout: 15_000 })
     shouldSucceed = true
@@ -589,7 +592,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({ json: createExecution() })
     })
 
-    await page.goto('/')
+    await page.goto(withExecutionTarget('/'))
 
     await page.getByRole('button', { name: 'Delete 2026-05-25' }).click({ force: true })
     await expect(page.getByText('Delete execution?')).toBeVisible()
@@ -617,12 +620,12 @@ test.describe('execution user flows', () => {
       await route.fulfill({ json: createExecution() })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
 
     await page.getByRole('button', { name: 'Delete 2026-05-25' }).click({ force: true })
     await page.getByRole('button', { name: 'Delete', exact: true }).click()
 
-    await expect(page).toHaveURL('/executions')
+    await expect(page).toHaveURL(withExecutionTarget('/executions'))
     await expect(page.getByRole('cell', { name: 'No executions yet.' })).toBeVisible()
     expect(deletedExecutionId).toBe('execution-1')
   })
@@ -637,7 +640,7 @@ test.describe('execution user flows', () => {
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
 
     await expect(page.getByText('Eligibility Runner - 2026-05-25')).toBeVisible()
     await expect(page.locator('[data-slot="card-title"]').getByText('Running')).toBeVisible()
@@ -691,7 +694,7 @@ test.describe('execution user flows', () => {
       })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
 
     await page.getByRole('button', { name: /^Re-run$/ }).click()
     await expect(page.getByText('Re-run this execution?')).toBeVisible()
@@ -699,7 +702,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Patients')).toBeVisible()
     await page.getByRole('button', { name: /^Confirm Re-run$/ }).click()
 
-    await expect(page).toHaveURL('/execution/execution-2')
+    await expect(page).toHaveURL(withExecutionTarget('/execution/execution-2'))
     expect(recreatedPayload).toEqual({
       project: 'chromium',
       createdBy: 'e2e-user',
@@ -722,7 +725,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({ json: execution })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
 
     await page.getByRole('button', { name: 'Stop execution' }).click()
     await expect(page.getByText('Stop execution?')).toBeVisible()
@@ -742,7 +745,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({ status: 409, json: { message: 'Cannot stop execution.' } })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
     await page.getByRole('button', { name: 'Stop execution' }).click()
     await expect(page.getByText('Stop execution?')).toBeVisible()
     await page.getByRole('button', { name: 'Stop execution', exact: true }).click()
@@ -763,7 +766,7 @@ test.describe('execution user flows', () => {
       })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
     await page.getByRole('tab', { name: 'Report' }).click()
 
     await expect(page.getByTitle('Execution report')).toBeVisible()
@@ -780,7 +783,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({ status: 404, body: 'Missing report' })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
     await page.getByRole('tab', { name: 'Report' }).click()
 
     await expect(page.getByText('Execution report could not be loaded')).toBeVisible({ timeout: 15_000 })
@@ -794,7 +797,7 @@ test.describe('execution user flows', () => {
       await route.fulfill({ status: 500, json: { message: 'Unavailable' } })
     })
 
-    await page.goto('/execution/execution-1')
+    await page.goto(withExecutionTarget('/execution/execution-1'))
 
     await expect(page.getByText('Execution details could not be loaded')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('Waiting for logs')).toBeVisible()
@@ -804,7 +807,7 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     await stubExecutionList(page, () => [])
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -818,7 +821,7 @@ test.describe('execution user flows', () => {
     await stubExecutionList(page, () => [])
     await stubWizardDependencies(page, true)
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
     await selectExecutionPatients(page)
     await expect(page.getByText('Imported patients: 1')).toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
@@ -834,7 +837,7 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page, request)
     await stubExecutionList(page, () => [])
 
-    await page.goto('/create')
+    await page.goto(withExecutionTarget('/create'))
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByLabel('Other config').fill('[]')

@@ -2,12 +2,10 @@ import { useMemo } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
-  DEFAULT_EXECUTION_TARGET_KEY,
   EXECUTION_APPLICATION_SEARCH_PARAM,
   EXECUTION_RUNTIME_SEARCH_PARAM,
-  defaultExecutionTarget,
+  EXECUTION_TARGET_URL_SEARCH_PARAM,
   getExecutionTargetSearchSelection,
-  getResolvingExecutionTarget,
   resolveExecutionTarget,
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
@@ -39,25 +37,17 @@ export const usePlaywrightProjectsQuery = (enabled = true) =>
 export const useExecutionTarget = () => {
   const [searchParams] = useSearchParams()
   const selection = getExecutionTargetSearchSelection(searchParams)
-  const runtimesQuery = usePlaywrightRuntimesQuery(Boolean(selection))
-  const isResolving = Boolean(selection) && runtimesQuery.isLoading
 
   const target = useMemo(() => {
     if (!selection) {
-      return defaultExecutionTarget
+      throw new Error('Execution target URL params are required before loading execution data.')
     }
 
-    if (runtimesQuery.isLoading) {
-      return getResolvingExecutionTarget(selection.runtimeId, selection.applicationName)
-    }
-
-    return resolveExecutionTarget(selection, runtimesQuery.data)
-  }, [runtimesQuery.data, runtimesQuery.isLoading, selection])
+    return resolveExecutionTarget(selection, undefined)
+  }, [selection])
 
   return {
-    isResolving,
     requestedSelection: selection,
-    runtimesQuery,
     target,
   }
 }
@@ -74,9 +64,11 @@ const applyExecutionTargetSearch = (
   if (selection) {
     searchParams.set(EXECUTION_RUNTIME_SEARCH_PARAM, selection.runtimeId)
     searchParams.set(EXECUTION_APPLICATION_SEARCH_PARAM, selection.applicationName)
+    searchParams.set(EXECUTION_TARGET_URL_SEARCH_PARAM, selection.targetUrl)
   } else {
     searchParams.delete(EXECUTION_RUNTIME_SEARCH_PARAM)
     searchParams.delete(EXECUTION_APPLICATION_SEARCH_PARAM)
+    searchParams.delete(EXECUTION_TARGET_URL_SEARCH_PARAM)
   }
 
   const nextSearch = searchParams.toString()
@@ -88,13 +80,11 @@ export const useExecutionTargetNavigation = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { target } = useExecutionTarget()
-  const selectedTarget =
-    target.type === 'runtime-application'
-      ? {
-          runtimeId: target.runtime._id,
-          applicationName: target.application.name,
-        }
-      : null
+  const selectedTarget = {
+    runtimeId: target.runtimeId,
+    applicationName: target.applicationName,
+    targetUrl: target.requestTarget.apiUrl,
+  }
 
   const getPathWithExecutionTarget = (to: string) => applyExecutionTargetSearch(to, selectedTarget, location.search)
 
@@ -107,7 +97,7 @@ export const useExecutionTargetNavigation = () => {
   return {
     getPathWithExecutionTarget,
     getSettingsPath,
-    hasSelectedExecutionTarget: target.key !== DEFAULT_EXECUTION_TARGET_KEY,
+    hasSelectedExecutionTarget: true,
     navigateWithExecutionTarget,
   }
 }

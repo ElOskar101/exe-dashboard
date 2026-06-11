@@ -39,7 +39,7 @@ export const useExecutionStatusUpdates = () => {
       onStatus: (payload) => {
         syncExecutionStatusReadModelForTarget(queryClient, payload.executionId, payload.status, target.key)
       },
-      socketUrl: target.requestTarget?.socketUrl,
+      socketUrl: target.requestTarget.socketUrl,
     })
 
     return () => {
