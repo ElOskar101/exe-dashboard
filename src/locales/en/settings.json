@@ -71,8 +71,10 @@
     "jobs": {
       "waiting": "Waiting",
       "active": "Active",
+      "noneActive": "No active jobs",
       "queued": "Queued",
       "running": "Running",
+      "noneRunning": "No running jobs",
       "completed": "Completed",
       "failed": "Failed",
       "delayed": "Delayed",

@@ -58,6 +58,8 @@ const Header: () => JSX.Element = () => {
   const serverStatus = appStatsQuery.data?.server.status.toLowerCase()
   const isServerUp = serverStatus === 'up'
   const isLoadingStats = appStatsQuery.isLoading
+  const activeJobs = appStatsQuery.data?.jobs.active
+  const runningJobs = appStatsQuery.data?.jobs.running
 
   const handleTargetChange = (value: string | null) => {
     if (!value) {
@@ -97,12 +99,24 @@ const Header: () => JSX.Element = () => {
                   </span>
                 </Badge>
                 <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  <span>{appStatsQuery.data?.jobs.active ?? '-'}</span>
-                  <span>{t('settings:status.jobs.active')}</span>
+                  {activeJobs === 0 ? (
+                    <span>{t('settings:status.jobs.noneActive')}</span>
+                  ) : (
+                    <>
+                      <span>{activeJobs ?? '-'}</span>
+                      <span>{t('settings:status.jobs.active')}</span>
+                    </>
+                  )}
                 </Badge>
                 <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  <span>{appStatsQuery.data?.jobs.running ?? '-'}</span>
-                  <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
+                  {runningJobs === 0 ? (
+                    <span>{t('settings:status.jobs.noneRunning')}</span>
+                  ) : (
+                    <>
+                      <span>{runningJobs ?? '-'}</span>
+                      <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
+                    </>
+                  )}
                 </Badge>
               </>
             )}

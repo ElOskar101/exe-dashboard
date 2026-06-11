@@ -66,21 +66,21 @@ export function ExecutionsTable({
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
 
   return (
-    <Table className="table-fixed">
+    <Table className="table-auto">
       <TableHeader>
         <TableRow>
           <TableHead className="whitespace-normal">{t('list.columns.project')}</TableHead>
-          <TableHead className="w-28 whitespace-normal">{t('list.columns.execution')}</TableHead>
-          <TableHead className="w-28">{t('list.columns.status')}</TableHead>
-          <TableHead className="hidden whitespace-normal lg:table-cell xl:w-36">{t('list.columns.client')}</TableHead>
-          <TableHead className="hidden whitespace-normal lg:table-cell xl:w-36">{t('list.columns.clinic')}</TableHead>
-          <TableHead className="w-[11rem] whitespace-normal sm:w-[14rem]">{t('list.columns.patients')}</TableHead>
+          <TableHead className="whitespace-normal">{t('list.columns.execution')}</TableHead>
+          <TableHead className="">{t('list.columns.status')}</TableHead>
+          <TableHead className="hidden whitespace-normal lg:table-cell lg:w-32">{t('list.columns.client')}</TableHead>
+          <TableHead className="hidden whitespace-normal lg:table-cell lg:w-32">{t('list.columns.clinic')}</TableHead>
+          <TableHead className="whitespace-normal">{t('list.columns.patients')}</TableHead>
           <TableHead className="hidden whitespace-normal 2xl:table-cell 2xl:w-36">{t('list.columns.bot')}</TableHead>
           <TableHead className="hidden w-24 whitespace-nowrap md:table-cell">{t('list.columns.createdAt')}</TableHead>
           <TableHead className="w-16 text-right sm:w-28">{t('list.columns.actions')}</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody className="[&_td:not(:last-child)]:text-foreground/80">
+      <TableBody className="[&_td:not(:last-child)]:text-white/80">
         {executions.length > 0 ? (
           <>
             {executions.map((execution) => {
