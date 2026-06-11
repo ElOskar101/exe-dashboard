@@ -1,23 +1,13 @@
 import { useMemo, useState, type Dispatch, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { IconAlertCircle, IconBox, IconDeviceDesktop, IconRefresh } from '@tabler/icons-react'
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { IconAlertCircle, IconBox, IconRefresh } from '@tabler/icons-react'
-import {
-  decodeExecutionTargetValue,
-  encodeExecutionTargetValue,
   EXECUTION_APPLICATION_SEARCH_PARAM,
   EXECUTION_RUNTIME_SEARCH_PARAM,
   EXECUTION_TARGET_URL_SEARCH_PARAM,
@@ -33,29 +23,98 @@ const SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM = 'returnTo'
 const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
   application.active !== false && Boolean(application.apiUrl?.trim())
 
-const getRuntimeApplicationOptionValue = (runtimeId: string, application: PlaywrightRuntimeApplication) =>
-  encodeExecutionTargetValue({
-    runtimeId,
-    applicationName: application.name,
-    targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
-  })
+const getFirstSelectableApplication = (runtime: PlaywrightRuntime | undefined) =>
+  runtime?.applications.find(isApplicationSelectable)
+
+const getApplicationSelection = (
+  runtimeId: string,
+  application: PlaywrightRuntimeApplication,
+): ExecutionTargetSearchSelection => ({
+  runtimeId,
+  applicationName: application.name,
+  targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
+})
 
 const findFirstSelection = (
   runtimes: readonly PlaywrightRuntime[] | undefined,
 ): ExecutionTargetSearchSelection | null => {
   for (const runtime of runtimes ?? []) {
-    const application = runtime.applications.find(isApplicationSelectable)
+    const application = getFirstSelectableApplication(runtime)
 
     if (application) {
-      return {
-        runtimeId: runtime._id,
-        applicationName: application.name,
-        targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
-      }
+      return getApplicationSelection(runtime._id, application)
     }
   }
 
   return null
+}
+
+const findApplicationSelection = (
+  runtimes: readonly PlaywrightRuntime[],
+  runtimeId: string,
+  applicationName: string,
+): ExecutionTargetSearchSelection | null => {
+  const runtime = runtimes.find((candidate) => candidate._id === runtimeId)
+  const application = runtime?.applications.find((candidate) => candidate.name === applicationName)
+
+  if (!runtime || !application || !isApplicationSelectable(application)) {
+    return null
+  }
+
+  return getApplicationSelection(runtime._id, application)
+}
+
+const getRuntimeSelection = (
+  runtimes: readonly PlaywrightRuntime[],
+  runtimeId: string,
+): ExecutionTargetSearchSelection | null => {
+  const runtime = runtimes.find((candidate) => candidate._id === runtimeId)
+  const application = getFirstSelectableApplication(runtime)
+
+  if (!runtime || !application) {
+    return null
+  }
+
+  return getApplicationSelection(runtime._id, application)
+}
+
+const getRuntimeName = (runtime: PlaywrightRuntime | undefined, runtimeId: string) => runtime?.name ?? runtimeId
+
+const getRuntimeAccessLabel = (runtime: PlaywrightRuntime) =>
+  runtime.accessInfo.type.charAt(0).toUpperCase() + runtime.accessInfo.type.slice(1)
+
+const getApplicationAccessLabel = (application: PlaywrightRuntimeApplication) =>
+  application.accessInfo.type.charAt(0).toUpperCase() + application.accessInfo.type.slice(1)
+
+function RuntimeOptionLabel({ runtime }: { runtime: PlaywrightRuntime }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="truncate">{runtime.name}</span>
+      <Badge variant="outline">{getRuntimeAccessLabel(runtime)}</Badge>
+    </span>
+  )
+}
+
+function ApplicationOptionLabel({ application }: { application: PlaywrightRuntimeApplication }) {
+  return (
+    <span className="flex min-w-0 flex-col gap-1">
+      <span className="flex min-w-0 items-center gap-2">
+        <IconBox className="size-4 shrink-0 text-muted-foreground" />
+        <span className="truncate">{application.name}</span>
+        <Badge variant="outline" className={application.active === false ? 'text-destructive!' : 'text-success!'}>
+          {application.active === false ? 'Inactive' : 'Active'}
+        </Badge>
+        <Badge variant="outline">{application.nonProduction ? 'Development' : 'Production'}</Badge>
+        <Badge variant="outline">{getApplicationAccessLabel(application)}</Badge>
+      </span>
+      {application.active === false ? (
+        <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
+      ) : null}
+      {!application.apiUrl?.trim() ? (
+        <span className="truncate text-xs font-normal text-muted-foreground">No API URL configured</span>
+      ) : null}
+    </span>
+  )
 }
 
 function RuntimeApplicationTargetCardContent({
@@ -63,80 +122,114 @@ function RuntimeApplicationTargetCardContent({
   onSelectionConfirmed,
   runtimes,
 }: {
-  defaultValue: string
+  defaultValue: ExecutionTargetSearchSelection
   onSelectionConfirmed: Dispatch<ExecutionTargetSearchSelection>
   runtimes: readonly PlaywrightRuntime[]
 }) {
-  const [selectedValue, setSelectedValue] = useState(defaultValue)
-  const selectedSelection = decodeExecutionTargetValue(selectedValue)
+  const [selectedSelection, setSelectedSelection] = useState(defaultValue)
   const selectedRuntime = runtimes.find((runtime) => runtime._id === selectedSelection?.runtimeId)
+  const selectedApplication = selectedRuntime?.applications.find(
+    (application) => application.name === selectedSelection?.applicationName,
+  )
+
+  const handleRuntimeChange = (runtimeId: string | null) => {
+    if (!runtimeId) return
+
+    const nextSelection = getRuntimeSelection(runtimes, runtimeId)
+
+    if (nextSelection) {
+      setSelectedSelection(nextSelection)
+    }
+  }
+
+  const handleApplicationChange = (applicationName: string | null) => {
+    if (!applicationName) return
+
+    const nextSelection = findApplicationSelection(runtimes, selectedSelection.runtimeId, applicationName)
+
+    if (nextSelection) {
+      setSelectedSelection(nextSelection)
+    }
+  }
 
   const handleConfirm = () => {
-    if (!selectedSelection) return
-
     onSelectionConfirmed(selectedSelection)
   }
 
   return (
     <>
       <CardContent className="gap-4">
-        <Field>
-          <FieldLabel htmlFor="required-execution-target">Runtime application</FieldLabel>
-          <Select
-            value={selectedValue}
-            onValueChange={(value) => {
-              if (value) setSelectedValue(value)
-            }}
-          >
-            <SelectTrigger id="required-execution-target" className="w-full">
-              <IconBox className="size-4" />
-              <SelectValue placeholder="Choose an app">
-                {selectedSelection ? (
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="truncate">{selectedSelection.applicationName}</span>
-                    <span className="truncate text-xs font-normal text-muted-foreground">
-                      {selectedRuntime?.name ?? selectedSelection.runtimeId}
-                    </span>
-                  </span>
-                ) : null}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="start">
-              {runtimes.map((runtime, runtimeIndex) => (
-                <SelectGroup key={runtime._id}>
-                  {runtimeIndex > 0 ? <SelectSeparator /> : null}
-                  <SelectLabel>{runtime.name}</SelectLabel>
-                  {runtime.applications.map((application) => (
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="required-execution-runtime">
+              <IconDeviceDesktop data-icon="inline-start" />
+              Runtime
+            </FieldLabel>
+            <Select value={selectedSelection.runtimeId} onValueChange={handleRuntimeChange}>
+              <SelectTrigger id="required-execution-runtime" className="w-full">
+                <SelectValue placeholder="Choose a runtime">
+                  {selectedRuntime ? (
+                    <RuntimeOptionLabel runtime={selectedRuntime} />
+                  ) : (
+                    <span className="truncate">{getRuntimeName(selectedRuntime, selectedSelection.runtimeId)}</span>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup>
+                  {runtimes.map((runtime) => (
                     <SelectItem
-                      key={`${runtime._id}-${application.name}`}
-                      value={getRuntimeApplicationOptionValue(runtime._id, application)}
-                      disabled={!isApplicationSelectable(application)}
+                      key={runtime._id}
+                      value={runtime._id}
+                      disabled={!getFirstSelectableApplication(runtime)}
                     >
-                      <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="flex min-w-0 items-center gap-1.5">
-                          <IconBox className="size-4 shrink-0 text-muted-foreground" />
-                          <span className="truncate">{application.name}</span>
-                        </span>
-                        {application.active === false ? (
-                          <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
-                        ) : null}
-                        {!application.apiUrl?.trim() ? (
-                          <span className="truncate text-xs font-normal text-muted-foreground">
-                            No API URL configured
-                          </span>
-                        ) : null}
-                      </span>
+                      <RuntimeOptionLabel runtime={runtime} />
                     </SelectItem>
                   ))}
                 </SelectGroup>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="required-execution-application">
+              <IconBox data-icon="inline-start" />
+              Application
+            </FieldLabel>
+            <Select
+              value={selectedSelection.applicationName}
+              onValueChange={handleApplicationChange}
+              disabled={!selectedRuntime}
+            >
+              <SelectTrigger id="required-execution-application" className="w-full">
+                <SelectValue placeholder="Choose an app">
+                  {selectedApplication ? (
+                    <ApplicationOptionLabel application={selectedApplication} />
+                  ) : (
+                    <span className="truncate">{selectedSelection.applicationName}</span>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup>
+                  {selectedRuntime?.applications.map((application) => {
+                    const isSelectable = isApplicationSelectable(application)
+
+                    return (
+                      <SelectItem key={application.name} value={application.name} disabled={!isSelectable}>
+                        <ApplicationOptionLabel application={application} />
+                      </SelectItem>
+                    )
+                  })}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
       </CardContent>
 
       <CardFooter>
-        <Button type="button" onClick={handleConfirm} disabled={!selectedSelection}>
+        <Button className="w-full" type="button" onClick={handleConfirm}>
           Use selected app
         </Button>
       </CardFooter>
@@ -149,7 +242,6 @@ export function RuntimeApplicationTargetGate() {
   const [searchParams] = useSearchParams()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const firstSelection = useMemo(() => findFirstSelection(runtimesQuery.data), [runtimesQuery.data])
-  const defaultValue = firstSelection ? encodeExecutionTargetValue(firstSelection) : ''
   const returnTo = searchParams.get(SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM) || '/'
 
   const handleSelectionConfirmed = (selection: ExecutionTargetSearchSelection) => {
@@ -165,8 +257,7 @@ export function RuntimeApplicationTargetGate() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Choose runtime application</CardTitle>
-          <CardDescription>Execution requests require an explicit runtime application for this URL.</CardDescription>
+          <CardTitle>Setup runtime and application</CardTitle>
         </CardHeader>
 
         {runtimesQuery.isError ? (
@@ -210,8 +301,8 @@ export function RuntimeApplicationTargetGate() {
 
         {runtimesQuery.data && firstSelection ? (
           <RuntimeApplicationTargetCardContent
-            key={defaultValue}
-            defaultValue={defaultValue}
+            key={`${firstSelection.runtimeId}-${firstSelection.applicationName}`}
+            defaultValue={firstSelection}
             onSelectionConfirmed={handleSelectionConfirmed}
             runtimes={runtimesQuery.data}
           />
