@@ -48,12 +48,15 @@
       "maxWorkers": "Max workers",
       "maxRetries": "Max retries",
       "access": "Access",
-      "sharedWith": "Shared member IDs",
       "active": "Active",
       "nonProduction": "Non-production"
     },
+    "placeholders": {
+      "name": "Bare",
+      "description": "Runs Playwright jobs against the bare runtime",
+      "apiUrl": "https://runtime.example.com/api/v1"
+    },
     "privateRuntimeAccess": "Private runtimes can only contain private apps.",
-    "sharedWithDescription": "Separate user ObjectIds with commas, spaces, or new lines.",
     "activeDescription": "Active apps can be selected for execution targets.",
     "nonProductionDescription": "Mark this app as a non-production environment.",
     "cancel": "Cancel",
@@ -75,9 +78,6 @@
       },
       "accessType": {
         "privateRuntime": "Apps in a private runtime must be private."
-      },
-      "sharedWith": {
-        "objectIds": "Shared members must be valid ObjectIds."
       }
     }
   },

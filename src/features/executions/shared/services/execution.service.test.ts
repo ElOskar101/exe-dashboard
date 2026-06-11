@@ -239,11 +239,14 @@ describe('execution.service', () => {
     expect(cccClient.post).toHaveBeenCalledWith('v2/playwright-runtimes', payload)
   })
 
-  it('updatePlaywrightRuntime puts a full playwright runtime replacement payload', async () => {
+  it('updatePlaywrightRuntime puts only the runtime properties being updated', async () => {
     const payload = {
-      name: 'VPS~1 Updated',
-      accessInfo: { type: 'public' as const },
-      applications: [],
+      applications: [
+        {
+          name: 'Bare',
+          accessInfo: { type: 'private' as const },
+        },
+      ],
     }
     vi.mocked(cccClient.put).mockResolvedValueOnce({ data: { data: { _id: 'runtime-1' }, success: true } })
 

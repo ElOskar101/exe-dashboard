@@ -55,7 +55,7 @@ export interface PlaywrightRuntimePayload {
 }
 
 export type PlaywrightRuntimeCreatePayload = PlaywrightRuntimePayload
-export type PlaywrightRuntimeUpdatePayload = PlaywrightRuntimePayload
+export type PlaywrightRuntimeUpdatePayload = Partial<PlaywrightRuntimePayload>
 
 export interface PlaywrightRuntimeShareMembersPayload {
   memberIds: string[]
