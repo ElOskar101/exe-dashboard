@@ -93,7 +93,13 @@ const parseSharedMemberIds = (value: string) =>
     .filter(Boolean)
 
 const parseIntegerField = (value: string) => {
-  const parsedValue = Number(value)
+  const trimmedValue = value.trim()
+
+  if (!trimmedValue) {
+    return undefined
+  }
+
+  const parsedValue = Number(trimmedValue)
 
   return Number.isInteger(parsedValue) ? parsedValue : undefined
 }
@@ -569,12 +575,14 @@ function CreateRuntimeApplicationDialog({ runtime }: { runtime: PlaywrightRuntim
 
             <Field data-invalid={Boolean(sharedWithError)}>
               <FieldLabel htmlFor={`${fieldIdPrefix}-shared-with`}>{t('createApp.fields.sharedWith')}</FieldLabel>
-              <Input
+              <textarea
                 id={`${fieldIdPrefix}-shared-with`}
                 value={formState.sharedWith}
                 onChange={(event) => setFormValue({ sharedWith: event.target.value })}
                 aria-invalid={Boolean(sharedWithError)}
                 disabled={isSubmitting}
+                className="min-h-24 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-sm transition-[color,box-shadow,background-color] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+                spellCheck={false}
               />
               <FieldDescription>{t('createApp.sharedWithDescription')}</FieldDescription>
               {sharedWithErrorMessage ? <FieldError>{sharedWithErrorMessage}</FieldError> : null}
