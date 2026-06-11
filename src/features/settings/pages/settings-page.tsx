@@ -35,6 +35,7 @@ import {
   IconBriefcase,
   IconClock,
   IconDatabase,
+  IconDeviceDesktop,
   IconRefresh,
   IconServer,
   IconSettings,
@@ -112,7 +113,7 @@ const formatStatusTimestamp = (timestamp: string) =>
 const getStatusBadgeVariant = (status: string) => (status.toLowerCase() === 'up' ? 'success' : 'destructive')
 
 const STATUS_SERVICES = [
-  { key: 'server', icon: IconServer },
+  { key: 'server', icon: IconDeviceDesktop },
   { key: 'mongo', icon: IconDatabase },
   { key: 'redis', icon: IconActivity },
 ] as const
@@ -148,7 +149,7 @@ function AppStatusSkeleton() {
   )
 }
 
-function AppStatusPanel({ stats }: { stats: ExecutionAppStats }) {
+function AppStatusPanel({ runtimeName, stats }: { runtimeName: string; stats: ExecutionAppStats }) {
   const { t } = useTranslation('settings')
 
   return (
@@ -156,18 +157,21 @@ function AppStatusPanel({ stats }: { stats: ExecutionAppStats }) {
       <div className="grid gap-3 sm:grid-cols-3">
         {STATUS_SERVICES.map(({ key, icon: Icon }) => {
           const service = stats[key]
+          const serviceLabel = key === 'server' ? runtimeName : t(`status.services.${key}`)
 
           return (
             <div key={key} className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <Icon />
-                  <span className="truncate text-sm font-medium">{t(`status.services.${key}`)}</span>
+                  <span className="truncate text-sm font-medium" title={serviceLabel}>
+                    {serviceLabel}
+                  </span>
                 </div>
                 <Badge variant={getStatusBadgeVariant(service.status)}>{service.status}</Badge>
               </div>
               {key === 'mongo' ? (
-                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                <div className="flex flex-col gap-1 text-sm text-white/80">
                   <span>{t('status.mongoState', { state: stats.mongo.state })}</span>
                   <span>{t('status.mongoReadyState', { readyState: stats.mongo.readyState })}</span>
                 </div>
@@ -181,15 +185,19 @@ function AppStatusPanel({ stats }: { stats: ExecutionAppStats }) {
         <div className="flex min-w-0 items-center gap-3 rounded-lg border p-4">
           <IconClock />
           <div className="flex min-w-0 flex-col">
-            <span className="text-sm text-muted-foreground">{t('status.uptime')}</span>
-            <span className="truncate font-medium">{formatUptime(stats.uptime, t)}</span>
+            <span className="text-sm font-medium" title={t('status.uptime')}>
+              {t('status.uptime')}
+            </span>
+            <span className="truncate text-white/80">{formatUptime(stats.uptime, t)}</span>
           </div>
         </div>
         <div className="flex min-w-0 items-center gap-3 rounded-lg border p-4">
           <IconActivity />
           <div className="flex min-w-0 flex-col">
-            <span className="text-sm text-muted-foreground">{t('status.timestamp')}</span>
-            <span className="truncate font-medium">{formatStatusTimestamp(stats.timestamp)}</span>
+            <span className="text-sm" title={t('status.timestamp')}>
+              {t('status.timestamp')}
+            </span>
+            <span className="truncate text-white/80">{formatStatusTimestamp(stats.timestamp)}</span>
           </div>
         </div>
       </div>
@@ -202,8 +210,10 @@ function AppStatusPanel({ stats }: { stats: ExecutionAppStats }) {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {JOB_STAT_KEYS.map((key) => (
             <div key={key} className="rounded-lg border p-4">
-              <div className="truncate text-sm text-muted-foreground">{t(`status.jobs.${key}`)}</div>
-              <div className="text-2xl font-semibold">{stats.jobs[key]}</div>
+              <div className="truncate font-medium text-sm" title={t(`status.jobs.${key}`)}>
+                {t(`status.jobs.${key}`)}
+              </div>
+              <div className="text-2xl text-white/80 font-normal">{stats.jobs[key]}</div>
             </div>
           ))}
         </div>
@@ -267,12 +277,6 @@ export function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-5xl">
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <IconSettings />
-            <span className="text-sm font-medium">{t('page.eyebrow')}</span>
-          </div>
-        </CardHeader>
         <CardContent>
           <Tabs
             value={selectedSettingsTab}
@@ -469,7 +473,9 @@ export function SettingsPage() {
               ) : null}
 
               {appStatsQuery.isLoading ? <AppStatusSkeleton /> : null}
-              {appStatsQuery.data ? <AppStatusPanel stats={appStatsQuery.data} /> : null}
+              {appStatsQuery.data ? (
+                <AppStatusPanel runtimeName={selectedRuntime?.name ?? target.runtimeId} stats={appStatsQuery.data} />
+              ) : null}
             </TabsContent>
           </Tabs>
         </CardContent>

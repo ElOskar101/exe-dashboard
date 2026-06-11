@@ -25,7 +25,7 @@ import {
   usePlaywrightRuntimesQuery,
 } from '@/features/executions'
 import { useTheme } from '@/hooks/use-theme'
-import { IconDeviceDesktop, IconServer } from '@tabler/icons-react'
+import { IconDeviceDesktop } from '@tabler/icons-react'
 
 const getRuntimeApplicationOptionValue = (runtimeId: string, application: PlaywrightRuntimeApplication) =>
   encodeExecutionTargetValue({
@@ -46,6 +46,9 @@ const Header: () => JSX.Element = () => {
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
   const selectedRuntime = runtimesQuery.data?.find((runtime) => runtime._id === target.runtimeId)
+  const selectedApplication = selectedRuntime?.applications.find(
+    (application) => application.name === target.applicationName,
+  )
   const targetTitle = `${selectedRuntime?.name ?? target.runtimeId} / ${target.applicationName}`
   const selectedValue = encodeExecutionTargetValue({
     runtimeId: target.runtimeId,
@@ -78,13 +81,20 @@ const Header: () => JSX.Element = () => {
             ) : (
               <>
                 <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  <IconServer data-icon="inline-start" />
-                  <span>Server</span>
+                  <IconDeviceDesktop data-icon="inline-start" />
+                  <span>{selectedRuntime?.name ?? target.runtimeId}</span>
                   <span
                     aria-label={isServerUp ? 'Server up' : 'Server unavailable'}
                     className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
                     title={appStatsQuery.data?.server.status ?? 'Unknown'}
                   />
+                </Badge>
+                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                  <span>
+                    {selectedApplication?.nonProduction
+                      ? t('settings:runtime.nonProduction')
+                      : t('settings:runtime.production')}
+                  </span>
                 </Badge>
                 <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
                   <span>{appStatsQuery.data?.jobs.active ?? '-'}</span>

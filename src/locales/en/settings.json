@@ -15,7 +15,7 @@
     "active": "Active",
     "inactive": "Inactive",
     "production": "Production",
-    "nonProduction": "Dev only",
+    "nonProduction": "Development",
     "maxWorkers": "Max workers",
     "maxRetries": "Max retries",
     "loadErrorTitle": "Runtime catalog could not be loaded",

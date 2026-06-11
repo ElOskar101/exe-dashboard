@@ -221,7 +221,7 @@
   },
   "list": {
     "title": "All executions",
-    "description": "Review and search for any execution that ran or is in progress.",
+    "description": "Review and search for any created execution.",
     "createExecution": "Create execution",
     "tableTitle": "Executions",
     "tableDescription": "Showing {{count}} of {{total}} executions.",

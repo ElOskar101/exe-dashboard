@@ -7,9 +7,9 @@ import { Link } from 'react-router-dom'
 import {
   IconBrightnessDown,
   IconChevronDown,
+  IconDeviceDesktop,
   IconLogout2,
   IconMoon,
-  IconServer,
   IconSettings,
 } from '@tabler/icons-react'
 import { AuthContext } from '../contexts/context'
@@ -123,7 +123,7 @@ function UserCard({ onToggleTheme, runtimesPath, settingsPath, theme }: UserCard
               className="w-full justify-start"
               onClick={() => setIsOpen(false)}
             >
-              <IconServer data-icon="inline-start" />
+              <IconDeviceDesktop data-icon="inline-start" />
               {t('runtimes')}
             </Button>
           ) : null}
