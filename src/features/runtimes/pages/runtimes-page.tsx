@@ -19,6 +19,7 @@ import {
   IconShieldCheck,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { CreateRuntimeApplicationDialog } from '../components/create-runtime-application-dialog'
 
 const DESCRIPTION_PREVIEW_LENGTH = 20
 const getConfiguredApplicationLimit = (value: number | undefined, fallback: number) => value ?? fallback
@@ -119,6 +120,7 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
             </div>
             <CardDescription>{runtime.description?.trim() || t('noDescription')}</CardDescription>
           </div>
+          <CreateRuntimeApplicationDialog runtime={runtime} />
         </div>
       </CardHeader>
       <CardContent>

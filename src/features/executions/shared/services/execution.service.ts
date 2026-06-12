@@ -4,10 +4,31 @@ import type { ExecutionCreatePayload, ExecutionSchedulePayload } from '../model/
 import { EXECUTION_ARRAY_QUERY_KEYS, normalizeExecutionQuery, type ExecutionQuery } from '../model/execution-query'
 import type { ExecutionAppStats } from '../model/app-stats'
 import type { PlaywrightProject } from '../model/playwright-project'
-import type { PlaywrightRuntime } from '../model/playwright-runtime'
+import type {
+  PlaywrightRuntime,
+  PlaywrightRuntimeCreatePayload,
+  PlaywrightRuntimeShareMembersPayload,
+  PlaywrightRuntimeShareMembersResult,
+  PlaywrightRuntimeUpdatePayload,
+} from '../model/playwright-runtime'
 import type { ExecutionApiRequestTarget } from '../lib/execution-target'
 
 export type ExecutionUpdatePayload = Partial<Omit<Execution, '_id'>>
+
+export interface PlaywrightRuntimeApiResponse<TData> {
+  data: TData
+  error?: string
+  message?: string
+  success: boolean
+}
+
+const isPlaywrightRuntimeApiResponse = <TData>(
+  value: PlaywrightRuntimeApiResponse<TData> | TData,
+): value is PlaywrightRuntimeApiResponse<TData> =>
+  typeof value === 'object' && value !== null && 'success' in value && 'data' in value
+
+export const getPlaywrightRuntimeResponseData = <TData>(value: PlaywrightRuntimeApiResponse<TData> | TData) =>
+  isPlaywrightRuntimeApiResponse(value) ? value.data : value
 
 const getExecutionRequestConfig = (target: ExecutionApiRequestTarget) => ({
   baseURL: target.apiUrl,
@@ -75,10 +96,40 @@ export const getPlaywrightProjects = () => cccClient.get<PlaywrightProject[]>('v
 export const getPlaywrightProjectById = (playwrightProjectId: string) =>
   cccClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`)
 
-export const getPlaywrightRuntimes = () => cccClient.get<PlaywrightRuntime[]>('v2/playwright-runtimes')
+export const getPlaywrightRuntimes = () =>
+  cccClient.get<PlaywrightRuntimeApiResponse<PlaywrightRuntime[]> | PlaywrightRuntime[]>('v2/playwright-runtimes')
 
 export const getPlaywrightRuntimeById = (playwrightRuntimeId: string) =>
-  cccClient.get<PlaywrightRuntime>(`v2/playwright-runtimes/${playwrightRuntimeId}`)
+  cccClient.get<PlaywrightRuntimeApiResponse<PlaywrightRuntime> | PlaywrightRuntime>(
+    `v2/playwright-runtimes/${playwrightRuntimeId}`,
+  )
+
+export const createPlaywrightRuntime = (data: PlaywrightRuntimeCreatePayload) =>
+  cccClient.post<PlaywrightRuntimeApiResponse<PlaywrightRuntime>>('v2/playwright-runtimes', data)
+
+export const updatePlaywrightRuntime = (playwrightRuntimeId: string, data: PlaywrightRuntimeUpdatePayload) =>
+  cccClient.put<PlaywrightRuntimeApiResponse<PlaywrightRuntime>>(`v2/playwright-runtimes/${playwrightRuntimeId}`, data)
+
+export const deletePlaywrightRuntime = (playwrightRuntimeId: string) =>
+  cccClient.delete<PlaywrightRuntimeApiResponse<undefined>>(`v2/playwright-runtimes/${playwrightRuntimeId}`)
+
+export const addPlaywrightRuntimeShareMembers = (
+  playwrightRuntimeId: string,
+  data: PlaywrightRuntimeShareMembersPayload,
+) =>
+  cccClient.post<PlaywrightRuntimeApiResponse<PlaywrightRuntimeShareMembersResult>>(
+    `v2/playwright-runtimes/${playwrightRuntimeId}/share`,
+    data,
+  )
+
+export const removePlaywrightRuntimeShareMembers = (
+  playwrightRuntimeId: string,
+  data: PlaywrightRuntimeShareMembersPayload,
+) =>
+  cccClient.delete<PlaywrightRuntimeApiResponse<PlaywrightRuntimeShareMembersResult>>(
+    `v2/playwright-runtimes/${playwrightRuntimeId}/share`,
+    { data },
+  )
 
 export const getExecutionReportHtml = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionReportsRequestConfig(target)

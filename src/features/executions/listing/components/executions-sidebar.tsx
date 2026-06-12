@@ -586,7 +586,14 @@ export function ExecutionsSidebar() {
                       onOpenChange={(open) => setProjectCollapsed(group.project, !open)}
                       className="min-w-0"
                     >
-                      <CollapsibleTrigger render={<Button variant="ghost" className="w-full" />}>
+                      <CollapsibleTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            className="w-full aria-expanded:bg-transparent aria-expanded:text-sidebar-foreground"
+                          />
+                        }
+                      >
                         <IconChevronDown
                           className={cn('size-3.5 shrink-0 transition-transform', !isOpen && '-rotate-90')}
                         />

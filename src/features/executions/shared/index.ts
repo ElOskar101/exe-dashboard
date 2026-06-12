@@ -36,29 +36,44 @@ export type {
   ExecutionAppStats,
 } from './model/app-stats'
 export type { PlaywrightProject, PlaywrightProjectBot } from './model/playwright-project'
-export type { PlaywrightRuntime, PlaywrightRuntimeApplication } from './model/playwright-runtime'
+export type {
+  PlaywrightRuntime,
+  PlaywrightRuntimeAccessType,
+  PlaywrightRuntimeApplication,
+  PlaywrightRuntimeApplicationPayload,
+  PlaywrightRuntimeCreatePayload,
+  PlaywrightRuntimeShareMembersPayload,
+  PlaywrightRuntimeShareMembersResult,
+  PlaywrightRuntimeUpdatePayload,
+} from './model/playwright-runtime'
 export { getPlaywrightRuntimeApplications } from './model/playwright-runtime'
 export { EXECUTION_STATUSES } from './model/execution'
 export type { Execution, ExecutionRuntimeStatus, ExecutionStatus } from './model/execution'
 export { getExecutionRequestErrorMessage } from './services/execution-errors'
 export {
   createExecution,
+  createPlaywrightRuntime,
   deleteExecution,
+  deletePlaywrightRuntime,
+  addPlaywrightRuntimeShareMembers,
   getExecutionAppStats,
   getExecutionById,
   getPlaywrightProjectById,
   getPlaywrightProjects,
   getPlaywrightRuntimeById,
+  getPlaywrightRuntimeResponseData,
   getPlaywrightRuntimes,
   getExecutionReportHtml,
   getExecutions,
   pauseExecution,
+  removePlaywrightRuntimeShareMembers,
   resumeExecution,
   scheduleExecution,
   stopExecution,
   updateExecution,
+  updatePlaywrightRuntime,
 } from './services/execution.service'
-export type { ExecutionUpdatePayload } from './services/execution.service'
+export type { ExecutionUpdatePayload, PlaywrightRuntimeApiResponse } from './services/execution.service'
 export { executionKeys } from './lib/execution-query-keys'
 export {
   EXECUTION_APPLICATION_SEARCH_PARAM,
@@ -104,6 +119,7 @@ export {
   useExecutionTargetSetter,
   usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
+  useUpdatePlaywrightRuntimeMutation,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
 export { RequireExecutionTarget, RuntimeApplicationTargetGate } from './components/runtime-application-target-gate'

@@ -1,12 +1,6 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
-import { loadEnv } from 'vite'
+import { expect, test, type Page } from '@playwright/test'
+import { prepareAuthenticatedPage } from './auth-fixture'
 
-const e2eEnv = loadEnv('e2e', process.cwd(), '')
-const authLoginUrl = process.env.E2E_AUTH_LOGIN_URL || e2eEnv.E2E_AUTH_LOGIN_URL
-const username = process.env.E2E_TEST_USERNAME || e2eEnv.E2E_TEST_USERNAME
-const password = process.env.E2E_TEST_PASSWORD || e2eEnv.E2E_TEST_PASSWORD
-
-const canLogin = Boolean(authLoginUrl && username && password)
 const executionTargetSearch = 'runtime=runtime-1&app=App+1&targetUrl=https%3A%2F%2Fruntime.example.com%2Fapi%2Fv1'
 
 const withExecutionTarget = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${executionTargetSearch}`
@@ -106,70 +100,6 @@ const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFi
   meta: createExecutionMeta(),
   ...overrides,
 })
-
-async function login(request: APIRequestContext) {
-  const response = await request.post(authLoginUrl, {
-    data: {
-      username,
-      password,
-    },
-  })
-
-  expect(response.ok()).toBeTruthy()
-
-  const body = (await response.json()) as { token?: string }
-  expect(body.token).toBeTruthy()
-
-  return body.token as string
-}
-
-async function prepareAuthenticatedPage(page: Page, request: APIRequestContext) {
-  test.skip(
-    !canLogin,
-    'Set E2E_AUTH_LOGIN_URL, E2E_TEST_USERNAME, and E2E_TEST_PASSWORD in .env.e2e.local or your shell to run authenticated e2e tests.',
-  )
-
-  const token = await login(request)
-
-  await page.route('**/users/me', async (route) => {
-    await route.fulfill({
-      json: {
-        _id: 'e2e-user',
-        username: 'e2e',
-        fullName: 'E2E Test User',
-        area: 'QA',
-        roles: [{ name: 'admin', permission: [] }],
-      },
-    })
-  })
-  await page.route('**/api/v1/stats', async (route) => {
-    await route.fulfill({
-      json: {
-        status: 'ok',
-        timestamp: '2026-05-25T14:00:00.000Z',
-        uptime: 120,
-        server: { status: 'up' },
-        mongo: { status: 'up', readyState: 1, state: 'connected' },
-        redis: { status: 'up' },
-        jobs: {
-          waiting: 0,
-          active: 1,
-          completed: 4,
-          failed: 1,
-          delayed: 0,
-          paused: 0,
-          prioritized: 0,
-          waitingChildren: 0,
-          queued: 0,
-          running: 1,
-        },
-      },
-    })
-  })
-  await page.addInitScript((accessToken) => {
-    window.localStorage.setItem('token', accessToken)
-  }, token)
-}
 
 function isExecutionListRequest(urlString: string) {
   const url = new URL(urlString)
@@ -371,8 +301,8 @@ async function selectExecutionPatients(page: Page) {
 }
 
 test.describe('execution user flows', () => {
-  test('shows the empty execution history state', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows the empty execution history state', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
 
     await page.goto(withExecutionTarget('/create'))
@@ -380,11 +310,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('No executions yet.')).toBeVisible()
   })
 
-  test('renders the executions page table and opens the patients dialog from the summary cell', async ({
-    page,
-    request,
-  }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('renders the executions page table and opens the patients dialog from the summary cell', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const basePatient = createExecutionMeta().patients[0]
     const execution = createExecution({
       status: 'running',
@@ -482,8 +409,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('heading', { name: 'Robot' })).not.toBeVisible()
   })
 
-  test('navigates to execution details from the executions table details action', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('navigates to execution details from the executions table details action', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution({ status: 'queued' })
 
     await stubExecutionList(page, () => [execution])
@@ -503,8 +430,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Execution details')).toBeVisible()
   })
 
-  test('loads execution history and opens an execution detail page', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('loads execution history and opens an execution detail page', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution({ status: 'queued' })
 
     await stubExecutionList(page, () => [
@@ -526,8 +453,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Execution details')).toBeVisible()
   })
 
-  test('shows project execution popovers in the minimized sidebar', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows project execution popovers in the minimized sidebar', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution({ status: 'queued' })
     const secondExecution = createExecution({
       _id: 'execution-2',
@@ -558,8 +485,8 @@ test.describe('execution user flows', () => {
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
   })
 
-  test('shows an executions load error and retries successfully', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows an executions load error and retries successfully', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     let shouldSucceed = false
 
     await stubPlaywrightProjects(page, () => [createExecution()])
@@ -589,8 +516,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('2026-05-25')).toBeVisible()
   })
 
-  test('cancels deleting an execution from the sidebar', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('cancels deleting an execution from the sidebar', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     let deleteRequested = false
 
     await stubExecutionList(page, () => [createExecution()])
@@ -612,8 +539,8 @@ test.describe('execution user flows', () => {
     expect(deleteRequested).toBe(false)
   })
 
-  test('deletes the selected execution and returns to all executions', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('deletes the selected execution and returns to all executions', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     let executions = [createExecution()]
     let deletedExecutionId: string | null = null
 
@@ -640,8 +567,8 @@ test.describe('execution user flows', () => {
     expect(deletedExecutionId).toBe('execution-1')
   })
 
-  test('shows execution details with historical logs and debug payload', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows execution details with historical logs and debug payload', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution({
       status: 'running',
       logs: 'Starting carrier login\nLoading patient Jane Doe\n',
@@ -660,8 +587,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('"jobId": "job-1"')).toBeVisible()
   })
 
-  test('re-runs a finished execution after confirmation', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('re-runs a finished execution after confirmation', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const originalExecution = createExecution()
     let recreatedPayload: unknown = null
 
@@ -724,8 +651,8 @@ test.describe('execution user flows', () => {
     })
   })
 
-  test('stops a running execution', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('stops a running execution', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution({ status: 'running' })
 
     await stubExecutionList(page, () => [execution])
@@ -745,8 +672,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('button', { name: 'Stop execution' })).not.toBeVisible()
   })
 
-  test('shows an error when stopping an execution fails', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows an error when stopping an execution fails', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution({ status: 'running' })
 
     await stubExecutionList(page, () => [execution])
@@ -763,8 +690,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Execution could not be stopped')).toBeVisible()
   })
 
-  test('displays the report for a completed execution', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('displays the report for a completed execution', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution()
 
     await stubExecutionList(page, () => [execution])
@@ -783,8 +710,8 @@ test.describe('execution user flows', () => {
     await expect(page.frameLocator('iframe[title="Execution report"]').getByText('Completed report')).toBeVisible()
   })
 
-  test('shows a report error when a completed execution report is unavailable', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows a report error when a completed execution report is unavailable', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     const execution = createExecution()
 
     await stubExecutionList(page, () => [execution])
@@ -799,8 +726,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Execution report could not be loaded')).toBeVisible({ timeout: 15_000 })
   })
 
-  test('keeps the logs view available when execution details fail to load', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('keeps the logs view available when execution details fail to load', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
 
     await stubExecutionList(page, () => [createExecution()])
     await page.route('**/api/v1/executions/execution-1', async (route) => {
@@ -813,8 +740,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText('Waiting for logs')).toBeVisible()
   })
 
-  test('blocks submission when no patients have been imported', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('blocks submission when no patients have been imported', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
 
     await page.goto(withExecutionTarget('/create'))
@@ -826,8 +753,8 @@ test.describe('execution user flows', () => {
     await expect(page.getByText(/Add at least one patient before continuing/)).toBeVisible()
   })
 
-  test('shows incomplete imported patient validation before submission', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('shows incomplete imported patient validation before submission', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
     await stubWizardDependencies(page, true)
 
@@ -843,8 +770,8 @@ test.describe('execution user flows', () => {
     ).toBeVisible()
   })
 
-  test('surfaces invalid configuration before submission', async ({ page, request }) => {
-    await prepareAuthenticatedPage(page, request)
+  test('surfaces invalid configuration before submission', async ({ page }) => {
+    await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
 
     await page.goto(withExecutionTarget('/create'))

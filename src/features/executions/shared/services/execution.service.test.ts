@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import cccClient, { exeClient, exeReportsClient } from '@/lib/axios'
 import {
+  addPlaywrightRuntimeShareMembers,
+  createPlaywrightRuntime,
   createExecution,
   deleteExecution,
+  deletePlaywrightRuntime,
   getExecutionAppStats,
   getExecutionById,
   getPlaywrightProjectById,
@@ -12,16 +15,21 @@ import {
   getExecutionReportHtml,
   getExecutions,
   pauseExecution,
+  removePlaywrightRuntimeShareMembers,
   resumeExecution,
   scheduleExecution,
   stopExecution,
   updateExecution,
+  updatePlaywrightRuntime,
 } from './execution.service'
 import type { ExecutionCreatePayload } from '../model/execution-create-payload'
 
 vi.mock('@/lib/axios', () => ({
   default: {
+    delete: vi.fn(),
     get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
   },
   exeClient: {
     delete: vi.fn(),
@@ -64,7 +72,10 @@ const runtimeTarget = {
 
 describe('execution.service', () => {
   beforeEach(() => {
+    vi.mocked(cccClient.delete).mockReset()
     vi.mocked(cccClient.get).mockReset()
+    vi.mocked(cccClient.post).mockReset()
+    vi.mocked(cccClient.put).mockReset()
     vi.mocked(exeClient.delete).mockReset()
     vi.mocked(exeClient.get).mockReset()
     vi.mocked(exeClient.patch).mockReset()
@@ -202,6 +213,72 @@ describe('execution.service', () => {
     await getPlaywrightRuntimeById('runtime-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1')
+  })
+
+  it('createPlaywrightRuntime posts a playwright runtime payload', async () => {
+    const payload = {
+      name: 'VPS~1',
+      accessInfo: { type: 'private' as const },
+      applications: [
+        {
+          name: 'Bare',
+          active: true,
+          nonProduction: false,
+          accessInfo: { type: 'private' as const },
+          config: {
+            maxWorkers: 10,
+            maxRetries: 3,
+          },
+        },
+      ],
+    }
+    vi.mocked(cccClient.post).mockResolvedValueOnce({ data: { data: { _id: 'runtime-1' }, success: true } })
+
+    await createPlaywrightRuntime(payload)
+
+    expect(cccClient.post).toHaveBeenCalledWith('v2/playwright-runtimes', payload)
+  })
+
+  it('updatePlaywrightRuntime puts only the runtime properties being updated', async () => {
+    const payload = {
+      applications: [
+        {
+          name: 'Bare',
+          accessInfo: { type: 'private' as const },
+        },
+      ],
+    }
+    vi.mocked(cccClient.put).mockResolvedValueOnce({ data: { data: { _id: 'runtime-1' }, success: true } })
+
+    await updatePlaywrightRuntime('runtime-1', payload)
+
+    expect(cccClient.put).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1', payload)
+  })
+
+  it('deletePlaywrightRuntime deletes the selected playwright runtime', async () => {
+    vi.mocked(cccClient.delete).mockResolvedValueOnce({ data: { success: true } })
+
+    await deletePlaywrightRuntime('runtime-1')
+
+    expect(cccClient.delete).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1')
+  })
+
+  it('addPlaywrightRuntimeShareMembers posts member ids to the runtime share endpoint', async () => {
+    const payload = { memberIds: ['622f79263ccdc854030a3998'] }
+    vi.mocked(cccClient.post).mockResolvedValueOnce({ data: { data: { _id: 'runtime-1' }, success: true } })
+
+    await addPlaywrightRuntimeShareMembers('runtime-1', payload)
+
+    expect(cccClient.post).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1/share', payload)
+  })
+
+  it('removePlaywrightRuntimeShareMembers sends member ids as a delete request body', async () => {
+    const payload = { memberIds: ['622f79263ccdc854030a3998'] }
+    vi.mocked(cccClient.delete).mockResolvedValueOnce({ data: { data: { _id: 'runtime-1' }, success: true } })
+
+    await removePlaywrightRuntimeShareMembers('runtime-1', payload)
+
+    expect(cccClient.delete).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1/share', { data: payload })
   })
 
   it('getExecutionReportHtml requests reports from a selected runtime application API URL', async () => {

@@ -37,6 +37,50 @@
     "maxWorkers": "{{count}} workers",
     "maxRetries": "{{count}} retries"
   },
+  "createApp": {
+    "trigger": "Create app",
+    "title": "Create app",
+    "description": "Add a Playwright application to {{runtime}}.",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "apiUrl": "API URL",
+      "maxWorkers": "Max workers",
+      "maxRetries": "Max retries",
+      "access": "Access",
+      "active": "Active",
+      "nonProduction": "Non-production"
+    },
+    "placeholders": {
+      "name": "Bare",
+      "description": "Runs Playwright jobs against the bare runtime",
+      "apiUrl": "https://runtime.example.com/api/v1"
+    },
+    "privateRuntimeAccess": "Private runtimes can only contain private apps.",
+    "activeDescription": "Active apps can be selected for execution targets.",
+    "nonProductionDescription": "Mark this app as a non-production environment.",
+    "cancel": "Cancel",
+    "submit": "Create app",
+    "successTitle": "App created",
+    "successDescription": "{{app}} was added to {{runtime}}.",
+    "errorTitle": "App could not be created",
+    "errorDescription": "The runtime API rejected the new app.",
+    "errors": {
+      "name": {
+        "required": "Name is required.",
+        "duplicate": "This runtime already has an app with that name."
+      },
+      "maxWorkers": {
+        "positiveInteger": "Max workers must be a whole number greater than 0."
+      },
+      "maxRetries": {
+        "nonNegativeInteger": "Max retries must be a whole number of 0 or more."
+      },
+      "accessType": {
+        "privateRuntime": "Apps in a private runtime must be private."
+      }
+    }
+  },
   "empty": {
     "title": "No runtimes available",
     "description": "The catalog did not include any Playwright Runtimes."

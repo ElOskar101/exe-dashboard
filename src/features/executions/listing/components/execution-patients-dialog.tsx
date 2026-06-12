@@ -1,5 +1,5 @@
 import { IconEye } from '@tabler/icons-react'
-import { useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,6 +18,9 @@ import type { Execution } from '@/features/executions/shared'
 import { formatExecutionPatientOtherInformation, getExecutionPatientsSummary } from '../lib/execution-patients-display'
 
 const FILENAME_PREVIEW_MAX_LENGTH = 40
+const VISIBLE_PATIENT_DETAILS_COUNT = 4
+
+type ExecutionPatient = NonNullable<NonNullable<Execution['meta']>['patients']>[number]
 
 interface ExecutionPatientsDialogProps {
   execution: Execution
@@ -62,75 +65,13 @@ export function ExecutionPatientsDialog({ execution, executionLabel }: Execution
             {patients.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
                 {patients.map((patient, index) => (
-                  <Card key={`${execution._id}-patient-${index}`} className="bg-muted/15">
-                    <CardContent>
-                      <dl className="grid gap-4 text-sm sm:grid-cols-2">
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.patientName')}
-                          value={patient.patientName}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.patientLastName')}
-                          value={patient.patientLastName}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.memberId')}
-                          value={patient.patientMemberId}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.patientDob')}
-                          value={patient.patientDob}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.policyHolderName')}
-                          value={patient.policyHolderName}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.policyHolderLastName')}
-                          value={patient.policyHolderLastName}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.policyHolderDob')}
-                          value={patient.policyHolderDob}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.relationship')}
-                          value={patient.relationship}
-                        />
-                        <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.patientClinic')}
-                          value={patient.clinic}
-                        />
-                        <PatientField
-                          emptyValue={emptyValue}
-                          label={t('fields.verificationType')}
-                          value={patient.verificationType}
-                        />
-                        <PatientFilenamesField
-                          emptyValue={emptyValue}
-                          expandLabel={t('list.expandFilename')}
-                          label={t('fields.filenames')}
-                          minimizeLabel={t('list.minimizeFilename')}
-                          value={patient.filenames}
-                        />
-                        <PatientMetadataField
-                          emptyValue={emptyValue}
-                          label={t('fields.patientOtherInformation')}
-                          value={formatExecutionPatientOtherInformation(patient.otherInformation, emptyValue)}
-                        />
-                      </dl>
-                    </CardContent>
-                  </Card>
+                  <PatientCard
+                    key={`${execution._id}-patient-${index}`}
+                    emptyValue={emptyValue}
+                    expandLabel={t('list.expandFilename')}
+                    minimizeLabel={t('list.minimizeFilename')}
+                    patient={patient}
+                  />
                 ))}
               </div>
             ) : (
@@ -145,6 +86,128 @@ export function ExecutionPatientsDialog({ execution, executionLabel }: Execution
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function PatientCard({
+  emptyValue,
+  expandLabel,
+  minimizeLabel,
+  patient,
+}: {
+  emptyValue: string
+  expandLabel: string
+  minimizeLabel: string
+  patient: ExecutionPatient
+}) {
+  const { t } = useTranslation('executions')
+  const [isExpanded, setIsExpanded] = useState(false)
+  const patientDetails = [
+    {
+      id: 'patientName',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientName')} value={patient.patientName} />,
+    },
+    {
+      id: 'patientLastName',
+      field: (
+        <PatientField emptyValue={emptyValue} label={t('fields.patientLastName')} value={patient.patientLastName} />
+      ),
+    },
+    {
+      id: 'memberId',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.memberId')} value={patient.patientMemberId} />,
+    },
+    {
+      id: 'patientDob',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob} />,
+    },
+    {
+      id: 'policyHolderName',
+      field: (
+        <PatientField emptyValue={emptyValue} label={t('fields.policyHolderName')} value={patient.policyHolderName} />
+      ),
+    },
+    {
+      id: 'policyHolderLastName',
+      field: (
+        <PatientField
+          emptyValue={emptyValue}
+          label={t('fields.policyHolderLastName')}
+          value={patient.policyHolderLastName}
+        />
+      ),
+    },
+    {
+      id: 'policyHolderDob',
+      field: (
+        <PatientField emptyValue={emptyValue} label={t('fields.policyHolderDob')} value={patient.policyHolderDob} />
+      ),
+    },
+    {
+      id: 'relationship',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.relationship')} value={patient.relationship} />,
+    },
+    {
+      id: 'zipCode',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />,
+    },
+    {
+      id: 'patientClinic',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientClinic')} value={patient.clinic} />,
+    },
+    {
+      id: 'verificationType',
+      field: (
+        <PatientField emptyValue={emptyValue} label={t('fields.verificationType')} value={patient.verificationType} />
+      ),
+    },
+    {
+      id: 'filenames',
+      field: (
+        <PatientFilenamesField
+          emptyValue={emptyValue}
+          expandLabel={expandLabel}
+          label={t('fields.filenames')}
+          minimizeLabel={minimizeLabel}
+          value={patient.filenames}
+        />
+      ),
+    },
+    {
+      id: 'patientOtherInformation',
+      field: (
+        <PatientMetadataField
+          emptyValue={emptyValue}
+          label={t('fields.patientOtherInformation')}
+          value={formatExecutionPatientOtherInformation(patient.otherInformation, emptyValue)}
+        />
+      ),
+    },
+  ]
+  const visiblePatientDetails = isExpanded ? patientDetails : patientDetails.slice(0, VISIBLE_PATIENT_DETAILS_COUNT)
+  const canToggle = patientDetails.length > VISIBLE_PATIENT_DETAILS_COUNT
+
+  return (
+    <Card className="bg-muted/15">
+      <CardContent>
+        <dl className="grid gap-4 text-sm sm:grid-cols-2">
+          {visiblePatientDetails.map(({ field, id }) => (
+            <Fragment key={id}>{field}</Fragment>
+          ))}
+        </dl>
+        {canToggle ? (
+          <Button
+            type="button"
+            variant="link"
+            size="xs"
+            className="mt-4 h-auto px-0 py-0"
+            onClick={() => setIsExpanded((currentValue) => !currentValue)}
+          >
+            {isExpanded ? minimizeLabel : expandLabel}
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }
 
