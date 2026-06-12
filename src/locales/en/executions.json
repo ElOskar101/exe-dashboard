@@ -206,6 +206,7 @@
   },
   "sidebar": {
     "title": "Executions",
+    "scheduledTitle": "Scheduled executions",
     "home": "Home",
     "createExecution": "Create execution",
     "allExecutions": "All executions",
@@ -214,11 +215,16 @@
     "refreshList": "Refresh executions",
     "retry": "Retry",
     "showAll": "Show all",
+    "showLess": "Show less",
     "loadingMore": "Loading...",
     "empty": "No executions yet.",
     "projectExecutions": "{{project}} executions",
     "executionRelativeLabel": "{{relativeCreatedAt}} - {{label}}",
     "projectExecutionTooltip": "{{project}} {{label}}",
+    "sectionProjectTitle": "{{section}}: {{project}}",
+    "scheduledCountdown": "Starts {{countdown}}",
+    "scheduledStartedToastTitle": "Scheduled execution started",
+    "scheduledStartedToastDescription": "Execution {{execution}} reached its scheduled start time.",
     "deleteAction": "Delete {{execution}}",
     "deleteTitle": "Delete execution?",
     "deleteDescription": "This deletes {{execution}} when it is not running.",
@@ -289,7 +295,8 @@
       "completed": "Completed",
       "unknown": "Unknown",
       "cancelled": "Cancelled",
-      "failed": "Failed"
+      "failed": "Failed",
+      "scheduled": "Scheduled"
     }
   },
   "detail": {
@@ -298,6 +305,8 @@
     "subtitleUnknownBot": "Unknown bot",
     "missingIdTitle": "Execution ID is required",
     "statusUnknown": "Unknown",
+    "scheduledFor": "Scheduled for {{scheduledAt}}",
+    "scheduledCountdownStatus": "Starts {{countdown}}",
     "loadErrorTitle": "Execution details could not be loaded",
     "loadErrorDescription": "The realtime log connection is still active, so logs will appear here if the worker sends them.",
     "debugButton": "Debug",

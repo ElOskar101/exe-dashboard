@@ -44,7 +44,7 @@ export const isExecutionFailed = (status?: string | null) => {
 export const isExecutionPending = (status?: string | null) => {
   const normalizedStatus = normalizeExecutionStatus(status)
 
-  return normalizedStatus === 'queued' || normalizedStatus === 'running'
+  return normalizedStatus === 'queued' || normalizedStatus === 'running' || normalizedStatus === 'scheduled'
 }
 
 export const updateExecutionStatus = (

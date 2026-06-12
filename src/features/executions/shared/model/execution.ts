@@ -1,6 +1,14 @@
 import type { ExecutionPayloadMeta } from './execution-create-payload'
 
-export type ExecutionStatus = 'queued' | 'running' | 'paused' | 'completed' | 'unknown' | 'cancelled' | 'failed'
+export type ExecutionStatus =
+  | 'queued'
+  | 'running'
+  | 'paused'
+  | 'completed'
+  | 'unknown'
+  | 'cancelled'
+  | 'failed'
+  | 'scheduled'
 export type ExecutionRuntimeStatus = ExecutionStatus | 'process'
 
 export const EXECUTION_STATUSES = [
@@ -11,6 +19,7 @@ export const EXECUTION_STATUSES = [
   'unknown',
   'cancelled',
   'failed',
+  'scheduled',
 ] as const
 
 export interface Execution {
@@ -33,5 +42,6 @@ export interface Execution {
   pid?: number
   startedAt?: string
   finishedAt?: string
+  scheduledAt?: string
   logs?: string
 }

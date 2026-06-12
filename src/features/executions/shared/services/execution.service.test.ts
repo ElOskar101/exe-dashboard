@@ -239,8 +239,10 @@ describe('execution.service', () => {
     expect(cccClient.post).toHaveBeenCalledWith('v2/playwright-runtimes', payload)
   })
 
-  it('updatePlaywrightRuntime puts only the runtime properties being updated', async () => {
+  it('updatePlaywrightRuntime puts the full runtime payload', async () => {
     const payload = {
+      name: 'Runtime 1',
+      accessInfo: { type: 'private' as const, sharedWith: [] },
       applications: [
         {
           name: 'Bare',

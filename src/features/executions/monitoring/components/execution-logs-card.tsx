@@ -28,13 +28,20 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { isExecutionRunning } from '@/features/executions/shared'
+import {
+  formatExecutionDateTime,
+  getScheduledExecutionCountdownLabel,
+  getScheduledExecutionStartDate,
+  getStatusBadgeClassName,
+  isExecutionRunning,
+  isExecutionSuccessful,
+} from '@/features/executions/shared'
+import { useCurrentTime } from '@/hooks/use-current-time'
 import { IconArrowDown, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../lib/execution-log-buffer'
 import { getCanScrollToBottom, getIsScrolledToBottom } from '../lib/execution-log-scroll'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
-import { getStatusBadgeClassName } from './execution-detail-styles'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
 import { ExecutionRerunDialog } from './execution-rerun-dialog'
@@ -253,6 +260,7 @@ interface ExecutionLogsCardProps {
   rawExecutionJson: string
   reportSource: string
   rerunSummary: ExecutionRerunSummary | null
+  scheduledAt?: string
   showReport: boolean
   title: string
 }
@@ -282,12 +290,25 @@ export function ExecutionLogsCard({
   rawExecutionJson,
   reportSource,
   rerunSummary,
+  scheduledAt,
   showReport,
   title,
 }: ExecutionLogsCardProps) {
   const { t } = useTranslation('executions')
+  const currentTime = useCurrentTime('second')
   const isStatusLoading = isLoading && currentStatus == null
-  const isCurrentExecutionRunning = isExecutionRunning(currentStatus)
+  const scheduledCountdownLabel = getScheduledExecutionCountdownLabel(scheduledAt, currentTime)
+  const scheduledStartDate = getScheduledExecutionStartDate(scheduledAt)
+  const statusBadgeLabel = scheduledCountdownLabel
+    ? t('detail.scheduledCountdownStatus', { countdown: scheduledCountdownLabel })
+    : (currentStatus ?? t('detail.statusUnknown'))
+  const statusBadgeClassName = scheduledCountdownLabel
+    ? getStatusBadgeClassName('scheduled')
+    : getStatusBadgeClassName(currentStatus)
+  const isCurrentExecutionRunning = !scheduledCountdownLabel && isExecutionRunning(currentStatus)
+  const shouldShowScheduledFor =
+    scheduledStartDate !== null && !isExecutionRunning(currentStatus) && !isExecutionSuccessful(currentStatus)
+  const scheduledForLabel = scheduledStartDate ? formatExecutionDateTime(scheduledStartDate.toISOString()) : null
   const latestLogId = logLines.at(-1)?.id ?? 'empty'
   const latestLogLength = logLines.at(-1)?.message.length ?? 0
   const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}:${latestLogLength}`)
@@ -303,8 +324,8 @@ export function ExecutionLogsCard({
               {isStatusLoading ? (
                 <Skeleton aria-hidden="true" className="h-5 w-24 rounded-full" />
               ) : (
-                <Badge variant="outline" className={getStatusBadgeClassName(currentStatus)}>
-                  {currentStatus ?? t('detail.statusUnknown')}
+                <Badge variant="outline" className={statusBadgeClassName}>
+                  {statusBadgeLabel}
                   {isCurrentExecutionRunning ? <Spinner aria-hidden="true" data-icon="inline-end" /> : null}
                 </Badge>
               )}
@@ -313,6 +334,11 @@ export function ExecutionLogsCard({
               <Skeleton aria-hidden="true" className="h-5 w-56 rounded-md" />
             ) : description ? (
               <CardDescription>{description}</CardDescription>
+            ) : null}
+            {!isLoading && shouldShowScheduledFor ? (
+              <p className="text-sm text-muted-foreground">
+                {t('detail.scheduledFor', { scheduledAt: scheduledForLabel })}
+              </p>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">

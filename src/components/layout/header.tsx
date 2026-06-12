@@ -133,12 +133,7 @@ const Header: () => JSX.Element = () => {
               >
                 <IconBox className="size-4" />
                 <SelectValue placeholder="Choose app">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="truncate">{target.label}</span>
-                    <span className="truncate text-xs font-normal text-muted-foreground">
-                      {selectedRuntime?.name ?? target.runtimeId}
-                    </span>
-                  </span>
+                  <span className="truncate">{target.label}</span>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="end">

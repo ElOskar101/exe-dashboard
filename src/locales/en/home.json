@@ -18,7 +18,8 @@
         "completed": "Completed",
         "unknown": "Unknown",
         "cancelled": "Cancelled",
-        "failed": "Failed"
+        "failed": "Failed",
+        "scheduled": "Scheduled"
       }
     },
     "jobs": {
