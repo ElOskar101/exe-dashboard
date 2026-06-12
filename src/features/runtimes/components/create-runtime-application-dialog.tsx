@@ -278,7 +278,7 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
 
         <form className="flex min-h-0 flex-col gap-6" onSubmit={handleSubmit}>
           <div className="flex max-h-[min(65vh,34rem)] min-w-0 flex-col gap-5 overflow-y-auto pr-1">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field data-invalid={Boolean(nameError)} className="min-w-0">
                 <FieldLabel htmlFor={`${fieldIdPrefix}-name`}>{t('createApp.fields.name')}</FieldLabel>
                 <Input
@@ -317,7 +317,7 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
               />
             </Field>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field data-invalid={Boolean(maxWorkersError)} className="min-w-0">
                 <FieldLabel htmlFor={`${fieldIdPrefix}-max-workers`}>{t('createApp.fields.maxWorkers')}</FieldLabel>
                 <Input

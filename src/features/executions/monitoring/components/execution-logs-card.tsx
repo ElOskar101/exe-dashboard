@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   formatExecutionDateTime,
   getScheduledExecutionCountdownLabel,
+  getScheduledExecutionStartDate,
   getStatusBadgeClassName,
   isExecutionRunning,
   isExecutionSuccessful,
@@ -297,6 +298,7 @@ export function ExecutionLogsCard({
   const currentTime = useCurrentTime('second')
   const isStatusLoading = isLoading && currentStatus == null
   const scheduledCountdownLabel = getScheduledExecutionCountdownLabel(scheduledAt, currentTime)
+  const scheduledStartDate = getScheduledExecutionStartDate(scheduledAt)
   const statusBadgeLabel = scheduledCountdownLabel
     ? t('detail.scheduledCountdownStatus', { countdown: scheduledCountdownLabel })
     : (currentStatus ?? t('detail.statusUnknown'))
@@ -305,7 +307,8 @@ export function ExecutionLogsCard({
     : getStatusBadgeClassName(currentStatus)
   const isCurrentExecutionRunning = !scheduledCountdownLabel && isExecutionRunning(currentStatus)
   const shouldShowScheduledFor =
-    Boolean(scheduledAt) && !isExecutionRunning(currentStatus) && !isExecutionSuccessful(currentStatus)
+    scheduledStartDate !== null && !isExecutionRunning(currentStatus) && !isExecutionSuccessful(currentStatus)
+  const scheduledForLabel = scheduledStartDate ? formatExecutionDateTime(scheduledStartDate.toISOString()) : null
   const latestLogId = logLines.at(-1)?.id ?? 'empty'
   const latestLogLength = logLines.at(-1)?.message.length ?? 0
   const logScroll = useExecutionLogScroll(`${logLines.length}:${latestLogId}:${latestLogLength}`)
@@ -334,7 +337,7 @@ export function ExecutionLogsCard({
             ) : null}
             {!isLoading && shouldShowScheduledFor ? (
               <p className="text-sm text-muted-foreground">
-                {t('detail.scheduledFor', { scheduledAt: formatExecutionDateTime(scheduledAt) })}
+                {t('detail.scheduledFor', { scheduledAt: scheduledForLabel })}
               </p>
             ) : null}
           </div>
