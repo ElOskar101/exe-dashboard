@@ -17,6 +17,8 @@ import { Spinner } from '@/components/ui/spinner'
 import {
   getPlaywrightRuntimeApplications,
   type PlaywrightRuntime,
+  type PlaywrightRuntimeAccessInfo,
+  type PlaywrightRuntimeAccessPayload,
   type PlaywrightRuntimeAccessType,
   type PlaywrightRuntimeApplication,
   type PlaywrightRuntimeApplicationPayload,
@@ -129,15 +131,29 @@ const getCreateApplicationFormErrors = (
 
 const hasFormErrors = (errors: CreateApplicationFormErrors) => Object.keys(errors).length > 0
 
+const toPlaywrightRuntimeAccessPayload = (accessInfo: PlaywrightRuntimeAccessInfo): PlaywrightRuntimeAccessPayload => ({
+  type: accessInfo.type,
+  sharedWith: accessInfo.sharedWith,
+})
+
+const toPlaywrightRuntimePayload = (
+  runtime: PlaywrightRuntime,
+  applications: PlaywrightRuntimeApplicationPayload[],
+): PlaywrightRuntimeUpdatePayload => ({
+  name: runtime.name,
+  description: runtime.description,
+  accessInfo: toPlaywrightRuntimeAccessPayload(runtime.accessInfo),
+  applications,
+})
+
 const createRuntimeApplicationsUpdatePayload = (
   runtime: PlaywrightRuntime,
   application: PlaywrightRuntimeApplicationPayload,
-): PlaywrightRuntimeUpdatePayload => ({
-  applications: [
+): PlaywrightRuntimeUpdatePayload =>
+  toPlaywrightRuntimePayload(runtime, [
     ...getPlaywrightRuntimeApplications(runtime).map((item) => toPlaywrightRuntimeApplicationPayload(runtime, item)),
     application,
-  ],
-})
+  ])
 
 const getRuntimeMutationErrorMessage = (error: unknown, fallback: string) => {
   if (error && typeof error === 'object' && 'response' in error) {

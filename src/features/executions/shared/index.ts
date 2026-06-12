@@ -38,6 +38,8 @@ export type {
 export type { PlaywrightProject, PlaywrightProjectBot } from './model/playwright-project'
 export type {
   PlaywrightRuntime,
+  PlaywrightRuntimeAccessInfo,
+  PlaywrightRuntimeAccessPayload,
   PlaywrightRuntimeAccessType,
   PlaywrightRuntimeApplication,
   PlaywrightRuntimeApplicationPayload,

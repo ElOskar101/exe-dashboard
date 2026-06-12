@@ -82,6 +82,8 @@ export type {
   ExecutionStatus,
   ExecutionTarget,
   ExecutionTargetSearchSelection,
+  PlaywrightRuntimeAccessInfo,
+  PlaywrightRuntimeAccessPayload,
   PlaywrightRuntimeAccessType,
   PlaywrightProject,
   PlaywrightProjectBot,
