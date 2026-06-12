@@ -8,6 +8,10 @@ Agent manages automation runs for carrier and clinic workflows, with a strong fo
 One run of an automation workflow for a specific carrier, bot, and input set.
 _Avoid_: Job, run item, process row
 
+**Scheduled Execution**:
+An **Execution** that was created with a parseable scheduled start time recorded in `scheduledAt`.
+_Avoid_: Scheduled status, scheduled row
+
 **Client**:
 The customer or practice organization that owns one or more clinics and can be associated with an **Execution**.
 _Avoid_: Customer, account
@@ -55,6 +59,12 @@ _Avoid_: Execution API, selected app API
 ## Relationships
 
 - An **Execution** has exactly one current **Execution Status**
+- A **Scheduled Execution** is identified by its scheduled start time, not by its **Execution Status**
+- A **Scheduled Execution** remains a **Scheduled Execution** after it starts or finishes
+- A **Scheduled Execution** is considered waiting until the current time reaches its scheduled start time
+- Waiting **Scheduled Executions** present time remaining until their scheduled start time; started **Scheduled Executions** present elapsed time like other **Executions**
+- A waiting **Scheduled Execution** presents natural remaining time until the final minute, then presents a clock-style countdown
+- In the sidebar, a **Scheduled Execution** appears only in the scheduled section and not in the normal execution section
 - An **Execution** is associated with one **Client**
 - An **Execution** can reference one **Playwright Project**
 - A **Client** can own many clinics

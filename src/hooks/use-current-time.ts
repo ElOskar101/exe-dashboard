@@ -1,61 +1,80 @@
 import { useSyncExternalStore } from 'react'
 
+const SECOND_IN_MS = 1000
 const MINUTE_IN_MS = 60_000
 
-let currentTime = Date.now()
-let currentTimeIntervalId: number | null = null
-let currentTimeTimeoutId: number | null = null
+type CurrentTimePrecision = 'minute' | 'second'
 
-const currentTimeListeners = new Set<() => void>()
-
-const publishCurrentTime = () => {
-  currentTime = Date.now()
-  currentTimeListeners.forEach((listener) => listener())
+interface CurrentTimeStore {
+  getServerSnapshot: () => number
+  getSnapshot: () => number
+  subscribe: (onStoreChange: () => void) => () => void
 }
 
-const clearCurrentTimeTimers = () => {
-  if (currentTimeTimeoutId !== null) {
-    window.clearTimeout(currentTimeTimeoutId)
-    currentTimeTimeoutId = null
+const createCurrentTimeStore = (intervalMs: number): CurrentTimeStore => {
+  let currentTime = Date.now()
+  let currentTimeIntervalId: number | null = null
+  let currentTimeTimeoutId: number | null = null
+  const currentTimeListeners = new Set<() => void>()
+
+  const publish = () => {
+    currentTime = Date.now()
+    currentTimeListeners.forEach((listener) => listener())
   }
 
-  if (currentTimeIntervalId !== null) {
-    window.clearInterval(currentTimeIntervalId)
-    currentTimeIntervalId = null
-  }
-}
+  const clearTimers = () => {
+    if (currentTimeTimeoutId !== null) {
+      window.clearTimeout(currentTimeTimeoutId)
+      currentTimeTimeoutId = null
+    }
 
-const startCurrentTimeTicker = () => {
-  if (typeof window === 'undefined' || currentTimeTimeoutId !== null || currentTimeIntervalId !== null) {
-    return
-  }
-
-  const delay = MINUTE_IN_MS - (Date.now() % MINUTE_IN_MS)
-
-  currentTimeTimeoutId = window.setTimeout(() => {
-    currentTimeTimeoutId = null
-    publishCurrentTime()
-    currentTimeIntervalId = window.setInterval(publishCurrentTime, MINUTE_IN_MS)
-  }, delay)
-}
-
-const subscribeToCurrentTime = (onStoreChange: () => void) => {
-  currentTimeListeners.add(onStoreChange)
-  startCurrentTimeTicker()
-
-  return () => {
-    currentTimeListeners.delete(onStoreChange)
-
-    if (currentTimeListeners.size === 0) {
-      clearCurrentTimeTimers()
+    if (currentTimeIntervalId !== null) {
+      window.clearInterval(currentTimeIntervalId)
+      currentTimeIntervalId = null
     }
   }
+
+  const startTicker = () => {
+    if (typeof window === 'undefined' || currentTimeTimeoutId !== null || currentTimeIntervalId !== null) {
+      return
+    }
+
+    const delay = intervalMs - (Date.now() % intervalMs)
+
+    currentTimeTimeoutId = window.setTimeout(() => {
+      currentTimeTimeoutId = null
+      publish()
+      currentTimeIntervalId = window.setInterval(publish, intervalMs)
+    }, delay)
+  }
+
+  const subscribe = (onStoreChange: () => void) => {
+    currentTimeListeners.add(onStoreChange)
+    startTicker()
+
+    return () => {
+      currentTimeListeners.delete(onStoreChange)
+
+      if (currentTimeListeners.size === 0) {
+        clearTimers()
+      }
+    }
+  }
+
+  return {
+    getServerSnapshot: () => 0,
+    getSnapshot: () => currentTime,
+    subscribe,
+  }
 }
 
-const getCurrentTimeSnapshot = () => currentTime
+const currentTimeStores = {
+  minute: createCurrentTimeStore(MINUTE_IN_MS),
+  second: createCurrentTimeStore(SECOND_IN_MS),
+}
 
-const getServerSnapshot = () => 0
+export const useCurrentTime = (precision: CurrentTimePrecision = 'minute') => {
+  const store = currentTimeStores[precision]
 
-export const useCurrentTime = () => {
-  return useSyncExternalStore(subscribeToCurrentTime, getCurrentTimeSnapshot, getServerSnapshot)
+  return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot)
 }
