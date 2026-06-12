@@ -44,7 +44,7 @@ export const getScheduledExecutionCountdownLabel = (scheduledAt: string | null |
   const remainingMs = scheduledStartDate.getTime() - currentTime
 
   if (remainingMs <= 0) return null
-  if (remainingMs <= FINAL_MINUTE_MS) return formatClockCountdown(remainingMs)
+  if (remainingMs <= FINAL_MINUTE_MS) return `in ${formatClockCountdown(remainingMs)}`
 
   return intlFormatDistance(scheduledStartDate, currentTime, { numeric: 'always' })
 }

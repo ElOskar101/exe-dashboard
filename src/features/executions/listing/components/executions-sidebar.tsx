@@ -863,7 +863,7 @@ export function ExecutionsSidebar() {
                                   type="button"
                                   variant="ghost"
                                   size="sm"
-                                  className="ml-7 mt-1 w-[calc(100%-1.75rem)] justify-start"
+                                  className="mt-1 w-full justify-start"
                                   disabled={group.isFetching}
                                   onClick={() =>
                                     setProjectExecutionsExpanded(section.id, group.project, !group.isExpanded)

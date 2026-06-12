@@ -47,10 +47,10 @@ describe('scheduled execution display helpers', () => {
   it('formats the final minute as a clock countdown', () => {
     expect(
       getScheduledExecutionCountdownLabel('2026-05-29T12:15:00.000Z', new Date('2026-05-29T12:14:00.000Z').getTime()),
-    ).toBe('1:00')
+    ).toBe('in 1:00')
     expect(
       getScheduledExecutionCountdownLabel('2026-05-29T12:15:00.000Z', new Date('2026-05-29T12:14:01.000Z').getTime()),
-    ).toBe('0:59')
+    ).toBe('in 0:59')
   })
 
   it('returns no countdown once the scheduled start time has elapsed', () => {
