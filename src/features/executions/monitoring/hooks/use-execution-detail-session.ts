@@ -52,6 +52,7 @@ export interface ExecutionDetailSession {
   rerunErrorMessage: string | null
   rerunSummary: ExecutionRerunSummary | null
   resumeError: boolean
+  scheduledAt?: string
   showReport: boolean
   stopError: boolean
   title: string
@@ -145,6 +146,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     rerunErrorMessage: rerun.rerunErrorMessage,
     rerunSummary: rerun.rerunSummary,
     resumeError: resumeMutation.isError,
+    scheduledAt: executionQuery.data?.scheduledAt,
     showReport,
     stopError: stopMutation.isError,
     title: t('detail.title'),

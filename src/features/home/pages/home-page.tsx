@@ -37,6 +37,7 @@ const statusColorMap = {
   paused: 'oklch(66.6% 0.179 58.318)',
   queued: 'var(--muted-foreground)',
   running: 'oklch(54.6% 0.245 262.881)',
+  scheduled: 'oklch(60% 0.22 300)',
   unknown: 'var(--foreground)',
 } as const satisfies Record<ExecutionStatus, string>
 

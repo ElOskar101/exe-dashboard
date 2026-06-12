@@ -277,22 +277,36 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
         </DialogHeader>
 
         <form className="flex min-h-0 flex-col gap-6" onSubmit={handleSubmit}>
-          <FieldGroup className="max-h-[min(65vh,34rem)] gap-5 overflow-y-auto pr-1">
-            <Field data-invalid={Boolean(nameError)}>
-              <FieldLabel htmlFor={`${fieldIdPrefix}-name`}>{t('createApp.fields.name')}</FieldLabel>
-              <Input
-                id={`${fieldIdPrefix}-name`}
-                value={formState.name}
-                onChange={(event) => setFormValue({ name: event.target.value })}
-                aria-invalid={Boolean(nameError)}
-                autoComplete="off"
-                disabled={isSubmitting}
-                placeholder={t('createApp.placeholders.name')}
-              />
-              {nameErrorMessage ? <FieldError>{nameErrorMessage}</FieldError> : null}
-            </Field>
+          <div className="flex max-h-[min(65vh,34rem)] min-w-0 flex-col gap-5 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-4">
+              <Field data-invalid={Boolean(nameError)} className="min-w-0">
+                <FieldLabel htmlFor={`${fieldIdPrefix}-name`}>{t('createApp.fields.name')}</FieldLabel>
+                <Input
+                  id={`${fieldIdPrefix}-name`}
+                  value={formState.name}
+                  onChange={(event) => setFormValue({ name: event.target.value })}
+                  aria-invalid={Boolean(nameError)}
+                  autoComplete="off"
+                  disabled={isSubmitting}
+                  placeholder={t('createApp.placeholders.name')}
+                />
+                {nameErrorMessage ? <FieldError>{nameErrorMessage}</FieldError> : null}
+              </Field>
 
-            <Field>
+              <Field className="min-w-0">
+                <FieldLabel htmlFor={`${fieldIdPrefix}-api-url`}>{t('createApp.fields.apiUrl')}</FieldLabel>
+                <Input
+                  id={`${fieldIdPrefix}-api-url`}
+                  value={formState.apiUrl}
+                  onChange={(event) => setFormValue({ apiUrl: event.target.value })}
+                  autoComplete="url"
+                  disabled={isSubmitting}
+                  placeholder={t('createApp.placeholders.apiUrl')}
+                />
+              </Field>
+            </div>
+
+            <Field className="min-w-0">
               <FieldLabel htmlFor={`${fieldIdPrefix}-description`}>{t('createApp.fields.description')}</FieldLabel>
               <Input
                 id={`${fieldIdPrefix}-description`}
@@ -303,20 +317,8 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
               />
             </Field>
 
-            <Field>
-              <FieldLabel htmlFor={`${fieldIdPrefix}-api-url`}>{t('createApp.fields.apiUrl')}</FieldLabel>
-              <Input
-                id={`${fieldIdPrefix}-api-url`}
-                value={formState.apiUrl}
-                onChange={(event) => setFormValue({ apiUrl: event.target.value })}
-                autoComplete="url"
-                disabled={isSubmitting}
-                placeholder={t('createApp.placeholders.apiUrl')}
-              />
-            </Field>
-
-            <FieldGroup className="gap-4 sm:grid sm:grid-cols-2">
-              <Field data-invalid={Boolean(maxWorkersError)}>
+            <div className="grid grid-cols-2 gap-4">
+              <Field data-invalid={Boolean(maxWorkersError)} className="min-w-0">
                 <FieldLabel htmlFor={`${fieldIdPrefix}-max-workers`}>{t('createApp.fields.maxWorkers')}</FieldLabel>
                 <Input
                   id={`${fieldIdPrefix}-max-workers`}
@@ -332,7 +334,7 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
                 {maxWorkersErrorMessage ? <FieldError>{maxWorkersErrorMessage}</FieldError> : null}
               </Field>
 
-              <Field data-invalid={Boolean(maxRetriesError)}>
+              <Field data-invalid={Boolean(maxRetriesError)} className="min-w-0">
                 <FieldLabel htmlFor={`${fieldIdPrefix}-max-retries`}>{t('createApp.fields.maxRetries')}</FieldLabel>
                 <Input
                   id={`${fieldIdPrefix}-max-retries`}
@@ -347,7 +349,7 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
                 />
                 {maxRetriesErrorMessage ? <FieldError>{maxRetriesErrorMessage}</FieldError> : null}
               </Field>
-            </FieldGroup>
+            </div>
 
             <Field data-invalid={Boolean(accessTypeError)}>
               <FieldLabel htmlFor={`${fieldIdPrefix}-access`}>{t('createApp.fields.access')}</FieldLabel>
@@ -405,7 +407,7 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
                 </FieldContent>
               </Field>
             </FieldGroup>
-          </FieldGroup>
+          </div>
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" disabled={isSubmitting} />}>

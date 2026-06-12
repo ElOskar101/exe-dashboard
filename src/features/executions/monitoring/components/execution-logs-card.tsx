@@ -28,7 +28,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { isExecutionRunning } from '@/features/executions/shared'
+import { formatExecutionDateTime, isExecutionRunning } from '@/features/executions/shared'
 import { IconArrowDown, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../lib/execution-log-buffer'
@@ -253,6 +253,7 @@ interface ExecutionLogsCardProps {
   rawExecutionJson: string
   reportSource: string
   rerunSummary: ExecutionRerunSummary | null
+  scheduledAt?: string
   showReport: boolean
   title: string
 }
@@ -282,6 +283,7 @@ export function ExecutionLogsCard({
   rawExecutionJson,
   reportSource,
   rerunSummary,
+  scheduledAt,
   showReport,
   title,
 }: ExecutionLogsCardProps) {
@@ -313,6 +315,11 @@ export function ExecutionLogsCard({
               <Skeleton aria-hidden="true" className="h-5 w-56 rounded-md" />
             ) : description ? (
               <CardDescription>{description}</CardDescription>
+            ) : null}
+            {!isLoading && scheduledAt ? (
+              <p className="text-sm text-muted-foreground">
+                {t('detail.scheduledFor', { scheduledAt: formatExecutionDateTime(scheduledAt) })}
+              </p>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
