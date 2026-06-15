@@ -1,0 +1,83 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Spinner } from '@/components/ui/spinner'
+import {
+  getPlaywrightRuntimeApplications,
+  type PlaywrightRuntime,
+  type PlaywrightRuntimeApplication,
+  useUpdatePlaywrightRuntimeMutation,
+} from '@/features/executions'
+import { IconTrash } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import {
+  getRuntimeMutationErrorMessage,
+  toPlaywrightRuntimeApplicationPayload,
+  toPlaywrightRuntimePayload,
+} from './runtime-dialog-helpers'
+import { RuntimeActionTooltip, RuntimeActionTooltipTrigger } from './runtime-action-tooltip'
+
+export function DeleteAppConfirmation({
+  application,
+  runtime,
+}: {
+  application: PlaywrightRuntimeApplication
+  runtime: PlaywrightRuntime
+}) {
+  const { t } = useTranslation('runtimes')
+  const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
+  const isSubmitting = updateRuntimeMutation.isPending
+  const triggerLabel = t('deleteApp.trigger')
+
+  const handleDelete = async () => {
+    const applications = getPlaywrightRuntimeApplications(runtime)
+      .filter((candidate) => candidate.name !== application.name)
+      .map((candidate) => toPlaywrightRuntimeApplicationPayload(runtime, candidate))
+
+    try {
+      await updateRuntimeMutation.mutateAsync({
+        runtimeId: runtime._id,
+        payload: toPlaywrightRuntimePayload(runtime, applications),
+      })
+      toast.success(t('deleteApp.successTitle'), {
+        description: t('deleteApp.successDescription', { app: application.name }),
+      })
+    } catch (error) {
+      toast.error(t('deleteApp.errorTitle'), {
+        description: getRuntimeMutationErrorMessage(error, t('deleteApp.errorDescription')),
+      })
+    }
+  }
+
+  return (
+    <AlertDialog>
+      <RuntimeActionTooltip label={triggerLabel}>
+        <AlertDialogTrigger
+          render={<RuntimeActionTooltipTrigger icon={<IconTrash />} label={triggerLabel} variant="destructive" />}
+        />
+      </RuntimeActionTooltip>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('deleteApp.title')}</AlertDialogTitle>
+          <AlertDialogDescription>{t('deleteApp.description', { app: application.name })}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isSubmitting}>{t('deleteApp.cancel')}</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" disabled={isSubmitting} onClick={() => void handleDelete()}>
+            {isSubmitting ? <Spinner data-icon="inline-start" /> : <IconTrash data-icon="inline-start" />}
+            {t('deleteApp.confirm')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}

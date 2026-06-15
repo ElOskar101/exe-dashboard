@@ -15,14 +15,18 @@ import {
   IconBox,
   IconDeviceDesktop,
   IconRefresh,
-  IconShieldLock,
   IconShieldCheck,
+  IconShieldLock,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { CreateRuntimeApplicationDialog } from '../components/create-runtime-application-dialog'
+import { DeleteAppConfirmation } from '../components/delete-app-confirmation'
+import { DeleteRuntimeConfirmation } from '../components/delete-runtime-confirmation'
+import { getConfiguredApplicationLimit } from '../components/runtime-dialog-helpers'
+import { UpdateAppDialog } from '../components/update-app-dialog'
+import { UpdateRuntimeDialog } from '../components/update-runtime-dialog'
 
 const DESCRIPTION_PREVIEW_LENGTH = 20
-const getConfiguredApplicationLimit = (value: number | undefined, fallback: number) => value ?? fallback
 
 function AccessBadge({ type }: { type: PlaywrightRuntime['accessInfo']['type'] }) {
   const { t } = useTranslation('runtimes')
@@ -120,7 +124,11 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
             </div>
             <CardDescription>{runtime.description?.trim() || t('noDescription')}</CardDescription>
           </div>
-          <CreateRuntimeApplicationDialog runtime={runtime} />
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <UpdateRuntimeDialog runtime={runtime} />
+            <DeleteRuntimeConfirmation runtime={runtime} />
+            <CreateRuntimeApplicationDialog runtime={runtime} />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -134,6 +142,7 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
               <TableHead>{t('columns.config')}</TableHead>
               <TableHead>{t('columns.apiUrl')}</TableHead>
               <TableHead>{t('columns.description')}</TableHead>
+              <TableHead>{t('columns.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -182,11 +191,17 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
                   <TableCell className="whitespace-nowrap text-white/80">
                     <ApplicationDescription description={application.description} />
                   </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <UpdateAppDialog application={application} runtime={runtime} />
+                      <DeleteAppConfirmation application={application} runtime={runtime} />
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center text-white/80" colSpan={7}>
+                <TableCell className="h-24 text-center text-white/80" colSpan={8}>
                   {t('runtimeSummary.emptyApplications')}
                 </TableCell>
               </TableRow>

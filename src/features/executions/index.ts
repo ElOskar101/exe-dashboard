@@ -70,6 +70,7 @@ export {
   useExecutionTargetSetter,
   useExecutionsQuery,
   useExecutionAppStatsQuery,
+  useDeletePlaywrightRuntimeMutation,
   usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
   useRuntimeApplicationAvailability,

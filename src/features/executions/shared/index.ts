@@ -137,6 +137,7 @@ export {
   usePlaywrightRuntimesQuery,
   useRuntimeApplicationAvailability,
   useRuntimeApplicationAvailabilityQuery,
+  useDeletePlaywrightRuntimeMutation,
   useUpdatePlaywrightRuntimeMutation,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
