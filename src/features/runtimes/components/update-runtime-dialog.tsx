@@ -18,6 +18,8 @@ import {
   type PlaywrightRuntime,
   type PlaywrightRuntimeAccessType,
   type PlaywrightRuntimeUpdatePayload,
+  useAddPlaywrightRuntimeShareMembersMutation,
+  useRemovePlaywrightRuntimeShareMembersMutation,
   useUpdatePlaywrightRuntimeMutation,
 } from '@/features/executions'
 import { IconPencil } from '@tabler/icons-react'
@@ -46,9 +48,12 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
   const [memberIds, setMemberIds] = useState(() => getSharedMemberIds(runtime.accessInfo))
   const [newMemberId, setNewMemberId] = useState('')
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
+  const addShareMembersMutation = useAddPlaywrightRuntimeShareMembersMutation()
+  const removeShareMembersMutation = useRemovePlaywrightRuntimeShareMembersMutation()
   const formErrors = getRuntimeFormErrors(formState)
   const nameError = wasSubmitted ? formErrors.name : undefined
-  const isSubmitting = updateRuntimeMutation.isPending
+  const isSubmitting =
+    updateRuntimeMutation.isPending || addShareMembersMutation.isPending || removeShareMembersMutation.isPending
   const isShareTabDisabled = runtime.accessInfo.type === 'public'
   const fieldIdPrefix = `update-runtime-${runtime._id}`
   const triggerLabel = t('updateRuntime.trigger')
@@ -133,17 +138,37 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
 
   const handleShareSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    const currentMemberIds = getSharedMemberIds(runtime.accessInfo)
+    const nextMemberIds = memberIds
+    const currentMemberIdSet = new Set(currentMemberIds)
+    const nextMemberIdSet = new Set(nextMemberIds)
+    const memberIdsToAdd = nextMemberIds.filter((memberId) => !currentMemberIdSet.has(memberId))
+    const memberIdsToRemove = currentMemberIds.filter((memberId) => !nextMemberIdSet.has(memberId))
 
-    await submitRuntimePayload(
-      {
-        ...toPlaywrightRuntimePayload(runtime),
-        accessInfo: {
-          type: runtime.accessInfo.type,
-          sharedWith: memberIds,
-        },
-      },
-      t('share.runtimeSuccessDescription', { runtime: runtime.name }),
-    )
+    try {
+      await Promise.all([
+        memberIdsToAdd.length > 0
+          ? addShareMembersMutation.mutateAsync({
+              runtimeId: runtime._id,
+              payload: { memberIds: memberIdsToAdd },
+            })
+          : Promise.resolve(),
+        memberIdsToRemove.length > 0
+          ? removeShareMembersMutation.mutateAsync({
+              runtimeId: runtime._id,
+              payload: { memberIds: memberIdsToRemove },
+            })
+          : Promise.resolve(),
+      ])
+      toast.success(t('updateRuntime.successTitle'), {
+        description: t('share.runtimeSuccessDescription', { runtime: runtime.name }),
+      })
+      handleOpenChange(false)
+    } catch (error) {
+      toast.error(t('updateRuntime.errorTitle'), {
+        description: getRuntimeMutationErrorMessage(error, t('updateRuntime.errorDescription')),
+      })
+    }
   }
 
   return (

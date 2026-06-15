@@ -133,11 +133,13 @@ export {
   useExecutionTarget,
   useExecutionTargetNavigation,
   useExecutionTargetSetter,
+  useAddPlaywrightRuntimeShareMembersMutation,
   usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
   useRuntimeApplicationAvailability,
   useRuntimeApplicationAvailabilityQuery,
   useDeletePlaywrightRuntimeMutation,
+  useRemovePlaywrightRuntimeShareMembersMutation,
   useUpdatePlaywrightRuntimeMutation,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
