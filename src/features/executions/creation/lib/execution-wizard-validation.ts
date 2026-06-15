@@ -24,6 +24,8 @@ interface ExecutionWizardValidationOptions {
   hasSelectedClinicWithoutActiveBots?: boolean
   hasSelectedProjectWithoutAssociatedBots?: boolean
   selectedBotMissingFromClinicBots?: boolean
+  workersLimit?: number
+  retriesLimit?: number
 }
 
 const requiredPatientFields: Array<
@@ -127,12 +129,16 @@ export const getExecutionWizardValidationErrors = (
     config.workers = t('validation.required')
   } else if (!Number.isInteger(Number(draft.execution.workers)) || Number(draft.execution.workers) <= 0) {
     config.workers = t('validation.positiveNumber')
+  } else if (typeof options.workersLimit === 'number' && Number(draft.execution.workers) > options.workersLimit) {
+    config.workers = t('validation.exceedsMax', { max: options.workersLimit })
   }
 
   if (!draft.execution.retries.trim()) {
     config.retries = t('validation.required')
   } else if (!Number.isInteger(Number(draft.execution.retries)) || Number(draft.execution.retries) < 0) {
     config.retries = t('validation.nonNegativeNumber')
+  } else if (typeof options.retriesLimit === 'number' && Number(draft.execution.retries) > options.retriesLimit) {
+    config.retries = t('validation.exceedsMax', { max: options.retriesLimit })
   }
 
   if (!isExecutionMetadataStringValid(draft.execution.config)) {

@@ -12,6 +12,7 @@ import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload } from '../lib/execution-wizard-payload'
+import { useExecutionAppLimits } from '../lib/execution-app-limits'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
 import {
@@ -98,6 +99,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const clinicOptions = wizardData.clinicOptions
   const executionDayOptions = wizardData.executionDayOptions
   const selectedBotId = draft.bot.clinicBotId
+  const appLimits = useExecutionAppLimits()
   const selectedBotPasswordStatus =
     botPasswordRequest.selectedBotId === selectedBotId
       ? {
@@ -119,6 +121,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
       hasSelectedProjectWithoutAssociatedBots: wizardData.hasSelectedProjectWithoutAssociatedBots,
       selectedBotMissingFromClinicBots: draft.bot.clinicBotId.trim().length > 0 && !selectedClinicBot,
+      workersLimit: appLimits.maxWorkers,
+      retriesLimit: appLimits.maxRetries,
     })
   }, [
     wizardData.associatedBotOptions,
@@ -129,6 +133,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     wizardData.hasSelectedClinicWithoutActiveBots,
     wizardData.hasSelectedCustomerWithoutClinics,
     wizardData.hasSelectedProjectWithoutAssociatedBots,
+    appLimits.maxWorkers,
+    appLimits.maxRetries,
   ])
   const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
   const stepValidity = [
@@ -561,6 +567,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       contextErrors: validationErrors.context,
       draft,
       errors: validationErrors.config,
+      maxRetries: appLimits.maxRetries,
+      maxWorkers: appLimits.maxWorkers,
       onConfigChange: updateConfig,
       onRetriesChange: updateRetries,
       onScheduleModeChange: updateScheduleMode,

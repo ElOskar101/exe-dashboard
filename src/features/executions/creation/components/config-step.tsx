@@ -12,6 +12,8 @@ interface ConfigStepProps extends ExecutionWizardConfigStepState {
 export function ConfigStep({
   draft,
   errors,
+  maxRetries,
+  maxWorkers,
   showErrors,
   onWorkersChange,
   onRetriesChange,
@@ -67,30 +69,46 @@ export function ConfigStep({
         </Field>
 
         <Field data-invalid={showErrors && Boolean(errors.workers)}>
-          <FieldLabel htmlFor="workers">{t('fields.workers')}</FieldLabel>
+          <FieldLabel htmlFor="workers">
+            {t('fields.workers')}
+            <span className="text-xs font-normal text-muted-foreground">
+              {t('help.limitRange', { min: 1, max: maxWorkers })}
+            </span>
+          </FieldLabel>
           <Input
             id="workers"
             type="number"
             min="1"
+            max={maxWorkers}
             step="1"
             value={draft.execution.workers}
             onChange={(event) => onWorkersChange(event.target.value)}
             aria-invalid={showErrors && Boolean(errors.workers)}
+            aria-valuemin={1}
+            aria-valuemax={maxWorkers}
             placeholder={t('placeholders.workers')}
           />
           <FieldError>{showErrors ? errors.workers : null}</FieldError>
         </Field>
 
         <Field data-invalid={showErrors && Boolean(errors.retries)}>
-          <FieldLabel htmlFor="retries">{t('fields.retries')}</FieldLabel>
+          <FieldLabel htmlFor="retries">
+            {t('fields.retries')}
+            <span className="text-xs font-normal text-muted-foreground">
+              {t('help.limitRange', { min: 0, max: maxRetries })}
+            </span>
+          </FieldLabel>
           <Input
             id="retries"
             type="number"
             min="0"
+            max={maxRetries}
             step="1"
             value={draft.execution.retries}
             onChange={(event) => onRetriesChange(event.target.value)}
             aria-invalid={showErrors && Boolean(errors.retries)}
+            aria-valuemin={0}
+            aria-valuemax={maxRetries}
             placeholder={t('placeholders.retries')}
           />
           <FieldError>{showErrors ? errors.retries : null}</FieldError>

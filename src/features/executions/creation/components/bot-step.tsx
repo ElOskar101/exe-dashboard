@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { IconAlertCircle, IconEye, IconEyeOff } from '@tabler/icons-react'
+import { IconAlertCircle, IconEye, IconEyeOff, IconLock } from '@tabler/icons-react'
 import type { ExecutionWizardBotStepState } from '../hooks/use-execution-wizard'
 
 interface BotStepProps extends ExecutionWizardBotStepState {
@@ -183,21 +183,49 @@ export function BotStep({
             <FieldError>{showErrors ? errors.clinicBotId : null}</FieldError>
           </Field>
 
-          <Field data-invalid={showBotFieldErrors && Boolean(errors.botName)}>
-            <FieldLabel htmlFor="botName">{t('fields.botName')}</FieldLabel>
+          <Field data-invalid={showBotFieldErrors && Boolean(errors.botName)} data-readonly={isBotFormEnabled}>
+            <FieldLabel htmlFor="botName">
+              <span className="flex items-center gap-2">
+                {t('fields.botName')}
+                {isBotFormEnabled ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted/60 px-2 py-0.5 text-xs font-normal text-muted-foreground"
+                    title={t('help.readonlyFieldTooltip')}
+                  >
+                    <IconLock className="size-3" aria-hidden="true" />
+                    {t('help.readonlyFieldBadge')}
+                  </span>
+                ) : null}
+              </span>
+            </FieldLabel>
             <Input
               id="botName"
               value={bot.botName}
               disabled={!isBotFormEnabled}
               readOnly={isBotFormEnabled}
               aria-invalid={showBotFieldErrors && Boolean(errors.botName)}
+              aria-readonly={isBotFormEnabled}
               placeholder={t('placeholders.botName')}
+              className={isBotFormEnabled ? 'bg-muted/40 text-muted-foreground' : undefined}
             />
             <FieldError>{showBotFieldErrors ? errors.botName : null}</FieldError>
           </Field>
 
-          <Field data-invalid={showBotFieldErrors && Boolean(errors.targetUrl)}>
-            <FieldLabel htmlFor="targetUrl">{t('fields.url')}</FieldLabel>
+          <Field data-invalid={showBotFieldErrors && Boolean(errors.targetUrl)} data-readonly={isBotFormEnabled}>
+            <FieldLabel htmlFor="targetUrl">
+              <span className="flex items-center gap-2">
+                {t('fields.url')}
+                {isBotFormEnabled ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted/60 px-2 py-0.5 text-xs font-normal text-muted-foreground"
+                    title={t('help.readonlyFieldTooltip')}
+                  >
+                    <IconLock className="size-3" aria-hidden="true" />
+                    {t('help.readonlyFieldBadge')}
+                  </span>
+                ) : null}
+              </span>
+            </FieldLabel>
             <Input
               id="targetUrl"
               type="url"
@@ -205,7 +233,9 @@ export function BotStep({
               disabled={!isBotFormEnabled}
               readOnly={isBotFormEnabled}
               aria-invalid={showBotFieldErrors && Boolean(errors.targetUrl)}
+              aria-readonly={isBotFormEnabled}
               placeholder={t('placeholders.url')}
+              className={isBotFormEnabled ? 'bg-muted/40 text-muted-foreground' : undefined}
             />
             <FieldError>{showBotFieldErrors ? errors.targetUrl : null}</FieldError>
           </Field>

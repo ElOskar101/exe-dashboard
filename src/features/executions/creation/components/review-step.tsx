@@ -1,4 +1,8 @@
+import { Button } from '@/components/ui/button'
+import { IconCopy } from '@tabler/icons-react'
 import type { TFunction } from 'i18next'
+import { useMemo } from 'react'
+import { toast } from 'sonner'
 import type { ExecutionCreatePayload, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
 import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
 import {
@@ -16,44 +20,64 @@ interface ReviewStepProps {
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
   const patients = draft.execution.patients
-  const selectedExecution = draft.execution.executionName.trim() || draft.execution.execution.trim()
-  const reviewPayload = payload ?? {
-    project: draft.context.project.trim(),
-    client: draft.context.client.trim(),
-    clinic: draft.context.clinic.trim(),
-    ...(selectedExecution ? { execution: selectedExecution } : {}),
-    botName: draft.bot.botName.trim(),
-    ...(draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt
-      ? { scheduledAt: new Date(draft.execution.scheduledAt).toISOString() }
-      : {}),
-    meta: {
-      bot: {
+  const reviewPayload = useMemo(
+    () =>
+      payload ?? {
+        project: draft.context.project.trim(),
+        client: draft.context.client.trim(),
+        clinic: draft.context.clinic.trim(),
+        ...(draft.execution.executionName.trim() || draft.execution.execution.trim()
+          ? { execution: draft.execution.executionName.trim() || draft.execution.execution.trim() }
+          : {}),
         botName: draft.bot.botName.trim(),
-        targetUrl: draft.bot.targetUrl.trim(),
-        username: draft.bot.username.trim(),
-        password: draft.bot.password,
-        otherInformation: createDefaultBotOtherInformation(),
+        ...(draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt
+          ? { scheduledAt: new Date(draft.execution.scheduledAt).toISOString() }
+          : {}),
+        meta: {
+          bot: {
+            botName: draft.bot.botName.trim(),
+            targetUrl: draft.bot.targetUrl.trim(),
+            username: draft.bot.username.trim(),
+            password: draft.bot.password,
+            otherInformation: createDefaultBotOtherInformation(),
+          },
+          patients: draft.execution.patients.map((patient) => ({
+            patientName: patient.patientName.trim(),
+            patientLastName: patient.patientLastName.trim(),
+            patientMemberId: patient.patientMemberId.trim(),
+            patientDob: patient.patientDob,
+            policyHolderName: patient.policyHolderName.trim(),
+            policyHolderLastName: patient.policyHolderLastName.trim(),
+            policyHolderDob: patient.policyHolderDob,
+            relationship: patient.relationship.trim(),
+            zipCode: patient.zipCode.trim(),
+            ...(patient.clinic.trim() ? { clinic: patient.clinic.trim() } : {}),
+            verificationType: patient.verificationType.toLowerCase(),
+            filenames: patient.filenames.trim(),
+            otherInformation: patient.otherInformation,
+          })),
+          config: parseExecutionMetadataString(draft.execution.config),
+          rv: {},
+          workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
+          retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
+        },
       },
-      patients: draft.execution.patients.map((patient) => ({
-        patientName: patient.patientName.trim(),
-        patientLastName: patient.patientLastName.trim(),
-        patientMemberId: patient.patientMemberId.trim(),
-        patientDob: patient.patientDob,
-        policyHolderName: patient.policyHolderName.trim(),
-        policyHolderLastName: patient.policyHolderLastName.trim(),
-        policyHolderDob: patient.policyHolderDob,
-        relationship: patient.relationship.trim(),
-        zipCode: patient.zipCode.trim(),
-        ...(patient.clinic.trim() ? { clinic: patient.clinic.trim() } : {}),
-        verificationType: patient.verificationType.toLowerCase(),
-        filenames: patient.filenames.trim(),
-        otherInformation: patient.otherInformation,
-      })),
-      config: parseExecutionMetadataString(draft.execution.config),
-      rv: {},
-      workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
-      retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
-    },
+    [draft, payload],
+  )
+  const payloadText = useMemo(() => JSON.stringify(reviewPayload, null, 2), [reviewPayload])
+
+  const handleCopyPayload = async () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      toast.error(t('buttons.copyPayloadFailed'))
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(payloadText)
+      toast.success(t('buttons.copyPayloadCopied'))
+    } catch {
+      toast.error(t('buttons.copyPayloadFailed'))
+    }
   }
 
   return (
@@ -219,8 +243,23 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
       </div>
 
       <div className="flex max-h-[24rem] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4 sm:max-h-96">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-muted-foreground">{t('review.payloadTitle')}</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void handleCopyPayload()
+            }}
+            aria-label={t('buttons.copyPayload')}
+          >
+            <IconCopy data-icon="inline-start" />
+            {t('buttons.copyPayload')}
+          </Button>
+        </div>
         <pre className="min-h-0 min-w-0 flex-1 overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-muted/70 p-4 text-xs leading-6">
-          {JSON.stringify(reviewPayload, null, 2)}
+          {payloadText}
         </pre>
       </div>
     </div>

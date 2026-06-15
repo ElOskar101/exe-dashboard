@@ -122,7 +122,10 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "removePatient": "Remove patient",
-    "startOver": "Create another execution"
+    "startOver": "Create another execution",
+    "copyPayload": "Copy payload",
+    "copyPayloadCopied": "Payload copied to clipboard",
+    "copyPayloadFailed": "Could not copy the payload to the clipboard"
   },
   "validation": {
     "required": "This field is required.",
@@ -133,6 +136,7 @@
     "validJsonObject": "Enter a valid JSON object.",
     "positiveNumber": "Enter a whole number greater than zero.",
     "nonNegativeNumber": "Enter a whole number of zero or greater.",
+    "exceedsMax": "Enter a whole number no greater than {{max}}.",
     "userRequired": "Wait for the signed-in user to load before submitting.",
     "submitBlockedTitle": "Complete the required fields first.",
     "submitBlockedDescription": "Missing or incomplete: {{fields}}.",
@@ -170,7 +174,10 @@
     "noActiveClinicBots": "This clinic has no active bots available. Choose a different clinic to continue.",
     "noAssociatedBots": "This Playwright Project has no active associated bots. Choose a different project to continue.",
     "noImportedPatients": "Select an execution day and get patients to continue.",
-    "importedPatients": "Imported patients: {{count}}"
+    "importedPatients": "Imported patients: {{count}}",
+    "readonlyFieldBadge": "Read-only",
+    "readonlyFieldTooltip": "This value is loaded from the selected bot and cannot be edited.",
+    "limitRange": "(min {{min}} - max {{max}})"
   },
   "review": {
     "botTitle": "Bot payload",
