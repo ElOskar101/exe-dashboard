@@ -13,21 +13,43 @@ import {
 import { executionKeys } from '../lib/execution-query-keys'
 import { getRuntimeApplicationApiUrl, hasRuntimeApplicationApiUrl } from '../lib/runtime-application-availability'
 import {
+  createPlaywrightRuntime,
+  addPlaywrightRuntimeShareMembers,
+  deletePlaywrightRuntime,
   getExecutionAppStats,
   getPlaywrightProjects,
   getPlaywrightRuntimeResponseData,
   getPlaywrightRuntimes,
+  removePlaywrightRuntimeShareMembers,
   updatePlaywrightRuntime,
 } from '../services/execution.service'
 import {
   getPlaywrightRuntimeApplications,
+  type PlaywrightRuntimeCreatePayload,
   type PlaywrightRuntime,
+  type PlaywrightRuntimeShareMembersPayload,
   type PlaywrightRuntimeUpdatePayload,
 } from '../model/playwright-runtime'
+
+export const useCreatePlaywrightRuntimeMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: PlaywrightRuntimeCreatePayload) => createPlaywrightRuntime(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
+    },
+  })
+}
 
 interface PlaywrightRuntimeUpdateMutationVariables {
   runtimeId: string
   payload: PlaywrightRuntimeUpdatePayload
+}
+
+interface PlaywrightRuntimeShareMembersMutationVariables {
+  runtimeId: string
+  payload: PlaywrightRuntimeShareMembersPayload
 }
 
 export const usePlaywrightRuntimesQuery = (enabled = true) =>
@@ -110,6 +132,41 @@ export const useUpdatePlaywrightRuntimeMutation = () => {
   return useMutation({
     mutationFn: ({ runtimeId, payload }: PlaywrightRuntimeUpdateMutationVariables) =>
       updatePlaywrightRuntime(runtimeId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
+    },
+  })
+}
+
+export const useDeletePlaywrightRuntimeMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (runtimeId: string) => deletePlaywrightRuntime(runtimeId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
+    },
+  })
+}
+
+export const useAddPlaywrightRuntimeShareMembersMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ runtimeId, payload }: PlaywrightRuntimeShareMembersMutationVariables) =>
+      addPlaywrightRuntimeShareMembers(runtimeId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
+    },
+  })
+}
+
+export const useRemovePlaywrightRuntimeShareMembersMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ runtimeId, payload }: PlaywrightRuntimeShareMembersMutationVariables) =>
+      removePlaywrightRuntimeShareMembers(runtimeId, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
     },

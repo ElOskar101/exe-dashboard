@@ -19,7 +19,8 @@
     "access": "Access",
     "config": "Config",
     "apiUrl": "API URL",
-    "description": "Description"
+    "description": "Description",
+    "actions": "Actions"
   },
   "status": {
     "active": "Active",
@@ -36,6 +37,47 @@
   "config": {
     "maxWorkers": "{{count}} workers",
     "maxRetries": "{{count}} retries"
+  },
+  "createRuntime": {
+    "trigger": "Create runtime",
+    "title": "Create runtime",
+    "description": "Add a Playwright runtime to the catalog.",
+    "runtimeNameFallback": "this runtime",
+    "tabs": {
+      "runtime": "Runtime",
+      "apps": "Apps"
+    },
+    "fields": {
+      "name": "Title",
+      "description": "Description",
+      "access": "Access"
+    },
+    "apps": {
+      "title": "Playwright Runtime Applications",
+      "description": "Add at least one app to include in the new runtime payload.",
+      "empty": "No apps added yet.",
+      "addedTitle": "App added",
+      "addedDescription": "{{app}} was added to the new runtime.",
+      "removeLabel": "Remove {{app}}"
+    },
+    "placeholders": {
+      "name": "Windows workers",
+      "description": "Runs Playwright jobs on the Windows worker pool"
+    },
+    "cancel": "Cancel",
+    "submit": "Create runtime",
+    "successTitle": "Runtime created",
+    "successDescription": "{{runtime}} was created.",
+    "errorTitle": "Runtime could not be created",
+    "errorDescription": "The runtime API rejected the new runtime.",
+    "errors": {
+      "applications": {
+        "required": "Add at least one app before creating this runtime."
+      },
+      "name": {
+        "required": "Title is required."
+      }
+    }
   },
   "createApp": {
     "trigger": "Create app",
@@ -80,6 +122,111 @@
         "privateRuntime": "Apps in a private runtime must be private."
       }
     }
+  },
+  "tabs": {
+    "update": "Update",
+    "share": "Share"
+  },
+  "share": {
+    "fields": {
+      "memberId": "Shared ID"
+    },
+    "placeholders": {
+      "memberId": "user-or-team-id"
+    },
+    "description": "Add IDs that should share access to this resource.",
+    "add": "Add",
+    "empty": "No shared IDs configured.",
+    "removeLabel": "Remove {{memberId}}",
+    "submit": "Save sharing",
+    "disabled": {
+      "publicRuntime": "Sharing is unavailable for public runtimes.",
+      "publicRuntimeOrApp": "Sharing is unavailable while the runtime or app is public."
+    },
+    "runtimeSuccessDescription": "Sharing was updated for {{runtime}}.",
+    "appSuccessDescription": "Sharing was updated for {{app}}."
+  },
+  "updateRuntime": {
+    "trigger": "Update",
+    "title": "Update runtime",
+    "description": "Edit runtime properties for {{runtime}}.",
+    "fields": {
+      "name": "Title",
+      "description": "Description",
+      "access": "Access"
+    },
+    "cancel": "Cancel",
+    "submit": "Save runtime",
+    "successTitle": "Runtime updated",
+    "successDescription": "{{runtime}} was updated.",
+    "errorTitle": "Runtime could not be updated",
+    "errorDescription": "The runtime API rejected the update.",
+    "errors": {
+      "name": {
+        "required": "Title is required."
+      }
+    }
+  },
+  "deleteRuntime": {
+    "trigger": "Delete",
+    "title": "Delete runtime?",
+    "description": "This will delete {{runtime}} and remove it from the catalog.",
+    "cancel": "Cancel",
+    "confirm": "Delete runtime",
+    "successTitle": "Runtime deleted",
+    "successDescription": "{{runtime}} was deleted.",
+    "errorTitle": "Runtime could not be deleted",
+    "errorDescription": "The runtime API rejected the delete request."
+  },
+  "updateApp": {
+    "trigger": "Update",
+    "title": "Update app",
+    "description": "Edit application properties for {{app}}.",
+    "fields": {
+      "name": "Title",
+      "description": "Description",
+      "apiUrl": "API URL",
+      "maxWorkers": "Max workers",
+      "maxRetries": "Max retries",
+      "access": "Access",
+      "active": "Active",
+      "nonProduction": "Non-production"
+    },
+    "privateRuntimeAccess": "Private runtimes can only contain private apps.",
+    "activeDescription": "Active apps can be selected for execution targets.",
+    "nonProductionDescription": "Mark this app as a non-production environment.",
+    "cancel": "Cancel",
+    "submit": "Save app",
+    "successTitle": "App updated",
+    "successDescription": "{{app}} was updated.",
+    "errorTitle": "App could not be updated",
+    "errorDescription": "The runtime API rejected the app update.",
+    "errors": {
+      "name": {
+        "required": "Title is required.",
+        "duplicate": "This runtime already has an app with that title."
+      },
+      "maxWorkers": {
+        "positiveInteger": "Max workers must be a whole number greater than 0."
+      },
+      "maxRetries": {
+        "nonNegativeInteger": "Max retries must be a whole number of 0 or more."
+      },
+      "accessType": {
+        "privateRuntime": "Apps in a private runtime must be private."
+      }
+    }
+  },
+  "deleteApp": {
+    "trigger": "Delete",
+    "title": "Delete app?",
+    "description": "This will delete {{app}} from this runtime.",
+    "cancel": "Cancel",
+    "confirm": "Delete app",
+    "successTitle": "App deleted",
+    "successDescription": "{{app}} was deleted.",
+    "errorTitle": "App could not be deleted",
+    "errorDescription": "The runtime API rejected the app delete request."
   },
   "empty": {
     "title": "No runtimes available",

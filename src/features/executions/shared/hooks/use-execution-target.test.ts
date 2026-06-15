@@ -6,10 +6,13 @@ import type { ExecutionAppStats } from '../model/app-stats'
 import type { PlaywrightRuntime } from '../model/playwright-runtime'
 
 vi.mock('../services/execution.service', () => ({
+  addPlaywrightRuntimeShareMembers: vi.fn(),
+  deletePlaywrightRuntime: vi.fn(),
   getExecutionAppStats: vi.fn(),
   getPlaywrightProjects: vi.fn(),
   getPlaywrightRuntimeResponseData: vi.fn(),
   getPlaywrightRuntimes: vi.fn(),
+  removePlaywrightRuntimeShareMembers: vi.fn(),
   updatePlaywrightRuntime: vi.fn(),
 }))
 
