@@ -2,9 +2,11 @@
 This is a web scrapping robot execution manager app.
 
 ## Instructions to AI
+Assume this project's dev server is already started with `pnpm run dev`.
+
 On new features don't create tests for them and instead use the most reliable end-user browser skill, plugin or MCP to make sure the feature works as expected (only on frontend changes which user will see).
 
-To authenticate to this app use the credentials and login endpoint in .env.e2e.local to get a valid token. Do this only if the browser tool you chose doesn't have this app authenticated.
+To authenticate to this app use the credentials and login endpoint in .env.e2e.local to get a valid token. Do this only if the browser tool you chose redirect you to the login page automatically.
 
 ## Package manager
 Use `pnpm` as the package manager and scripts runner.
