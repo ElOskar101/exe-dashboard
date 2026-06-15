@@ -19,6 +19,7 @@ import {
   IconShieldLock,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { CreateRuntimeDialog } from '../components/create-runtime-dialog'
 import { CreateRuntimeApplicationDialog } from '../components/create-runtime-application-dialog'
 import { DeleteAppConfirmation } from '../components/delete-app-confirmation'
 import { DeleteRuntimeConfirmation } from '../components/delete-runtime-confirmation'
@@ -62,9 +63,12 @@ export function RuntimesPage() {
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-normal">{t('page.title')}</h1>
-        <p className="max-w-3xl text-sm text-muted-foreground">{t('page.description')}</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-normal">{t('page.title')}</h1>
+          <p className="max-w-3xl text-sm text-muted-foreground">{t('page.description')}</p>
+        </div>
+        <CreateRuntimeDialog />
       </div>
 
       {runtimesQuery.isError ? (

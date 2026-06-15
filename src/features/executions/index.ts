@@ -66,6 +66,7 @@ export {
   updateExecutionStatus,
   updatePlaywrightRuntime,
   useAddPlaywrightRuntimeShareMembersMutation,
+  useCreatePlaywrightRuntimeMutation,
   useExecutionTarget,
   useExecutionTargetNavigation,
   useExecutionTargetSetter,
