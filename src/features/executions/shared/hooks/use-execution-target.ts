@@ -13,6 +13,7 @@ import {
 import { executionKeys } from '../lib/execution-query-keys'
 import { getRuntimeApplicationApiUrl, hasRuntimeApplicationApiUrl } from '../lib/runtime-application-availability'
 import {
+  createPlaywrightRuntime,
   addPlaywrightRuntimeShareMembers,
   deletePlaywrightRuntime,
   getExecutionAppStats,
@@ -24,10 +25,22 @@ import {
 } from '../services/execution.service'
 import {
   getPlaywrightRuntimeApplications,
+  type PlaywrightRuntimeCreatePayload,
   type PlaywrightRuntime,
   type PlaywrightRuntimeShareMembersPayload,
   type PlaywrightRuntimeUpdatePayload,
 } from '../model/playwright-runtime'
+
+export const useCreatePlaywrightRuntimeMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: PlaywrightRuntimeCreatePayload) => createPlaywrightRuntime(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: executionKeys.runtimeCatalog() })
+    },
+  })
+}
 
 interface PlaywrightRuntimeUpdateMutationVariables {
   runtimeId: string

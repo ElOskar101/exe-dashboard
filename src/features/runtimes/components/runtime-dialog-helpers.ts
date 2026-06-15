@@ -37,6 +37,10 @@ interface ApplicationFormErrors extends RuntimeFormErrors {
   name?: 'duplicate' | 'required'
 }
 
+interface NamedApplication {
+  name: string
+}
+
 export const normalizeOptionalString = (value: string | undefined) => {
   const trimmedValue = value?.trim()
 
@@ -177,3 +181,52 @@ export const getApplicationFormErrors = (
 
   return errors
 }
+
+export const getCreateApplicationFormErrors = (
+  runtimeAccessType: PlaywrightRuntimeAccessType,
+  applications: readonly NamedApplication[],
+  formState: ApplicationFormState,
+) => {
+  const errors: ApplicationFormErrors = {}
+  const name = formState.name.trim()
+  const maxWorkers = parseIntegerField(formState.maxWorkers)
+  const maxRetries = parseIntegerField(formState.maxRetries)
+
+  if (!name) {
+    errors.name = 'required'
+  } else if (applications.some((application) => application.name.trim().toLowerCase() === name.toLowerCase())) {
+    errors.name = 'duplicate'
+  }
+
+  if (maxWorkers === undefined || maxWorkers < 1) {
+    errors.maxWorkers = 'positiveInteger'
+  }
+
+  if (maxRetries === undefined || maxRetries < 0) {
+    errors.maxRetries = 'nonNegativeInteger'
+  }
+
+  if (runtimeAccessType === 'private' && formState.accessType === 'public') {
+    errors.accessType = 'privateRuntime'
+  }
+
+  return errors
+}
+
+export const toCreateApplicationPayload = (
+  formState: ApplicationFormState,
+  runtimeAccessType: PlaywrightRuntimeAccessType,
+): PlaywrightRuntimeApplicationPayload => ({
+  name: formState.name.trim(),
+  active: formState.active,
+  nonProduction: formState.nonProduction,
+  description: normalizeOptionalString(formState.description),
+  apiUrl: normalizeOptionalString(formState.apiUrl),
+  config: {
+    maxWorkers: parseIntegerField(formState.maxWorkers) ?? 10,
+    maxRetries: parseIntegerField(formState.maxRetries) ?? 3,
+  },
+  accessInfo: {
+    type: runtimeAccessType === 'private' ? 'private' : formState.accessType,
+  },
+})

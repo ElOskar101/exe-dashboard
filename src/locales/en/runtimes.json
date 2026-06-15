@@ -38,6 +38,47 @@
     "maxWorkers": "{{count}} workers",
     "maxRetries": "{{count}} retries"
   },
+  "createRuntime": {
+    "trigger": "Create runtime",
+    "title": "Create runtime",
+    "description": "Add a Playwright runtime to the catalog.",
+    "runtimeNameFallback": "this runtime",
+    "tabs": {
+      "runtime": "Runtime",
+      "apps": "Apps"
+    },
+    "fields": {
+      "name": "Title",
+      "description": "Description",
+      "access": "Access"
+    },
+    "apps": {
+      "title": "Playwright Runtime Applications",
+      "description": "Add at least one app to include in the new runtime payload.",
+      "empty": "No apps added yet.",
+      "addedTitle": "App added",
+      "addedDescription": "{{app}} was added to the new runtime.",
+      "removeLabel": "Remove {{app}}"
+    },
+    "placeholders": {
+      "name": "Windows workers",
+      "description": "Runs Playwright jobs on the Windows worker pool"
+    },
+    "cancel": "Cancel",
+    "submit": "Create runtime",
+    "successTitle": "Runtime created",
+    "successDescription": "{{runtime}} was created.",
+    "errorTitle": "Runtime could not be created",
+    "errorDescription": "The runtime API rejected the new runtime.",
+    "errors": {
+      "applications": {
+        "required": "Add at least one app before creating this runtime."
+      },
+      "name": {
+        "required": "Title is required."
+      }
+    }
+  },
   "createApp": {
     "trigger": "Create app",
     "title": "Create app",

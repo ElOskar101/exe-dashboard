@@ -17,12 +17,8 @@ import { Spinner } from '@/components/ui/spinner'
 import {
   getPlaywrightRuntimeApplications,
   type PlaywrightRuntime,
-  type PlaywrightRuntimeAccessInfo,
-  type PlaywrightRuntimeAccessPayload,
   type PlaywrightRuntimeAccessType,
-  type PlaywrightRuntimeApplication,
   type PlaywrightRuntimeApplicationPayload,
-  type PlaywrightRuntimeUpdatePayload,
   useUpdatePlaywrightRuntimeMutation,
 } from '@/features/executions'
 import { IconPlus } from '@tabler/icons-react'
@@ -30,157 +26,71 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import {
+  createApplicationFormState,
+  getCreateApplicationFormErrors,
+  getRuntimeMutationErrorMessage,
+  hasFormErrors,
+  toCreateApplicationPayload,
+  toHtmlIdSegment,
+  toPlaywrightRuntimeApplicationPayload,
+  toPlaywrightRuntimePayload,
+  type ApplicationFormState,
+} from './runtime-dialog-helpers'
 
-interface CreateApplicationFormState {
-  accessType: PlaywrightRuntimeAccessType
-  active: boolean
-  apiUrl: string
-  description: string
-  maxRetries: string
-  maxWorkers: string
-  name: string
-  nonProduction: boolean
+interface DraftRuntimeApplicationDialogProps {
+  draftRuntime: {
+    accessType: PlaywrightRuntimeAccessType
+    applications: readonly PlaywrightRuntimeApplicationPayload[]
+    name: string
+  }
+  onCreateApplication: (application: PlaywrightRuntimeApplicationPayload) => void
 }
 
-interface CreateApplicationFormErrors {
-  accessType?: 'privateRuntime'
-  maxRetries?: 'nonNegativeInteger'
-  maxWorkers?: 'positiveInteger'
-  name?: 'duplicate' | 'required'
+interface PersistedRuntimeApplicationDialogProps {
+  runtime: PlaywrightRuntime
 }
 
-const createDefaultApplicationFormState = (): CreateApplicationFormState => ({
-  accessType: 'private',
-  active: true,
-  apiUrl: '',
-  description: '',
-  maxRetries: '3',
-  maxWorkers: '10',
-  name: '',
-  nonProduction: false,
-})
+type CreateRuntimeApplicationDialogProps = DraftRuntimeApplicationDialogProps | PersistedRuntimeApplicationDialogProps
 
-const getConfiguredApplicationLimit = (value: number | undefined, fallback: number) => value ?? fallback
-
-const normalizeOptionalString = (value: string | undefined) => {
-  const trimmedValue = value?.trim()
-
-  return trimmedValue || undefined
-}
-
-const parseIntegerField = (value: string) => {
-  const trimmedValue = value.trim()
-
-  if (!trimmedValue) {
-    return undefined
-  }
-
-  const parsedValue = Number(trimmedValue)
-
-  return Number.isInteger(parsedValue) ? parsedValue : undefined
-}
-
-const toPlaywrightRuntimeApplicationPayload = (
-  runtime: PlaywrightRuntime,
-  application: PlaywrightRuntimeApplication,
-): PlaywrightRuntimeApplicationPayload => ({
-  name: application.name,
-  active: application.active ?? true,
-  nonProduction: application.nonProduction ?? false,
-  description: normalizeOptionalString(application.description),
-  apiUrl: normalizeOptionalString(application.apiUrl),
-  config: {
-    maxWorkers: getConfiguredApplicationLimit(application.config?.maxWorkers, 10),
-    maxRetries: getConfiguredApplicationLimit(application.config?.maxRetries, 3),
-  },
-  accessInfo: {
-    type: runtime.accessInfo.type === 'private' ? 'private' : application.accessInfo.type,
-  },
-})
-
-const getCreateApplicationFormErrors = (
-  runtime: PlaywrightRuntime,
-  formState: CreateApplicationFormState,
-  applications: readonly PlaywrightRuntimeApplication[],
-) => {
-  const errors: CreateApplicationFormErrors = {}
-  const name = formState.name.trim()
-  const maxWorkers = parseIntegerField(formState.maxWorkers)
-  const maxRetries = parseIntegerField(formState.maxRetries)
-
-  if (!name) {
-    errors.name = 'required'
-  } else if (applications.some((application) => application.name.trim().toLowerCase() === name.toLowerCase())) {
-    errors.name = 'duplicate'
-  }
-
-  if (maxWorkers === undefined || maxWorkers < 1) {
-    errors.maxWorkers = 'positiveInteger'
-  }
-
-  if (maxRetries === undefined || maxRetries < 0) {
-    errors.maxRetries = 'nonNegativeInteger'
-  }
-
-  if (runtime.accessInfo.type === 'private' && formState.accessType === 'public') {
-    errors.accessType = 'privateRuntime'
-  }
-
-  return errors
-}
-
-const hasFormErrors = (errors: CreateApplicationFormErrors) => Object.keys(errors).length > 0
-
-const toPlaywrightRuntimeAccessPayload = (accessInfo: PlaywrightRuntimeAccessInfo): PlaywrightRuntimeAccessPayload => ({
-  type: accessInfo.type,
-  sharedWith: accessInfo.sharedWith,
-})
-
-const toPlaywrightRuntimePayload = (
-  runtime: PlaywrightRuntime,
-  applications: PlaywrightRuntimeApplicationPayload[],
-): PlaywrightRuntimeUpdatePayload => ({
-  name: runtime.name,
-  description: runtime.description,
-  accessInfo: toPlaywrightRuntimeAccessPayload(runtime.accessInfo),
-  applications,
-})
+const createDefaultApplicationFormState = (): ApplicationFormState =>
+  createApplicationFormState({
+    accessInfo: {
+      sharedWith: [],
+      type: 'private',
+    },
+    name: '',
+  })
 
 const createRuntimeApplicationsUpdatePayload = (
   runtime: PlaywrightRuntime,
   application: PlaywrightRuntimeApplicationPayload,
-): PlaywrightRuntimeUpdatePayload =>
+) =>
   toPlaywrightRuntimePayload(runtime, [
     ...getPlaywrightRuntimeApplications(runtime).map((item) => toPlaywrightRuntimeApplicationPayload(runtime, item)),
     application,
   ])
 
-const getRuntimeMutationErrorMessage = (error: unknown, fallback: string) => {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const response = error.response as { data?: { message?: string } } | undefined
-    const message = response?.data?.message?.trim()
+const isDraftRuntimeApplicationDialogProps = (
+  props: CreateRuntimeApplicationDialogProps,
+): props is DraftRuntimeApplicationDialogProps => 'draftRuntime' in props
 
-    if (message) {
-      return message
-    }
-  }
+const getDraftRuntimeName = (runtimeName: string, fallback: string) => runtimeName.trim() || fallback
 
-  if (error instanceof Error && error.message.trim()) {
-    return error.message
-  }
-
-  return fallback
-}
-
-export function CreateRuntimeApplicationDialog({ runtime }: { runtime: PlaywrightRuntime }) {
+export function CreateRuntimeApplicationDialog(props: CreateRuntimeApplicationDialogProps) {
   const { t } = useTranslation('runtimes')
   const [isOpen, setIsOpen] = useState(false)
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [formState, setFormState] = useState(createDefaultApplicationFormState)
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
-  const applications = getPlaywrightRuntimeApplications(runtime)
-  const isPrivateRuntime = runtime.accessInfo.type === 'private'
-  const formErrors = getCreateApplicationFormErrors(runtime, formState, applications)
+  const isDraftMode = isDraftRuntimeApplicationDialogProps(props)
+  const runtimeAccessType = isDraftMode ? props.draftRuntime.accessType : props.runtime.accessInfo.type
+  const runtimeName = isDraftMode
+    ? getDraftRuntimeName(props.draftRuntime.name, t('createRuntime.runtimeNameFallback'))
+    : props.runtime.name
+  const applications = isDraftMode ? props.draftRuntime.applications : getPlaywrightRuntimeApplications(props.runtime)
+  const isPrivateRuntime = runtimeAccessType === 'private'
+  const formErrors = getCreateApplicationFormErrors(runtimeAccessType, applications, formState)
   const showErrors = wasSubmitted
   const nameError = showErrors ? formErrors.name : undefined
   const accessTypeError = showErrors ? formErrors.accessType : undefined
@@ -198,10 +108,12 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
     maxWorkersError === 'positiveInteger' ? t('createApp.errors.maxWorkers.positiveInteger') : undefined
   const maxRetriesErrorMessage =
     maxRetriesError === 'nonNegativeInteger' ? t('createApp.errors.maxRetries.nonNegativeInteger') : undefined
-  const isSubmitting = updateRuntimeMutation.isPending
-  const fieldIdPrefix = `create-app-${runtime._id}`
+  const isSubmitting = !isDraftMode && updateRuntimeMutation.isPending
+  const fieldIdPrefix = isDraftMode
+    ? `create-app-draft-${toHtmlIdSegment(runtimeName)}`
+    : `create-app-${props.runtime._id}`
 
-  const setFormValue = (value: Partial<CreateApplicationFormState>) => {
+  const setFormValue = (value: Partial<ApplicationFormState>) => {
     setFormState((previousState) => ({
       ...previousState,
       ...value,
@@ -229,31 +141,24 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
       return
     }
 
-    const applicationAccessType = isPrivateRuntime ? 'private' : formState.accessType
-    const application: PlaywrightRuntimeApplicationPayload = {
-      name: formState.name.trim(),
-      active: formState.active,
-      nonProduction: formState.nonProduction,
-      description: normalizeOptionalString(formState.description),
-      apiUrl: normalizeOptionalString(formState.apiUrl),
-      config: {
-        maxWorkers: parseIntegerField(formState.maxWorkers) ?? 10,
-        maxRetries: parseIntegerField(formState.maxRetries) ?? 3,
-      },
-      accessInfo: {
-        type: applicationAccessType,
-      },
+    const application = toCreateApplicationPayload(formState, runtimeAccessType)
+
+    if (isDraftMode) {
+      props.onCreateApplication(application)
+      handleOpenChange(false)
+
+      return
     }
 
     try {
       await updateRuntimeMutation.mutateAsync({
-        runtimeId: runtime._id,
-        payload: createRuntimeApplicationsUpdatePayload(runtime, application),
+        runtimeId: props.runtime._id,
+        payload: createRuntimeApplicationsUpdatePayload(props.runtime, application),
       })
       toast.success(t('createApp.successTitle'), {
         description: t('createApp.successDescription', {
           app: application.name,
-          runtime: runtime.name,
+          runtime: props.runtime.name,
         }),
       })
       handleOpenChange(false)
@@ -273,7 +178,7 @@ export function CreateRuntimeApplicationDialog({ runtime }: { runtime: Playwrigh
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('createApp.title')}</DialogTitle>
-          <DialogDescription>{t('createApp.description', { runtime: runtime.name })}</DialogDescription>
+          <DialogDescription>{t('createApp.description', { runtime: runtimeName })}</DialogDescription>
         </DialogHeader>
 
         <form className="flex min-h-0 flex-col gap-6" onSubmit={handleSubmit}>
