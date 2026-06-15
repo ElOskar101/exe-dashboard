@@ -49,6 +49,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
   const formErrors = getRuntimeFormErrors(formState)
   const nameError = wasSubmitted ? formErrors.name : undefined
   const isSubmitting = updateRuntimeMutation.isPending
+  const isShareTabDisabled = runtime.accessInfo.type === 'public'
   const fieldIdPrefix = `update-runtime-${runtime._id}`
   const triggerLabel = t('updateRuntime.trigger')
 
@@ -161,7 +162,9 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
         <Tabs defaultValue="update">
           <TabsList>
             <TabsTrigger value="update">{t('tabs.update')}</TabsTrigger>
-            <TabsTrigger value="share">{t('tabs.share')}</TabsTrigger>
+            <TabsTrigger value="share" disabled={isShareTabDisabled}>
+              {t('tabs.share')}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="update">
             <form className="flex flex-col gap-6" onSubmit={handleUpdateSubmit}>

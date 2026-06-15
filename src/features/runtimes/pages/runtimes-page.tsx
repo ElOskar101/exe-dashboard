@@ -142,7 +142,7 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
               <TableHead>{t('columns.config')}</TableHead>
               <TableHead>{t('columns.apiUrl')}</TableHead>
               <TableHead>{t('columns.description')}</TableHead>
-              <TableHead>{t('columns.actions')}</TableHead>
+              <TableHead className="w-24">{t('columns.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -191,8 +191,8 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
                   <TableCell className="whitespace-nowrap text-white/80">
                     <ApplicationDescription description={application.description} />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-2">
+                  <TableCell className="whitespace-nowrap">
+                    <div className="flex flex-nowrap items-center gap-2">
                       <UpdateAppDialog application={application} runtime={runtime} />
                       <DeleteAppConfirmation application={application} runtime={runtime} />
                     </div>

@@ -66,6 +66,7 @@ export function UpdateAppDialog({
   const maxWorkersError = showErrors ? formErrors.maxWorkers : undefined
   const maxRetriesError = showErrors ? formErrors.maxRetries : undefined
   const isSubmitting = updateRuntimeMutation.isPending
+  const isShareTabDisabled = runtime.accessInfo.type === 'public' || application.accessInfo.type === 'public'
   const fieldIdPrefix = `update-app-${toHtmlIdSegment(runtime._id)}-${toHtmlIdSegment(application.name)}`
   const triggerLabel = t('updateApp.trigger')
 
@@ -195,7 +196,9 @@ export function UpdateAppDialog({
         <Tabs defaultValue="update">
           <TabsList>
             <TabsTrigger value="update">{t('tabs.update')}</TabsTrigger>
-            <TabsTrigger value="share">{t('tabs.share')}</TabsTrigger>
+            <TabsTrigger value="share" disabled={isShareTabDisabled}>
+              {t('tabs.share')}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="update">
             <form
@@ -239,7 +242,7 @@ export function UpdateAppDialog({
                   />
                 </Field>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <Field data-invalid={Boolean(maxWorkersError)}>
                     <FieldLabel htmlFor={`${fieldIdPrefix}-max-workers`}>{t('updateApp.fields.maxWorkers')}</FieldLabel>
                     <Input
@@ -275,32 +278,36 @@ export function UpdateAppDialog({
                       <FieldError>{t('updateApp.errors.maxRetries.nonNegativeInteger')}</FieldError>
                     ) : null}
                   </Field>
-                </div>
 
-                <Field data-invalid={Boolean(accessTypeError)}>
-                  <FieldLabel htmlFor={`${fieldIdPrefix}-access`}>{t('updateApp.fields.access')}</FieldLabel>
-                  <Select
-                    value={isPrivateRuntime ? 'private' : formState.accessType}
-                    onValueChange={(value) => setFormValue({ accessType: value as PlaywrightRuntimeAccessType })}
-                    disabled={isSubmitting || isPrivateRuntime}
-                  >
-                    <SelectTrigger
-                      id={`${fieldIdPrefix}-access`}
-                      className="w-full"
-                      aria-invalid={Boolean(accessTypeError)}
+                  <Field data-invalid={Boolean(accessTypeError)}>
+                    <FieldLabel htmlFor={`${fieldIdPrefix}-access`}>{t('updateApp.fields.access')}</FieldLabel>
+                    <Select
+                      value={isPrivateRuntime ? 'private' : formState.accessType}
+                      onValueChange={(value) => setFormValue({ accessType: value as PlaywrightRuntimeAccessType })}
+                      disabled={isSubmitting || isPrivateRuntime}
                     >
-                      <SelectValue>{t(`access.${isPrivateRuntime ? 'private' : formState.accessType}`)}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent align="start">
-                      <SelectGroup>
-                        <SelectItem value="private">{t('access.private')}</SelectItem>
-                        <SelectItem value="public">{t('access.public')}</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {isPrivateRuntime ? <FieldDescription>{t('updateApp.privateRuntimeAccess')}</FieldDescription> : null}
-                  {accessTypeError ? <FieldError>{t('updateApp.errors.accessType.privateRuntime')}</FieldError> : null}
-                </Field>
+                      <SelectTrigger
+                        id={`${fieldIdPrefix}-access`}
+                        className="w-full"
+                        aria-invalid={Boolean(accessTypeError)}
+                      >
+                        <SelectValue>{t(`access.${isPrivateRuntime ? 'private' : formState.accessType}`)}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent align="start">
+                        <SelectGroup>
+                          <SelectItem value="private">{t('access.private')}</SelectItem>
+                          <SelectItem value="public">{t('access.public')}</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {isPrivateRuntime ? (
+                      <FieldDescription>{t('updateApp.privateRuntimeAccess')}</FieldDescription>
+                    ) : null}
+                    {accessTypeError ? (
+                      <FieldError>{t('updateApp.errors.accessType.privateRuntime')}</FieldError>
+                    ) : null}
+                  </Field>
+                </div>
 
                 <FieldGroup className="gap-4">
                   <Field orientation="horizontal">
