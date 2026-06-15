@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   getPlaywrightRuntimeApplications,
   type PlaywrightRuntime,
@@ -67,6 +68,7 @@ export function UpdateAppDialog({
   const maxRetriesError = showErrors ? formErrors.maxRetries : undefined
   const isSubmitting = updateRuntimeMutation.isPending
   const isShareTabDisabled = runtime.accessInfo.type === 'public' || application.accessInfo.type === 'public'
+  const shareTabDisabledReason = t('share.disabled.publicRuntimeOrApp')
   const fieldIdPrefix = `update-app-${toHtmlIdSegment(runtime._id)}-${toHtmlIdSegment(application.name)}`
   const triggerLabel = t('updateApp.trigger')
 
@@ -78,11 +80,8 @@ export function UpdateAppDialog({
   }
 
   const handleOpenChange = (open: boolean) => {
+    resetDialog()
     setIsOpen(open)
-
-    if (!open) {
-      resetDialog()
-    }
   }
 
   const setFormValue = (value: Partial<ApplicationFormState>) => {
@@ -158,7 +157,7 @@ export function UpdateAppDialog({
         },
         accessInfo: {
           type: applicationAccessType,
-          sharedWith: getSharedMemberIds(application.accessInfo),
+          sharedWith: memberIds,
         },
       },
       t('updateApp.successDescription', { app: formState.name.trim() }),
@@ -196,9 +195,18 @@ export function UpdateAppDialog({
         <Tabs defaultValue="update">
           <TabsList>
             <TabsTrigger value="update">{t('tabs.update')}</TabsTrigger>
-            <TabsTrigger value="share" disabled={isShareTabDisabled}>
-              {t('tabs.share')}
-            </TabsTrigger>
+            {isShareTabDisabled ? (
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex cursor-not-allowed" />}>
+                  <TabsTrigger value="share" disabled>
+                    {t('tabs.share')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{shareTabDisabledReason}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <TabsTrigger value="share">{t('tabs.share')}</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="update">
             <form

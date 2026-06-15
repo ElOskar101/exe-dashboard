@@ -98,6 +98,10 @@
     "empty": "No shared IDs configured.",
     "removeLabel": "Remove {{memberId}}",
     "submit": "Save sharing",
+    "disabled": {
+      "publicRuntime": "Sharing is unavailable for public runtimes.",
+      "publicRuntimeOrApp": "Sharing is unavailable while the runtime or app is public."
+    },
     "runtimeSuccessDescription": "Sharing was updated for {{runtime}}.",
     "appSuccessDescription": "Sharing was updated for {{app}}."
   },

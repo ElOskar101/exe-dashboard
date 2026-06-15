@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -9,6 +8,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import {
   getPlaywrightRuntimeApplications,
@@ -17,6 +17,7 @@ import {
   useUpdatePlaywrightRuntimeMutation,
 } from '@/features/executions'
 import { IconTrash } from '@tabler/icons-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
@@ -34,9 +35,18 @@ export function DeleteAppConfirmation({
   runtime: PlaywrightRuntime
 }) {
   const { t } = useTranslation('runtimes')
+  const [isOpen, setIsOpen] = useState(false)
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
   const isSubmitting = updateRuntimeMutation.isPending
   const triggerLabel = t('deleteApp.trigger')
+
+  const handleOpenChange = (open: boolean) => {
+    if (isSubmitting && !open) {
+      return
+    }
+
+    setIsOpen(open)
+  }
 
   const handleDelete = async () => {
     const applications = getPlaywrightRuntimeApplications(runtime)
@@ -51,6 +61,7 @@ export function DeleteAppConfirmation({
       toast.success(t('deleteApp.successTitle'), {
         description: t('deleteApp.successDescription', { app: application.name }),
       })
+      setIsOpen(false)
     } catch (error) {
       toast.error(t('deleteApp.errorTitle'), {
         description: getRuntimeMutationErrorMessage(error, t('deleteApp.errorDescription')),
@@ -59,7 +70,7 @@ export function DeleteAppConfirmation({
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <RuntimeActionTooltip label={triggerLabel}>
         <AlertDialogTrigger
           render={<RuntimeActionTooltipTrigger icon={<IconTrash />} label={triggerLabel} variant="destructive" />}
@@ -72,10 +83,10 @@ export function DeleteAppConfirmation({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>{t('deleteApp.cancel')}</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" disabled={isSubmitting} onClick={() => void handleDelete()}>
+          <Button type="button" variant="destructive" disabled={isSubmitting} onClick={() => void handleDelete()}>
             {isSubmitting ? <Spinner data-icon="inline-start" /> : <IconTrash data-icon="inline-start" />}
             {t('deleteApp.confirm')}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
