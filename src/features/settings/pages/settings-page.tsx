@@ -7,15 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  getSelectedExecutionRequestTarget,
+  getFirstSelectableRuntimeApplication,
   getPlaywrightRuntimeApplications,
+  getRuntimeApplicationUnavailableLabel,
+  getSelectedExecutionRequestTarget,
+  isRuntimeApplicationSelectable,
   useExecutionAppStatsQuery,
   useExecutionTarget,
   useExecutionTargetSetter,
   usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
+  useRuntimeApplicationAvailability,
   type ExecutionAppStats,
-  type PlaywrightRuntime,
   type PlaywrightRuntimeApplication,
 } from '@/features/executions'
 import {
@@ -39,12 +42,6 @@ const SETTINGS_TABS = [DEFAULT_SETTINGS_TAB, 'app-status'] as const
 type SettingsTab = (typeof SETTINGS_TABS)[number]
 
 const isSettingsTab = (value: string | null): value is SettingsTab => SETTINGS_TABS.some((tab) => tab === value)
-
-const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
-  application.active !== false && Boolean(application.apiUrl?.trim())
-
-const getFirstSelectableApplication = (runtime: PlaywrightRuntime | undefined) =>
-  getPlaywrightRuntimeApplications(runtime).find(isApplicationSelectable)
 
 const getApplicationSelection = (runtimeId: string, application: PlaywrightRuntimeApplication) => ({
   runtimeId,
@@ -194,6 +191,7 @@ export function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { target } = useExecutionTarget()
   const runtimesQuery = usePlaywrightRuntimesQuery()
+  const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
   const projectsQuery = usePlaywrightProjectsQuery()
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
@@ -204,6 +202,12 @@ export function SettingsPage() {
   const effectiveApiUrl = target.requestTarget.apiUrl
   const selectedRuntimeDescription = selectedRuntime?.description?.trim() || t('runtime.noDescription')
   const selectedApplicationDescription = selectedApplication?.description?.trim() || t('runtime.noDescription')
+  const runtimeApplicationUnavailableLabels = {
+    checkingAvailability: t('runtime.checkingAvailability'),
+    inactive: t('runtime.inactive'),
+    noApiUrl: t('runtime.noApiUrl'),
+    statsUnavailable: t('runtime.statsUnavailable'),
+  }
   const selectedSettingsTab = isSettingsTab(searchParams.get(SETTINGS_TAB_SEARCH_PARAM))
     ? searchParams.get(SETTINGS_TAB_SEARCH_PARAM)
     : DEFAULT_SETTINGS_TAB
@@ -233,7 +237,7 @@ export function SettingsPage() {
 
   const handleRuntimeChange = (runtimeId: string | null) => {
     const runtime = runtimesQuery.data?.find((candidate) => candidate._id === runtimeId)
-    const application = getFirstSelectableApplication(runtime)
+    const application = getFirstSelectableRuntimeApplication(runtime, availableApiUrls, isCheckingAvailability)
 
     if (!runtime || !application) {
       return
@@ -247,7 +251,11 @@ export function SettingsPage() {
       (candidate) => candidate.name === applicationName,
     )
 
-    if (!selectedRuntime || !application || !isApplicationSelectable(application)) {
+    if (
+      !selectedRuntime ||
+      !application ||
+      !isRuntimeApplicationSelectable(application, availableApiUrls, isCheckingAvailability)
+    ) {
       return
     }
 
@@ -310,7 +318,9 @@ export function SettingsPage() {
                         <SelectItem
                           key={runtime._id}
                           value={runtime._id}
-                          disabled={!getFirstSelectableApplication(runtime)}
+                          disabled={
+                            !getFirstSelectableRuntimeApplication(runtime, availableApiUrls, isCheckingAvailability)
+                          }
                         >
                           <span className="flex min-w-0 items-center gap-2">
                             <span className="truncate">{runtime.name}</span>
@@ -343,7 +353,17 @@ export function SettingsPage() {
                     </SelectTrigger>
                     <SelectContent align="start">
                       {getPlaywrightRuntimeApplications(selectedRuntime).map((application) => {
-                        const isSelectable = isApplicationSelectable(application)
+                        const isSelectable = isRuntimeApplicationSelectable(
+                          application,
+                          availableApiUrls,
+                          isCheckingAvailability,
+                        )
+                        const unavailableLabel = getRuntimeApplicationUnavailableLabel(
+                          application,
+                          availableApiUrls,
+                          isCheckingAvailability,
+                          runtimeApplicationUnavailableLabels,
+                        )
 
                         return (
                           <SelectItem key={application.name} value={application.name} disabled={!isSelectable}>
@@ -362,14 +382,9 @@ export function SettingsPage() {
                                 </Badge>
                                 <Badge variant="outline">{t(`runtime.access.${application.accessInfo.type}`)}</Badge>
                               </span>
-                              {application.active === false ? (
+                              {unavailableLabel ? (
                                 <span className="truncate text-xs font-normal text-muted-foreground">
-                                  {t('runtime.inactive')}
-                                </span>
-                              ) : null}
-                              {!application.apiUrl?.trim() ? (
-                                <span className="truncate text-xs font-normal text-muted-foreground">
-                                  {t('runtime.noApiUrl')}
+                                  {unavailableLabel}
                                 </span>
                               ) : null}
                             </span>

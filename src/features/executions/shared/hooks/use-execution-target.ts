@@ -6,17 +6,24 @@ import {
   EXECUTION_RUNTIME_SEARCH_PARAM,
   EXECUTION_TARGET_URL_SEARCH_PARAM,
   getExecutionTargetSearchSelection,
+  getSelectedExecutionRequestTarget,
   resolveExecutionTarget,
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
 import { executionKeys } from '../lib/execution-query-keys'
+import { getRuntimeApplicationApiUrl, hasRuntimeApplicationApiUrl } from '../lib/runtime-application-availability'
 import {
+  getExecutionAppStats,
   getPlaywrightProjects,
   getPlaywrightRuntimeResponseData,
   getPlaywrightRuntimes,
   updatePlaywrightRuntime,
 } from '../services/execution.service'
-import type { PlaywrightRuntimeUpdatePayload } from '../model/playwright-runtime'
+import {
+  getPlaywrightRuntimeApplications,
+  type PlaywrightRuntime,
+  type PlaywrightRuntimeUpdatePayload,
+} from '../model/playwright-runtime'
 
 interface PlaywrightRuntimeUpdateMutationVariables {
   runtimeId: string
@@ -33,6 +40,58 @@ export const usePlaywrightRuntimesQuery = (enabled = true) =>
     },
     enabled,
   })
+
+export const getRuntimeApplicationApiUrls = (runtimes: readonly PlaywrightRuntime[] | undefined) =>
+  Array.from(
+    new Set(
+      (runtimes ?? [])
+        .flatMap((runtime) => getPlaywrightRuntimeApplications(runtime))
+        .map(getRuntimeApplicationApiUrl)
+        .filter(Boolean),
+    ),
+  ).sort()
+
+export const getAvailableRuntimeApplicationApiUrls = async (apiUrls: readonly string[]) => {
+  const availabilityResults = await Promise.all(
+    apiUrls.map(async (apiUrl) => {
+      try {
+        await getExecutionAppStats(getSelectedExecutionRequestTarget(apiUrl))
+
+        return [apiUrl, true] as const
+      } catch {
+        return [apiUrl, false] as const
+      }
+    }),
+  )
+
+  return availabilityResults.filter(([, isAvailable]) => isAvailable).map(([apiUrl]) => apiUrl)
+}
+
+export const useRuntimeApplicationAvailabilityQuery = (runtimes: readonly PlaywrightRuntime[] | undefined) => {
+  const apiUrls = useMemo(() => getRuntimeApplicationApiUrls(runtimes), [runtimes])
+
+  return useQuery({
+    queryKey: executionKeys.runtimeApplicationAvailability(apiUrls),
+    queryFn: () => getAvailableRuntimeApplicationApiUrls(apiUrls),
+    enabled: Boolean(runtimes) && apiUrls.length > 0,
+    retry: false,
+  })
+}
+
+export const useRuntimeApplicationAvailability = (runtimes: readonly PlaywrightRuntime[] | undefined) => {
+  const availabilityQuery = useRuntimeApplicationAvailabilityQuery(runtimes)
+  const availableApiUrls = useMemo(() => new Set(availabilityQuery.data ?? []), [availabilityQuery.data])
+  const hasConfiguredApplicationApiUrls = Boolean(
+    runtimes?.some((runtime) => getPlaywrightRuntimeApplications(runtime).some(hasRuntimeApplicationApiUrl)),
+  )
+  const isCheckingAvailability = Boolean(runtimes && hasConfiguredApplicationApiUrls && availabilityQuery.isPending)
+
+  return {
+    availabilityQuery,
+    availableApiUrls,
+    isCheckingAvailability,
+  }
+}
 
 export const usePlaywrightProjectsQuery = (enabled = true) =>
   useQuery({

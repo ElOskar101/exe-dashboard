@@ -103,6 +103,13 @@ export {
   type ExecutionTargetSearchSelection,
 } from './lib/execution-target'
 export {
+  getFirstSelectableRuntimeApplication,
+  getRuntimeApplicationUnavailableLabel,
+  hasRuntimeApplicationApiUrl,
+  isRuntimeApplicationSelectable,
+  type RuntimeApplicationUnavailableLabels,
+} from './lib/runtime-application-availability'
+export {
   subscribeToExecutionRoom,
   subscribeToExecutionStatus,
   type ExecutionLogPayload,
@@ -128,6 +135,8 @@ export {
   useExecutionTargetSetter,
   usePlaywrightProjectsQuery,
   usePlaywrightRuntimesQuery,
+  useRuntimeApplicationAvailability,
+  useRuntimeApplicationAvailabilityQuery,
   useUpdatePlaywrightRuntimeMutation,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'

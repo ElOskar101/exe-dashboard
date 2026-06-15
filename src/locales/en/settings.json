@@ -18,6 +18,8 @@
     "configLabel": "Config",
     "active": "Active",
     "inactive": "Inactive",
+    "checkingAvailability": "Checking API availability",
+    "statsUnavailable": "Stats endpoint did not respond successfully",
     "production": "Production",
     "nonProduction": "Development",
     "maxWorkers": "Max workers",

@@ -17,13 +17,16 @@ import {
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
   getPlaywrightRuntimeApplications,
+  getRuntimeApplicationUnavailableLabel,
   getSelectedExecutionRequestTarget,
+  isRuntimeApplicationSelectable,
   type PlaywrightRuntimeApplication,
   useExecutionAppStatsQuery,
   useExecutionTarget,
   useExecutionTargetNavigation,
   useExecutionTargetSetter,
   usePlaywrightRuntimesQuery,
+  useRuntimeApplicationAvailability,
 } from '@/features/executions'
 import { useTheme } from '@/hooks/use-theme'
 import { IconBox, IconDeviceDesktop } from '@tabler/icons-react'
@@ -35,8 +38,12 @@ const getRuntimeApplicationOptionValue = (runtimeId: string, application: Playwr
     targetUrl: getSelectedExecutionRequestTarget(application).apiUrl,
   })
 
-const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
-  application.active !== false && Boolean(application.apiUrl?.trim())
+const runtimeApplicationUnavailableLabels = {
+  checkingAvailability: 'Checking API availability',
+  inactive: 'Inactive',
+  noApiUrl: 'No API URL configured',
+  statsUnavailable: 'Stats endpoint did not respond successfully',
+}
 
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation(['common', 'settings'])
@@ -44,6 +51,7 @@ const Header: () => JSX.Element = () => {
   const { target } = useExecutionTarget()
   const { getPathWithExecutionTarget, getSettingsPath } = useExecutionTargetNavigation()
   const runtimesQuery = usePlaywrightRuntimesQuery()
+  const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
   const appStatsQuery = useExecutionAppStatsQuery()
   const setExecutionTarget = useExecutionTargetSetter()
   const selectedRuntime = runtimesQuery.data?.find((runtime) => runtime._id === target.runtimeId)
@@ -141,28 +149,36 @@ const Header: () => JSX.Element = () => {
                   <SelectGroup key={runtime._id}>
                     {runtimeIndex > 0 ? <SelectSeparator /> : null}
                     <SelectLabel>{runtime.name}</SelectLabel>
-                    {getPlaywrightRuntimeApplications(runtime).map((application) => (
-                      <SelectItem
-                        key={`${runtime._id}-${application.name}`}
-                        value={getRuntimeApplicationOptionValue(runtime._id, application)}
-                        disabled={!isApplicationSelectable(application)}
-                      >
-                        <span className="flex min-w-0 flex-col gap-0.5">
-                          <span className="flex min-w-0 items-center gap-1.5">
-                            <IconBox className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="truncate">{application.name}</span>
-                          </span>
-                          {application.active === false ? (
-                            <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
-                          ) : null}
-                          {!application.apiUrl?.trim() ? (
-                            <span className="truncate text-xs font-normal text-muted-foreground">
-                              No API URL configured
+                    {getPlaywrightRuntimeApplications(runtime).map((application) => {
+                      const unavailableLabel = getRuntimeApplicationUnavailableLabel(
+                        application,
+                        availableApiUrls,
+                        isCheckingAvailability,
+                        runtimeApplicationUnavailableLabels,
+                      )
+
+                      return (
+                        <SelectItem
+                          key={`${runtime._id}-${application.name}`}
+                          value={getRuntimeApplicationOptionValue(runtime._id, application)}
+                          disabled={
+                            !isRuntimeApplicationSelectable(application, availableApiUrls, isCheckingAvailability)
+                          }
+                        >
+                          <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="flex min-w-0 items-center gap-1.5">
+                              <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                              <span className="truncate">{application.name}</span>
                             </span>
-                          ) : null}
-                        </span>
-                      </SelectItem>
-                    ))}
+                            {unavailableLabel ? (
+                              <span className="truncate text-xs font-normal text-muted-foreground">
+                                {unavailableLabel}
+                              </span>
+                            ) : null}
+                          </span>
+                        </SelectItem>
+                      )
+                    })}
                   </SelectGroup>
                 ))}
               </SelectContent>

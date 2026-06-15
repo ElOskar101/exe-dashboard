@@ -16,19 +16,31 @@ import {
   type ExecutionTargetSearchSelection,
 } from '../lib/execution-target'
 import {
+  getFirstSelectableRuntimeApplication,
+  getRuntimeApplicationUnavailableLabel,
+  isRuntimeApplicationSelectable,
+} from '../lib/runtime-application-availability'
+import {
   getPlaywrightRuntimeApplications,
   type PlaywrightRuntime,
   type PlaywrightRuntimeApplication,
 } from '../model/playwright-runtime'
-import { usePlaywrightRuntimesQuery } from '../hooks/use-execution-target'
+import { usePlaywrightRuntimesQuery, useRuntimeApplicationAvailability } from '../hooks/use-execution-target'
 
 const SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM = 'returnTo'
 
-const isApplicationSelectable = (application: PlaywrightRuntimeApplication) =>
-  application.active !== false && Boolean(application.apiUrl?.trim())
+const runtimeApplicationUnavailableLabels = {
+  checkingAvailability: 'Checking API availability',
+  inactive: 'Inactive',
+  noApiUrl: 'No API URL configured',
+  statsUnavailable: 'Stats endpoint did not respond successfully',
+}
 
-const getFirstSelectableApplication = (runtime: PlaywrightRuntime | undefined) =>
-  getPlaywrightRuntimeApplications(runtime).find(isApplicationSelectable)
+const getFirstSelectableApplication = (
+  runtime: PlaywrightRuntime | undefined,
+  availableApiUrls: ReadonlySet<string>,
+  isCheckingAvailability: boolean,
+) => getFirstSelectableRuntimeApplication(runtime, availableApiUrls, isCheckingAvailability)
 
 const getApplicationSelection = (
   runtimeId: string,
@@ -41,9 +53,11 @@ const getApplicationSelection = (
 
 const findFirstSelection = (
   runtimes: readonly PlaywrightRuntime[] | undefined,
+  availableApiUrls: ReadonlySet<string>,
+  isCheckingAvailability: boolean,
 ): ExecutionTargetSearchSelection | null => {
   for (const runtime of runtimes ?? []) {
-    const application = getFirstSelectableApplication(runtime)
+    const application = getFirstSelectableApplication(runtime, availableApiUrls, isCheckingAvailability)
 
     if (application) {
       return getApplicationSelection(runtime._id, application)
@@ -57,11 +71,17 @@ const findApplicationSelection = (
   runtimes: readonly PlaywrightRuntime[],
   runtimeId: string,
   applicationName: string,
+  availableApiUrls: ReadonlySet<string>,
+  isCheckingAvailability: boolean,
 ): ExecutionTargetSearchSelection | null => {
   const runtime = runtimes.find((candidate) => candidate._id === runtimeId)
   const application = getPlaywrightRuntimeApplications(runtime).find((candidate) => candidate.name === applicationName)
 
-  if (!runtime || !application || !isApplicationSelectable(application)) {
+  if (
+    !runtime ||
+    !application ||
+    !isRuntimeApplicationSelectable(application, availableApiUrls, isCheckingAvailability)
+  ) {
     return null
   }
 
@@ -71,9 +91,11 @@ const findApplicationSelection = (
 const getRuntimeSelection = (
   runtimes: readonly PlaywrightRuntime[],
   runtimeId: string,
+  availableApiUrls: ReadonlySet<string>,
+  isCheckingAvailability: boolean,
 ): ExecutionTargetSearchSelection | null => {
   const runtime = runtimes.find((candidate) => candidate._id === runtimeId)
-  const application = getFirstSelectableApplication(runtime)
+  const application = getFirstSelectableApplication(runtime, availableApiUrls, isCheckingAvailability)
 
   if (!runtime || !application) {
     return null
@@ -99,7 +121,22 @@ function RuntimeOptionLabel({ runtime }: { runtime: PlaywrightRuntime }) {
   )
 }
 
-function ApplicationOptionLabel({ application }: { application: PlaywrightRuntimeApplication }) {
+function ApplicationOptionLabel({
+  application,
+  availableApiUrls,
+  isCheckingAvailability,
+}: {
+  application: PlaywrightRuntimeApplication
+  availableApiUrls: ReadonlySet<string>
+  isCheckingAvailability: boolean
+}) {
+  const unavailableLabel = getRuntimeApplicationUnavailableLabel(
+    application,
+    availableApiUrls,
+    isCheckingAvailability,
+    runtimeApplicationUnavailableLabels,
+  )
+
   return (
     <span className="flex min-w-0 flex-col gap-1">
       <span className="flex min-w-0 items-center gap-2">
@@ -111,11 +148,8 @@ function ApplicationOptionLabel({ application }: { application: PlaywrightRuntim
         <Badge variant="outline">{application.nonProduction ? 'Development' : 'Production'}</Badge>
         <Badge variant="outline">{getApplicationAccessLabel(application)}</Badge>
       </span>
-      {application.active === false ? (
-        <span className="truncate text-xs font-normal text-muted-foreground">Inactive</span>
-      ) : null}
-      {!application.apiUrl?.trim() ? (
-        <span className="truncate text-xs font-normal text-muted-foreground">No API URL configured</span>
+      {unavailableLabel ? (
+        <span className="truncate text-xs font-normal text-muted-foreground">{unavailableLabel}</span>
       ) : null}
     </span>
   )
@@ -125,10 +159,14 @@ function RuntimeApplicationTargetCardContent({
   defaultValue,
   onSelectionConfirmed,
   runtimes,
+  availableApiUrls,
+  isCheckingAvailability,
 }: {
   defaultValue: ExecutionTargetSearchSelection
   onSelectionConfirmed: Dispatch<ExecutionTargetSearchSelection>
   runtimes: readonly PlaywrightRuntime[]
+  availableApiUrls: ReadonlySet<string>
+  isCheckingAvailability: boolean
 }) {
   const [selectedSelection, setSelectedSelection] = useState(defaultValue)
   const selectedRuntime = runtimes.find((runtime) => runtime._id === selectedSelection?.runtimeId)
@@ -139,7 +177,7 @@ function RuntimeApplicationTargetCardContent({
   const handleRuntimeChange = (runtimeId: string | null) => {
     if (!runtimeId) return
 
-    const nextSelection = getRuntimeSelection(runtimes, runtimeId)
+    const nextSelection = getRuntimeSelection(runtimes, runtimeId, availableApiUrls, isCheckingAvailability)
 
     if (nextSelection) {
       setSelectedSelection(nextSelection)
@@ -149,7 +187,13 @@ function RuntimeApplicationTargetCardContent({
   const handleApplicationChange = (applicationName: string | null) => {
     if (!applicationName) return
 
-    const nextSelection = findApplicationSelection(runtimes, selectedSelection.runtimeId, applicationName)
+    const nextSelection = findApplicationSelection(
+      runtimes,
+      selectedSelection.runtimeId,
+      applicationName,
+      availableApiUrls,
+      isCheckingAvailability,
+    )
 
     if (nextSelection) {
       setSelectedSelection(nextSelection)
@@ -185,7 +229,7 @@ function RuntimeApplicationTargetCardContent({
                     <SelectItem
                       key={runtime._id}
                       value={runtime._id}
-                      disabled={!getFirstSelectableApplication(runtime)}
+                      disabled={!getFirstSelectableApplication(runtime, availableApiUrls, isCheckingAvailability)}
                     >
                       <RuntimeOptionLabel runtime={runtime} />
                     </SelectItem>
@@ -208,7 +252,11 @@ function RuntimeApplicationTargetCardContent({
               <SelectTrigger id="required-execution-application" className="w-full">
                 <SelectValue placeholder="Choose an app">
                   {selectedApplication ? (
-                    <ApplicationOptionLabel application={selectedApplication} />
+                    <ApplicationOptionLabel
+                      application={selectedApplication}
+                      availableApiUrls={availableApiUrls}
+                      isCheckingAvailability={isCheckingAvailability}
+                    />
                   ) : (
                     <span className="truncate">{selectedSelection.applicationName}</span>
                   )}
@@ -217,11 +265,19 @@ function RuntimeApplicationTargetCardContent({
               <SelectContent align="start">
                 <SelectGroup>
                   {getPlaywrightRuntimeApplications(selectedRuntime).map((application) => {
-                    const isSelectable = isApplicationSelectable(application)
+                    const isSelectable = isRuntimeApplicationSelectable(
+                      application,
+                      availableApiUrls,
+                      isCheckingAvailability,
+                    )
 
                     return (
                       <SelectItem key={application.name} value={application.name} disabled={!isSelectable}>
-                        <ApplicationOptionLabel application={application} />
+                        <ApplicationOptionLabel
+                          application={application}
+                          availableApiUrls={availableApiUrls}
+                          isCheckingAvailability={isCheckingAvailability}
+                        />
                       </SelectItem>
                     )
                   })}
@@ -245,7 +301,11 @@ export function RuntimeApplicationTargetGate() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const runtimesQuery = usePlaywrightRuntimesQuery()
-  const firstSelection = useMemo(() => findFirstSelection(runtimesQuery.data), [runtimesQuery.data])
+  const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
+  const firstSelection = useMemo(
+    () => findFirstSelection(runtimesQuery.data, availableApiUrls, isCheckingAvailability),
+    [availableApiUrls, isCheckingAvailability, runtimesQuery.data],
+  )
   const returnTo = searchParams.get(SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM) || '/'
 
   const handleSelectionConfirmed = (selection: ExecutionTargetSearchSelection) => {
@@ -293,12 +353,20 @@ export function RuntimeApplicationTargetGate() {
           </CardContent>
         ) : null}
 
-        {!runtimesQuery.isLoading && runtimesQuery.data && !firstSelection ? (
+        {isCheckingAvailability ? (
+          <CardContent>
+            <div className="text-sm text-muted-foreground">Checking app availability...</div>
+          </CardContent>
+        ) : null}
+
+        {!runtimesQuery.isLoading && !isCheckingAvailability && runtimesQuery.data && !firstSelection ? (
           <CardContent>
             <Alert variant="destructive">
               <IconAlertCircle />
               <AlertTitle>No selectable apps</AlertTitle>
-              <AlertDescription>Every runtime application is inactive or missing an API URL.</AlertDescription>
+              <AlertDescription>
+                Every runtime application is inactive, missing an API URL, or failing its stats check.
+              </AlertDescription>
             </Alert>
           </CardContent>
         ) : null}
@@ -309,6 +377,8 @@ export function RuntimeApplicationTargetGate() {
             defaultValue={firstSelection}
             onSelectionConfirmed={handleSelectionConfirmed}
             runtimes={runtimesQuery.data}
+            availableApiUrls={availableApiUrls}
+            isCheckingAvailability={isCheckingAvailability}
           />
         ) : null}
       </Card>

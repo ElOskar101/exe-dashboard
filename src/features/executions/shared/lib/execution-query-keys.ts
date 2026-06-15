@@ -3,6 +3,8 @@ import { normalizeExecutionQuery, type ExecutionQuery } from '../model/execution
 export const executionKeys = {
   all: (targetKey: string) => ['executions', targetKey] as const,
   runtimeCatalog: () => ['playwright-runtime-catalog'] as const,
+  runtimeApplicationAvailability: (apiUrls: readonly string[]) =>
+    ['playwright-runtime-application-availability', apiUrls] as const,
   projectCatalog: () => ['playwright-project-catalog'] as const,
   listRoot: (targetKey: string) => [...executionKeys.all(targetKey), 'list'] as const,
   list: (query: ExecutionQuery | undefined, targetKey: string) => {
