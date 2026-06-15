@@ -16,17 +16,28 @@ import {
   getSelectedClientClinicOptions,
   matchesDateRange,
 } from '../lib/execution-listing-filters'
-import { groupExecutionsByProject } from '../lib/execution-sidebar-display'
 
-const DEFAULT_EXECUTIONS_LIMIT = 15
 type ExecutionStatusFilter = typeof ALL_FILTER_VALUE | ExecutionStatus
+
+const getCreatedAtSortValue = (createdAt: string) => {
+  const time = new Date(createdAt).getTime()
+
+  return Number.isNaN(time) ? 0 : time
+}
+
+const sortExecutionsByCreatedAtDescending = <TExecution extends { createdAt: string }>(
+  executions: readonly TExecution[],
+) =>
+  [...executions].sort(
+    (leftExecution, rightExecution) =>
+      getCreatedAtSortValue(rightExecution.createdAt) - getCreatedAtSortValue(leftExecution.createdAt),
+  )
 
 export function useExecutionsListing() {
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([])
   const [selectedClinicIds, setSelectedClinicIds] = useState<string[]>([])
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [statusFilter, setStatusFilter] = useState<ExecutionStatusFilter>(ALL_FILTER_VALUE)
-  const [isExecutionLimitActive, setIsExecutionLimitActive] = useState(true)
   const dateFrom = useMemo(() => getDateRangeBoundary(dateRange?.from, 'start'), [dateRange?.from])
   const dateTo = useMemo(() => getDateRangeBoundary(dateRange?.to, 'end'), [dateRange?.to])
   const executionQueryFilters = useMemo(() => {
@@ -38,27 +49,18 @@ export function useExecutionsListing() {
     if (dateTo) nextFilters.to = dateTo
     if (dateFrom || dateTo) nextFilters.dateField = EXECUTION_DATE_FIELD
     if (statusFilter !== ALL_FILTER_VALUE) nextFilters.status = statusFilter
-    if (isExecutionLimitActive) nextFilters.limit = DEFAULT_EXECUTIONS_LIMIT
 
     return nextFilters
-  }, [dateFrom, dateTo, isExecutionLimitActive, selectedClientIds, selectedClinicIds, statusFilter])
-  const allExecutionsQuery = useExecutionsQuery(isExecutionLimitActive ? { limit: DEFAULT_EXECUTIONS_LIMIT } : {})
+  }, [dateFrom, dateTo, selectedClientIds, selectedClinicIds, statusFilter])
   const executionsQuery = useExecutionsQuery(executionQueryFilters)
   const executionStatusReadModel = useExecutionStatusReadModel()
-  const groupedExecutions = useMemo(() => groupExecutionsByProject(executionsQuery.data ?? []), [executionsQuery.data])
-  const sortedExecutions = useMemo(() => groupedExecutions.flatMap((group) => group.executions), [groupedExecutions])
-  const optionExecutions = useMemo(() => {
-    const executionsById = new Map((allExecutionsQuery.data ?? []).map((execution) => [execution._id, execution]))
-
-    sortedExecutions.forEach((execution) => {
-      executionsById.set(execution._id, execution)
-    })
-
-    return Array.from(executionsById.values())
-  }, [allExecutionsQuery.data, sortedExecutions])
+  const sortedExecutions = useMemo(
+    () => sortExecutionsByCreatedAtDescending(executionsQuery.data ?? []),
+    [executionsQuery.data],
+  )
   const clinicOptions = useMemo(
-    () => getSelectedClientClinicOptions(optionExecutions, selectedClientIds),
-    [optionExecutions, selectedClientIds],
+    () => getSelectedClientClinicOptions(sortedExecutions, selectedClientIds),
+    [sortedExecutions, selectedClientIds],
   )
   const updateSelectedClientIds = (nextClientIds: string[]) => {
     setSelectedClientIds(nextClientIds)
@@ -70,7 +72,7 @@ export function useExecutionsListing() {
 
     const nextClientIdsSet = new Set(nextClientIds)
     const nextClinicIds = new Set(
-      optionExecutions
+      sortedExecutions
         .filter((execution) => nextClientIdsSet.has(execution.client))
         .map((execution) => execution.clinic)
         .filter(Boolean),
@@ -106,8 +108,6 @@ export function useExecutionsListing() {
     Boolean(dateRange?.from) ||
     Boolean(dateRange?.to) ||
     statusFilter !== ALL_FILTER_VALUE
-  const shouldShowAllExecutions =
-    isExecutionLimitActive && (executionsQuery.data?.length ?? 0) >= DEFAULT_EXECUTIONS_LIMIT
 
   return {
     clinicOptions,
@@ -116,15 +116,12 @@ export function useExecutionsListing() {
     executionsQuery,
     filteredExecutions,
     isFiltered,
-    isExecutionLimitActive,
     selectedClientIds,
     selectedClinicIds,
-    shouldShowAllExecutions,
     statusFilter,
     setDateRange,
     setSelectedClinicIds,
     setStatusFilter,
-    showAllExecutions: () => setIsExecutionLimitActive(false),
     updateSelectedClientIds,
   }
 }

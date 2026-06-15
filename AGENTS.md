@@ -1,4 +1,8 @@
-# Agent
+# Executions Agent
+This is a web scrapping robot execution manager app.
+
+## Instructions to AI
+On new features don't create tests for them and instead use the most reliable end-user browser skill, plugin or MCP to make sure the feature works as expected (only on frontend changes which user will see).
 
 ## Package manager
 Use `pnpm` as the package manager and scripts runner.

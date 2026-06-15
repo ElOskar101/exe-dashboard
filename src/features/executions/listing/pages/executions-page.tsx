@@ -38,16 +38,13 @@ export default function ExecutionsPage() {
     executionStatusReadModel,
     executionsQuery,
     filteredExecutions,
-    isExecutionLimitActive,
     isFiltered,
     selectedClientIds,
     selectedClinicIds,
-    shouldShowAllExecutions,
     statusFilter,
     setDateRange,
     setSelectedClinicIds,
     setStatusFilter,
-    showAllExecutions,
     updateSelectedClientIds,
   } = useExecutionsListing()
   const selectedStatusFilterLabel =
@@ -158,10 +155,7 @@ export default function ExecutionsPage() {
                 noFilteredExecutions: t('list.noFilteredExecutions'),
                 showAll: t('list.showAll'),
               }}
-              isExecutionLimitActive={isExecutionLimitActive}
               isFiltered={isFiltered}
-              shouldShowAllExecutions={shouldShowAllExecutions}
-              onShowAllExecutions={showAllExecutions}
             />
           ) : null}
         </CardContent>
