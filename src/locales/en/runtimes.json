@@ -12,6 +12,35 @@
   "creator": {
     "unknown": "Creator unavailable"
   },
+  "runtimeDetails": {
+    "trigger": "Details",
+    "title": "Runtime details",
+    "description": "Details for {{runtime}}.",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "access": "Access",
+      "creator": "Creator",
+      "applications": "Applications",
+      "sharedWith": "Shared with"
+    }
+  },
+  "appDetails": {
+    "trigger": "Details",
+    "title": "App details",
+    "description": "Details for {{app}} in {{runtime}}.",
+    "fields": {
+      "name": "Name",
+      "status": "Status",
+      "environment": "Environment",
+      "access": "Access",
+      "creator": "Creator",
+      "config": "Config",
+      "apiUrl": "API URL",
+      "description": "Description",
+      "sharedWith": "Shared with"
+    }
+  },
   "runtimeSummary": {
     "emptyApplications": "This runtime does not expose any applications."
   },
