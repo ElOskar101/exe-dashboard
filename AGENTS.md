@@ -19,10 +19,14 @@ Run the following check commands after any code changes:
 - `pnpm run lint`
 - `pnpm run typecheck`
 
-Always try to fix lint issues and don't disable linter rules only if completely necessary.
-Trust the changes made by the linter, do not revert them.
+Code quality you MUST follow:
 
-Trust typescript types and interfaces, don't write runtime type checks like `if (typeof value === 'string') { ... }`. Always use type inference and let compiler catch type errors.
+- Always try to fix lint issues and don't disable linter rules only if completely necessary. Trust the changes made by the linter, do not revert them.
+
+- Write simple and scalable code, don't overload components with business logic and extract it into separate lib, hooks, or services.
+
+- Always use one source of truth for data types. If you need other data types derive them from the one source of truth. Trust the typescript types and interfaces, don't write runtime type checks like `if (typeof value === 'string') { ... }`. Always prefer type inference and let compiler catch type errors.
+
 
 ## Project structure
 `/src/features`: Here you can find this app's core modules. Only read the interfaces (`index.ts`) when exploring, investigating a module's capabilities, needing a module reference, or adding a new feature module.
