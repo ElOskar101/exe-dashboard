@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { APP_CONFIG } from '@/app.config'
+import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 import { useContext, useState, type FocusEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -41,12 +41,16 @@ function getInitials(name: string) {
   )
 }
 
+const getUserImageSrc = (cccApiUrl: string, urlImage: string) => `${cccApiUrl}/pictures/${urlImage}`
+
 function UserCard({ onToggleTheme, runtimesPath, settingsPath, theme }: UserCardProps) {
   const { user, logout } = useContext(AuthContext)
   const { t } = useTranslation()
+  const { cccApiUrl } = useCccApiUrl()
   const [isOpen, setIsOpen] = useState(false)
   const displayName = user?.fullName?.split(' ').shift() || user?.username || ''
   const username = user?.username || ''
+  const userImageSrc = user?.urlImage ? getUserImageSrc(cccApiUrl, user.urlImage) : ''
   const userData = user
     ? {
         nameAndUser: [displayName, username].filter(Boolean).join('@'),
@@ -76,10 +80,8 @@ function UserCard({ onToggleTheme, runtimesPath, settingsPath, theme }: UserCard
       >
         {user ? (
           <>
-            <Avatar>
-              {user.urlImage && (
-                <AvatarImage src={APP_CONFIG.cccApiUrl + '/pictures/' + user.urlImage} alt={user.username || ''} />
-              )}
+            <Avatar key={userImageSrc || user._id}>
+              {user.urlImage && <AvatarImage src={userImageSrc} alt={user.username || ''} />}
               <AvatarFallback>{getInitials(user.username || '')}</AvatarFallback>
             </Avatar>
             <div className="hidden flex-col leading-none text-xs sm:flex">

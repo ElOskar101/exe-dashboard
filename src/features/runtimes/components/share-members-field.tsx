@@ -1,4 +1,3 @@
-import { APP_CONFIG } from '@/app.config'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +7,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { cccUserKeys, searchCCCUsers, type CCCUser, type PlaywrightRuntimeSharedMember } from '@/features/executions'
 import { AuthContext } from '@/features/auth'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 import { cn } from '@/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { IconCheck, IconX } from '@tabler/icons-react'
@@ -31,12 +31,12 @@ const isSafeImageUrl = (value: string) => {
 }
 
 const getUserDisplayName = (user: PlaywrightRuntimeSharedMember) => user.fullName
-const getUserImageSrc = (user: PlaywrightRuntimeSharedMember) => {
+const getUserImageSrc = (user: PlaywrightRuntimeSharedMember, cccApiUrl: string) => {
   if (!user.urlImage) {
     return ''
   }
 
-  const absoluteUrl = APP_CONFIG.cccApiUrl + USER_PICTURES_PATH + user.urlImage
+  const absoluteUrl = cccApiUrl + USER_PICTURES_PATH + user.urlImage
 
   return isSafeImageUrl(absoluteUrl) ? absoluteUrl : ''
 }
@@ -53,8 +53,9 @@ function ShareMemberAvatar({
   size?: 'default' | 'sm'
   user: PlaywrightRuntimeSharedMember
 }) {
+  const { cccApiUrl } = useCccApiUrl()
   const displayName = getUserDisplayName(user)
-  const userImageSrc = getUserImageSrc(user)
+  const userImageSrc = getUserImageSrc(user, cccApiUrl)
 
   return (
     <Avatar size={size}>

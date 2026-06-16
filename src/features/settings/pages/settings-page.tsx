@@ -1,4 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { CCC_API_URLS } from '@/app.config'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -34,6 +35,7 @@ import {
 import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
+import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 
 const SETTINGS_TAB_SEARCH_PARAM = 'settingsTab'
 const DEFAULT_SETTINGS_TAB = 'runtime-application'
@@ -189,6 +191,7 @@ function AppStatusPanel({ runtimeName, stats }: { runtimeName: string; stats: Ex
 export function SettingsPage() {
   const { t } = useTranslation('settings')
   const [searchParams, setSearchParams] = useSearchParams()
+  const { cccApiUrl, setCccApiUrl } = useCccApiUrl()
   const { target } = useExecutionTarget()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
@@ -302,6 +305,25 @@ export function SettingsPage() {
               ) : null}
 
               <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="ccc-api-url">
+                    <IconDatabase data-icon="inline-start" />
+                    {t('cccApiUrl.selectLabel')}
+                  </FieldLabel>
+                  <Select value={cccApiUrl} onValueChange={setCccApiUrl}>
+                    <SelectTrigger id="ccc-api-url" className="w-full">
+                      <SelectValue placeholder={t('cccApiUrl.placeholder')}>{cccApiUrl}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent align="start">
+                      {CCC_API_URLS.map((apiUrl) => (
+                        <SelectItem key={apiUrl} value={apiUrl}>
+                          <span className="break-all font-mono text-xs">{apiUrl}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
                 <Field>
                   <FieldLabel htmlFor="execution-runtime">
                     <IconDeviceDesktop data-icon="inline-start" />

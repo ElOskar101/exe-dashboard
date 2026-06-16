@@ -43,6 +43,10 @@
     "selected": "Selected",
     "default": "Default"
   },
+  "cccApiUrl": {
+    "selectLabel": "CCC API URL",
+    "placeholder": "Choose a CCC API URL"
+  },
   "projects": {
     "catalogProjects": "Active projects",
     "associatedBots": "Associated bots",

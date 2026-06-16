@@ -3,6 +3,7 @@ import { userSchema, type IUser } from '../models/user.interface'
 
 const AUTH_TOKEN_STORAGE_KEY = 'token'
 const AUTH_USER_STORAGE_KEY = 'me'
+const AUTH_USER_CCC_API_URL_STORAGE_KEY = 'meCccApiUrl'
 const AUTH_RETURN_URL_STORAGE_KEY = 'returnUrl'
 
 const getStorage = (storageKey: 'localStorage' | 'sessionStorage') => {
@@ -52,7 +53,7 @@ export const clearAuthToken = () => {
   removeStorageValue(getLocalStorage(), AUTH_TOKEN_STORAGE_KEY)
 }
 
-export const getStoredUser = () => {
+export const getStoredUserSession = () => {
   const sessionStorage = getSessionStorage()
   const savedUserData = readStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY)
 
@@ -64,7 +65,10 @@ export const getStoredUser = () => {
     const parsedUser = userSchema.safeParse(JSON.parse(_base64Decode(savedUserData)))
 
     if (parsedUser.success) {
-      return parsedUser.data
+      return {
+        cccApiUrl: readStorageValue(sessionStorage, AUTH_USER_CCC_API_URL_STORAGE_KEY) ?? '',
+        user: parsedUser.data,
+      }
     }
 
     removeStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY)
@@ -75,12 +79,20 @@ export const getStoredUser = () => {
   }
 }
 
-export const saveStoredUser = (user: IUser) => {
-  writeStorageValue(getSessionStorage(), AUTH_USER_STORAGE_KEY, _base64Encode(JSON.stringify(user)))
+export const getStoredUser = () => getStoredUserSession()?.user ?? null
+
+export const saveStoredUser = (user: IUser, cccApiUrl: string) => {
+  const sessionStorage = getSessionStorage()
+
+  writeStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY, _base64Encode(JSON.stringify(user)))
+  writeStorageValue(sessionStorage, AUTH_USER_CCC_API_URL_STORAGE_KEY, cccApiUrl)
 }
 
 export const clearStoredUser = () => {
-  removeStorageValue(getSessionStorage(), AUTH_USER_STORAGE_KEY)
+  const sessionStorage = getSessionStorage()
+
+  removeStorageValue(sessionStorage, AUTH_USER_STORAGE_KEY)
+  removeStorageValue(sessionStorage, AUTH_USER_CCC_API_URL_STORAGE_KEY)
 }
 
 export const clearAuthSession = () => {

@@ -12,6 +12,8 @@ vi.mock('../lib/auth-session', () => ({
 }))
 
 describe('auth.service', () => {
+  const cccApiUrl = 'https://dev-carrier.dentalautomation.ai'
+
   beforeEach(() => {
     vi.mocked(cccClient).mockReset()
     vi.mocked(saveStoredUser).mockReset()
@@ -38,13 +40,13 @@ describe('auth.service', () => {
       data: user,
     })
 
-    const result = await getAndStoreUserData()
+    const result = await getAndStoreUserData(cccApiUrl)
 
     expect(result).toBe(user)
-    expect(saveStoredUser).toHaveBeenCalledWith(user)
+    expect(saveStoredUser).toHaveBeenCalledWith(user, cccApiUrl)
   })
 
-  it('builds the current user query key from the token', () => {
-    expect(authKeys.currentUser('token-123')).toEqual(['auth', 'current-user', 'token-123'])
+  it('builds the current user query key from the token and CCC API URL', () => {
+    expect(authKeys.currentUser('token-123', cccApiUrl)).toEqual(['auth', 'current-user', 'token-123', cccApiUrl])
   })
 })

@@ -5,10 +5,13 @@ import {
   consumeStoredAuthReturnUrl,
   getAuthToken,
   getStoredUser,
+  getStoredUserSession,
   saveAuthToken,
   saveStoredUser,
   storeAuthReturnUrl,
 } from './auth-session'
+
+const CCC_API_URL = 'https://dev-carrier.dentalautomation.ai'
 
 const createStorageMock = (): Storage => {
   const storage = new Map<string, string>()
@@ -125,9 +128,10 @@ describe('auth-session', () => {
   it('persists and reads the cached user payload', () => {
     const user = createUser()
 
-    saveStoredUser(user)
+    saveStoredUser(user, CCC_API_URL)
 
     expect(getStoredUser()).toEqual(user)
+    expect(getStoredUserSession()).toEqual({ cccApiUrl: CCC_API_URL, user })
   })
 
   it('clears invalid cached users instead of leaking broken state', () => {
@@ -146,7 +150,7 @@ describe('auth-session', () => {
 
   it('clears token and cached user together when the session ends', () => {
     saveAuthToken('token-123')
-    saveStoredUser(createUser())
+    saveStoredUser(createUser(), CCC_API_URL)
 
     clearAuthSession()
 
@@ -159,7 +163,7 @@ describe('auth-session', () => {
     vi.stubGlobal('sessionStorage', createThrowingStorageMock())
 
     expect(() => saveAuthToken('token-123')).not.toThrow()
-    expect(() => saveStoredUser(createUser())).not.toThrow()
+    expect(() => saveStoredUser(createUser(), CCC_API_URL)).not.toThrow()
     expect(() => storeAuthReturnUrl('/execution/exe-1')).not.toThrow()
     expect(() => clearAuthSession()).not.toThrow()
 

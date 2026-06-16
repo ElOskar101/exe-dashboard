@@ -1,6 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
-import { APP_CONFIG } from '@/app.config'
 import { getAuthRequestHeaders } from '@/features/auth/lib/auth-transport'
+import { getCccApiUrl } from '@/lib/ccc-api-url'
 
 export const stripTrailingSlash = (value?: string) => value?.replace(/\/+$/, '')
 
@@ -16,7 +16,6 @@ export const ensurePathSuffix = (value: string | undefined, suffix: string) => {
 }
 
 const cccClient = axios.create({
-  baseURL: ensurePathSuffix(APP_CONFIG.cccApiUrl, '/api'),
   adapter: 'fetch',
 })
 export const exeClient = axios.create({
@@ -36,7 +35,13 @@ const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
   return config
 }
 
-cccClient.interceptors.request.use(applyDefaultHeaders)
+const applyCccRequestConfig = (config: InternalAxiosRequestConfig) => {
+  config.baseURL = ensurePathSuffix(getCccApiUrl(), '/api')
+
+  return applyDefaultHeaders(config)
+}
+
+cccClient.interceptors.request.use(applyCccRequestConfig)
 exeClient.interceptors.request.use(applyDefaultHeaders)
 exeReportsClient.interceptors.request.use(applyDefaultHeaders)
 

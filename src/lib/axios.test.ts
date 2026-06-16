@@ -53,8 +53,22 @@ describe('axios URL helpers', () => {
     )
   })
 
-  it('uses the configured Carrier API URL for the CCC client', () => {
-    expect(cccClient.defaults.baseURL).toBe('https://dev-carrier.dentalautomation.ai/api')
+  it('uses the selected Carrier API URL for CCC client requests', async () => {
+    localStorage.setItem('cccApiUrl', 'https://carriers.dentalautomation.ai')
+
+    await cccClient.get('users/me', {
+      adapter: async (config): Promise<AxiosResponse> => {
+        expect(config.baseURL).toBe('https://carriers.dentalautomation.ai/api')
+
+        return {
+          config,
+          data: {},
+          headers: {},
+          status: 200,
+          statusText: 'OK',
+        }
+      },
+    } satisfies AxiosRequestConfig)
   })
 
   it('does not configure a fallback base URL for the EXE client', () => {

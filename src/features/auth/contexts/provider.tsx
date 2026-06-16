@@ -5,7 +5,8 @@ import { authKeys, getAndStoreUserData } from '../services/auth.service'
 import { redirectToLogin } from '../utils/auth'
 import { AuthContext } from './context'
 import { IUser } from '../models/user.interface'
-import { clearAuthToken, clearStoredUser, getAuthToken, getStoredUser, saveAuthToken } from '../lib/auth-session'
+import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
+import { clearAuthToken, clearStoredUser, getAuthToken, getStoredUserSession, saveAuthToken } from '../lib/auth-session'
 
 const getPermissions = (userData: IUser | null) => {
   const newPermissions: Record<string, boolean> = {}
@@ -22,11 +23,13 @@ const getPermissions = (userData: IUser | null) => {
 
 export const AuthProvider = (props: { children: ReactNode }) => {
   const { children } = props
+  const { cccApiUrl } = useCccApiUrl()
   const [token, setToken] = useState(getAuthToken)
-  const [storedUser, setStoredUser] = useState<IUser | null>(getStoredUser)
+  const [storedUserSession, setStoredUserSession] = useState(getStoredUserSession)
+  const storedUser = storedUserSession?.cccApiUrl === cccApiUrl ? storedUserSession.user : null
   const userQuery = useQuery({
-    queryKey: authKeys.currentUser(token),
-    queryFn: getAndStoreUserData,
+    queryKey: authKeys.currentUser(token, cccApiUrl),
+    queryFn: () => getAndStoreUserData(cccApiUrl),
     enabled: Boolean(token) && !storedUser,
     retry: false,
     staleTime: Infinity,
@@ -39,14 +42,14 @@ export const AuthProvider = (props: { children: ReactNode }) => {
     saveAuthToken(newToken)
     clearStoredUser()
     setToken(newToken)
-    setStoredUser(null)
+    setStoredUserSession(null)
   }, [])
 
   const clearToken = useCallback(() => {
     clearAuthToken()
     clearStoredUser()
     setToken('')
-    setStoredUser(null)
+    setStoredUserSession(null)
   }, [])
 
   const logout = () => {
