@@ -194,7 +194,7 @@ export function UpdateAppDialog({
             <TabsTrigger value="update">{t('tabs.update')}</TabsTrigger>
             {isShareTabDisabled ? (
               <Tooltip>
-                <TooltipTrigger render={<span className="inline-flex cursor-not-allowed" />}>
+                <TooltipTrigger nativeButton={false} render={<span className="inline-flex cursor-not-allowed" />}>
                   <TabsTrigger value="share" disabled>
                     {t('tabs.share')}
                   </TabsTrigger>

@@ -10,6 +10,7 @@ import {
   getExecutionById,
   getPlaywrightProjectById,
   getPlaywrightProjects,
+  getPlaywrightRuntimeResponseData,
   getPlaywrightRuntimeById,
   getPlaywrightRuntimes,
   getExecutionReportHtml,
@@ -213,6 +214,44 @@ describe('execution.service', () => {
     await getPlaywrightRuntimeById('runtime-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1')
+  })
+
+  it('getPlaywrightRuntimeResponseData normalizes shared members to member ids', () => {
+    const runtime = getPlaywrightRuntimeResponseData({
+      data: {
+        _id: 'runtime-1',
+        name: 'Runtime 1',
+        accessInfo: {
+          type: 'private',
+          sharedWith: [
+            {
+              _id: 'member-1',
+              fullName: 'Ada Lovelace',
+              username: 'adal',
+            },
+          ],
+        },
+        applications: [
+          {
+            name: 'App 1',
+            accessInfo: {
+              type: 'private',
+              sharedWith: [
+                'member-2',
+                {
+                  _id: 'member-3',
+                  username: 'graceh',
+                },
+              ],
+            },
+          },
+        ],
+      },
+      success: true,
+    })
+
+    expect(runtime.accessInfo.sharedWith).toEqual(['member-1'])
+    expect(runtime.applications?.[0]?.accessInfo.sharedWith).toEqual(['member-2', 'member-3'])
   })
 
   it('createPlaywrightRuntime posts a playwright runtime payload', async () => {

@@ -6,6 +6,7 @@ import type { ExecutionAppStats } from '../model/app-stats'
 import type { PlaywrightProject } from '../model/playwright-project'
 import type {
   PlaywrightRuntime,
+  PlaywrightRuntimeApplication,
   PlaywrightRuntimeCreatePayload,
   PlaywrightRuntimeShareMembersPayload,
   PlaywrightRuntimeShareMembersResult,
@@ -22,13 +23,64 @@ export interface PlaywrightRuntimeApiResponse<TData> {
   success: boolean
 }
 
+interface PlaywrightRuntimeSharedMemberResponse {
+  _id: string
+}
+
+interface PlaywrightRuntimeAccessInfoResponse {
+  createdBy?: string
+  sharedWith?: Array<string | PlaywrightRuntimeSharedMemberResponse>
+  type: PlaywrightRuntime['accessInfo']['type']
+}
+
+interface PlaywrightRuntimeApplicationResponse extends Omit<PlaywrightRuntimeApplication, 'accessInfo'> {
+  accessInfo: PlaywrightRuntimeAccessInfoResponse
+}
+
+interface PlaywrightRuntimeResponse extends Omit<PlaywrightRuntime, 'accessInfo' | 'applications'> {
+  accessInfo: PlaywrightRuntimeAccessInfoResponse
+  applications?: PlaywrightRuntimeApplicationResponse[]
+}
+
+type PlaywrightRuntimeResponseData = PlaywrightRuntimeResponse | PlaywrightRuntimeResponse[]
+
+type NormalizedPlaywrightRuntimeResponseData<TData extends PlaywrightRuntimeResponseData> =
+  TData extends PlaywrightRuntimeResponse[] ? PlaywrightRuntime[] : PlaywrightRuntime
+
 const isPlaywrightRuntimeApiResponse = <TData>(
   value: PlaywrightRuntimeApiResponse<TData> | TData,
 ): value is PlaywrightRuntimeApiResponse<TData> =>
   typeof value === 'object' && value !== null && 'success' in value && 'data' in value
 
-export const getPlaywrightRuntimeResponseData = <TData>(value: PlaywrightRuntimeApiResponse<TData> | TData) =>
-  isPlaywrightRuntimeApiResponse(value) ? value.data : value
+const normalizePlaywrightRuntimeAccessInfo = (
+  accessInfo: PlaywrightRuntimeAccessInfoResponse,
+): PlaywrightRuntime['accessInfo'] => ({
+  ...accessInfo,
+  sharedWith: (accessInfo.sharedWith ?? []).map((member) => (typeof member === 'string' ? member : member._id)),
+})
+
+const normalizePlaywrightRuntimeApplication = (
+  application: PlaywrightRuntimeApplicationResponse,
+): PlaywrightRuntimeApplication => ({
+  ...application,
+  accessInfo: normalizePlaywrightRuntimeAccessInfo(application.accessInfo),
+})
+
+const normalizePlaywrightRuntime = (runtime: PlaywrightRuntimeResponse): PlaywrightRuntime => ({
+  ...runtime,
+  accessInfo: normalizePlaywrightRuntimeAccessInfo(runtime.accessInfo),
+  applications: runtime.applications?.map(normalizePlaywrightRuntimeApplication),
+})
+
+export const getPlaywrightRuntimeResponseData = <TData extends PlaywrightRuntimeResponseData>(
+  value: PlaywrightRuntimeApiResponse<TData> | TData,
+): NormalizedPlaywrightRuntimeResponseData<TData> => {
+  const data = isPlaywrightRuntimeApiResponse(value) ? value.data : value
+
+  return (
+    Array.isArray(data) ? data.map(normalizePlaywrightRuntime) : normalizePlaywrightRuntime(data)
+  ) as NormalizedPlaywrightRuntimeResponseData<TData>
+}
 
 const getExecutionRequestConfig = (target: ExecutionApiRequestTarget) => ({
   baseURL: target.apiUrl,
@@ -97,10 +149,12 @@ export const getPlaywrightProjectById = (playwrightProjectId: string) =>
   cccClient.get<PlaywrightProject>(`v2/playwright-projects/${playwrightProjectId}`)
 
 export const getPlaywrightRuntimes = () =>
-  cccClient.get<PlaywrightRuntimeApiResponse<PlaywrightRuntime[]> | PlaywrightRuntime[]>('v2/playwright-runtimes')
+  cccClient.get<PlaywrightRuntimeApiResponse<PlaywrightRuntimeResponse[]> | PlaywrightRuntimeResponse[]>(
+    'v2/playwright-runtimes',
+  )
 
 export const getPlaywrightRuntimeById = (playwrightRuntimeId: string) =>
-  cccClient.get<PlaywrightRuntimeApiResponse<PlaywrightRuntime> | PlaywrightRuntime>(
+  cccClient.get<PlaywrightRuntimeApiResponse<PlaywrightRuntimeResponse> | PlaywrightRuntimeResponse>(
     `v2/playwright-runtimes/${playwrightRuntimeId}`,
   )
 
