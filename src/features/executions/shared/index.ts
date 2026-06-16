@@ -48,6 +48,7 @@ export type {
   PlaywrightRuntimeAccessInfo,
   PlaywrightRuntimeAccessPayload,
   PlaywrightRuntimeAccessType,
+  PlaywrightRuntimeCreator,
   PlaywrightRuntimeApplication,
   PlaywrightRuntimeApplicationPayload,
   PlaywrightRuntimeCreatePayload,

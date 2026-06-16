@@ -6,6 +6,7 @@ import {
   type PlaywrightRuntimeAccessType,
   type PlaywrightRuntimeApplication,
   type PlaywrightRuntimeApplicationPayload,
+  type PlaywrightRuntimeCreator,
   type PlaywrightRuntimeSharedMember,
   type PlaywrightRuntimeUpdatePayload,
 } from '@/features/executions'
@@ -70,8 +71,13 @@ export const toPlaywrightRuntimeAccessPayload = (
   accessInfo: PlaywrightRuntimeAccessInfo,
 ): PlaywrightRuntimeAccessPayload => ({
   type: accessInfo.type,
-  sharedWith: getSharedMemberIdsFromMembers(getSharedMembers(accessInfo)),
 })
+
+export const getPlaywrightRuntimeCreatorLabel = (creator: PlaywrightRuntimeCreator | undefined) =>
+  creator?.fullName?.trim() || creator?.username?.trim() || creator?._id
+
+export const isPlaywrightRuntimeOwner = (runtime: PlaywrightRuntime, currentUserId: string | undefined) =>
+  Boolean(currentUserId && runtime.accessInfo.createdBy?._id === currentUserId)
 
 export const toPlaywrightRuntimeApplicationPayload = (
   runtime: PlaywrightRuntime,

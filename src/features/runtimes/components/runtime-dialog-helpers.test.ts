@@ -6,8 +6,10 @@ import type {
   PlaywrightRuntimeSharedMember,
 } from '@/features/executions'
 import {
+  getPlaywrightRuntimeCreatorLabel,
   getSharedMemberIdsFromMembers,
   getSharedMembers,
+  isPlaywrightRuntimeOwner,
   toPlaywrightRuntimeAccessPayload,
   toPlaywrightRuntimeApplicationPayload,
 } from './runtime-dialog-helpers'
@@ -22,6 +24,19 @@ const makeMember = (id: string, fullName = 'User'): PlaywrightRuntimeSharedMembe
 const makeAccessInfo = (members: PlaywrightRuntimeSharedMember[]): PlaywrightRuntimeAccessInfo => ({
   type: 'private',
   sharedWith: members,
+})
+
+const makeRuntime = (createdBy: string, type: PlaywrightRuntime['accessInfo']['type']): PlaywrightRuntime => ({
+  _id: 'runtime-1',
+  name: 'Runtime 1',
+  accessInfo: {
+    createdBy: {
+      _id: createdBy,
+      fullName: 'Runtime Creator',
+    },
+    sharedWith: [],
+    type,
+  },
 })
 
 describe('runtime-dialog-helpers', () => {
@@ -46,31 +61,38 @@ describe('runtime-dialog-helpers', () => {
     })
   })
 
+  describe('getPlaywrightRuntimeCreatorLabel', () => {
+    it('prefers the creator full name', () => {
+      expect(
+        getPlaywrightRuntimeCreatorLabel({
+          _id: 'user-1',
+          fullName: 'Ada Lovelace',
+          username: 'adal',
+        }),
+      ).toBe('Ada Lovelace')
+    })
+
+    it('falls back to username and then id', () => {
+      expect(getPlaywrightRuntimeCreatorLabel({ _id: 'user-1', username: 'adal' })).toBe('adal')
+      expect(getPlaywrightRuntimeCreatorLabel({ _id: 'user-1' })).toBe('user-1')
+    })
+  })
+
   describe('toPlaywrightRuntimeAccessPayload', () => {
-    it('projects members down to ids in sharedWith', () => {
+    it('keeps runtime sharing out of normal runtime update payloads', () => {
       const accessInfo = makeAccessInfo([makeMember('1'), makeMember('2')])
 
       expect(toPlaywrightRuntimeAccessPayload(accessInfo)).toEqual({
         type: 'private',
-        sharedWith: ['1', '2'],
       })
     })
 
-    it('handles an empty sharedWith list', () => {
+    it('preserves the runtime access type', () => {
       const accessInfo = makeAccessInfo([])
 
       expect(toPlaywrightRuntimeAccessPayload(accessInfo)).toEqual({
         type: 'private',
-        sharedWith: [],
       })
-    })
-
-    it('does not lose members when given a full PlaywrightRuntime', () => {
-      const runtime = {
-        accessInfo: makeAccessInfo([makeMember('x', 'Ada')]),
-      } as PlaywrightRuntime
-
-      expect(toPlaywrightRuntimeAccessPayload(runtime.accessInfo).sharedWith).toEqual(['x'])
     })
   })
 
@@ -112,6 +134,26 @@ describe('runtime-dialog-helpers', () => {
 
       expect(payload.accessInfo.type).toBe('private')
       expect(payload.accessInfo.sharedWith).toEqual(['1'])
+    })
+  })
+
+  describe('isPlaywrightRuntimeOwner', () => {
+    it('returns true when the current user created the runtime', () => {
+      const runtime = makeRuntime('user-1', 'private')
+
+      expect(isPlaywrightRuntimeOwner(runtime, 'user-1')).toBe(true)
+    })
+
+    it('returns false when the runtime has a different owner', () => {
+      const runtime = makeRuntime('user-2', 'public')
+
+      expect(isPlaywrightRuntimeOwner(runtime, 'user-1')).toBe(false)
+    })
+
+    it('returns false without a current user id', () => {
+      const runtime = makeRuntime('user-1', 'private')
+
+      expect(isPlaywrightRuntimeOwner(runtime, undefined)).toBe(false)
     })
   })
 })

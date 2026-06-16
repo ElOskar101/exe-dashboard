@@ -1,5 +1,13 @@
 export type PlaywrightRuntimeAccessType = 'public' | 'private'
 
+export interface PlaywrightRuntimeCreator {
+  _id: string
+  email?: string
+  fullName?: string
+  username?: string
+  urlImage?: string
+}
+
 export interface PlaywrightRuntimeSharedMember {
   _id: string
   email?: string
@@ -9,7 +17,7 @@ export interface PlaywrightRuntimeSharedMember {
 }
 
 export interface PlaywrightRuntimeAccessInfo {
-  createdBy?: string
+  createdBy?: PlaywrightRuntimeCreator
   sharedWith: PlaywrightRuntimeSharedMember[]
   type: PlaywrightRuntimeAccessType
 }

@@ -8,6 +8,7 @@ import type {
   PlaywrightRuntime,
   PlaywrightRuntimeApplication,
   PlaywrightRuntimeCreatePayload,
+  PlaywrightRuntimeCreator,
   PlaywrightRuntimeShareMembersPayload,
   PlaywrightRuntimeShareMembersResult,
   PlaywrightRuntimeSharedMember,
@@ -25,7 +26,7 @@ export interface PlaywrightRuntimeApiResponse<TData> {
 }
 
 interface PlaywrightRuntimeAccessInfoResponse {
-  createdBy?: string
+  createdBy?: PlaywrightRuntimeCreator
   sharedWith: PlaywrightRuntimeSharedMember[]
   type: PlaywrightRuntime['accessInfo']['type']
 }

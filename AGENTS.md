@@ -1,14 +1,11 @@
 # Executions Agent
 This is a web scrapping robot execution manager app.
 
-## Instructions for testing changes
-After finished an entire coding task run unit and e2e tests.
+## Testing and checking new features
+These are all the things to do after finishing a coding task, don't do anything else after that.
 
-Always assume this project's dev server is already started with `pnpm run dev` in `http://localhost:5173`.
-
-On new features, don't create tests for them and instead use the most reliable end-user browser skill, plugin or MCP to make sure the feature works as expected (only on frontend changes which user will see).
-
-To authenticate to this app use the credentials and login endpoint in .env.e2e.local to get a valid token and set it in local storage as 'token'. Do this only if the browser tool you chose redirects you to the login page automatically.
+- Run all unit and e2e tests.
+- On new features, don't create tests new tests. Only create tests automatically when fixing bugs with TDD.
 
 ## Package manager
 Use `pnpm` as the package manager and scripts runner.
@@ -29,7 +26,7 @@ Code quality you MUST follow:
 
 - Don't use magic strings or numbers, use named constants instead, and if it's going to be reused, extract it into a config file. E.g. query keys must be extracted into a separated config file based on the entity they are querying.
 
-- Don't create big files, and if you find out modifying big files, split them into smaller ones with a single responsability.
+- Don't create big files, and if you find out modifying big files, split them into smaller ones with single responsability.
 
 
 ## Project structure
@@ -43,6 +40,6 @@ Only dig into a deep module's implementation details when you are actively worki
 
 ## Agent skills
 
-### Domain docs
+### Important Project Domain docs
 
 Single-context docs rooted at `CONTEXT.md` with ADRs under `docs/adr/`. See `docs/agents/domain.md`.

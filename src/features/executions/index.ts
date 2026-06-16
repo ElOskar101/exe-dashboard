@@ -107,6 +107,7 @@ export type {
   PlaywrightRuntimeAccessInfo,
   PlaywrightRuntimeAccessPayload,
   PlaywrightRuntimeAccessType,
+  PlaywrightRuntimeCreator,
   PlaywrightProject,
   PlaywrightProjectBot,
   PlaywrightRuntime,

@@ -10,11 +10,16 @@ import {
 } from './execution-target'
 import type { PlaywrightRuntime } from '../model/playwright-runtime'
 
+const runtimeCreator = {
+  _id: 'user-1',
+  fullName: 'Runtime Creator',
+}
+
 const runtime: PlaywrightRuntime = {
   _id: 'runtime-1',
   name: 'Runtime 1',
   accessInfo: {
-    createdBy: 'user-1',
+    createdBy: runtimeCreator,
     sharedWith: [],
     type: 'private',
   },
@@ -22,7 +27,7 @@ const runtime: PlaywrightRuntime = {
     {
       name: 'App 1',
       accessInfo: {
-        createdBy: 'user-1',
+        createdBy: runtimeCreator,
         sharedWith: [],
         type: 'private',
       },
