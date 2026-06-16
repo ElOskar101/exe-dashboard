@@ -9,6 +9,9 @@
   "noApiUrl": "No API URL configured",
   "noDescription": "No description available.",
   "descriptionMore": "...",
+  "creator": {
+    "unknown": "Creator unavailable"
+  },
   "runtimeSummary": {
     "emptyApplications": "This runtime does not expose any applications."
   },
@@ -17,6 +20,7 @@
     "status": "Status",
     "environment": "Environment",
     "access": "Access",
+    "creator": "Creator",
     "config": "Config",
     "apiUrl": "API URL",
     "description": "Description",

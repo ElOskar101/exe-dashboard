@@ -10,6 +10,7 @@ import {
   type PlaywrightRuntime,
   usePlaywrightRuntimesQuery,
 } from '@/features/executions'
+import { AuthContext } from '@/features/auth'
 import {
   IconAlertCircle,
   IconBox,
@@ -17,13 +18,19 @@ import {
   IconRefresh,
   IconShieldCheck,
   IconShieldLock,
+  IconUserCircle,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { useContext } from 'react'
 import { CreateRuntimeDialog } from '../components/create-runtime-dialog'
 import { CreateRuntimeApplicationDialog } from '../components/create-runtime-application-dialog'
 import { DeleteAppConfirmation } from '../components/delete-app-confirmation'
 import { DeleteRuntimeConfirmation } from '../components/delete-runtime-confirmation'
-import { getConfiguredApplicationLimit } from '../components/runtime-dialog-helpers'
+import {
+  getConfiguredApplicationLimit,
+  getPlaywrightRuntimeCreatorLabel,
+  isPlaywrightRuntimeOwner,
+} from '../components/runtime-dialog-helpers'
 import { UpdateAppDialog } from '../components/update-app-dialog'
 import { UpdateRuntimeDialog } from '../components/update-runtime-dialog'
 
@@ -37,6 +44,18 @@ function AccessBadge({ type }: { type: PlaywrightRuntime['accessInfo']['type'] }
     <Badge variant="outline" className="gap-1.5">
       <AccessIcon data-icon="inline-start" />
       {t(`access.${type}`)}
+    </Badge>
+  )
+}
+
+function CreatorBadge({ creator }: { creator: PlaywrightRuntime['accessInfo']['createdBy'] }) {
+  const { t } = useTranslation('runtimes')
+  const creatorLabel = getPlaywrightRuntimeCreatorLabel(creator)
+
+  return (
+    <Badge variant="outline" className="max-w-full gap-1.5">
+      <IconUserCircle data-icon="inline-start" />
+      <span className="min-w-0 truncate">{creatorLabel ?? t('creator.unknown')}</span>
     </Badge>
   )
 }
@@ -55,6 +74,7 @@ function RuntimesPageSkeleton() {
 
 export function RuntimesPage() {
   const { t } = useTranslation('runtimes')
+  const { user } = useContext(AuthContext)
   const runtimesQuery = usePlaywrightRuntimesQuery()
 
   if (runtimesQuery.isLoading) {
@@ -95,7 +115,11 @@ export function RuntimesPage() {
           {runtimesQuery.data?.length ? (
             <div className="flex flex-col gap-4">
               {runtimesQuery.data.map((runtime) => (
-                <RuntimeCatalogCard key={runtime._id} runtime={runtime} />
+                <RuntimeCatalogCard
+                  key={runtime._id}
+                  canMutate={isPlaywrightRuntimeOwner(runtime, user?._id)}
+                  runtime={runtime}
+                />
               ))}
             </div>
           ) : (
@@ -112,7 +136,7 @@ export function RuntimesPage() {
   )
 }
 
-function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
+function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtime: PlaywrightRuntime }) {
   const { t } = useTranslation('runtimes')
   const applications = getPlaywrightRuntimeApplications(runtime)
 
@@ -125,14 +149,17 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
               <IconDeviceDesktop className="shrink-0" />
               <CardTitle>{runtime.name}</CardTitle>
               <AccessBadge type={runtime.accessInfo.type} />
+              <CreatorBadge creator={runtime.accessInfo.createdBy} />
             </div>
             <CardDescription>{runtime.description?.trim() || t('noDescription')}</CardDescription>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <UpdateRuntimeDialog runtime={runtime} />
-            <DeleteRuntimeConfirmation runtime={runtime} />
-            <CreateRuntimeApplicationDialog runtime={runtime} />
-          </div>
+          {canMutate ? (
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <UpdateRuntimeDialog runtime={runtime} />
+              <DeleteRuntimeConfirmation runtime={runtime} />
+              <CreateRuntimeApplicationDialog runtime={runtime} />
+            </div>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent>
@@ -143,10 +170,11 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
               <TableHead>{t('columns.status')}</TableHead>
               <TableHead>{t('columns.environment')}</TableHead>
               <TableHead>{t('columns.access')}</TableHead>
+              <TableHead>{t('columns.creator')}</TableHead>
               <TableHead>{t('columns.config')}</TableHead>
               <TableHead>{t('columns.apiUrl')}</TableHead>
               <TableHead>{t('columns.description')}</TableHead>
-              <TableHead className="w-24">{t('columns.actions')}</TableHead>
+              {canMutate ? <TableHead className="w-24">{t('columns.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -175,6 +203,9 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
                   <TableCell>
                     <AccessBadge type={application.accessInfo.type} />
                   </TableCell>
+                  <TableCell className="whitespace-normal break-words text-white/80">
+                    {getPlaywrightRuntimeCreatorLabel(application.accessInfo.createdBy) ?? t('creator.unknown')}
+                  </TableCell>
                   <TableCell>
                     <ul className="list-disc pl-4 text-xs text-white/80">
                       <li>
@@ -190,22 +221,24 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
                     </ul>
                   </TableCell>
                   <TableCell className="whitespace-normal break-all text-white/80">
-                    {application.apiUrl?.trim() || t('noApiUrl')}
+                    <TruncatedText value={application.apiUrl} />
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-white/80">
-                    <ApplicationDescription description={application.description} />
+                    <TruncatedText value={application.description} />
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex flex-nowrap items-center gap-2">
-                      <UpdateAppDialog application={application} runtime={runtime} />
-                      <DeleteAppConfirmation application={application} runtime={runtime} />
-                    </div>
-                  </TableCell>
+                  {canMutate ? (
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex flex-nowrap items-center gap-2">
+                        <UpdateAppDialog application={application} runtime={runtime} />
+                        <DeleteAppConfirmation application={application} runtime={runtime} />
+                      </div>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center text-white/80" colSpan={8}>
+                <TableCell className="h-24 text-center text-white/80" colSpan={canMutate ? 9 : 8}>
                   {t('runtimeSummary.emptyApplications')}
                 </TableCell>
               </TableRow>
@@ -217,21 +250,21 @@ function RuntimeCatalogCard({ runtime }: { runtime: PlaywrightRuntime }) {
   )
 }
 
-function ApplicationDescription({ description }: { description: string | undefined }) {
+function TruncatedText({ value }: { value: string | undefined }) {
   const { t } = useTranslation('runtimes')
-  const trimmedDescription = description?.trim()
+  const trimmedValue = value?.trim()
 
-  if (!trimmedDescription) {
-    return t('noDescription')
+  if (!trimmedValue) {
+    return '-'
   }
 
-  if (trimmedDescription.length <= DESCRIPTION_PREVIEW_LENGTH) {
-    return trimmedDescription
+  if (trimmedValue.length <= DESCRIPTION_PREVIEW_LENGTH) {
+    return trimmedValue
   }
 
   return (
     <span className="inline-flex min-w-0 items-center gap-1">
-      <span className="truncate">{trimmedDescription.slice(0, DESCRIPTION_PREVIEW_LENGTH)}</span>
+      <span className="truncate">{trimmedValue.slice(0, DESCRIPTION_PREVIEW_LENGTH)}</span>
       <Popover>
         <PopoverTrigger
           render={
@@ -241,7 +274,7 @@ function ApplicationDescription({ description }: { description: string | undefin
           }
         />
         <PopoverContent align="end" className="max-w-96 whitespace-normal break-words">
-          {trimmedDescription}
+          {trimmedValue}
         </PopoverContent>
       </Popover>
     </span>
