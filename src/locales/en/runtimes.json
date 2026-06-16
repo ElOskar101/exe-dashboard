@@ -26,6 +26,9 @@
       "sharedWith": "Shared with"
     }
   },
+  "runtimeActions": {
+    "trigger": "Actions for {{runtime}}"
+  },
   "appDetails": {
     "trigger": "Details",
     "title": "App details",
@@ -41,6 +44,9 @@
       "description": "Description",
       "sharedWith": "Shared with"
     }
+  },
+  "appActions": {
+    "trigger": "Actions for {{app}}"
   },
   "runtimeSummary": {
     "emptyApplications": "This runtime does not expose any applications."

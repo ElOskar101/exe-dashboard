@@ -18,7 +18,13 @@ import { toast } from 'sonner'
 import { getRuntimeMutationErrorMessage } from './runtime-dialog-helpers'
 import { RuntimeActionTooltip, RuntimeActionTooltipTrigger } from './runtime-action-tooltip'
 
-export function DeleteRuntimeConfirmation({ runtime }: { runtime: PlaywrightRuntime }) {
+export function DeleteRuntimeConfirmation({
+  runtime,
+  triggerVariant = 'icon',
+}: {
+  runtime: PlaywrightRuntime
+  triggerVariant?: 'icon' | 'menu-item'
+}) {
   const { t } = useTranslation('runtimes')
   const [isOpen, setIsOpen] = useState(false)
   const deleteRuntimeMutation = useDeletePlaywrightRuntimeMutation()
@@ -49,11 +55,26 @@ export function DeleteRuntimeConfirmation({ runtime }: { runtime: PlaywrightRunt
 
   return (
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <RuntimeActionTooltip label={triggerLabel}>
+      {triggerVariant === 'menu-item' ? (
         <AlertDialogTrigger
-          render={<RuntimeActionTooltipTrigger icon={<IconTrash />} label={triggerLabel} variant="destructive" />}
-        />
-      </RuntimeActionTooltip>
+          render={
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full justify-start rounded-2xl px-2.5 text-destructive hover:text-destructive"
+            />
+          }
+        >
+          <IconTrash data-icon="inline-start" />
+          {triggerLabel}
+        </AlertDialogTrigger>
+      ) : (
+        <RuntimeActionTooltip label={triggerLabel}>
+          <AlertDialogTrigger
+            render={<RuntimeActionTooltipTrigger icon={<IconTrash />} label={triggerLabel} variant="destructive" />}
+          />
+        </RuntimeActionTooltip>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t('deleteRuntime.title')}</AlertDialogTitle>

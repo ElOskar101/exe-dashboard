@@ -30,9 +30,11 @@ import { RuntimeActionTooltip, RuntimeActionTooltipTrigger } from './runtime-act
 export function DeleteAppConfirmation({
   application,
   runtime,
+  triggerVariant = 'icon',
 }: {
   application: PlaywrightRuntimeApplication
   runtime: PlaywrightRuntime
+  triggerVariant?: 'icon' | 'menu-item'
 }) {
   const { t } = useTranslation('runtimes')
   const [isOpen, setIsOpen] = useState(false)
@@ -71,11 +73,26 @@ export function DeleteAppConfirmation({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <RuntimeActionTooltip label={triggerLabel}>
+      {triggerVariant === 'menu-item' ? (
         <AlertDialogTrigger
-          render={<RuntimeActionTooltipTrigger icon={<IconTrash />} label={triggerLabel} variant="destructive" />}
-        />
-      </RuntimeActionTooltip>
+          render={
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full justify-start rounded-2xl px-2.5 text-destructive hover:text-destructive"
+            />
+          }
+        >
+          <IconTrash data-icon="inline-start" />
+          {triggerLabel}
+        </AlertDialogTrigger>
+      ) : (
+        <RuntimeActionTooltip label={triggerLabel}>
+          <AlertDialogTrigger
+            render={<RuntimeActionTooltipTrigger icon={<IconTrash />} label={triggerLabel} variant="destructive" />}
+          />
+        </RuntimeActionTooltip>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t('deleteApp.title')}</AlertDialogTitle>

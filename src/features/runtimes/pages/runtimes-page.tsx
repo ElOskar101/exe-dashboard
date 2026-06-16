@@ -9,29 +9,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import {
   getPlaywrightRuntimeApplications,
   type PlaywrightRuntime,
+  type PlaywrightRuntimeApplication,
   usePlaywrightRuntimesQuery,
 } from '@/features/executions'
 import { AuthContext } from '@/features/auth'
-import { IconAlertCircle, IconBox, IconDeviceDesktop, IconEye, IconRefresh } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconBox,
+  IconDeviceDesktop,
+  IconDotsVertical,
+  IconEye,
+  IconRefresh,
+} from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'react'
 import { AccessBadge, CreatorBadge } from '../components/runtime-badges'
 import { AppDetailsDialog } from '../components/app-details-dialog'
 import { CreateRuntimeDialog } from '../components/create-runtime-dialog'
 import { RuntimeDetailsDialog } from '../components/runtime-details-dialog'
-import { RuntimeActionTooltip, RuntimeActionTooltipTrigger } from '../components/runtime-action-tooltip'
 import { CreateRuntimeApplicationDialog } from '../components/create-runtime-application-dialog'
 import { DeleteAppConfirmation } from '../components/delete-app-confirmation'
 import { DeleteRuntimeConfirmation } from '../components/delete-runtime-confirmation'
-import {
-  getConfiguredApplicationLimit,
-  getPlaywrightRuntimeCreatorLabel,
-  isPlaywrightRuntimeOwner,
-} from '../components/runtime-dialog-helpers'
+import { getPlaywrightRuntimeCreatorLabel, isPlaywrightRuntimeOwner } from '../components/runtime-dialog-helpers'
 import { UpdateAppDialog } from '../components/update-app-dialog'
 import { UpdateRuntimeDialog } from '../components/update-runtime-dialog'
 
 const DESCRIPTION_PREVIEW_LENGTH = 20
+const API_URL_PREVIEW_LENGTH = DESCRIPTION_PREVIEW_LENGTH * 2
 
 function RuntimesPageSkeleton() {
   return (
@@ -135,26 +139,8 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
             <CardDescription>{runtime.description?.trim() || t('noDescription')}</CardDescription>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <RuntimeDetailsDialog runtime={runtime}>
-              <RuntimeActionTooltip label={t('runtimeDetails.trigger')}>
-                <DialogTrigger
-                  render={
-                    <RuntimeActionTooltipTrigger
-                      icon={<IconEye />}
-                      label={t('runtimeDetails.trigger')}
-                      variant="outline"
-                    />
-                  }
-                />
-              </RuntimeActionTooltip>
-            </RuntimeDetailsDialog>
-            {canMutate ? (
-              <>
-                <UpdateRuntimeDialog runtime={runtime} />
-                <DeleteRuntimeConfirmation runtime={runtime} />
-                <CreateRuntimeApplicationDialog runtime={runtime} />
-              </>
-            ) : null}
+            {canMutate ? <CreateRuntimeApplicationDialog runtime={runtime} /> : null}
+            <RuntimeActionsMenu canMutate={canMutate} runtime={runtime} />
           </div>
         </div>
       </CardHeader>
@@ -163,14 +149,12 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
           <TableHeader>
             <TableRow>
               <TableHead>{t('columns.application')}</TableHead>
+              <TableHead>{t('columns.apiUrl')}</TableHead>
               <TableHead>{t('columns.status')}</TableHead>
               <TableHead>{t('columns.environment')}</TableHead>
               <TableHead>{t('columns.access')}</TableHead>
               <TableHead>{t('columns.creator')}</TableHead>
-              <TableHead>{t('columns.config')}</TableHead>
-              <TableHead>{t('columns.apiUrl')}</TableHead>
-              <TableHead>{t('columns.description')}</TableHead>
-              {canMutate ? <TableHead className="w-32">{t('columns.actions')}</TableHead> : null}
+              {canMutate ? <TableHead className="w-12 text-right">{t('columns.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -195,6 +179,9 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
                       </AppDetailsDialog>
                     </span>
                   </TableCell>
+                  <TableCell className="whitespace-normal break-all text-white/80">
+                    <TruncatedText value={application.apiUrl} previewLength={API_URL_PREVIEW_LENGTH} />
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1.5">
                       <Badge
@@ -214,52 +201,16 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
                   <TableCell className="whitespace-normal break-words text-white/80">
                     {getPlaywrightRuntimeCreatorLabel(application.accessInfo.createdBy) ?? t('creator.unknown')}
                   </TableCell>
-                  <TableCell>
-                    <ul className="list-disc pl-4 text-xs text-white/80">
-                      <li>
-                        {t('config.maxWorkers', {
-                          count: getConfiguredApplicationLimit(application.config?.maxWorkers, 10),
-                        })}
-                      </li>
-                      <li>
-                        {t('config.maxRetries', {
-                          count: getConfiguredApplicationLimit(application.config?.maxRetries, 3),
-                        })}
-                      </li>
-                    </ul>
-                  </TableCell>
-                  <TableCell className="whitespace-normal break-all text-white/80">
-                    <TruncatedText value={application.apiUrl} />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-white/80">
-                    <TruncatedText value={application.description} />
-                  </TableCell>
                   {canMutate ? (
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex flex-nowrap items-center gap-2">
-                        <AppDetailsDialog runtime={runtime} application={application}>
-                          <RuntimeActionTooltip label={t('appDetails.trigger')}>
-                            <DialogTrigger
-                              render={
-                                <RuntimeActionTooltipTrigger
-                                  icon={<IconEye />}
-                                  label={t('appDetails.trigger')}
-                                  variant="outline"
-                                />
-                              }
-                            />
-                          </RuntimeActionTooltip>
-                        </AppDetailsDialog>
-                        <UpdateAppDialog application={application} runtime={runtime} />
-                        <DeleteAppConfirmation application={application} runtime={runtime} />
-                      </div>
+                    <TableCell className="whitespace-nowrap text-right">
+                      <AppActionsMenu application={application} runtime={runtime} />
                     </TableCell>
                   ) : null}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center text-white/80" colSpan={canMutate ? 9 : 8}>
+                <TableCell className="h-24 text-center text-white/80" colSpan={canMutate ? 7 : 6}>
                   {t('runtimeSummary.emptyApplications')}
                 </TableCell>
               </TableRow>
@@ -271,7 +222,90 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
   )
 }
 
-function TruncatedText({ value }: { value: string | undefined }) {
+function RuntimeActionsMenu({ canMutate, runtime }: { canMutate: boolean; runtime: PlaywrightRuntime }) {
+  const { t } = useTranslation('runtimes')
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            aria-label={t('runtimeActions.trigger', { runtime: runtime.name })}
+          />
+        }
+      >
+        <IconDotsVertical />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-44 gap-1 rounded-3xl p-1.5">
+        <RuntimeDetailsDialog runtime={runtime}>
+          <DialogTrigger
+            render={<Button type="button" variant="ghost" className="w-full justify-start rounded-2xl px-2.5" />}
+          >
+            <IconEye data-icon="inline-start" />
+            {t('runtimeDetails.trigger')}
+          </DialogTrigger>
+        </RuntimeDetailsDialog>
+        {canMutate ? (
+          <>
+            <UpdateRuntimeDialog runtime={runtime} triggerVariant="menu-item" />
+            <DeleteRuntimeConfirmation runtime={runtime} triggerVariant="menu-item" />
+          </>
+        ) : null}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function AppActionsMenu({
+  application,
+  runtime,
+}: {
+  application: PlaywrightRuntimeApplication
+  runtime: PlaywrightRuntime
+}) {
+  const { t } = useTranslation('runtimes')
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            aria-label={t('appActions.trigger', { app: application.name })}
+            className="ml-auto"
+          />
+        }
+      >
+        <IconDotsVertical />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-44 gap-1 rounded-3xl p-1.5">
+        <AppDetailsDialog runtime={runtime} application={application}>
+          <DialogTrigger
+            render={<Button type="button" variant="ghost" className="w-full justify-start rounded-2xl px-2.5" />}
+          >
+            <IconEye data-icon="inline-start" />
+            {t('appDetails.trigger')}
+          </DialogTrigger>
+        </AppDetailsDialog>
+        <UpdateAppDialog application={application} runtime={runtime} triggerVariant="menu-item" />
+        <DeleteAppConfirmation application={application} runtime={runtime} triggerVariant="menu-item" />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function TruncatedText({
+  previewLength = DESCRIPTION_PREVIEW_LENGTH,
+  value,
+}: {
+  previewLength?: number
+  value: string | undefined
+}) {
   const { t } = useTranslation('runtimes')
   const trimmedValue = value?.trim()
 
@@ -279,13 +313,13 @@ function TruncatedText({ value }: { value: string | undefined }) {
     return '-'
   }
 
-  if (trimmedValue.length <= DESCRIPTION_PREVIEW_LENGTH) {
+  if (trimmedValue.length <= previewLength) {
     return trimmedValue
   }
 
   return (
     <span className="inline-flex min-w-0 items-center gap-1">
-      <span className="truncate">{trimmedValue.slice(0, DESCRIPTION_PREVIEW_LENGTH)}</span>
+      <span className="truncate">{trimmedValue.slice(0, previewLength)}</span>
       <Popover>
         <PopoverTrigger
           render={

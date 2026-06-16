@@ -50,9 +50,11 @@ import { ShareMembersField } from './share-members-field'
 export function UpdateAppDialog({
   application,
   runtime,
+  triggerVariant = 'icon',
 }: {
   application: PlaywrightRuntimeApplication
   runtime: PlaywrightRuntime
+  triggerVariant?: 'icon' | 'menu-item'
 }) {
   const { t } = useTranslation('runtimes')
   const [isOpen, setIsOpen] = useState(false)
@@ -176,11 +178,20 @@ export function UpdateAppDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <RuntimeActionTooltip label={triggerLabel}>
+      {triggerVariant === 'menu-item' ? (
         <DialogTrigger
-          render={<RuntimeActionTooltipTrigger icon={<IconPencil />} label={triggerLabel} variant="outline" />}
-        />
-      </RuntimeActionTooltip>
+          render={<Button type="button" variant="ghost" className="w-full justify-start rounded-2xl px-2.5" />}
+        >
+          <IconPencil data-icon="inline-start" />
+          {triggerLabel}
+        </DialogTrigger>
+      ) : (
+        <RuntimeActionTooltip label={triggerLabel}>
+          <DialogTrigger
+            render={<RuntimeActionTooltipTrigger icon={<IconPencil />} label={triggerLabel} variant="outline" />}
+          />
+        </RuntimeActionTooltip>
+      )}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('updateApp.title')}</DialogTitle>
