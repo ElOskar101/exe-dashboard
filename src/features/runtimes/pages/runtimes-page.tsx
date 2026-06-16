@@ -114,26 +114,28 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
   const applications = getPlaywrightRuntimeApplications(runtime)
 
   return (
-    <RuntimeDetailsDialog runtime={runtime}>
-      <Card size="default">
-        <CardHeader className="gap-3">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex min-w-0 flex-col gap-1">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <IconDeviceDesktop className="shrink-0" />
-                <CardTitle>
+    <Card size="default">
+      <CardHeader className="gap-3">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <IconDeviceDesktop className="shrink-0" />
+              <CardTitle>
+                <RuntimeDetailsDialog runtime={runtime}>
                   <DialogTrigger
                     render={<Button type="button" variant="link" className="h-auto p-0 text-foreground" />}
                   >
                     {runtime.name}
                   </DialogTrigger>
-                </CardTitle>
-                <AccessBadge type={runtime.accessInfo.type} />
-                <CreatorBadge creator={runtime.accessInfo.createdBy} />
-              </div>
-              <CardDescription>{runtime.description?.trim() || t('noDescription')}</CardDescription>
+                </RuntimeDetailsDialog>
+              </CardTitle>
+              <AccessBadge type={runtime.accessInfo.type} />
+              <CreatorBadge creator={runtime.accessInfo.createdBy} />
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <CardDescription>{runtime.description?.trim() || t('noDescription')}</CardDescription>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <RuntimeDetailsDialog runtime={runtime}>
               <RuntimeActionTooltip label={t('runtimeDetails.trigger')}>
                 <DialogTrigger
                   render={
@@ -145,129 +147,127 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
                   }
                 />
               </RuntimeActionTooltip>
-              {canMutate ? (
-                <>
-                  <UpdateRuntimeDialog runtime={runtime} />
-                  <DeleteRuntimeConfirmation runtime={runtime} />
-                  <CreateRuntimeApplicationDialog runtime={runtime} />
-                </>
-              ) : null}
-            </div>
+            </RuntimeDetailsDialog>
+            {canMutate ? (
+              <>
+                <UpdateRuntimeDialog runtime={runtime} />
+                <DeleteRuntimeConfirmation runtime={runtime} />
+                <CreateRuntimeApplicationDialog runtime={runtime} />
+              </>
+            ) : null}
           </div>
-        </CardHeader>
-        <CardContent>
-          <Table className="table-auto">
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('columns.application')}</TableHead>
-                <TableHead>{t('columns.status')}</TableHead>
-                <TableHead>{t('columns.environment')}</TableHead>
-                <TableHead>{t('columns.access')}</TableHead>
-                <TableHead>{t('columns.creator')}</TableHead>
-                <TableHead>{t('columns.config')}</TableHead>
-                <TableHead>{t('columns.apiUrl')}</TableHead>
-                <TableHead>{t('columns.description')}</TableHead>
-                {canMutate ? <TableHead className="w-32">{t('columns.actions')}</TableHead> : null}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {applications.length > 0 ? (
-                applications.map((application) => (
-                  <AppDetailsDialog
-                    key={`${runtime._id}-${application.name}`}
-                    runtime={runtime}
-                    application={application}
-                  >
-                    <TableRow>
-                      <TableCell className="whitespace-normal break-words text-white/80">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <IconBox className="size-4 shrink-0 text-muted-foreground" />
-                          <DialogTrigger
-                            render={
-                              <Button
-                                type="button"
-                                variant="link"
-                                className="h-auto p-0 text-white/80 hover:text-white"
-                              />
-                            }
-                          >
-                            {application.name}
-                          </DialogTrigger>
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1.5">
-                          <Badge
-                            variant="outline"
-                            className={application.active === false ? 'text-destructive' : 'text-success'}
-                          >
-                            {application.active === false ? t('status.inactive') : t('status.active')}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-white/80">
-                        {application.nonProduction ? t('environment.development') : t('environment.production')}
-                      </TableCell>
-                      <TableCell>
-                        <AccessBadge type={application.accessInfo.type} />
-                      </TableCell>
-                      <TableCell className="whitespace-normal break-words text-white/80">
-                        {getPlaywrightRuntimeCreatorLabel(application.accessInfo.createdBy) ?? t('creator.unknown')}
-                      </TableCell>
-                      <TableCell>
-                        <ul className="list-disc pl-4 text-xs text-white/80">
-                          <li>
-                            {t('config.maxWorkers', {
-                              count: getConfiguredApplicationLimit(application.config?.maxWorkers, 10),
-                            })}
-                          </li>
-                          <li>
-                            {t('config.maxRetries', {
-                              count: getConfiguredApplicationLimit(application.config?.maxRetries, 3),
-                            })}
-                          </li>
-                        </ul>
-                      </TableCell>
-                      <TableCell className="whitespace-normal break-all text-white/80">
-                        <TruncatedText value={application.apiUrl} />
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-white/80">
-                        <TruncatedText value={application.description} />
-                      </TableCell>
-                      {canMutate ? (
-                        <TableCell className="whitespace-nowrap">
-                          <div className="flex flex-nowrap items-center gap-2">
-                            <RuntimeActionTooltip label={t('appDetails.trigger')}>
-                              <DialogTrigger
-                                render={
-                                  <RuntimeActionTooltipTrigger
-                                    icon={<IconEye />}
-                                    label={t('appDetails.trigger')}
-                                    variant="outline"
-                                  />
-                                }
-                              />
-                            </RuntimeActionTooltip>
-                            <UpdateAppDialog application={application} runtime={runtime} />
-                            <DeleteAppConfirmation application={application} runtime={runtime} />
-                          </div>
-                        </TableCell>
-                      ) : null}
-                    </TableRow>
-                  </AppDetailsDialog>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell className="h-24 text-center text-white/80" colSpan={canMutate ? 9 : 8}>
-                    {t('runtimeSummary.emptyApplications')}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table className="table-auto">
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('columns.application')}</TableHead>
+              <TableHead>{t('columns.status')}</TableHead>
+              <TableHead>{t('columns.environment')}</TableHead>
+              <TableHead>{t('columns.access')}</TableHead>
+              <TableHead>{t('columns.creator')}</TableHead>
+              <TableHead>{t('columns.config')}</TableHead>
+              <TableHead>{t('columns.apiUrl')}</TableHead>
+              <TableHead>{t('columns.description')}</TableHead>
+              {canMutate ? <TableHead className="w-32">{t('columns.actions')}</TableHead> : null}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {applications.length > 0 ? (
+              applications.map((application) => (
+                <TableRow key={`${runtime._id}-${application.name}`}>
+                  <TableCell className="whitespace-normal break-words text-white/80">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                      <AppDetailsDialog runtime={runtime} application={application}>
+                        <DialogTrigger
+                          render={
+                            <Button
+                              type="button"
+                              variant="link"
+                              className="h-auto p-0 text-white/80 hover:text-white"
+                            />
+                          }
+                        >
+                          {application.name}
+                        </DialogTrigger>
+                      </AppDetailsDialog>
+                    </span>
                   </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge
+                        variant="outline"
+                        className={application.active === false ? 'text-destructive' : 'text-success'}
+                      >
+                        {application.active === false ? t('status.inactive') : t('status.active')}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-white/80">
+                    {application.nonProduction ? t('environment.development') : t('environment.production')}
+                  </TableCell>
+                  <TableCell>
+                    <AccessBadge type={application.accessInfo.type} />
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-words text-white/80">
+                    {getPlaywrightRuntimeCreatorLabel(application.accessInfo.createdBy) ?? t('creator.unknown')}
+                  </TableCell>
+                  <TableCell>
+                    <ul className="list-disc pl-4 text-xs text-white/80">
+                      <li>
+                        {t('config.maxWorkers', {
+                          count: getConfiguredApplicationLimit(application.config?.maxWorkers, 10),
+                        })}
+                      </li>
+                      <li>
+                        {t('config.maxRetries', {
+                          count: getConfiguredApplicationLimit(application.config?.maxRetries, 3),
+                        })}
+                      </li>
+                    </ul>
+                  </TableCell>
+                  <TableCell className="whitespace-normal break-all text-white/80">
+                    <TruncatedText value={application.apiUrl} />
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-white/80">
+                    <TruncatedText value={application.description} />
+                  </TableCell>
+                  {canMutate ? (
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex flex-nowrap items-center gap-2">
+                        <AppDetailsDialog runtime={runtime} application={application}>
+                          <RuntimeActionTooltip label={t('appDetails.trigger')}>
+                            <DialogTrigger
+                              render={
+                                <RuntimeActionTooltipTrigger
+                                  icon={<IconEye />}
+                                  label={t('appDetails.trigger')}
+                                  variant="outline"
+                                />
+                              }
+                            />
+                          </RuntimeActionTooltip>
+                        </AppDetailsDialog>
+                        <UpdateAppDialog application={application} runtime={runtime} />
+                        <DeleteAppConfirmation application={application} runtime={runtime} />
+                      </div>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </RuntimeDetailsDialog>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell className="h-24 text-center text-white/80" colSpan={canMutate ? 9 : 8}>
+                  {t('runtimeSummary.emptyApplications')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   )
 }
 

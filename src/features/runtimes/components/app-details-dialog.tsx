@@ -67,15 +67,10 @@ export function AppDetailsDialog({ application, children, runtime }: AppDetailsD
               </ul>
             }
           />
-          <DetailItem
-            label={t('appDetails.fields.apiUrl')}
-            value={application.apiUrl?.trim() || t('noApiUrl')}
-            className="sm:col-span-2"
-          />
+          <DetailItem label={t('appDetails.fields.apiUrl')} value={application.apiUrl?.trim() || t('noApiUrl')} />
           <DetailItem
             label={t('appDetails.fields.description')}
             value={application.description?.trim() || t('noDescription')}
-            className="sm:col-span-2"
           />
           <DetailItem
             label={t('appDetails.fields.sharedWith')}

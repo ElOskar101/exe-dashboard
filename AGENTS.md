@@ -6,6 +6,7 @@ These are all the things to do after finishing a coding task, don't do anything 
 
 - Run all unit and e2e tests.
 - On new features, don't create tests new tests. Only create tests automatically when fixing bugs with TDD.
+- Don't use browser automation libraries, mcps or skills to test changes.
 
 ## Package manager
 Use `pnpm` as the package manager and scripts runner.
