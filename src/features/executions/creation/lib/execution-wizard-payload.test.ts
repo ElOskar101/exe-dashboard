@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { createEmptyDraft } from './execution-wizard-draft'
 import { buildExecutionPayload } from './execution-wizard-payload'
 
+const ACCESS_TOKEN = 'token-123'
+const CCC_API_URL = 'https://dev-carrier.dentalautomation.ai'
+
+const buildPayload = (draft: ReturnType<typeof createEmptyDraft>, createdBy: string) =>
+  buildExecutionPayload(draft, createdBy, ACCESS_TOKEN, CCC_API_URL)
+
 const toDateTimeLocalValue = (date: Date) => {
   const pad = (value: number) => value.toString().padStart(2, '0')
 
@@ -46,14 +52,16 @@ describe('buildExecutionPayload', () => {
       },
     ]
 
-    expect(buildExecutionPayload(draft, 'user-1')).toEqual({
+    expect(buildPayload(draft, 'user-1')).toEqual({
       project: 'liberty',
       createdBy: 'user-1',
       client: 'Legacy Dental Care',
       clinic: 'Legacy Dental Care',
       execution: 'Daily eligibility',
       botName: 'Eligibility Runner',
-      meta: {
+      context: {
+        accessToken: ACCESS_TOKEN,
+        apiUrl: CCC_API_URL,
         bot: {
           botName: 'Eligibility Runner',
           targetUrl: 'https://carrier.example.com',
@@ -63,20 +71,20 @@ describe('buildExecutionPayload', () => {
             specifyPayer: 'None',
           },
         },
+        executionId: 'execution-day-id-1',
         patients: [
           {
-            patientName: 'Ana',
-            patientLastName: 'Lopez',
-            patientMemberId: 'A10001',
-            patientDob: '1985-03-10',
-            policyHolderName: 'Ana',
-            policyHolderLastName: 'Lopez',
-            policyHolderDob: '1985-03-10',
-            relationship: 'self',
-            zipCode: '90001',
-            clinic: 'Downtown Clinic',
+            patientName: { key: 'patient_first_name', value: 'Ana' },
+            patientLastName: { key: 'patient_last_name', value: 'Lopez' },
+            patientMemberId: { key: 'memberid', value: 'A10001' },
+            patientDob: { key: 'patient_dob', value: '1985-03-10' },
+            policyHolderName: { key: 'subscriber_first_name', value: 'Ana' },
+            policyHolderLastName: { key: 'subscriber_last_name', value: 'Lopez' },
+            policyHolderDob: { key: 'subscriber_dob', value: '1985-03-10' },
+            relationship: { key: 'relationship_to_subscriber', value: 'self' },
+            zipCode: { key: 'subscriber_zip_code', value: '90001' },
             verificationType: 'elg',
-            filenames: 'ana-lopez.pdf',
+            filenames: ['ana-lopez.pdf'],
             otherInformation: {
               plan: 'Gold',
             },
@@ -107,11 +115,11 @@ describe('buildExecutionPayload', () => {
     draft.bot.password = 'secret'
     draft.bot.verificationType = 'ELG'
 
-    expect(buildExecutionPayload(draft, '')).toBeNull()
+    expect(buildPayload(draft, '')).toBeNull()
 
     draft.execution.config = '[]'
 
-    expect(buildExecutionPayload(draft, 'user-1')).toBeNull()
+    expect(buildPayload(draft, 'user-1')).toBeNull()
   })
 
   it('submits selected display names from the chosen customer, clinic, and user', () => {
@@ -129,7 +137,7 @@ describe('buildExecutionPayload', () => {
     draft.bot.password = 'secret'
     draft.bot.verificationType = 'ELG'
 
-    expect(buildExecutionPayload(draft, 'Operator One')).toMatchObject({
+    expect(buildPayload(draft, 'Operator One')).toMatchObject({
       createdBy: 'Operator One',
       client: 'Sunshine Dental',
       clinic: 'Main Clinic',
@@ -149,11 +157,11 @@ describe('buildExecutionPayload', () => {
     draft.bot.targetUrl = 'https://carrier.example.com'
     draft.bot.verificationType = 'ELG'
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).toBeNull()
+    expect(buildPayload(draft, 'user-id-7')).toBeNull()
 
     draft.bot.username = 'operator'
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).toBeNull()
+    expect(buildPayload(draft, 'user-id-7')).toBeNull()
   })
 
   it('omits the optional execution name when it is empty', () => {
@@ -171,7 +179,7 @@ describe('buildExecutionPayload', () => {
     draft.bot.password = 'secret'
     draft.bot.verificationType = 'ELG'
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).not.toHaveProperty('execution')
+    expect(buildPayload(draft, 'user-id-7')).not.toHaveProperty('execution')
   })
 
   it('falls back to the raw execution field when no execution name is available', () => {
@@ -190,7 +198,7 @@ describe('buildExecutionPayload', () => {
     draft.bot.password = 'secret'
     draft.bot.verificationType = 'ELG'
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
+    expect(buildPayload(draft, 'user-id-7')).toMatchObject({
       execution: 'legacy-execution-value',
     })
   })
@@ -227,16 +235,16 @@ describe('buildExecutionPayload', () => {
       },
     ]
 
-    expect(buildExecutionPayload(draft, 'user-1')).toMatchObject({
-      meta: {
+    expect(buildPayload(draft, 'user-1')).toMatchObject({
+      context: {
         patients: [
           {
-            patientName: 'Ana',
+            patientName: { key: 'patient_first_name', value: 'Ana' },
           },
         ],
       },
     })
-    expect(buildExecutionPayload(draft, 'user-1')?.meta.patients[0]).not.toHaveProperty('clinic')
+    expect(buildPayload(draft, 'user-1')?.context.patients[0]).not.toHaveProperty('clinic')
   })
 
   it('adds scheduledAt when the execution is scheduled', () => {
@@ -257,7 +265,7 @@ describe('buildExecutionPayload', () => {
     draft.execution.scheduleMode = 'scheduled'
     draft.execution.scheduledAt = scheduledAt
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).toMatchObject({
+    expect(buildPayload(draft, 'user-id-7')).toMatchObject({
       scheduledAt: new Date(scheduledAt).toISOString(),
     })
   })
@@ -279,6 +287,6 @@ describe('buildExecutionPayload', () => {
     draft.execution.scheduleMode = 'scheduled'
     draft.execution.scheduledAt = '2020-01-01T09:00'
 
-    expect(buildExecutionPayload(draft, 'user-id-7')).toBeNull()
+    expect(buildPayload(draft, 'user-id-7')).toBeNull()
   })
 })

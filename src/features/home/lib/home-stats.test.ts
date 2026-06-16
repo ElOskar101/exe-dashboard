@@ -12,6 +12,18 @@ const createExecution = (execution: Partial<Execution>): Execution => ({
   client: 'Acme',
   clinic: 'Downtown',
   execution: '',
+  context: {
+    bot: {
+      botName: 'Eligibility bot',
+      targetUrl: 'https://carrier.example.com',
+      username: 'runner',
+      password: 'secret',
+      otherInformation: {},
+    },
+    patients: [],
+    config: {},
+    rv: {},
+  },
   createdAt: '2026-05-23T00:00:00.000Z',
   updatedAt: '2026-05-23T00:00:00.000Z',
   jobId: 'job-1',

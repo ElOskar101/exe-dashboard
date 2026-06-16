@@ -30,8 +30,10 @@ export type {
   ExecutionCreatePayload,
   ExecutionMetadata,
   ExecutionPayloadBot,
-  ExecutionPayloadMeta,
+  ExecutionPayloadContext,
   ExecutionPayloadPatient,
+  ExecutionPayloadPatientPropertyDetail,
+  ExecutionPayloadVerificationType,
   ExecutionSchedulePayload,
   ExecutionVerificationType,
 } from './model/execution-create-payload'

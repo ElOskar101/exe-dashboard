@@ -33,7 +33,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
         ...(draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt
           ? { scheduledAt: new Date(draft.execution.scheduledAt).toISOString() }
           : {}),
-        meta: {
+        context: {
           bot: {
             botName: draft.bot.botName.trim(),
             targetUrl: draft.bot.targetUrl.trim(),
@@ -41,19 +41,19 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             password: draft.bot.password,
             otherInformation: createDefaultBotOtherInformation(),
           },
+          executionId: draft.execution.execution.trim(),
           patients: draft.execution.patients.map((patient) => ({
-            patientName: patient.patientName.trim(),
-            patientLastName: patient.patientLastName.trim(),
-            patientMemberId: patient.patientMemberId.trim(),
-            patientDob: patient.patientDob,
-            policyHolderName: patient.policyHolderName.trim(),
-            policyHolderLastName: patient.policyHolderLastName.trim(),
-            policyHolderDob: patient.policyHolderDob,
-            relationship: patient.relationship.trim(),
-            zipCode: patient.zipCode.trim(),
-            ...(patient.clinic.trim() ? { clinic: patient.clinic.trim() } : {}),
+            patientName: { key: 'patient_first_name', value: patient.patientName.trim() },
+            patientLastName: { key: 'patient_last_name', value: patient.patientLastName.trim() },
+            patientMemberId: { key: 'memberid', value: patient.patientMemberId.trim() },
+            patientDob: { key: 'patient_dob', value: patient.patientDob },
+            policyHolderName: { key: 'subscriber_first_name', value: patient.policyHolderName.trim() },
+            policyHolderLastName: { key: 'subscriber_last_name', value: patient.policyHolderLastName.trim() },
+            policyHolderDob: { key: 'subscriber_dob', value: patient.policyHolderDob },
+            relationship: { key: 'relationship_to_subscriber', value: patient.relationship.trim() },
+            zipCode: { key: 'subscriber_zip_code', value: patient.zipCode.trim() },
             verificationType: patient.verificationType.toLowerCase(),
-            filenames: patient.filenames.trim(),
+            filenames: patient.filenames.trim() ? [patient.filenames.trim()] : [],
             otherInformation: patient.otherInformation,
           })),
           config: parseExecutionMetadataString(draft.execution.config),

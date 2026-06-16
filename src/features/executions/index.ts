@@ -98,6 +98,7 @@ export type {
   ExecutionApiRequestTarget,
   ExecutionCreatePayload,
   ExecutionMetadata,
+  ExecutionPayloadContext,
   ExecutionQuery,
   ExecutionRuntimeStatus,
   ExecutionSchedulePayload,

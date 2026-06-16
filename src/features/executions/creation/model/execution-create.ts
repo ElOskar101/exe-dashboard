@@ -51,6 +51,8 @@ export interface ExecutionWizardDraft {
 export type {
   ExecutionCreatePayload,
   ExecutionMetadata,
+  ExecutionPayloadPatientPropertyDetail,
+  ExecutionPayloadVerificationType,
   ExecutionSchedulePayload,
   ExecutionVerificationType,
 } from '../../shared/model/execution-create-payload'

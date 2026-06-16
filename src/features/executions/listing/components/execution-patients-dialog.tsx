@@ -20,7 +20,7 @@ import { formatExecutionPatientOtherInformation, getExecutionPatientsSummary } f
 const FILENAME_PREVIEW_MAX_LENGTH = 40
 const VISIBLE_PATIENT_DETAILS_COUNT = 4
 
-type ExecutionPatient = NonNullable<NonNullable<Execution['meta']>['patients']>[number]
+type ExecutionPatient = Execution['context']['patients'][number]
 
 interface ExecutionPatientsDialogProps {
   execution: Execution
@@ -31,7 +31,7 @@ export function ExecutionPatientsDialog({ execution, executionLabel }: Execution
   const { t } = useTranslation('executions')
   const titleRef = useRef<HTMLHeadingElement>(null)
   const emptyValue = t('list.emptyValue')
-  const patients = execution.meta?.patients ?? []
+  const patients = execution.context.patients
 
   return (
     <Dialog>
@@ -105,26 +105,36 @@ function PatientCard({
   const patientDetails = [
     {
       id: 'patientName',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.patientName')} value={patient.patientName} />,
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientName')} value={patient.patientName.value} />,
     },
     {
       id: 'patientLastName',
       field: (
-        <PatientField emptyValue={emptyValue} label={t('fields.patientLastName')} value={patient.patientLastName} />
+        <PatientField
+          emptyValue={emptyValue}
+          label={t('fields.patientLastName')}
+          value={patient.patientLastName.value}
+        />
       ),
     },
     {
       id: 'memberId',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.memberId')} value={patient.patientMemberId} />,
+      field: (
+        <PatientField emptyValue={emptyValue} label={t('fields.memberId')} value={patient.patientMemberId.value} />
+      ),
     },
     {
       id: 'patientDob',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob} />,
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob.value} />,
     },
     {
       id: 'policyHolderName',
       field: (
-        <PatientField emptyValue={emptyValue} label={t('fields.policyHolderName')} value={patient.policyHolderName} />
+        <PatientField
+          emptyValue={emptyValue}
+          label={t('fields.policyHolderName')}
+          value={patient.policyHolderName.value}
+        />
       ),
     },
     {
@@ -133,27 +143,29 @@ function PatientCard({
         <PatientField
           emptyValue={emptyValue}
           label={t('fields.policyHolderLastName')}
-          value={patient.policyHolderLastName}
+          value={patient.policyHolderLastName.value}
         />
       ),
     },
     {
       id: 'policyHolderDob',
       field: (
-        <PatientField emptyValue={emptyValue} label={t('fields.policyHolderDob')} value={patient.policyHolderDob} />
+        <PatientField
+          emptyValue={emptyValue}
+          label={t('fields.policyHolderDob')}
+          value={patient.policyHolderDob.value}
+        />
       ),
     },
     {
       id: 'relationship',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.relationship')} value={patient.relationship} />,
+      field: (
+        <PatientField emptyValue={emptyValue} label={t('fields.relationship')} value={patient.relationship.value} />
+      ),
     },
     {
       id: 'zipCode',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />,
-    },
-    {
-      id: 'patientClinic',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.patientClinic')} value={patient.clinic} />,
+      field: <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode.value} />,
     },
     {
       id: 'verificationType',
@@ -233,19 +245,19 @@ function PatientFilenamesField({
   expandLabel: string
   label: string
   minimizeLabel: string
-  value: string | undefined
+  value: string[] | undefined
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const filename = value?.trim() || emptyValue
-  const canToggle = filename !== emptyValue && filename.length > FILENAME_PREVIEW_MAX_LENGTH
-  const visibleFilename =
-    canToggle && !isExpanded ? `${filename.slice(0, FILENAME_PREVIEW_MAX_LENGTH).trimEnd()}...` : filename
+  const filenames = value?.join(', ').trim() || emptyValue
+  const canToggle = filenames !== emptyValue && filenames.length > FILENAME_PREVIEW_MAX_LENGTH
+  const visibleFilenames =
+    canToggle && !isExpanded ? `${filenames.slice(0, FILENAME_PREVIEW_MAX_LENGTH).trimEnd()}...` : filenames
 
   return (
     <div className="min-w-0">
       <dt>{label}</dt>
       <dd className="mt-1">
-        <span className="whitespace-normal break-words font-medium text-muted-foreground">{visibleFilename}</span>
+        <span className="whitespace-normal break-words font-medium text-muted-foreground">{visibleFilenames}</span>
         {canToggle ? (
           <Button
             type="button"

@@ -1,4 +1,4 @@
-import type { ExecutionPayloadMeta } from './execution-create-payload'
+import type { ExecutionPayloadContext } from './execution-create-payload'
 
 export type ExecutionStatus =
   | 'queued'
@@ -34,7 +34,7 @@ export interface Execution {
   execution: string
   bot?: string
   botName?: string
-  meta?: ExecutionPayloadMeta
+  context: ExecutionPayloadContext
   createdAt: string
   updatedAt: string
   jobId: string

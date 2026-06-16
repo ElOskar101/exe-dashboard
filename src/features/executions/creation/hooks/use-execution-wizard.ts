@@ -2,6 +2,7 @@ import { useContext, useMemo, useState, startTransition } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '@/features/auth'
+import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 import {
   getExecutionRequestErrorMessage,
   useCreateExecutionMutation,
@@ -73,7 +74,8 @@ const resetDraftDependentSelections = (
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
-  const { user } = useContext(AuthContext)
+  const { token, user } = useContext(AuthContext)
+  const { cccApiUrl } = useCccApiUrl()
   const createdBy = user?.fullName ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
@@ -136,7 +138,10 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxWorkers,
     appLimits.maxRetries,
   ])
-  const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
+  const payloadPreview = useMemo(
+    () => buildExecutionPayload(draft, createdBy, token, cccApiUrl),
+    [cccApiUrl, createdBy, draft, token],
+  )
   const stepValidity = [
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
