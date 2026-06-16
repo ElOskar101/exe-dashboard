@@ -19,10 +19,31 @@ const SHARE_MEMBER_SEARCH_DELAY_MS = 300
 const SHARE_MEMBER_PANEL_OFFSET_PX = 8
 const USER_PICTURES_PATH = '/pictures/'
 
+const SAFE_IMAGE_SCHEMES = new Set(['http:', 'https:'])
+
+const isSafeImageUrl = (value: string) => {
+  try {
+    return SAFE_IMAGE_SCHEMES.has(new URL(value).protocol)
+  } catch {
+    return false
+  }
+}
+
 const getUserDisplayName = (user: PlaywrightRuntimeSharedMember) => user.fullName
-const getUserImageSrc = (user: PlaywrightRuntimeSharedMember) =>
-  user.urlImage ? APP_CONFIG.cccApiUrl + USER_PICTURES_PATH + user.urlImage : ''
-const getUserFallbackLetter = (user: PlaywrightRuntimeSharedMember) => user.fullName.trim().charAt(0).toUpperCase()
+const getUserImageSrc = (user: PlaywrightRuntimeSharedMember) => {
+  if (!user.urlImage) {
+    return ''
+  }
+
+  const absoluteUrl = APP_CONFIG.cccApiUrl + USER_PICTURES_PATH + user.urlImage
+
+  return isSafeImageUrl(absoluteUrl) ? absoluteUrl : ''
+}
+const getUserFallbackLetter = (user: PlaywrightRuntimeSharedMember) => {
+  const trimmedName = user.fullName.trim()
+
+  return trimmedName ? trimmedName.charAt(0).toUpperCase() : '?'
+}
 
 function ShareMemberAvatar({
   size = 'default',

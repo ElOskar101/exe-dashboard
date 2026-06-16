@@ -35,7 +35,6 @@ import {
   getRuntimeMutationErrorMessage,
   getSharedMemberIdsFromMembers,
   getSharedMembers,
-  getSharedMemberIds,
   hasFormErrors,
   normalizeOptionalString,
   type RuntimeFormState,
@@ -88,7 +87,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
     )
   }
 
-  const removeMemberId = (memberId: string) => {
+  const removeMember = (memberId: string) => {
     setMembers((currentMembers) => currentMembers.filter((member) => member._id !== memberId))
   }
 
@@ -124,7 +123,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
         description: normalizeOptionalString(formState.description),
         accessInfo: {
           type: formState.accessType,
-          sharedWith: members,
+          sharedWith: getSharedMemberIdsFromMembers(members),
         },
       },
       t('updateRuntime.successDescription', { runtime: formState.name.trim() }),
@@ -133,7 +132,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
 
   const handleShareSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const currentMemberIds = getSharedMemberIds(runtime.accessInfo)
+    const currentMemberIds = getSharedMembers(runtime.accessInfo).map((member) => member._id)
     const nextMemberIds = getSharedMemberIdsFromMembers(members)
     const currentMemberIdSet = new Set(currentMemberIds)
     const nextMemberIdSet = new Set(nextMemberIds)
@@ -260,7 +259,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
                 id={`${fieldIdPrefix}-share-member-id`}
                 members={members}
                 onAdd={addMember}
-                onRemove={removeMemberId}
+                onRemove={removeMember}
               />
               <DialogFooter>
                 <DialogClose render={<Button type="button" variant="outline" disabled={isSubmitting} />}>

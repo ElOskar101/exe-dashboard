@@ -34,6 +34,7 @@ import {
   createApplicationFormState,
   getApplicationFormErrors,
   getRuntimeMutationErrorMessage,
+  getSharedMemberIdsFromMembers,
   getSharedMembers,
   hasFormErrors,
   normalizeOptionalString,
@@ -98,7 +99,7 @@ export function UpdateAppDialog({
     )
   }
 
-  const removeMemberId = (memberId: string) => {
+  const removeMember = (memberId: string) => {
     setMembers((currentMembers) => currentMembers.filter((member) => member._id !== memberId))
   }
 
@@ -151,7 +152,7 @@ export function UpdateAppDialog({
         },
         accessInfo: {
           type: applicationAccessType,
-          sharedWith: members,
+          sharedWith: getSharedMemberIdsFromMembers(members),
         },
       },
       t('updateApp.successDescription', { app: formState.name.trim() }),
@@ -166,7 +167,7 @@ export function UpdateAppDialog({
         ...toPlaywrightRuntimeApplicationPayload(runtime, application),
         accessInfo: {
           type: isPrivateRuntime ? 'private' : application.accessInfo.type,
-          sharedWith: members,
+          sharedWith: getSharedMemberIdsFromMembers(members),
         },
       },
       t('share.appSuccessDescription', { app: application.name }),
@@ -360,7 +361,7 @@ export function UpdateAppDialog({
                 id={`${fieldIdPrefix}-share-member-id`}
                 members={members}
                 onAdd={addMember}
-                onRemove={removeMemberId}
+                onRemove={removeMember}
               />
               <DialogFooter>
                 <DialogClose render={<Button type="button" variant="outline" disabled={isSubmitting} />}>

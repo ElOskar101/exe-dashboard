@@ -15,7 +15,7 @@ export interface PlaywrightRuntimeAccessInfo {
 }
 
 export interface PlaywrightRuntimeAccessPayload {
-  sharedWith?: PlaywrightRuntimeSharedMember[]
+  sharedWith?: string[]
   type: PlaywrightRuntimeAccessType
 }
 

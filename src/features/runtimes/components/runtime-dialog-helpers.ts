@@ -13,8 +13,6 @@ import {
 export const getConfiguredApplicationLimit = (value: number | undefined, fallback: number) => value ?? fallback
 export const getSharedMembers = (accessInfo: PlaywrightRuntimeAccessInfo): PlaywrightRuntimeSharedMember[] =>
   accessInfo.sharedWith
-export const getSharedMemberIds = (accessInfo: PlaywrightRuntimeAccessInfo) =>
-  getSharedMembers(accessInfo).map((member) => member._id)
 export const getSharedMemberIdsFromMembers = (members: PlaywrightRuntimeSharedMember[]) =>
   members.map((member) => member._id)
 
@@ -72,7 +70,7 @@ export const toPlaywrightRuntimeAccessPayload = (
   accessInfo: PlaywrightRuntimeAccessInfo,
 ): PlaywrightRuntimeAccessPayload => ({
   type: accessInfo.type,
-  sharedWith: getSharedMembers(accessInfo),
+  sharedWith: getSharedMemberIdsFromMembers(getSharedMembers(accessInfo)),
 })
 
 export const toPlaywrightRuntimeApplicationPayload = (
@@ -90,7 +88,7 @@ export const toPlaywrightRuntimeApplicationPayload = (
   },
   accessInfo: {
     type: runtime.accessInfo.type === 'private' ? 'private' : application.accessInfo.type,
-    sharedWith: getSharedMembers(application.accessInfo),
+    sharedWith: getSharedMemberIdsFromMembers(getSharedMembers(application.accessInfo)),
   },
 })
 
