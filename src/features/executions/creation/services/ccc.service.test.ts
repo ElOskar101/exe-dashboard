@@ -7,6 +7,7 @@ import {
   getClinicBots,
   getClinicExecutionDays,
   getCustomerById,
+  getRuntimeVariables,
   searchCustomers,
 } from './ccc.service'
 
@@ -191,6 +192,18 @@ describe('ccc.service', () => {
     await getCCCExecution('day-1')
 
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/day-1')
+  })
+
+  it('getRuntimeVariables requests the selected CCC runtime variables', async () => {
+    vi.mocked(cccClient.get).mockResolvedValueOnce({
+      data: {
+        carrierDomain: 'dev-carrier',
+      },
+    })
+
+    await getRuntimeVariables()
+
+    expect(cccClient.get).toHaveBeenCalledWith('rv')
   })
 
   it('decryptClinicBotPassword requests the decrypted password as plain text', async () => {

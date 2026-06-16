@@ -507,7 +507,11 @@ test.describe('protected executions route', () => {
           parallel: true,
           inNetwork: true,
         },
-        rv: {},
+        rv: {
+          carrierDomain: 'dev-carrier',
+          tenant: 'e2e',
+        },
+        headed: false,
         workers: 4,
         retries: 2,
       },

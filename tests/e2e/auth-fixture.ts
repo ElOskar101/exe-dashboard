@@ -68,6 +68,15 @@ export async function prepareAuthenticatedPage(page: Page) {
     })
   })
 
+  await page.route('**/api/rv', async (route) => {
+    await route.fulfill({
+      json: {
+        carrierDomain: 'dev-carrier',
+        tenant: 'e2e',
+      },
+    })
+  })
+
   await page.route('**/api/v1/stats', async (route) => {
     await route.fulfill({
       json: {

@@ -4,9 +4,10 @@ import { buildExecutionPayload } from './execution-wizard-payload'
 
 const ACCESS_TOKEN = 'token-123'
 const CCC_API_URL = 'https://dev-carrier.dentalautomation.ai'
+const RUNTIME_VARIABLES = { carrierDomain: 'dev-carrier' }
 
 const buildPayload = (draft: ReturnType<typeof createEmptyDraft>, createdBy: string) =>
-  buildExecutionPayload(draft, createdBy, ACCESS_TOKEN, CCC_API_URL)
+  buildExecutionPayload(draft, createdBy, ACCESS_TOKEN, CCC_API_URL, RUNTIME_VARIABLES)
 
 const toDateTimeLocalValue = (date: Date) => {
   const pad = (value: number) => value.toString().padStart(2, '0')
@@ -93,7 +94,8 @@ describe('buildExecutionPayload', () => {
         config: {
           parallel: true,
         },
-        rv: {},
+        rv: RUNTIME_VARIABLES,
+        headed: false,
         workers: 2,
         retries: 1,
       },
@@ -120,6 +122,24 @@ describe('buildExecutionPayload', () => {
     draft.execution.config = '[]'
 
     expect(buildPayload(draft, 'user-1')).toBeNull()
+  })
+
+  it('returns null while runtime variables are unavailable', () => {
+    const draft = createEmptyDraft()
+
+    draft.context.project = 'liberty'
+    draft.context.client = 'client-1'
+    draft.context.clientName = 'Legacy Dental Care'
+    draft.context.clinic = 'clinic-1'
+    draft.context.clinicName = 'Legacy Dental Care'
+    draft.bot.clinicBotId = 'clinic-bot-1'
+    draft.bot.botName = 'Eligibility Runner'
+    draft.bot.targetUrl = 'https://carrier.example.com'
+    draft.bot.username = 'operator'
+    draft.bot.password = 'secret'
+    draft.bot.verificationType = 'ELG'
+
+    expect(buildExecutionPayload(draft, 'user-1', ACCESS_TOKEN, CCC_API_URL, undefined)).toBeNull()
   })
 
   it('submits selected display names from the chosen customer, clinic, and user', () => {

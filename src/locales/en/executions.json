@@ -71,6 +71,7 @@
     "numberOfThreads": "Number of threads",
     "workers": "Workers",
     "retries": "Retries",
+    "headed": "Headed mode",
     "scheduleMode": "Execution timing",
     "scheduledAt": "Scheduled time",
     "mode": "Mode",
@@ -109,7 +110,9 @@
     "modeParallel": "Parallel",
     "modeStandard": "Standard",
     "verificationElg": "ELG",
-    "verificationFbd": "FBD"
+    "verificationFbd": "FBD",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "buttons": {
     "back": "Back",

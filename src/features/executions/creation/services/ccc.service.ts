@@ -1,5 +1,5 @@
 import cccClient from '@/lib/axios'
-import type { ExecutionVerificationType } from '../../shared/model/execution-create-payload'
+import type { ExecutionMetadata, ExecutionVerificationType } from '../../shared/model/execution-create-payload'
 
 export interface CustomerSearchItem {
   _id: string
@@ -178,6 +178,10 @@ export const decryptClinicBotPassword = async (clinicBotId: string) => {
 
 export const getCCCExecution = (executionId: string) => {
   return cccClient.get<CCCExecutionResponse>(`v2/executions/${executionId}`)
+}
+
+export const getRuntimeVariables = () => {
+  return cccClient.get<ExecutionMetadata>('rv')
 }
 
 const normalizeDecryptedPassword = (value: string) => {

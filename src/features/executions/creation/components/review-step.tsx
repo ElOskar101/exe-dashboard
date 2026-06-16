@@ -3,7 +3,12 @@ import { IconCopy } from '@tabler/icons-react'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import type { ExecutionCreatePayload, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
+import type {
+  ExecutionCreatePayload,
+  ExecutionMetadata,
+  ExecutionSchedulePayload,
+  ExecutionWizardDraft,
+} from '../model/execution-create'
 import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
 import {
   getExecutionWizardDisplayValue,
@@ -14,10 +19,11 @@ import {
 interface ReviewStepProps {
   draft: ExecutionWizardDraft
   payload: ExecutionCreatePayload | ExecutionSchedulePayload | null
+  runtimeVariables?: ExecutionMetadata
   t: TFunction<'executions'>
 }
 
-export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
+export function ReviewStep({ draft, payload, runtimeVariables, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
   const patients = draft.execution.patients
   const reviewPayload = useMemo(
@@ -57,12 +63,13 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             otherInformation: patient.otherInformation,
           })),
           config: parseExecutionMetadataString(draft.execution.config),
-          rv: {},
+          rv: runtimeVariables,
+          headed: false,
           workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
           retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
         },
       },
-    [draft, payload],
+    [draft, payload, runtimeVariables],
   )
   const payloadText = useMemo(() => JSON.stringify(reviewPayload, null, 2), [reviewPayload])
 
@@ -237,6 +244,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
               <dd className="mt-1 font-medium">{getExecutionWizardDisplayValue(draft.context.project, emptyValue)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.headed')}</dt>
+              <dd className="mt-1 font-medium">{t('options.disabled')}</dd>
             </div>
           </dl>
         </div>

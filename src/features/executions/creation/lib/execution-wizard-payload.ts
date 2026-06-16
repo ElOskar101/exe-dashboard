@@ -21,6 +21,8 @@ const PATIENT_SOURCE_KEYS = {
   zipCode: 'subscriber_zip_code',
 } as const
 
+const DEFAULT_HEADED_MODE = false
+
 export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({
   specifyPayer: 'None',
 })
@@ -41,11 +43,13 @@ export const buildExecutionPayload = (
   createdBy: string,
   accessToken: string,
   apiUrl: string,
+  rv: ExecutionMetadata | undefined,
 ): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
   if (
     !createdBy ||
     !accessToken.trim() ||
     !apiUrl.trim() ||
+    !rv ||
     !draft.context.project.trim() ||
     !draft.context.client.trim() ||
     !draft.context.clientName.trim() ||
@@ -106,7 +110,8 @@ export const buildExecutionPayload = (
         otherInformation: patientOtherInformation[index] ?? {},
       })),
       config: configMetadata,
-      rv: {},
+      rv,
+      headed: DEFAULT_HEADED_MODE,
       workers: Number(draft.execution.workers),
       retries: Number(draft.execution.retries),
     },

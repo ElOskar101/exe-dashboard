@@ -86,6 +86,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   )
   const customerSearch = draft.context.clientName.trim()
   const wizardData = useExecutionWizardData({
+    cccApiUrl,
     context: draft.context,
     customerSearch,
     onPatientsImported: ({ executionId, patients }) => {
@@ -139,8 +140,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxRetries,
   ])
   const payloadPreview = useMemo(
-    () => buildExecutionPayload(draft, createdBy, token, cccApiUrl),
-    [cccApiUrl, createdBy, draft, token],
+    () => buildExecutionPayload(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
+    [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
   )
   const stepValidity = [
     !validationErrors.context.client &&
@@ -620,6 +621,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     reviewStep: {
       draft,
       payload: payloadPreview,
+      runtimeVariables: wizardData.runtimeVariablesQuery.data,
     },
     stepper: {
       currentStep,

@@ -7,4 +7,5 @@ export const executionWizardKeys = {
   customerSearch: (customerSearch: string, options: { limit?: number } = {}) =>
     [...executionWizardKeys.all, 'customer-search', customerSearch, options] as const,
   playwrightProjects: () => [...executionWizardKeys.all, 'playwright-projects'] as const,
+  runtimeVariables: (cccApiUrl: string) => [...executionWizardKeys.all, 'runtime-variables', cccApiUrl] as const,
 }
