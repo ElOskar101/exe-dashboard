@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import {
   type PlaywrightRuntime,
   type PlaywrightRuntimeAccessType,
+  type PlaywrightRuntimeSharedMember,
   type PlaywrightRuntimeUpdatePayload,
   useAddPlaywrightRuntimeShareMembersMutation,
   useRemovePlaywrightRuntimeShareMembersMutation,
@@ -32,6 +33,8 @@ import {
   createRuntimeFormState,
   getRuntimeFormErrors,
   getRuntimeMutationErrorMessage,
+  getSharedMemberIdsFromMembers,
+  getSharedMembers,
   getSharedMemberIds,
   hasFormErrors,
   normalizeOptionalString,
@@ -46,7 +49,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
   const [isOpen, setIsOpen] = useState(false)
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [formState, setFormState] = useState(() => createRuntimeFormState(runtime))
-  const [memberIds, setMemberIds] = useState(() => getSharedMemberIds(runtime.accessInfo))
+  const [members, setMembers] = useState(() => getSharedMembers(runtime.accessInfo))
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
   const addShareMembersMutation = useAddPlaywrightRuntimeShareMembersMutation()
   const removeShareMembersMutation = useRemovePlaywrightRuntimeShareMembersMutation()
@@ -62,7 +65,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
   const resetDialog = () => {
     setWasSubmitted(false)
     setFormState(createRuntimeFormState(runtime))
-    setMemberIds(getSharedMemberIds(runtime.accessInfo))
+    setMembers(getSharedMembers(runtime.accessInfo))
   }
 
   const handleOpenChange = (open: boolean) => {
@@ -77,20 +80,16 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
     }))
   }
 
-  const addMemberId = (memberId: string) => {
-    const trimmedMemberId = memberId.trim()
-
-    if (!trimmedMemberId) {
-      return
-    }
-
-    setMemberIds((currentMemberIds) =>
-      currentMemberIds.includes(trimmedMemberId) ? currentMemberIds : [...currentMemberIds, trimmedMemberId],
+  const addMember = (member: PlaywrightRuntimeSharedMember) => {
+    setMembers((currentMembers) =>
+      currentMembers.some((currentMember) => currentMember._id === member._id)
+        ? currentMembers
+        : [...currentMembers, member],
     )
   }
 
   const removeMemberId = (memberId: string) => {
-    setMemberIds((currentMemberIds) => currentMemberIds.filter((candidate) => candidate !== memberId))
+    setMembers((currentMembers) => currentMembers.filter((member) => member._id !== memberId))
   }
 
   const submitRuntimePayload = async (payload: PlaywrightRuntimeUpdatePayload, successDescription: string) => {
@@ -125,7 +124,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
         description: normalizeOptionalString(formState.description),
         accessInfo: {
           type: formState.accessType,
-          sharedWith: memberIds,
+          sharedWith: members,
         },
       },
       t('updateRuntime.successDescription', { runtime: formState.name.trim() }),
@@ -135,7 +134,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
   const handleShareSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const currentMemberIds = getSharedMemberIds(runtime.accessInfo)
-    const nextMemberIds = memberIds
+    const nextMemberIds = getSharedMemberIdsFromMembers(members)
     const currentMemberIdSet = new Set(currentMemberIds)
     const nextMemberIdSet = new Set(nextMemberIds)
     const memberIdsToAdd = nextMemberIds.filter((memberId) => !currentMemberIdSet.has(memberId))
@@ -259,8 +258,8 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
               <ShareMembersField
                 disabled={isSubmitting}
                 id={`${fieldIdPrefix}-share-member-id`}
-                memberIds={memberIds}
-                onAdd={addMemberId}
+                members={members}
+                onAdd={addMember}
                 onRemove={removeMemberId}
               />
               <DialogFooter>

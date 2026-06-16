@@ -53,6 +53,7 @@ export type {
   PlaywrightRuntimeCreatePayload,
   PlaywrightRuntimeShareMembersPayload,
   PlaywrightRuntimeShareMembersResult,
+  PlaywrightRuntimeSharedMember,
   PlaywrightRuntimeUpdatePayload,
 } from './model/playwright-runtime'
 export { getPlaywrightRuntimeApplications } from './model/playwright-runtime'

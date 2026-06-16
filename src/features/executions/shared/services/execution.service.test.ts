@@ -216,7 +216,7 @@ describe('execution.service', () => {
     expect(cccClient.get).toHaveBeenCalledWith('v2/playwright-runtimes/runtime-1')
   })
 
-  it('getPlaywrightRuntimeResponseData normalizes shared members to member ids', () => {
+  it('getPlaywrightRuntimeResponseData preserves shared member details', () => {
     const runtime = getPlaywrightRuntimeResponseData({
       data: {
         _id: 'runtime-1',
@@ -228,6 +228,7 @@ describe('execution.service', () => {
               _id: 'member-1',
               fullName: 'Ada Lovelace',
               username: 'adal',
+              urlImage: 'ada.webp',
             },
           ],
         },
@@ -237,10 +238,17 @@ describe('execution.service', () => {
             accessInfo: {
               type: 'private',
               sharedWith: [
-                'member-2',
+                {
+                  _id: 'member-2',
+                  fullName: 'Katherine Johnson',
+                  username: 'katherinej',
+                  urlImage: 'katherine.webp',
+                },
                 {
                   _id: 'member-3',
+                  fullName: 'Grace Hopper',
                   username: 'graceh',
+                  urlImage: 'grace.webp',
                 },
               ],
             },
@@ -250,8 +258,28 @@ describe('execution.service', () => {
       success: true,
     })
 
-    expect(runtime.accessInfo.sharedWith).toEqual(['member-1'])
-    expect(runtime.applications?.[0]?.accessInfo.sharedWith).toEqual(['member-2', 'member-3'])
+    expect(runtime.accessInfo.sharedWith).toEqual([
+      {
+        _id: 'member-1',
+        fullName: 'Ada Lovelace',
+        username: 'adal',
+        urlImage: 'ada.webp',
+      },
+    ])
+    expect(runtime.applications?.[0]?.accessInfo.sharedWith).toEqual([
+      {
+        _id: 'member-2',
+        fullName: 'Katherine Johnson',
+        username: 'katherinej',
+        urlImage: 'katherine.webp',
+      },
+      {
+        _id: 'member-3',
+        fullName: 'Grace Hopper',
+        username: 'graceh',
+        urlImage: 'grace.webp',
+      },
+    ])
   })
 
   it('createPlaywrightRuntime posts a playwright runtime payload', async () => {

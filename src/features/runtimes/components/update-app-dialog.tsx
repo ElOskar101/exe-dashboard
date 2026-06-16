@@ -22,6 +22,7 @@ import {
   type PlaywrightRuntimeAccessType,
   type PlaywrightRuntimeApplication,
   type PlaywrightRuntimeApplicationPayload,
+  type PlaywrightRuntimeSharedMember,
   useUpdatePlaywrightRuntimeMutation,
 } from '@/features/executions'
 import { IconPencil } from '@tabler/icons-react'
@@ -33,7 +34,7 @@ import {
   createApplicationFormState,
   getApplicationFormErrors,
   getRuntimeMutationErrorMessage,
-  getSharedMemberIds,
+  getSharedMembers,
   hasFormErrors,
   normalizeOptionalString,
   parseIntegerField,
@@ -56,7 +57,7 @@ export function UpdateAppDialog({
   const [isOpen, setIsOpen] = useState(false)
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [formState, setFormState] = useState(() => createApplicationFormState(application))
-  const [memberIds, setMemberIds] = useState(() => getSharedMemberIds(application.accessInfo))
+  const [members, setMembers] = useState(() => getSharedMembers(application.accessInfo))
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
   const isPrivateRuntime = runtime.accessInfo.type === 'private'
   const formErrors = getApplicationFormErrors(runtime, application, formState)
@@ -74,7 +75,7 @@ export function UpdateAppDialog({
   const resetDialog = () => {
     setWasSubmitted(false)
     setFormState(createApplicationFormState(application))
-    setMemberIds(getSharedMemberIds(application.accessInfo))
+    setMembers(getSharedMembers(application.accessInfo))
   }
 
   const handleOpenChange = (open: boolean) => {
@@ -89,20 +90,16 @@ export function UpdateAppDialog({
     }))
   }
 
-  const addMemberId = (memberId: string) => {
-    const trimmedMemberId = memberId.trim()
-
-    if (!trimmedMemberId) {
-      return
-    }
-
-    setMemberIds((currentMemberIds) =>
-      currentMemberIds.includes(trimmedMemberId) ? currentMemberIds : [...currentMemberIds, trimmedMemberId],
+  const addMember = (member: PlaywrightRuntimeSharedMember) => {
+    setMembers((currentMembers) =>
+      currentMembers.some((currentMember) => currentMember._id === member._id)
+        ? currentMembers
+        : [...currentMembers, member],
     )
   }
 
   const removeMemberId = (memberId: string) => {
-    setMemberIds((currentMemberIds) => currentMemberIds.filter((candidate) => candidate !== memberId))
+    setMembers((currentMembers) => currentMembers.filter((member) => member._id !== memberId))
   }
 
   const updateApplication = async (
@@ -154,7 +151,7 @@ export function UpdateAppDialog({
         },
         accessInfo: {
           type: applicationAccessType,
-          sharedWith: memberIds,
+          sharedWith: members,
         },
       },
       t('updateApp.successDescription', { app: formState.name.trim() }),
@@ -169,7 +166,7 @@ export function UpdateAppDialog({
         ...toPlaywrightRuntimeApplicationPayload(runtime, application),
         accessInfo: {
           type: isPrivateRuntime ? 'private' : application.accessInfo.type,
-          sharedWith: memberIds,
+          sharedWith: members,
         },
       },
       t('share.appSuccessDescription', { app: application.name }),
@@ -361,8 +358,8 @@ export function UpdateAppDialog({
               <ShareMembersField
                 disabled={isSubmitting}
                 id={`${fieldIdPrefix}-share-member-id`}
-                memberIds={memberIds}
-                onAdd={addMemberId}
+                members={members}
+                onAdd={addMember}
                 onRemove={removeMemberId}
               />
               <DialogFooter>

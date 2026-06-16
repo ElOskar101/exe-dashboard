@@ -115,6 +115,7 @@ export type {
   PlaywrightRuntimeCreatePayload,
   PlaywrightRuntimeShareMembersPayload,
   PlaywrightRuntimeShareMembersResult,
+  PlaywrightRuntimeSharedMember,
   RuntimeApplicationUnavailableLabels,
   ExecutionUpdatePayload,
   PlaywrightRuntimeUpdatePayload,

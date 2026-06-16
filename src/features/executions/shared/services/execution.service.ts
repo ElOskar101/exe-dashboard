@@ -10,6 +10,7 @@ import type {
   PlaywrightRuntimeCreatePayload,
   PlaywrightRuntimeShareMembersPayload,
   PlaywrightRuntimeShareMembersResult,
+  PlaywrightRuntimeSharedMember,
   PlaywrightRuntimeUpdatePayload,
 } from '../model/playwright-runtime'
 import type { ExecutionApiRequestTarget } from '../lib/execution-target'
@@ -23,13 +24,9 @@ export interface PlaywrightRuntimeApiResponse<TData> {
   success: boolean
 }
 
-interface PlaywrightRuntimeSharedMemberResponse {
-  _id: string
-}
-
 interface PlaywrightRuntimeAccessInfoResponse {
   createdBy?: string
-  sharedWith?: Array<string | PlaywrightRuntimeSharedMemberResponse>
+  sharedWith: PlaywrightRuntimeSharedMember[]
   type: PlaywrightRuntime['accessInfo']['type']
 }
 
@@ -56,7 +53,7 @@ const normalizePlaywrightRuntimeAccessInfo = (
   accessInfo: PlaywrightRuntimeAccessInfoResponse,
 ): PlaywrightRuntime['accessInfo'] => ({
   ...accessInfo,
-  sharedWith: (accessInfo.sharedWith ?? []).map((member) => (typeof member === 'string' ? member : member._id)),
+  sharedWith: accessInfo.sharedWith,
 })
 
 const normalizePlaywrightRuntimeApplication = (

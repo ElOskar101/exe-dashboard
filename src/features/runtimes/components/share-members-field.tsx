@@ -1,13 +1,15 @@
+import { APP_CONFIG } from '@/app.config'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
-import { cccUserKeys, searchCCCUsers, type CCCUser } from '@/features/executions'
+import { cccUserKeys, searchCCCUsers, type CCCUser, type PlaywrightRuntimeSharedMember } from '@/features/executions'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { IconCheck, IconSearch, IconX } from '@tabler/icons-react'
+import { IconCheck, IconX } from '@tabler/icons-react'
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
@@ -15,27 +17,48 @@ import { useTranslation } from 'react-i18next'
 const SHARE_MEMBER_USER_LIMIT = 50
 const SHARE_MEMBER_SEARCH_DELAY_MS = 300
 const SHARE_MEMBER_PANEL_OFFSET_PX = 8
+const USER_PICTURES_PATH = '/pictures/'
 
-const getUserDisplayName = (user: CCCUser) => user.fullName || user.username || user._id
+const getUserDisplayName = (user: PlaywrightRuntimeSharedMember) => user.fullName
+const getUserImageSrc = (user: PlaywrightRuntimeSharedMember) =>
+  user.urlImage ? APP_CONFIG.cccApiUrl + USER_PICTURES_PATH + user.urlImage : ''
+const getUserFallbackLetter = (user: PlaywrightRuntimeSharedMember) => user.fullName.trim().charAt(0).toUpperCase()
+
+function ShareMemberAvatar({
+  size = 'default',
+  user,
+}: {
+  size?: 'default' | 'sm'
+  user: PlaywrightRuntimeSharedMember
+}) {
+  const displayName = getUserDisplayName(user)
+  const userImageSrc = getUserImageSrc(user)
+
+  return (
+    <Avatar size={size}>
+      {userImageSrc ? <AvatarImage src={userImageSrc} alt={displayName} /> : null}
+      <AvatarFallback>{getUserFallbackLetter(user)}</AvatarFallback>
+    </Avatar>
+  )
+}
 
 export function ShareMembersField({
   disabled,
   id,
-  memberIds,
+  members,
   onAdd,
   onRemove,
 }: {
   disabled: boolean
   id: string
-  memberIds: string[]
-  onAdd: (memberId: string) => void
+  members: PlaywrightRuntimeSharedMember[]
+  onAdd: (member: PlaywrightRuntimeSharedMember) => void
   onRemove: (memberId: string) => void
 }) {
   const { t } = useTranslation('runtimes')
   const [searchValue, setSearchValue] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [anchorRect, setAnchorRect] = useState<Pick<DOMRect, 'bottom' | 'left' | 'width'> | null>(null)
-  const [selectedUsersById, setSelectedUsersById] = useState(() => new Map<string, CCCUser>())
   const debouncedSearchValue = useDebouncedValue(searchValue.trim(), SHARE_MEMBER_SEARCH_DELAY_MS)
 
   const usersQuery = useQuery({
@@ -51,17 +74,7 @@ export function ShareMembersField({
     enabled: !disabled,
   })
 
-  const selectedMemberIds = useMemo(() => new Set(memberIds), [memberIds])
-  const knownUsersById = useMemo(() => {
-    const usersById = new Map(selectedUsersById)
-    const queriedUsers = usersQuery.data?.users ?? []
-
-    queriedUsers.forEach((user) => {
-      usersById.set(user._id, user)
-    })
-
-    return usersById
-  }, [selectedUsersById, usersQuery.data])
+  const selectedMemberIds = useMemo(() => new Set(members.map((member) => member._id)), [members])
   const users = usersQuery.data?.users ?? []
   const showPanel = isOpen && !disabled && anchorRect
   const canRenderPanel = typeof document !== 'undefined'
@@ -77,14 +90,7 @@ export function ShareMembersField({
   }
 
   const handleSelect = (user: CCCUser) => {
-    setSelectedUsersById((currentUsersById) => {
-      const nextUsersById = new Map(currentUsersById)
-
-      nextUsersById.set(user._id, user)
-
-      return nextUsersById
-    })
-    onAdd(user._id)
+    onAdd(user)
     setSearchValue('')
     setIsOpen(false)
   }
@@ -137,14 +143,14 @@ export function ShareMembersField({
                           key={user._id}
                           type="button"
                           className={cn(
-                            'flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                            'flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
                             isSelected ? 'bg-accent/70 text-accent-foreground' : '',
                           )}
                           onMouseDown={(event) => event.preventDefault()}
                           onClick={() => handleSelect(user)}
                         >
                           <span className="flex min-w-0 items-center gap-2">
-                            <IconSearch className="size-4 shrink-0 text-muted-foreground" />
+                            <ShareMemberAvatar user={user} />
                             <span className="min-w-0">
                               <span className="block truncate">{getUserDisplayName(user)}</span>
                               <span className="block truncate text-xs text-muted-foreground">{user.username}</span>
@@ -170,20 +176,25 @@ export function ShareMembersField({
         <FieldDescription>{t('share.description')}</FieldDescription>
       </Field>
 
-      {memberIds.length > 0 ? (
+      {members.length > 0 ? (
         <div className="flex flex-wrap gap-2">
-          {memberIds.map((memberId) => {
-            const member = knownUsersById.get(memberId)
-            const memberLabel = member ? getUserDisplayName(member) : memberId
+          {members.map((member) => {
+            const memberLabel = getUserDisplayName(member)
 
             return (
-              <Badge key={memberId} variant="secondary" className="gap-1">
-                <span className="max-w-56 truncate">{memberLabel}</span>
+              <Badge key={member._id} variant="secondary" className="h-12 gap-2 py-1 pr-1.5 pl-1.5">
+                <ShareMemberAvatar user={member} />
+                <span className="flex min-w-0 max-w-56 flex-col items-start leading-tight">
+                  <span className="max-w-full truncate text-sm">{memberLabel}</span>
+                  <span className="max-w-full truncate text-xs font-normal text-muted-foreground">
+                    {member.username}
+                  </span>
+                </span>
                 <Button
                   type="button"
                   size="icon-xs"
                   variant="ghost"
-                  onClick={() => onRemove(memberId)}
+                  onClick={() => onRemove(member._id)}
                   disabled={disabled}
                   aria-label={t('share.removeLabel', { member: memberLabel })}
                 >
