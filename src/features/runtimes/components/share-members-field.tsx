@@ -6,11 +6,12 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { cccUserKeys, searchCCCUsers, type CCCUser, type PlaywrightRuntimeSharedMember } from '@/features/executions'
+import { AuthContext } from '@/features/auth'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { cn } from '@/lib/utils'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { IconCheck, IconX } from '@tabler/icons-react'
-import { useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -77,28 +78,83 @@ export function ShareMembersField({
   onRemove: (memberId: string) => void
 }) {
   const { t } = useTranslation('runtimes')
+  const { user: currentUser } = useContext(AuthContext)
+  const currentUserId = currentUser?._id
   const [searchValue, setSearchValue] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [anchorRect, setAnchorRect] = useState<Pick<DOMRect, 'bottom' | 'left' | 'width'> | null>(null)
   const debouncedSearchValue = useDebouncedValue(searchValue.trim(), SHARE_MEMBER_SEARCH_DELAY_MS)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  const usersQuery = useQuery({
-    queryKey: cccUserKeys.search(debouncedSearchValue, { limit: SHARE_MEMBER_USER_LIMIT }),
-    queryFn: async () => {
+  const usersQuery = useInfiniteQuery({
+    queryKey: [...cccUserKeys.infiniteSearch(debouncedSearchValue)],
+    queryFn: async ({ pageParam }) => {
       const response = await searchCCCUsers(debouncedSearchValue, {
         limit: SHARE_MEMBER_USER_LIMIT,
-        page: 1,
+        page: pageParam,
       })
 
       return response.data
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (allPages.length < lastPage.totalPages) {
+        return allPages.length + 1
+      }
+
+      return undefined
+    },
     enabled: !disabled,
   })
 
+  const allUsers = useMemo(() => {
+    const seen = new Set<string>()
+    const uniqueUsers: CCCUser[] = []
+
+    usersQuery.data?.pages.forEach((page) => {
+      page.users.forEach((user) => {
+        if (!seen.has(user._id)) {
+          seen.add(user._id)
+          uniqueUsers.push(user)
+        }
+      })
+    })
+
+    const excludedIds = new Set<string>(members.map((member) => member._id))
+
+    if (currentUserId) {
+      excludedIds.add(currentUserId)
+    }
+
+    return uniqueUsers.filter((user) => !excludedIds.has(user._id))
+  }, [usersQuery.data, currentUserId, members])
+
   const selectedMemberIds = useMemo(() => new Set(members.map((member) => member._id)), [members])
-  const users = usersQuery.data?.users ?? []
   const showPanel = isOpen && !disabled && anchorRect
   const canRenderPanel = typeof document !== 'undefined'
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+
+    if (!sentinel) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+
+        if (entry?.isIntersecting && usersQuery.hasNextPage && !usersQuery.isFetchingNextPage) {
+          void usersQuery.fetchNextPage()
+        }
+      },
+      { rootMargin: '120px' },
+    )
+
+    observer.observe(sentinel)
+
+    return () => observer.disconnect()
+  }, [usersQuery])
 
   const updateAnchorRect = (element: HTMLElement) => {
     const nextAnchorRect = element.getBoundingClientRect()
@@ -155,8 +211,8 @@ export function ShareMembersField({
                     </div>
                   ) : usersQuery.isError ? (
                     <div className="rounded-2xl px-3 py-2 text-sm text-destructive">{t('share.searchError')}</div>
-                  ) : users.length > 0 ? (
-                    users.map((user) => {
+                  ) : allUsers.length > 0 ? (
+                    allUsers.map((user) => {
                       const isSelected = selectedMemberIds.has(user._id)
 
                       return (
@@ -189,6 +245,13 @@ export function ShareMembersField({
                   ) : (
                     <div className="rounded-2xl px-3 py-2 text-sm text-muted-foreground">{t('share.noUsersFound')}</div>
                   )}
+                  <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
+                  {usersQuery.isFetchingNextPage ? (
+                    <div className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm text-muted-foreground">
+                      <Spinner />
+                      {t('share.loadingMoreUsers')}
+                    </div>
+                  ) : null}
                 </div>
               </div>,
               document.body,

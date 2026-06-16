@@ -138,6 +138,7 @@
     "empty": "No shared users configured.",
     "searchingUsers": "Searching users...",
     "searchError": "Users could not be loaded.",
+    "loadingMoreUsers": "Loading more users...",
     "noUsersFound": "No users found.",
     "selected": "Selected",
     "removeLabel": "Remove {{member}}",
