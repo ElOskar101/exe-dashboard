@@ -9,6 +9,7 @@ import {
   getCustomerById,
   getRuntimeVariables,
   searchCustomers,
+  transformRuntimeVariables,
 } from './ccc.service'
 
 vi.mock('@/lib/axios', () => ({
@@ -194,16 +195,88 @@ describe('ccc.service', () => {
     expect(cccClient.get).toHaveBeenCalledWith('v2/executions/day-1')
   })
 
-  it('getRuntimeVariables requests the selected CCC runtime variables', async () => {
+  it('getRuntimeVariables requests and transforms the selected CCC runtime variables', async () => {
     vi.mocked(cccClient.get).mockResolvedValueOnce({
-      data: {
-        carrierDomain: 'dev-carrier',
-      },
+      data: [
+        {
+          _id: 'rv-1',
+          key: 'carrierDomain',
+          value: 'dev-carrier',
+          comment: 'Carrier domain',
+          createdBy: 'user-1',
+          createdAt: '2022-12-01T16:41:16.387Z',
+          updatedAt: '2022-12-01T16:41:16.387Z',
+        },
+        {
+          _id: 'rv-2',
+          key: 'network',
+          value: '""',
+          comment: 'Network',
+          createdBy: 'user-1',
+          createdAt: '2022-12-01T16:41:16.387Z',
+          updatedAt: '2022-12-01T16:41:16.387Z',
+        },
+      ],
     })
 
-    await getRuntimeVariables()
+    const response = await getRuntimeVariables()
 
     expect(cccClient.get).toHaveBeenCalledWith('rv')
+    expect(response.data).toEqual({
+      carrierDomain: 'dev-carrier',
+      network: '',
+    })
+  })
+
+  it('transforms CCC runtime variable records into execution metadata', () => {
+    expect(
+      transformRuntimeVariables([
+        {
+          _id: 'rv-1',
+          key: 'eligibilityUrl',
+          value: 'https://carrier.example.com',
+          comment: 'Eligibility URL',
+          createdBy: 'user-1',
+          createdAt: '2022-12-01T16:41:16.387Z',
+          updatedAt: '2022-12-01T16:41:16.387Z',
+        },
+        {
+          _id: 'rv-2',
+          key: 'retryLimit',
+          value: '3',
+          comment: 'Retry limit',
+          createdBy: 'user-1',
+          createdAt: '2022-12-01T16:41:16.387Z',
+          updatedAt: '2022-12-01T16:41:16.387Z',
+        },
+        {
+          _id: 'rv-3',
+          key: 'carrierSettings',
+          value: '{"requiresMfa":true,"domains":["dev-carrier"]}',
+          comment: 'Carrier settings',
+          createdBy: 'user-1',
+          createdAt: '2022-12-01T16:41:16.387Z',
+          updatedAt: '2022-12-01T16:41:16.387Z',
+        },
+        {
+          _id: 'rv-4',
+          key: 'plainTextFallback',
+          value: 'dev-carrier',
+          comment: 'Plain text fallback',
+          createdBy: 'user-1',
+          createdAt: '2022-12-01T16:41:16.387Z',
+          updatedAt: '2022-12-01T16:41:16.387Z',
+        },
+      ]),
+    ).toEqual({
+      eligibilityUrl: 'https://carrier.example.com',
+      retryLimit: 3,
+      carrierSettings: {
+        requiresMfa: true,
+        domains: ['dev-carrier'],
+      },
+      plainTextFallback: 'dev-carrier',
+    })
   })
 
   it('decryptClinicBotPassword requests the decrypted password as plain text', async () => {

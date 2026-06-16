@@ -70,10 +70,26 @@ export async function prepareAuthenticatedPage(page: Page) {
 
   await page.route('**/api/rv', async (route) => {
     await route.fulfill({
-      json: {
-        carrierDomain: 'dev-carrier',
-        tenant: 'e2e',
-      },
+      json: [
+        {
+          _id: 'rv-carrier-domain',
+          key: 'carrierDomain',
+          value: '"dev-carrier"',
+          comment: 'Carrier domain',
+          createdBy: 'e2e-user',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+        {
+          _id: 'rv-tenant',
+          key: 'tenant',
+          value: '"e2e"',
+          comment: 'Tenant',
+          createdBy: 'e2e-user',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
     })
   })
 

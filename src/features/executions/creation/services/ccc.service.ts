@@ -108,6 +108,16 @@ export interface CCCExecutionResponse {
   trashed: boolean
 }
 
+export interface RuntimeVariableRecord {
+  _id: string
+  key: string
+  value: unknown
+  comment: string
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
 export const searchCustomers = (clientName: string, options: CustomerSearchOptions = {}) => {
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
@@ -180,8 +190,29 @@ export const getCCCExecution = (executionId: string) => {
   return cccClient.get<CCCExecutionResponse>(`v2/executions/${executionId}`)
 }
 
-export const getRuntimeVariables = () => {
-  return cccClient.get<ExecutionMetadata>('rv')
+const parseRuntimeVariableValue = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  try {
+    return JSON.parse(value) as unknown
+  } catch {
+    return value
+  }
+}
+
+export const transformRuntimeVariables = (runtimeVariables: RuntimeVariableRecord[]): ExecutionMetadata => {
+  return Object.fromEntries(runtimeVariables.map(({ key, value }) => [key, parseRuntimeVariableValue(value)]))
+}
+
+export const getRuntimeVariables = async () => {
+  const response = await cccClient.get<RuntimeVariableRecord[]>('rv')
+
+  return {
+    ...response,
+    data: transformRuntimeVariables(response.data),
+  }
 }
 
 const normalizeDecryptedPassword = (value: string) => {
