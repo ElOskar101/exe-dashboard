@@ -6,6 +6,7 @@
   "loadErrorTitle": "Runtime catalog could not be loaded",
   "loadErrorDescription": "The Default Carrier API did not return the runtime catalog. Try again in a moment.",
   "retry": "Retry",
+  "close": "Close",
   "noApiUrl": "No API URL configured",
   "noDescription": "No description available.",
   "descriptionMore": "...",

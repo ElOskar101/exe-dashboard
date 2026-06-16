@@ -1,5 +1,14 @@
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { type PlaywrightRuntime, type PlaywrightRuntimeApplication } from '@/features/executions'
 import { IconUserCircle } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
@@ -28,7 +37,7 @@ export function AppDetailsDialog({ application, children, runtime }: AppDetailsD
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <dl className="grid gap-4 text-sm sm:grid-cols-2">
           <DetailItem label={t('appDetails.fields.name')} value={application.name} />
           <DetailItem
             label={t('appDetails.fields.status')}
@@ -77,7 +86,10 @@ export function AppDetailsDialog({ application, children, runtime }: AppDetailsD
             value={<SharedMembersList members={application.accessInfo.sharedWith} />}
             className="sm:col-span-2"
           />
-        </div>
+        </dl>
+        <DialogFooter>
+          <DialogClose render={<Button type="button" variant="outline" />}>{t('close')}</DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
@@ -85,11 +97,9 @@ export function AppDetailsDialog({ application, children, runtime }: AppDetailsD
 
 function DetailItem({ label, value, className }: { label: ReactNode; value: ReactNode; className?: string }) {
   return (
-    <div className={className}>
-      <div className="flex flex-col gap-1">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="break-words text-sm font-medium text-foreground">{value}</span>
-      </div>
+    <div className={className ? `min-w-0 ${className}` : 'min-w-0'}>
+      <dt>{label}</dt>
+      <dd className="mt-1 whitespace-normal break-words font-medium text-muted-foreground">{value}</dd>
     </div>
   )
 }
@@ -98,13 +108,13 @@ function SharedMembersList({ members }: { members: PlaywrightRuntimeApplication[
   const { t } = useTranslation('runtimes')
 
   if (members.length === 0) {
-    return <span className="text-sm text-muted-foreground">{t('share.empty')}</span>
+    return <span className="font-medium text-muted-foreground">{t('share.empty')}</span>
   }
 
   return (
     <ul className="flex max-h-40 flex-col gap-1 overflow-y-auto">
       {members.map((member) => (
-        <li key={member._id} className="flex items-center gap-1.5 text-sm text-foreground">
+        <li key={member._id} className="flex items-center gap-1.5">
           <IconUserCircle className="size-4 shrink-0 text-muted-foreground" />
           <span className="truncate">{member.fullName || member.username || member._id}</span>
         </li>
