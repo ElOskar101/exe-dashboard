@@ -57,7 +57,6 @@ export function UpdateAppDialog({
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [formState, setFormState] = useState(() => createApplicationFormState(application))
   const [memberIds, setMemberIds] = useState(() => getSharedMemberIds(application.accessInfo))
-  const [newMemberId, setNewMemberId] = useState('')
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
   const isPrivateRuntime = runtime.accessInfo.type === 'private'
   const formErrors = getApplicationFormErrors(runtime, application, formState)
@@ -76,7 +75,6 @@ export function UpdateAppDialog({
     setWasSubmitted(false)
     setFormState(createApplicationFormState(application))
     setMemberIds(getSharedMemberIds(application.accessInfo))
-    setNewMemberId('')
   }
 
   const handleOpenChange = (open: boolean) => {
@@ -91,8 +89,8 @@ export function UpdateAppDialog({
     }))
   }
 
-  const addMemberId = () => {
-    const trimmedMemberId = newMemberId.trim()
+  const addMemberId = (memberId: string) => {
+    const trimmedMemberId = memberId.trim()
 
     if (!trimmedMemberId) {
       return
@@ -101,7 +99,6 @@ export function UpdateAppDialog({
     setMemberIds((currentMemberIds) =>
       currentMemberIds.includes(trimmedMemberId) ? currentMemberIds : [...currentMemberIds, trimmedMemberId],
     )
-    setNewMemberId('')
   }
 
   const removeMemberId = (memberId: string) => {
@@ -365,9 +362,7 @@ export function UpdateAppDialog({
                 disabled={isSubmitting}
                 id={`${fieldIdPrefix}-share-member-id`}
                 memberIds={memberIds}
-                newMemberId={newMemberId}
                 onAdd={addMemberId}
-                onChangeNewMemberId={setNewMemberId}
                 onRemove={removeMemberId}
               />
               <DialogFooter>

@@ -20,6 +20,37 @@ interface CustomerSearchOptions {
   page?: number
 }
 
+export interface CCCUserRole {
+  _id: string
+  name: string
+}
+
+export interface CCCUserArea {
+  _id: string
+  name: string
+}
+
+export interface CCCUser {
+  _id: string
+  fullName: string
+  username: string
+  urlImage: string
+  roles: CCCUserRole[]
+  area: CCCUserArea | null
+}
+
+export interface CCCUserSearchResponse {
+  totalDocs: number
+  totalPages: number
+  query: Record<string, unknown>
+  users: CCCUser[]
+}
+
+interface CCCUserSearchOptions {
+  limit?: number
+  page?: number
+}
+
 export interface CustomerClinic {
   _id: string
   clinicName: string
@@ -81,6 +112,16 @@ export const searchCustomers = (clientName: string, options: CustomerSearchOptio
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
       clientName,
+      ...(options.limit ? { limit: options.limit } : {}),
+      ...(options.page ? { page: options.page } : {}),
+    },
+  })
+}
+
+export const searchCCCUsers = (fullName: string, options: CCCUserSearchOptions = {}) => {
+  return cccClient.get<CCCUserSearchResponse>('v2/users', {
+    params: {
+      fullName,
       ...(options.limit ? { limit: options.limit } : {}),
       ...(options.page ? { page: options.page } : {}),
     },

@@ -47,7 +47,6 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
   const [wasSubmitted, setWasSubmitted] = useState(false)
   const [formState, setFormState] = useState(() => createRuntimeFormState(runtime))
   const [memberIds, setMemberIds] = useState(() => getSharedMemberIds(runtime.accessInfo))
-  const [newMemberId, setNewMemberId] = useState('')
   const updateRuntimeMutation = useUpdatePlaywrightRuntimeMutation()
   const addShareMembersMutation = useAddPlaywrightRuntimeShareMembersMutation()
   const removeShareMembersMutation = useRemovePlaywrightRuntimeShareMembersMutation()
@@ -64,7 +63,6 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
     setWasSubmitted(false)
     setFormState(createRuntimeFormState(runtime))
     setMemberIds(getSharedMemberIds(runtime.accessInfo))
-    setNewMemberId('')
   }
 
   const handleOpenChange = (open: boolean) => {
@@ -79,8 +77,8 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
     }))
   }
 
-  const addMemberId = () => {
-    const trimmedMemberId = newMemberId.trim()
+  const addMemberId = (memberId: string) => {
+    const trimmedMemberId = memberId.trim()
 
     if (!trimmedMemberId) {
       return
@@ -89,7 +87,6 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
     setMemberIds((currentMemberIds) =>
       currentMemberIds.includes(trimmedMemberId) ? currentMemberIds : [...currentMemberIds, trimmedMemberId],
     )
-    setNewMemberId('')
   }
 
   const removeMemberId = (memberId: string) => {
@@ -263,9 +260,7 @@ export function UpdateRuntimeDialog({ runtime }: { runtime: PlaywrightRuntime })
                 disabled={isSubmitting}
                 id={`${fieldIdPrefix}-share-member-id`}
                 memberIds={memberIds}
-                newMemberId={newMemberId}
                 onAdd={addMemberId}
-                onChangeNewMemberId={setNewMemberId}
                 onRemove={removeMemberId}
               />
               <DialogFooter>

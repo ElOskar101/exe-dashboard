@@ -2,66 +2,196 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { IconPlus, IconX } from '@tabler/icons-react'
+import { Spinner } from '@/components/ui/spinner'
+import { cccUserKeys, searchCCCUsers, type CCCUser } from '@/features/executions'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { cn } from '@/lib/utils'
+import { useQuery } from '@tanstack/react-query'
+import { IconCheck, IconSearch, IconX } from '@tabler/icons-react'
+import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+
+const SHARE_MEMBER_USER_LIMIT = 50
+const SHARE_MEMBER_SEARCH_DELAY_MS = 300
+const SHARE_MEMBER_PANEL_OFFSET_PX = 8
+
+const getUserDisplayName = (user: CCCUser) => user.fullName || user.username || user._id
 
 export function ShareMembersField({
   disabled,
   id,
   memberIds,
-  newMemberId,
   onAdd,
-  onChangeNewMemberId,
   onRemove,
 }: {
   disabled: boolean
   id: string
   memberIds: string[]
-  newMemberId: string
-  onAdd: () => void
-  onChangeNewMemberId: (value: string) => void
+  onAdd: (memberId: string) => void
   onRemove: (memberId: string) => void
 }) {
   const { t } = useTranslation('runtimes')
+  const [searchValue, setSearchValue] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const [anchorRect, setAnchorRect] = useState<Pick<DOMRect, 'bottom' | 'left' | 'width'> | null>(null)
+  const [selectedUsersById, setSelectedUsersById] = useState(() => new Map<string, CCCUser>())
+  const debouncedSearchValue = useDebouncedValue(searchValue.trim(), SHARE_MEMBER_SEARCH_DELAY_MS)
+
+  const usersQuery = useQuery({
+    queryKey: cccUserKeys.search(debouncedSearchValue, { limit: SHARE_MEMBER_USER_LIMIT }),
+    queryFn: async () => {
+      const response = await searchCCCUsers(debouncedSearchValue, {
+        limit: SHARE_MEMBER_USER_LIMIT,
+        page: 1,
+      })
+
+      return response.data
+    },
+    enabled: !disabled,
+  })
+
+  const selectedMemberIds = useMemo(() => new Set(memberIds), [memberIds])
+  const knownUsersById = useMemo(() => {
+    const usersById = new Map(selectedUsersById)
+    const queriedUsers = usersQuery.data?.users ?? []
+
+    queriedUsers.forEach((user) => {
+      usersById.set(user._id, user)
+    })
+
+    return usersById
+  }, [selectedUsersById, usersQuery.data])
+  const users = usersQuery.data?.users ?? []
+  const showPanel = isOpen && !disabled && anchorRect
+  const canRenderPanel = typeof document !== 'undefined'
+
+  const updateAnchorRect = (element: HTMLElement) => {
+    const nextAnchorRect = element.getBoundingClientRect()
+
+    setAnchorRect({
+      bottom: nextAnchorRect.bottom,
+      left: nextAnchorRect.left,
+      width: nextAnchorRect.width,
+    })
+  }
+
+  const handleSelect = (user: CCCUser) => {
+    setSelectedUsersById((currentUsersById) => {
+      const nextUsersById = new Map(currentUsersById)
+
+      nextUsersById.set(user._id, user)
+
+      return nextUsersById
+    })
+    onAdd(user._id)
+    setSearchValue('')
+    setIsOpen(false)
+  }
 
   return (
     <FieldGroup>
       <Field>
-        <FieldLabel htmlFor={id}>{t('share.fields.memberId')}</FieldLabel>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Input
-            id={id}
-            value={newMemberId}
-            onChange={(event) => onChangeNewMemberId(event.target.value)}
-            placeholder={t('share.placeholders.memberId')}
-            disabled={disabled}
-            autoComplete="off"
-          />
-          <Button type="button" variant="outline" onClick={onAdd} disabled={disabled || !newMemberId.trim()}>
-            <IconPlus data-icon="inline-start" />
-            {t('share.add')}
-          </Button>
-        </div>
+        <FieldLabel htmlFor={id}>{t('share.fields.user')}</FieldLabel>
+        <Input
+          id={id}
+          value={searchValue}
+          onChange={(event) => {
+            updateAnchorRect(event.currentTarget)
+            setSearchValue(event.target.value)
+            setIsOpen(true)
+          }}
+          onFocus={(event) => {
+            updateAnchorRect(event.currentTarget)
+            setIsOpen(true)
+          }}
+          onBlur={() => setIsOpen(false)}
+          placeholder={t('share.placeholders.user')}
+          disabled={disabled}
+          autoComplete="off"
+        />
+        {showPanel && canRenderPanel
+          ? createPortal(
+              <div
+                className="fixed z-50 overflow-hidden rounded-3xl border border-border/70 bg-popover text-popover-foreground shadow-lg ring-1 ring-foreground/5 dark:ring-foreground/10"
+                style={{
+                  top: anchorRect.bottom + SHARE_MEMBER_PANEL_OFFSET_PX,
+                  left: anchorRect.left,
+                  width: anchorRect.width,
+                }}
+              >
+                <div className="max-h-72 overflow-y-auto p-2">
+                  {usersQuery.isPending ? (
+                    <div className="flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-muted-foreground">
+                      <Spinner />
+                      {t('share.searchingUsers')}
+                    </div>
+                  ) : usersQuery.isError ? (
+                    <div className="rounded-2xl px-3 py-2 text-sm text-destructive">{t('share.searchError')}</div>
+                  ) : users.length > 0 ? (
+                    users.map((user) => {
+                      const isSelected = selectedMemberIds.has(user._id)
+
+                      return (
+                        <button
+                          key={user._id}
+                          type="button"
+                          className={cn(
+                            'flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                            isSelected ? 'bg-accent/70 text-accent-foreground' : '',
+                          )}
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => handleSelect(user)}
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <IconSearch className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="min-w-0">
+                              <span className="block truncate">{getUserDisplayName(user)}</span>
+                              <span className="block truncate text-xs text-muted-foreground">{user.username}</span>
+                            </span>
+                          </span>
+                          {isSelected ? (
+                            <span className="flex shrink-0 items-center gap-2">
+                              <span className="text-xs text-muted-foreground">{t('share.selected')}</span>
+                              <IconCheck className="size-4" />
+                            </span>
+                          ) : null}
+                        </button>
+                      )
+                    })
+                  ) : (
+                    <div className="rounded-2xl px-3 py-2 text-sm text-muted-foreground">{t('share.noUsersFound')}</div>
+                  )}
+                </div>
+              </div>,
+              document.body,
+            )
+          : null}
         <FieldDescription>{t('share.description')}</FieldDescription>
       </Field>
 
       {memberIds.length > 0 ? (
         <div className="flex flex-wrap gap-2">
-          {memberIds.map((memberId) => (
-            <Badge key={memberId} variant="secondary" className="gap-1">
-              <span className="max-w-56 truncate">{memberId}</span>
-              <Button
-                type="button"
-                size="icon-xs"
-                variant="ghost"
-                onClick={() => onRemove(memberId)}
-                disabled={disabled}
-                aria-label={t('share.removeLabel', { memberId })}
-              >
-                <IconX />
-              </Button>
-            </Badge>
-          ))}
+          {memberIds.map((memberId) => {
+            const member = knownUsersById.get(memberId)
+            const memberLabel = member ? getUserDisplayName(member) : memberId
+
+            return (
+              <Badge key={memberId} variant="secondary" className="gap-1">
+                <span className="max-w-56 truncate">{memberLabel}</span>
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  onClick={() => onRemove(memberId)}
+                  disabled={disabled}
+                  aria-label={t('share.removeLabel', { member: memberLabel })}
+                >
+                  <IconX />
+                </Button>
+              </Badge>
+            )
+          })}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">{t('share.empty')}</p>

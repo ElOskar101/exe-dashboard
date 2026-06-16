@@ -129,15 +129,18 @@
   },
   "share": {
     "fields": {
-      "memberId": "Shared ID"
+      "user": "User"
     },
     "placeholders": {
-      "memberId": "user-or-team-id"
+      "user": "Search by full name"
     },
-    "description": "Add IDs that should share access to this resource.",
-    "add": "Add",
-    "empty": "No shared IDs configured.",
-    "removeLabel": "Remove {{memberId}}",
+    "description": "Select users that should share access to this resource.",
+    "empty": "No shared users configured.",
+    "searchingUsers": "Searching users...",
+    "searchError": "Users could not be loaded.",
+    "noUsersFound": "No users found.",
+    "selected": "Selected",
+    "removeLabel": "Remove {{member}}",
     "submit": "Save sharing",
     "disabled": {
       "publicRuntime": "Sharing is unavailable for public runtimes.",

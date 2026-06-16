@@ -4,7 +4,7 @@ This is a web scrapping robot execution manager app.
 ## Instructions for testing changes
 After finished an entire coding task run unit and e2e tests.
 
-Assume this project's dev server is already started with `pnpm run dev`.
+Always assume this project's dev server is already started with `pnpm run dev` in `http://localhost:5173`.
 
 On new features, don't create tests for them and instead use the most reliable end-user browser skill, plugin or MCP to make sure the feature works as expected (only on frontend changes which user will see).
 
@@ -26,6 +26,10 @@ Code quality you MUST follow:
 - Write simple and scalable code, don't overload components with business logic and extract it into separate lib, hooks, or services.
 
 - Always use one source of truth for data types. If you need other data types derive them from the one source of truth. Trust the typescript types and interfaces, don't write runtime type checks like `if (typeof value === 'string') { ... }`. Always prefer type inference and let compiler catch type errors.
+
+- Don't use magic strings or numbers, use named constants instead, and if it's going to be reused, extract it into a config file. E.g. query keys must be extracted into a separated config file based on the entity they are querying.
+
+- Don't create big files, and if you find out modifying big files, split them into smaller ones with a single responsability.
 
 
 ## Project structure
