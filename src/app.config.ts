@@ -6,5 +6,6 @@ export type CccApiUrl = (typeof CCC_API_URLS)[number]
 
 export const APP_CONFIG = {
   cccApiUrl: DEFAULT_CCC_API_URL,
+  syncApiUrl: 'https://carriersync.dentalautomation.ai/',
   authLoginMode: 'dev',
 } as const

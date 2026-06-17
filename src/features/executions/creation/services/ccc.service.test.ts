@@ -16,6 +16,9 @@ vi.mock('@/lib/axios', () => ({
   default: {
     get: vi.fn(),
   },
+  syncClient: {
+    get: vi.fn(),
+  },
 }))
 
 describe('ccc.service', () => {

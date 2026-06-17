@@ -31,7 +31,12 @@ import {
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
-import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem } from '../services/ccc.service'
+import {
+  decryptClinicBotPassword,
+  getClinicMacroConfig,
+  type ClinicBotRecord,
+  type CustomerSearchItem,
+} from '../services/ccc.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
 
 export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
@@ -49,6 +54,10 @@ interface DecryptSelectedBotPasswordMutationVariables {
   requestId: string
   selectedBot: PlaywrightProjectBot
   selectedClinicBot: ClinicBotRecord
+}
+
+interface ClinicMacroConfigMutationVariables {
+  clinicId: string
 }
 
 const createIdleBotPasswordRequestState = (): BotPasswordRequestState => ({
@@ -250,10 +259,34 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       )
     },
   })
+  const clinicMacroConfigMutation = useMutation({
+    mutationFn: async ({ clinicId }: ClinicMacroConfigMutationVariables) => {
+      const response = await getClinicMacroConfig(clinicId)
+
+      return {
+        clinicId,
+        config: JSON.stringify(response.data, null, 2),
+      }
+    },
+    onSuccess: ({ clinicId, config }) => {
+      setDraft((previousDraft) =>
+        previousDraft.context.clinic === clinicId
+          ? {
+              ...previousDraft,
+              execution: {
+                ...previousDraft.execution,
+                config,
+              },
+            }
+          : previousDraft,
+      )
+    },
+  })
 
   const resetWizardRequests = () => {
     setBotPasswordRequest(createIdleBotPasswordRequestState())
     decryptSelectedBotPasswordMutation.reset()
+    clinicMacroConfigMutation.reset()
     wizardData.resetImportPatients()
   }
 
@@ -312,6 +345,10 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         clinicName: selectedClinic?.clinicName ?? '',
       }),
     )
+
+    if (clinicId.trim()) {
+      clinicMacroConfigMutation.mutate({ clinicId })
+    }
   }
 
   const selectProject = (projectName: string) => {
