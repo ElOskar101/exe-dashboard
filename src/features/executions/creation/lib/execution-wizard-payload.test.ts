@@ -84,6 +84,7 @@ describe('buildExecutionPayload', () => {
             policyHolderDob: { key: 'subscriber_dob', value: '1985-03-10' },
             relationship: { key: 'relationship_to_subscriber', value: 'self' },
             zipCode: { key: 'subscriber_zip_code', value: '90001' },
+            clinic: { key: 'practice', value: 'Downtown Clinic' },
             verificationType: 'elg',
             filenames: ['ana-lopez.pdf'],
             otherInformation: {

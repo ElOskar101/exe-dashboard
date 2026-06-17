@@ -19,6 +19,7 @@ const PATIENT_SOURCE_KEYS = {
   policyHolderDob: 'subscriber_dob',
   relationship: 'relationship_to_subscriber',
   zipCode: 'subscriber_zip_code',
+  clinic: 'practice',
 } as const
 
 const DEFAULT_HEADED_MODE = false
@@ -104,6 +105,7 @@ export const buildExecutionPayload = (
         policyHolderDob: createPatientProperty(PATIENT_SOURCE_KEYS.policyHolderDob, patient.policyHolderDob),
         relationship: createPatientProperty(PATIENT_SOURCE_KEYS.relationship, patient.relationship),
         zipCode: createPatientProperty(PATIENT_SOURCE_KEYS.zipCode, patient.zipCode),
+        ...(patient.clinic.trim() ? { clinic: createPatientProperty(PATIENT_SOURCE_KEYS.clinic, patient.clinic) } : {}),
         verificationType: patient.verificationType.toLowerCase() as ExecutionPayloadVerificationType,
         filenames: createPatientFilenames(patient.filenames),
         otherInformation: patientOtherInformation[index] ?? {},

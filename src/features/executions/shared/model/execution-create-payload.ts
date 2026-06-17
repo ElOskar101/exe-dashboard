@@ -27,6 +27,7 @@ export interface ExecutionPayloadPatient {
   policyHolderDob: ExecutionPayloadPatientPropertyDetail
   relationship: ExecutionPayloadPatientPropertyDetail
   zipCode: ExecutionPayloadPatientPropertyDetail
+  clinic?: ExecutionPayloadPatientPropertyDetail
   verificationType: ExecutionPayloadVerificationType
   filenames: string[]
   otherInformation: ExecutionMetadata
@@ -49,11 +50,11 @@ export interface ExecutionPayloadContext {
 
 export interface ExecutionCreatePayload {
   project: string
-  createdBy?: string
-  client?: string
-  clinic?: string
+  createdBy: string
+  client: string
+  clinic: string
   execution?: string
-  botName?: string
+  botName: string
   context: ExecutionPayloadContext
 }
 

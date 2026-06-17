@@ -14,7 +14,7 @@ const patientFieldLabels = {
   patientDob: 'fields.patientDob',
   policyHolderName: 'fields.policyHolderName',
   policyHolderLastName: 'fields.policyHolderLastName',
-  policyHolderDob: 'fields.patientDob',
+  policyHolderDob: 'fields.policyHolderDob',
   relationship: 'fields.relationship',
   zipCode: 'fields.zipCode',
   clinic: 'fields.patientClinic',
