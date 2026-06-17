@@ -1,5 +1,5 @@
 import { useContext, useMemo, useState, startTransition } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '@/features/auth'
 import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
@@ -13,7 +13,9 @@ import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
+import { formatCustomerExecutionConfig } from '../lib/customer-execution-config'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
+import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
 import {
@@ -21,7 +23,7 @@ import {
   mapPlaywrightProjectBotToExecutionBot,
   mapPlaywrightProjectBotWithClinicBotToExecutionBot,
 } from '../lib/execution-playwright-projects'
-import { createEmptyDraft } from '../lib/execution-wizard-draft'
+import { createEmptyDraft, DEFAULT_EXECUTION_CONFIG } from '../lib/execution-wizard-draft'
 import {
   createEmptyBotSelection,
   createEmptyExecutionSelection,
@@ -33,7 +35,7 @@ import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-
 import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
 import {
   decryptClinicBotPassword,
-  getClinicMacroConfig,
+  getCustomerById,
   type ClinicBotRecord,
   type CustomerSearchItem,
 } from '../services/ccc.service'
@@ -56,10 +58,6 @@ interface DecryptSelectedBotPasswordMutationVariables {
   selectedClinicBot: ClinicBotRecord
 }
 
-interface ClinicMacroConfigMutationVariables {
-  clinicId: string
-}
-
 const createIdleBotPasswordRequestState = (): BotPasswordRequestState => ({
   error: null,
   requestId: '',
@@ -70,6 +68,7 @@ const createIdleBotPasswordRequestState = (): BotPasswordRequestState => ({
 const resetDraftDependentSelections = (
   draft: ExecutionWizardDraft,
   contextUpdates: Partial<ExecutionWizardDraft['context']>,
+  executionUpdates: Partial<ExecutionWizardDraft['execution']> = {},
 ): ExecutionWizardDraft => ({
   ...draft,
   context: {
@@ -77,11 +76,15 @@ const resetDraftDependentSelections = (
     ...contextUpdates,
   },
   bot: createEmptyBotSelection(),
-  execution: createEmptyExecutionSelection(draft.execution),
+  execution: {
+    ...createEmptyExecutionSelection(draft.execution),
+    ...executionUpdates,
+  },
 })
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
   const { token, user } = useContext(AuthContext)
   const { cccApiUrl } = useCccApiUrl()
@@ -263,47 +266,55 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       )
     },
   })
-  const clinicMacroConfigMutation = useMutation({
-    mutationFn: async ({ clinicId }: ClinicMacroConfigMutationVariables) => {
-      const response = await getClinicMacroConfig(clinicId)
+  const resetWizardRequests = () => {
+    setBotPasswordRequest(createIdleBotPasswordRequestState())
+    decryptSelectedBotPasswordMutation.reset()
+    wizardData.resetImportPatients()
+  }
 
-      return {
-        clinicId,
-        config: JSON.stringify(response.data.data[0], null, 2),
-      }
-    },
-    onSuccess: ({ clinicId, config }) => {
+  const loadSelectedCustomerConfig = async (customerId: string) => {
+    try {
+      const customer = await queryClient.fetchQuery({
+        queryKey: executionWizardKeys.customer(customerId),
+        queryFn: async () => {
+          const response = await getCustomerById(customerId)
+
+          return response.data
+        },
+      })
+
       setDraft((previousDraft) =>
-        previousDraft.context.clinic === clinicId
+        previousDraft.context.client === customer._id
           ? {
               ...previousDraft,
               execution: {
                 ...previousDraft.execution,
-                config,
+                config: formatCustomerExecutionConfig(customer),
               },
             }
           : previousDraft,
       )
-    },
-  })
-
-  const resetWizardRequests = () => {
-    setBotPasswordRequest(createIdleBotPasswordRequestState())
-    decryptSelectedBotPasswordMutation.reset()
-    clinicMacroConfigMutation.reset()
-    wizardData.resetImportPatients()
+    } catch {
+      return
+    }
   }
 
   const updateCustomerSearch = (value: string) => {
     resetWizardRequests()
     startTransition(() => {
       setDraft((previousDraft) =>
-        resetDraftDependentSelections(previousDraft, {
-          client: '',
-          clientName: value,
-          clinic: '',
-          clinicName: '',
-        }),
+        resetDraftDependentSelections(
+          previousDraft,
+          {
+            client: '',
+            clientName: value,
+            clinic: '',
+            clinicName: '',
+          },
+          {
+            config: DEFAULT_EXECUTION_CONFIG,
+          },
+        ),
       )
     })
   }
@@ -311,32 +322,56 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const clearCustomerSelection = () => {
     resetWizardRequests()
     setDraft((previousDraft) =>
-      resetDraftDependentSelections(previousDraft, {
-        client: '',
-        clinic: '',
-        clinicName: '',
-      }),
+      resetDraftDependentSelections(
+        previousDraft,
+        {
+          client: '',
+          clinic: '',
+          clinicName: '',
+        },
+        {
+          config: DEFAULT_EXECUTION_CONFIG,
+        },
+      ),
     )
   }
 
   const selectCustomer = (customer: CustomerSearchItem) => {
     resetWizardRequests()
+    const isDeselectingCustomer = draft.context.client === customer._id
+
     setDraft((previousDraft) => {
       if (previousDraft.context.client === customer._id) {
-        return resetDraftDependentSelections(previousDraft, {
-          client: '',
-          clinic: '',
-          clinicName: '',
-        })
+        return resetDraftDependentSelections(
+          previousDraft,
+          {
+            client: '',
+            clinic: '',
+            clinicName: '',
+          },
+          {
+            config: DEFAULT_EXECUTION_CONFIG,
+          },
+        )
       }
 
-      return resetDraftDependentSelections(previousDraft, {
-        client: customer._id,
-        clientName: customer.clientName,
-        clinic: '',
-        clinicName: '',
-      })
+      return resetDraftDependentSelections(
+        previousDraft,
+        {
+          client: customer._id,
+          clientName: customer.clientName,
+          clinic: '',
+          clinicName: '',
+        },
+        {
+          config: DEFAULT_EXECUTION_CONFIG,
+        },
+      )
     })
+
+    if (!isDeselectingCustomer) {
+      void loadSelectedCustomerConfig(customer._id)
+    }
   }
 
   const selectClinic = (clinicId: string) => {
@@ -349,10 +384,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         clinicName: selectedClinic?.clinicName ?? '',
       }),
     )
-
-    if (clinicId.trim()) {
-      clinicMacroConfigMutation.mutate({ clinicId })
-    }
   }
 
   const selectProject = (projectName: string) => {

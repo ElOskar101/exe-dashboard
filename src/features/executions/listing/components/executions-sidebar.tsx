@@ -607,7 +607,7 @@ export function ExecutionsSidebar() {
             title={t('common:project-name')}
             className="h-auto w-auto rounded-xl px-2 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
-            <img className="h-auto w-12 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+            <img className="h-auto w-12 object-contain" src="/favicon.svg" alt={t('common:project-name')} />
           </Button>
           <Button
             type="button"

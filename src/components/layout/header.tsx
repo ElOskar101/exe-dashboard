@@ -82,53 +82,56 @@ const Header: () => JSX.Element = () => {
     <>
       <header className="z-1 w-full border-b border-border">
         <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
-          <div className="hidden min-w-0 items-center gap-1.5 sm:flex">
-            {isLoadingStats ? (
-              <>
-                <Skeleton className="h-6 w-20 rounded-3xl" />
-                <Skeleton className="h-6 w-16 rounded-3xl" />
-                <Skeleton className="h-6 w-14 rounded-3xl" />
-              </>
-            ) : (
-              <>
-                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  <IconDeviceDesktop data-icon="inline-start" />
-                  <span>{selectedRuntime?.name ?? target.runtimeId}</span>
-                  <span
-                    aria-label={isServerUp ? 'Server up' : 'Server unavailable'}
-                    className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
-                    title={appStatsQuery.data?.server.status ?? 'Unknown'}
-                  />
-                </Badge>
-                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  <span>
-                    {selectedApplication?.nonProduction
-                      ? t('settings:runtime.nonProduction')
-                      : t('settings:runtime.production')}
-                  </span>
-                </Badge>
-                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  {activeJobs === 0 ? (
-                    <span>{t('settings:status.jobs.noneActive')}</span>
-                  ) : (
-                    <>
-                      <span>{activeJobs ?? '-'}</span>
-                      <span>{t('settings:status.jobs.active')}</span>
-                    </>
-                  )}
-                </Badge>
-                <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                  {runningJobs === 0 ? (
-                    <span>{t('settings:status.jobs.noneRunning')}</span>
-                  ) : (
-                    <>
-                      <span>{runningJobs ?? '-'}</span>
-                      <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
-                    </>
-                  )}
-                </Badge>
-              </>
-            )}
+          <div className="hidden min-w-0 flex-col items-start gap-1.5 sm:flex">
+            <img className="h-auto w-12 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+            <div className="flex min-w-0 items-center gap-1.5">
+              {isLoadingStats ? (
+                <>
+                  <Skeleton className="h-6 w-20 rounded-3xl" />
+                  <Skeleton className="h-6 w-16 rounded-3xl" />
+                  <Skeleton className="h-6 w-14 rounded-3xl" />
+                </>
+              ) : (
+                <>
+                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                    <IconDeviceDesktop data-icon="inline-start" />
+                    <span>{selectedRuntime?.name ?? target.runtimeId}</span>
+                    <span
+                      aria-label={isServerUp ? 'Server up' : 'Server unavailable'}
+                      className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
+                      title={appStatsQuery.data?.server.status ?? 'Unknown'}
+                    />
+                  </Badge>
+                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                    <span>
+                      {selectedApplication?.nonProduction
+                        ? t('settings:runtime.nonProduction')
+                        : t('settings:runtime.production')}
+                    </span>
+                  </Badge>
+                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                    {activeJobs === 0 ? (
+                      <span>{t('settings:status.jobs.noneActive')}</span>
+                    ) : (
+                      <>
+                        <span>{activeJobs ?? '-'}</span>
+                        <span>{t('settings:status.jobs.active')}</span>
+                      </>
+                    )}
+                  </Badge>
+                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                    {runningJobs === 0 ? (
+                      <span>{t('settings:status.jobs.noneRunning')}</span>
+                    ) : (
+                      <>
+                        <span>{runningJobs ?? '-'}</span>
+                        <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
+                      </>
+                    )}
+                  </Badge>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="ms-auto flex min-w-0 items-center gap-x-2">

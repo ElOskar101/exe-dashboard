@@ -1,5 +1,7 @@
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
 
+export const DEFAULT_EXECUTION_CONFIG = '{}'
+
 export const createEmptyPatient = (): ExecutionPatient => ({
   patientName: '',
   patientLastName: '',
@@ -38,7 +40,7 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
     patients: [],
     workers: '2',
     retries: '1',
-    config: '{}',
+    config: DEFAULT_EXECUTION_CONFIG,
     scheduleMode: 'instant',
     scheduledAt: '',
   },

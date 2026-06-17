@@ -16,9 +16,6 @@ vi.mock('@/lib/axios', () => ({
   default: {
     get: vi.fn(),
   },
-  syncClient: {
-    get: vi.fn(),
-  },
 }))
 
 describe('ccc.service', () => {
@@ -127,6 +124,12 @@ describe('ccc.service', () => {
         _id: 'customer-1',
         clientName: 'Legacy Dental Care',
         isActive: true,
+        instantPrinter: true,
+        alerts: false,
+        statusPrinter: true,
+        isDiva: false,
+        plans: true,
+        twoFA: false,
         clinic: [],
       },
     })
