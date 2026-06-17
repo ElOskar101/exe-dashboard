@@ -37,6 +37,7 @@ describe('buildExecutionPayload', () => {
     draft.execution.config = '{ "parallel": true }'
     draft.execution.patients = [
       {
+        id: 'row-1',
         patientName: 'Ana',
         patientLastName: 'Lopez',
         patientMemberId: 'A10001',
@@ -75,6 +76,7 @@ describe('buildExecutionPayload', () => {
         executionId: 'execution-day-id-1',
         patients: [
           {
+            id: 'row-1',
             patientName: { key: 'patient_first_name', value: 'Ana' },
             patientLastName: { key: 'patient_last_name', value: 'Lopez' },
             patientMemberId: { key: 'memberid', value: 'A10001' },

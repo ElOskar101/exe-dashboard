@@ -12,6 +12,7 @@ export interface ExecutionBot {
 }
 
 export interface ExecutionPatient {
+  id?: string
   patientName: string
   patientLastName: string
   patientMemberId: string

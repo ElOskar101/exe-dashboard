@@ -16,13 +16,16 @@ const getVerificationType = (value: string): ExecutionVerificationType | '' => {
 }
 
 const hasImportablePatientData = (patient: ExecutionPatient) => {
-  return Object.entries(patient).some(([key, value]) => key !== 'otherInformation' && value.trim().length > 0)
+  return Object.entries(patient).some(
+    ([key, value]) => key !== 'id' && key !== 'otherInformation' && value.trim().length > 0,
+  )
 }
 
 export const mapCCCExecutionRowsToPatients = (rows: CCCExecutionRow[]): ExecutionPatient[] => {
   return rows.flatMap((row) => {
     const cellsByKey = new Map(row.cells.map((cell) => [cell.key, cell.value]))
     const patient: ExecutionPatient = {
+      id: row._id,
       patientName: getCellValue(cellsByKey, 'patient_first_name'),
       patientLastName: getCellValue(cellsByKey, 'patient_last_name'),
       patientMemberId: getCellValue(cellsByKey, 'memberid'),

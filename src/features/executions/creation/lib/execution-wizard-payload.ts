@@ -93,6 +93,7 @@ export const buildExecutionPayload = (
       },
       executionId: draft.execution.execution.trim(),
       patients: draft.execution.patients.map((patient, index) => ({
+        ...(patient.id?.trim() ? { id: patient.id.trim() } : {}),
         patientName: createPatientProperty(PATIENT_SOURCE_KEYS.patientName, patient.patientName),
         patientLastName: createPatientProperty(PATIENT_SOURCE_KEYS.patientLastName, patient.patientLastName),
         patientMemberId: createPatientProperty(PATIENT_SOURCE_KEYS.patientMemberId, patient.patientMemberId),

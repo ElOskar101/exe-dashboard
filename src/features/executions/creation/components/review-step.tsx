@@ -49,6 +49,7 @@ export function ReviewStep({ draft, payload, runtimeVariables, t }: ReviewStepPr
           },
           executionId: draft.execution.execution.trim(),
           patients: draft.execution.patients.map((patient) => ({
+            ...(patient.id?.trim() ? { id: patient.id.trim() } : {}),
             patientName: { key: 'patient_first_name', value: patient.patientName.trim() },
             patientLastName: { key: 'patient_last_name', value: patient.patientLastName.trim() },
             patientMemberId: { key: 'memberid', value: patient.patientMemberId.trim() },

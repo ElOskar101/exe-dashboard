@@ -477,6 +477,7 @@ test.describe('protected executions route', () => {
         executionId: 'day-1',
         patients: [
           {
+            id: 'row-1',
             patientName: { key: 'patient_first_name', value: 'Jane' },
             patientLastName: { key: 'patient_last_name', value: 'Doe' },
             patientMemberId: { key: 'memberid', value: '111111' },
@@ -491,6 +492,7 @@ test.describe('protected executions route', () => {
             otherInformation: {},
           },
           {
+            id: 'row-2',
             patientName: { key: 'patient_first_name', value: 'John' },
             patientLastName: { key: 'patient_last_name', value: 'Doe' },
             patientMemberId: { key: 'memberid', value: '222222' },
