@@ -378,6 +378,8 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('Not filled').first()).toBeVisible()
     await expect(page.getByText('"workers": 2')).toBeVisible()
     await expect(page.getByText('"retries": 1')).toBeVisible()
+    await expect(page.getByText('"rv": {')).toBeVisible()
+    await expect(page.getByText('"carrierDomain": "dev-carrier"')).toBeVisible()
   })
 
   test('submits the built payload with multiple patients', async ({ page }) => {

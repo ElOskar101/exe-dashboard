@@ -41,7 +41,12 @@ export default function ExecutionWizard() {
           {wizard.stepper.currentStep === 2 ? <ConfigStep {...wizard.configStep} t={t} /> : null}
 
           {wizard.stepper.currentStep === 3 ? (
-            <ReviewStep draft={wizard.reviewStep.draft} payload={wizard.reviewStep.payload} t={t} />
+            <ReviewStep
+              draft={wizard.reviewStep.draft}
+              payload={wizard.reviewStep.payload}
+              runtimeVariables={wizard.reviewStep.runtimeVariables}
+              t={t}
+            />
           ) : null}
         </div>
       </CardContent>

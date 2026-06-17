@@ -63,7 +63,7 @@ export function ReviewStep({ draft, payload, runtimeVariables, t }: ReviewStepPr
             otherInformation: patient.otherInformation,
           })),
           config: parseExecutionMetadataString(draft.execution.config),
-          rv: runtimeVariables,
+          rv: runtimeVariables ?? {},
           headed: false,
           workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
           retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
