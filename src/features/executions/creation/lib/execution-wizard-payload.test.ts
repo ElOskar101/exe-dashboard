@@ -69,9 +69,7 @@ describe('buildExecutionPayload', () => {
           targetUrl: 'https://carrier.example.com',
           username: 'operator',
           password: 'secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
+          otherInformation: {},
         },
         executionId: 'execution-day-id-1',
         patients: [

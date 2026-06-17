@@ -23,9 +23,7 @@ const PATIENT_SOURCE_KEYS = {
 
 const DEFAULT_HEADED_MODE = false
 
-export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({
-  specifyPayer: 'None',
-})
+export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({})
 
 const createPatientProperty = (key: string, value: string): ExecutionPayloadPatientPropertyDetail => ({
   key,

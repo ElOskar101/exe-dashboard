@@ -23,9 +23,7 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
       targetUrl: 'https://carrier.example.com',
       username: 'qa.operator',
       password: 'super-secret',
-      otherInformation: {
-        specifyPayer: 'None',
-      },
+      otherInformation: {},
     },
     patients: [
       {
@@ -68,9 +66,7 @@ describe('execution rerun helpers', () => {
           targetUrl: 'https://carrier.example.com',
           username: 'qa.operator',
           password: 'super-secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
+          otherInformation: {},
         },
         patients: [
           {

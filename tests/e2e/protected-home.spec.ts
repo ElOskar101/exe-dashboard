@@ -148,9 +148,7 @@ async function stubProtectedRouteDependencies(page: Page) {
               targetUrl: 'https://carrier.example.com',
               username: 'qa.operator',
               password: 'super-secret',
-              otherInformation: {
-                specifyPayer: 'None',
-              },
+              otherInformation: {},
             },
             patients: [],
             config: {},
@@ -406,9 +404,7 @@ test.describe('protected executions route', () => {
           targetUrl: 'https://carrier.example.com',
           username: 'qa.operator',
           password: 'super-secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
+          otherInformation: {},
         },
         patients: [],
         config: {},
@@ -470,9 +466,7 @@ test.describe('protected executions route', () => {
           targetUrl: 'https://carrier.example.com',
           username: 'qa.operator',
           password: 'super-secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
+          otherInformation: {},
         },
         executionId: 'day-1',
         patients: [

@@ -56,9 +56,7 @@ const createExecutionContext = (): ExecutionFixture['context'] => ({
     targetUrl: 'https://carrier.example.com',
     username: 'qa.operator',
     password: 'super-secret',
-    otherInformation: {
-      specifyPayer: 'None',
-    },
+    otherInformation: {},
   },
   patients: [
     {

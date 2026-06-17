@@ -30,8 +30,8 @@ export function ReviewStep({ draft, payload, runtimeVariables, t }: ReviewStepPr
     () =>
       payload ?? {
         project: draft.context.project.trim(),
-        client: draft.context.client.trim(),
-        clinic: draft.context.clinic.trim(),
+        client: draft.context.clientName.trim(),
+        clinic: draft.context.clinicName.trim(),
         ...(draft.execution.executionName.trim() || draft.execution.execution.trim()
           ? { execution: draft.execution.executionName.trim() || draft.execution.execution.trim() }
           : {}),
