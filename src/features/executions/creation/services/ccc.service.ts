@@ -118,6 +118,12 @@ export interface RuntimeVariableRecord {
   updatedAt: string
 }
 
+export interface ClinicMacroConfigResponse {
+  message: string
+  code: number
+  data: [ExecutionMetadata, ...ExecutionMetadata[]]
+}
+
 export const searchCustomers = (clientName: string, options: CustomerSearchOptions = {}) => {
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
@@ -176,7 +182,7 @@ export const getClinicBots = (clinicId: string) =>
   cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
 
 export const getClinicMacroConfig = (clinicId: string) =>
-  syncClient.get<ExecutionMetadata>(`clinics/${clinicId}/macro-config`)
+  syncClient.get<ClinicMacroConfigResponse>(`clinics/${clinicId}/macro-config`)
 
 export const decryptClinicBotPassword = async (clinicBotId: string) => {
   const response = await cccClient.get<string>(`clinicbots/decrypt/${clinicBotId}`, {

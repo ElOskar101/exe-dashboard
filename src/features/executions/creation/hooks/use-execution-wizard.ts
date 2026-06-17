@@ -269,7 +269,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
       return {
         clinicId,
-        config: JSON.stringify(response.data, null, 2),
+        config: JSON.stringify(response.data.data[0], null, 2),
       }
     },
     onSuccess: ({ clinicId, config }) => {
