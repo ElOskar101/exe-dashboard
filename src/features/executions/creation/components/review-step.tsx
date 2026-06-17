@@ -9,6 +9,7 @@ import type {
   ExecutionSchedulePayload,
   ExecutionWizardDraft,
 } from '../model/execution-create'
+import { parseExecutionMetadata } from '../lib/execution-metadata'
 import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
 import {
   getExecutionWizardDisplayValue,
@@ -61,7 +62,7 @@ export function ReviewStep({ draft, payload, runtimeVariables, t }: ReviewStepPr
             zipCode: { key: 'subscriber_zip_code', value: patient.zipCode.trim() },
             verificationType: patient.verificationType.toLowerCase(),
             filenames: patient.filenames.trim() ? [patient.filenames.trim()] : [],
-            otherInformation: patient.otherInformation,
+            otherInformation: parseExecutionMetadata(patient.otherInformation) ?? {},
           })),
           config: parseExecutionMetadataString(draft.execution.config),
           rv: runtimeVariables ?? {},
