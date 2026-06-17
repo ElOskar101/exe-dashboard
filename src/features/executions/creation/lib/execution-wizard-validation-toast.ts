@@ -14,14 +14,14 @@ const patientFieldLabels = {
   patientDob: 'fields.patientDob',
   policyHolderName: 'fields.policyHolderName',
   policyHolderLastName: 'fields.policyHolderLastName',
-  policyHolderDob: 'fields.patientDob',
+  policyHolderDob: 'fields.policyHolderDob',
   relationship: 'fields.relationship',
   zipCode: 'fields.zipCode',
   clinic: 'fields.patientClinic',
   verificationType: 'fields.verificationType',
   filenames: 'fields.filenames',
   otherInformation: 'fields.patientOtherInformation',
-} as const satisfies Record<keyof ExecutionPatient, Parameters<TFunction<'executions'>>[0]>
+} as const satisfies Partial<Record<keyof ExecutionPatient, Parameters<TFunction<'executions'>>[0]>>
 
 const addFieldSummary = (
   items: Set<string>,
@@ -67,7 +67,11 @@ export const getExecutionWizardValidationToastCopy = (
   errors.patients.rows.forEach((row, index) => {
     const rowFields = Object.entries(row)
       .filter(([, error]) => Boolean(error))
-      .map(([field]) => t(patientFieldLabels[field as keyof ExecutionPatient]))
+      .flatMap(([field]) => {
+        const label = patientFieldLabels[field as keyof typeof patientFieldLabels]
+
+        return label ? [t(label)] : []
+      })
 
     if (rowFields.length === 0) {
       return

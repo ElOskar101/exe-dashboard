@@ -8,19 +8,20 @@ import {
 
 const emptyValue = 'None'
 
+const patientProperty = (value: string, key = '') => ({ key, value })
+
 const createPatient = (overrides: Partial<ExecutionPayloadPatient> = {}): ExecutionPayloadPatient => ({
-  patientName: 'Jane',
-  patientLastName: 'Doe',
-  patientMemberId: '111111',
-  patientDob: '01/01/1990',
-  policyHolderName: 'Jane',
-  policyHolderLastName: 'Doe',
-  policyHolderDob: '01/01/1980',
-  relationship: 'Self',
-  zipCode: '90001',
-  clinic: 'Downtown Clinic',
+  patientName: patientProperty('Jane', 'patient_first_name'),
+  patientLastName: patientProperty('Doe', 'patient_last_name'),
+  patientMemberId: patientProperty('111111'),
+  patientDob: patientProperty('01/01/1990'),
+  policyHolderName: patientProperty('Jane'),
+  policyHolderLastName: patientProperty('Doe'),
+  policyHolderDob: patientProperty('01/01/1980'),
+  relationship: patientProperty('Self'),
+  zipCode: patientProperty('90001'),
   verificationType: 'elg',
-  filenames: 'jane-doe.pdf',
+  filenames: ['jane-doe.pdf'],
   otherInformation: {},
   ...overrides,
 })
@@ -31,9 +32,12 @@ describe('execution patients display', () => {
   })
 
   it('falls back when the patient payload has no names', () => {
-    expect(getExecutionPatientFullName(createPatient({ patientName: ' ', patientLastName: '' }), emptyValue)).toBe(
-      emptyValue,
-    )
+    expect(
+      getExecutionPatientFullName(
+        createPatient({ patientName: patientProperty(' '), patientLastName: patientProperty('') }),
+        emptyValue,
+      ),
+    ).toBe(emptyValue)
   })
 
   it('limits the summary text to the first patient and shows the remaining count', () => {
@@ -41,8 +45,8 @@ describe('execution patients display', () => {
       getExecutionPatientsSummary(
         [
           createPatient(),
-          createPatient({ patientName: 'John', patientLastName: 'Smith' }),
-          createPatient({ patientName: 'Mary', patientLastName: 'Jones' }),
+          createPatient({ patientName: patientProperty('John'), patientLastName: patientProperty('Smith') }),
+          createPatient({ patientName: patientProperty('Mary'), patientLastName: patientProperty('Jones') }),
         ],
         emptyValue,
       ),

@@ -14,16 +14,19 @@ import {
   getClinicBots,
   getClinicExecutionDays,
   getCustomerById,
+  getRuntimeVariables,
   searchCustomers,
 } from '../services/ccc.service'
 
 interface UseExecutionWizardDataOptions {
+  cccApiUrl: string
   context: ExecutionWizardDraft['context']
   customerSearch: string
   onPatientsImported: (result: { executionId: string; patients: ExecutionPatient[] }) => void
 }
 
 export const useExecutionWizardData = ({
+  cccApiUrl,
   context,
   customerSearch,
   onPatientsImported,
@@ -92,6 +95,16 @@ export const useExecutionWizardData = ({
     enabled: context.clinic.trim().length > 0,
   })
 
+  const runtimeVariablesQuery = useQuery({
+    queryKey: executionWizardKeys.runtimeVariables(cccApiUrl),
+    queryFn: async () => {
+      const response = await getRuntimeVariables()
+
+      return response.data
+    },
+    enabled: cccApiUrl.trim().length > 0,
+  })
+
   const importPatientsMutation = useMutation({
     mutationFn: async (executionId: string) => {
       const response = await getCCCExecution(executionId)
@@ -157,6 +170,7 @@ export const useExecutionWizardData = ({
     playwrightProjectOptions,
     playwrightProjectsQuery,
     resetImportPatients: () => importPatientsMutation.reset(),
+    runtimeVariablesQuery,
     selectedCustomerQuery,
   }
 }

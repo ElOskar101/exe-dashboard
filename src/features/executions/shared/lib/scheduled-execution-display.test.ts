@@ -15,6 +15,18 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   client: 'client-1',
   clinic: 'clinic-1',
   execution: '2026-05-29',
+  context: {
+    bot: {
+      botName: 'Eligibility bot',
+      targetUrl: 'https://carrier.example.com',
+      username: 'runner',
+      password: 'secret',
+      otherInformation: {},
+    },
+    patients: [],
+    config: {},
+    rv: {},
+  },
   createdAt: '2026-05-29T12:00:00.000Z',
   updatedAt: '2026-05-29T12:00:00.000Z',
   jobId: 'job-1',

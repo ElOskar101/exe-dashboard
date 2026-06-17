@@ -1,5 +1,5 @@
-import cccClient from '@/lib/axios'
-import type { ExecutionVerificationType } from '../../shared/model/execution-create-payload'
+import cccClient, { syncClient } from '@/lib/axios'
+import type { ExecutionMetadata, ExecutionVerificationType } from '../../shared/model/execution-create-payload'
 
 export interface CustomerSearchItem {
   _id: string
@@ -108,6 +108,22 @@ export interface CCCExecutionResponse {
   trashed: boolean
 }
 
+export interface RuntimeVariableRecord {
+  _id: string
+  key: string
+  value: unknown
+  comment: string
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ClinicMacroConfigResponse {
+  message: string
+  code: number
+  data: [ExecutionMetadata, ...ExecutionMetadata[]]
+}
+
 export const searchCustomers = (clientName: string, options: CustomerSearchOptions = {}) => {
   return cccClient.get<CustomerSearchResponse>('v2/customers', {
     params: {
@@ -165,6 +181,9 @@ export const getClinicExecutionDays = (clinicId: string) =>
 export const getClinicBots = (clinicId: string) =>
   cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
 
+export const getClinicMacroConfig = (clinicId: string) =>
+  syncClient.get<ClinicMacroConfigResponse>(`clinics/${clinicId}/macro-config`)
+
 export const decryptClinicBotPassword = async (clinicBotId: string) => {
   const response = await cccClient.get<string>(`clinicbots/decrypt/${clinicBotId}`, {
     responseType: 'text',
@@ -178,6 +197,31 @@ export const decryptClinicBotPassword = async (clinicBotId: string) => {
 
 export const getCCCExecution = (executionId: string) => {
   return cccClient.get<CCCExecutionResponse>(`v2/executions/${executionId}`)
+}
+
+const parseRuntimeVariableValue = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  try {
+    return JSON.parse(value) as unknown
+  } catch {
+    return value
+  }
+}
+
+export const transformRuntimeVariables = (runtimeVariables: RuntimeVariableRecord[]): ExecutionMetadata => {
+  return Object.fromEntries(runtimeVariables.map(({ key, value }) => [key, parseRuntimeVariableValue(value)]))
+}
+
+export const getRuntimeVariables = async () => {
+  const response = await cccClient.get<RuntimeVariableRecord[]>('rv')
+
+  return {
+    ...response,
+    data: transformRuntimeVariables(response.data),
+  }
 }
 
 const normalizeDecryptedPassword = (value: string) => {

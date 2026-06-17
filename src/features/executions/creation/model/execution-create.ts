@@ -12,6 +12,7 @@ export interface ExecutionBot {
 }
 
 export interface ExecutionPatient {
+  id?: string
   patientName: string
   patientLastName: string
   patientMemberId: string
@@ -51,6 +52,8 @@ export interface ExecutionWizardDraft {
 export type {
   ExecutionCreatePayload,
   ExecutionMetadata,
+  ExecutionPayloadPatientPropertyDetail,
+  ExecutionPayloadVerificationType,
   ExecutionSchedulePayload,
   ExecutionVerificationType,
 } from '../../shared/model/execution-create-payload'

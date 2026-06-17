@@ -1,6 +1,12 @@
 export type ExecutionVerificationType = 'ELG' | 'FBD'
+export type ExecutionPayloadVerificationType = Lowercase<ExecutionVerificationType>
 
 export type ExecutionMetadata = Record<string, unknown>
+
+export interface ExecutionPayloadPatientPropertyDetail {
+  key: string
+  value: string
+}
 
 export interface ExecutionPayloadBot {
   botName: string
@@ -11,28 +17,35 @@ export interface ExecutionPayloadBot {
 }
 
 export interface ExecutionPayloadPatient {
-  patientName: string
-  patientLastName: string
-  patientMemberId: string
-  patientDob: string
-  policyHolderName: string
-  policyHolderLastName: string
-  policyHolderDob: string
-  relationship: string
-  zipCode: string
-  clinic?: string
-  verificationType: Lowercase<ExecutionVerificationType> | ''
-  filenames: string
+  id?: string
+  patientName: ExecutionPayloadPatientPropertyDetail
+  patientLastName: ExecutionPayloadPatientPropertyDetail
+  patientMemberId: ExecutionPayloadPatientPropertyDetail
+  patientDob: ExecutionPayloadPatientPropertyDetail
+  policyHolderName: ExecutionPayloadPatientPropertyDetail
+  policyHolderLastName: ExecutionPayloadPatientPropertyDetail
+  policyHolderDob: ExecutionPayloadPatientPropertyDetail
+  relationship: ExecutionPayloadPatientPropertyDetail
+  zipCode: ExecutionPayloadPatientPropertyDetail
+  clinic?: ExecutionPayloadPatientPropertyDetail
+  verificationType: ExecutionPayloadVerificationType
+  filenames: string[]
   otherInformation: ExecutionMetadata
 }
 
-export interface ExecutionPayloadMeta {
+export interface ExecutionPayloadContext {
+  accessToken?: string
+  apiUrl?: string
   bot: ExecutionPayloadBot
-  patients: ExecutionPayloadPatient[]
   config: ExecutionMetadata
-  rv: Record<string, never>
-  workers: number
-  retries: number
+  executionId?: string
+  headed?: boolean
+  logsPath?: string
+  outputPath?: string
+  patients: ExecutionPayloadPatient[]
+  retries?: number
+  rv: ExecutionMetadata
+  workers?: number
 }
 
 export interface ExecutionCreatePayload {
@@ -42,7 +55,7 @@ export interface ExecutionCreatePayload {
   clinic: string
   execution?: string
   botName: string
-  meta: ExecutionPayloadMeta
+  context: ExecutionPayloadContext
 }
 
 export interface ExecutionSchedulePayload extends ExecutionCreatePayload {

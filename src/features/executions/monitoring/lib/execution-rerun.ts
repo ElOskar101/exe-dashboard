@@ -32,12 +32,7 @@ const getRequiredString = (value: string | undefined, field: string, missingFiel
   return resolvedValue
 }
 
-const normalizeRerunPatients = (patients: ExecutionPayloadPatient[]) => {
-  return patients.map(({ clinic, ...patient }) => ({
-    ...patient,
-    ...(clinic?.trim() ? { clinic: clinic.trim() } : {}),
-  }))
-}
+const normalizeRerunPatients = (patients: ExecutionPayloadPatient[]) => patients
 
 export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPreparation => {
   const missingFields: string[] = []
@@ -46,18 +41,12 @@ export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPrepa
   const client = getRequiredString(execution.client, 'client', missingFields)
   const clinic = getRequiredString(execution.clinic, 'clinic', missingFields)
 
-  if (!execution.meta) {
-    pushMissingField(missingFields, 'meta')
-  }
+  const context = execution.context
 
-  const botName = getRequiredString(
-    execution.botName ?? execution.meta?.bot.botName ?? execution.bot,
-    'botName',
-    missingFields,
-  )
+  const botName = getRequiredString(execution.botName ?? context.bot.botName ?? execution.bot, 'botName', missingFields)
   const rerunExecution = execution.execution.trim()
 
-  if (!execution.meta || missingFields.length > 0) {
+  if (missingFields.length > 0) {
     return {
       missingFields,
       payload: null,
@@ -73,13 +62,13 @@ export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPrepa
       clinic,
       ...(rerunExecution ? { execution: rerunExecution } : {}),
       botName,
-      meta: {
-        ...execution.meta,
+      context: {
+        ...context,
         bot: {
-          ...execution.meta.bot,
+          ...context.bot,
           botName,
         },
-        patients: normalizeRerunPatients(execution.meta.patients),
+        patients: normalizeRerunPatients(context.patients),
         rv: {},
       },
     },
@@ -99,9 +88,9 @@ export const getExecutionRerunSummary = (
     client: execution.client,
     clinic: execution.clinic,
     execution: payload?.execution ?? execution.execution ?? null,
-    patientCount: payload?.meta.patients.length ?? 0,
+    patientCount: payload?.context.patients.length ?? 0,
     project: payload?.project || execution.project || '',
-    retries: payload?.meta.retries ?? 0,
-    workers: payload?.meta.workers ?? 0,
+    retries: payload?.context.retries ?? 0,
+    workers: payload?.context.workers ?? 0,
   }
 }

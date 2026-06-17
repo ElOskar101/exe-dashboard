@@ -19,7 +19,7 @@ interface ExecutionFixture {
   jobId: string
   playwrightExecutionId: string
   logs?: string
-  meta?: {
+  context: {
     bot: {
       botName: string
       targetUrl: string
@@ -28,51 +28,49 @@ interface ExecutionFixture {
       otherInformation: Record<string, unknown>
     }
     patients: Array<{
-      patientName: string
-      patientLastName: string
-      patientMemberId: string
-      patientDob: string
-      policyHolderName: string
-      policyHolderLastName: string
-      policyHolderDob: string
-      relationship: string
-      zipCode: string
-      clinic: string
+      patientName: { key: string; value: string }
+      patientLastName: { key: string; value: string }
+      patientMemberId: { key: string; value: string }
+      patientDob: { key: string; value: string }
+      policyHolderName: { key: string; value: string }
+      policyHolderLastName: { key: string; value: string }
+      policyHolderDob: { key: string; value: string }
+      relationship: { key: string; value: string }
+      zipCode: { key: string; value: string }
       verificationType: string
-      filenames: string
+      filenames: string[]
       otherInformation: Record<string, unknown>
     }>
     config: Record<string, unknown>
-    rv: Record<string, never>
+    rv: Record<string, unknown>
     workers: number
     retries: number
   }
 }
 
-const createExecutionMeta = (): NonNullable<ExecutionFixture['meta']> => ({
+const patientProperty = (value: string, key = '') => ({ key, value })
+
+const createExecutionContext = (): ExecutionFixture['context'] => ({
   bot: {
     botName: 'Eligibility Runner',
     targetUrl: 'https://carrier.example.com',
     username: 'qa.operator',
     password: 'super-secret',
-    otherInformation: {
-      specifyPayer: 'None',
-    },
+    otherInformation: {},
   },
   patients: [
     {
-      patientName: 'Jane',
-      patientLastName: 'Doe',
-      patientMemberId: '111111',
-      patientDob: '01/01/1990',
-      policyHolderName: 'Jane',
-      policyHolderLastName: 'Doe',
-      policyHolderDob: '01/01/1980',
-      relationship: 'Self',
-      zipCode: '90001',
-      clinic: 'Downtown Clinic',
+      patientName: patientProperty('Jane', 'patient_first_name'),
+      patientLastName: patientProperty('Doe', 'patient_last_name'),
+      patientMemberId: patientProperty('111111'),
+      patientDob: patientProperty('01/01/1990'),
+      policyHolderName: patientProperty('Jane'),
+      policyHolderLastName: patientProperty('Doe'),
+      policyHolderDob: patientProperty('01/01/1980'),
+      relationship: patientProperty('Self'),
+      zipCode: patientProperty('90001'),
       verificationType: 'elg',
-      filenames: 'jane-doe.pdf',
+      filenames: ['jane-doe.pdf'],
       otherInformation: {},
     },
   ],
@@ -97,7 +95,7 @@ const createExecution = (overrides: Partial<ExecutionFixture> = {}): ExecutionFi
   updatedAt: '2026-05-25T14:10:00.000Z',
   jobId: 'job-1',
   playwrightExecutionId: 'report-1',
-  meta: createExecutionMeta(),
+  context: createExecutionContext(),
   ...overrides,
 })
 
@@ -312,51 +310,51 @@ test.describe('execution user flows', () => {
 
   test('renders the executions page table and opens the patients dialog from the summary cell', async ({ page }) => {
     await prepareAuthenticatedPage(page)
-    const basePatient = createExecutionMeta().patients[0]
+    const basePatient = createExecutionContext().patients[0]
     const execution = createExecution({
       status: 'running',
-      meta: {
-        ...createExecutionMeta(),
+      context: {
+        ...createExecutionContext(),
         patients: [
           basePatient,
           {
             ...basePatient,
-            patientName: 'John',
-            patientLastName: 'Smith',
-            patientMemberId: '222222',
-            patientDob: '02/02/1992',
-            policyHolderName: 'Janet',
-            policyHolderLastName: 'Smith',
-            policyHolderDob: '02/02/1982',
-            relationship: 'Child',
-            zipCode: '90002',
-            filenames: 'john-smith.pdf',
+            patientName: patientProperty('John', 'patient_first_name'),
+            patientLastName: patientProperty('Smith', 'patient_last_name'),
+            patientMemberId: patientProperty('222222'),
+            patientDob: patientProperty('02/02/1992'),
+            policyHolderName: patientProperty('Janet'),
+            policyHolderLastName: patientProperty('Smith'),
+            policyHolderDob: patientProperty('02/02/1982'),
+            relationship: patientProperty('Child'),
+            zipCode: patientProperty('90002'),
+            filenames: ['john-smith.pdf'],
           },
           {
             ...basePatient,
-            patientName: 'Mary',
-            patientLastName: 'Jones',
-            patientMemberId: '333333',
-            patientDob: '03/03/1993',
-            policyHolderName: 'Mark',
-            policyHolderLastName: 'Jones',
-            policyHolderDob: '03/03/1983',
-            relationship: 'Spouse',
-            zipCode: '90003',
-            filenames: 'mary-jones.pdf',
+            patientName: patientProperty('Mary', 'patient_first_name'),
+            patientLastName: patientProperty('Jones', 'patient_last_name'),
+            patientMemberId: patientProperty('333333'),
+            patientDob: patientProperty('03/03/1993'),
+            policyHolderName: patientProperty('Mark'),
+            policyHolderLastName: patientProperty('Jones'),
+            policyHolderDob: patientProperty('03/03/1983'),
+            relationship: patientProperty('Spouse'),
+            zipCode: patientProperty('90003'),
+            filenames: ['mary-jones.pdf'],
           },
           {
             ...basePatient,
-            patientName: 'Alex',
-            patientLastName: 'Taylor',
-            patientMemberId: '444444',
-            patientDob: '04/04/1994',
-            policyHolderName: 'Avery',
-            policyHolderLastName: 'Taylor',
-            policyHolderDob: '04/04/1984',
-            relationship: 'Dependent',
-            zipCode: '90004',
-            filenames: 'alex-taylor.pdf',
+            patientName: patientProperty('Alex', 'patient_first_name'),
+            patientLastName: patientProperty('Taylor', 'patient_last_name'),
+            patientMemberId: patientProperty('444444'),
+            patientDob: patientProperty('04/04/1994'),
+            policyHolderName: patientProperty('Avery'),
+            policyHolderLastName: patientProperty('Taylor'),
+            policyHolderDob: patientProperty('04/04/1984'),
+            relationship: patientProperty('Dependent'),
+            zipCode: patientProperty('90004'),
+            filenames: ['alex-taylor.pdf'],
           },
         ],
       },
@@ -647,7 +645,7 @@ test.describe('execution user flows', () => {
       clinic: 'Downtown Clinic',
       execution: '2026-05-25',
       botName: 'Eligibility Runner',
-      meta: createExecutionMeta(),
+      context: createExecutionContext(),
     })
   })
 

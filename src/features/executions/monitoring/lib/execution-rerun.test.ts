@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { Execution } from '@/features/executions/shared'
 import { buildExecutionRerunPayload, getExecutionRerunSummary, prepareExecutionRerun } from './execution-rerun'
 
+const patientProperty = (value: string, key = '') => ({ key, value })
+
 const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-1',
   createdBy: 'user-1',
@@ -15,30 +17,27 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   updatedAt: '2026-05-27T12:10:00.000Z',
   jobId: 'job-1',
   playwrightExecutionId: 'report-1',
-  meta: {
+  context: {
     bot: {
       botName: 'Eligibility Runner',
       targetUrl: 'https://carrier.example.com',
       username: 'qa.operator',
       password: 'super-secret',
-      otherInformation: {
-        specifyPayer: 'None',
-      },
+      otherInformation: {},
     },
     patients: [
       {
-        patientName: 'Jane',
-        patientLastName: 'Doe',
-        patientMemberId: '111111',
-        patientDob: '01/01/1990',
-        policyHolderName: 'Jane',
-        policyHolderLastName: 'Doe',
-        policyHolderDob: '01/01/1980',
-        relationship: 'Self',
-        zipCode: '90001',
-        clinic: 'Downtown Clinic',
+        patientName: patientProperty('Jane', 'patient_first_name'),
+        patientLastName: patientProperty('Doe', 'patient_last_name'),
+        patientMemberId: patientProperty('111111'),
+        patientDob: patientProperty('01/01/1990'),
+        policyHolderName: patientProperty('Jane'),
+        policyHolderLastName: patientProperty('Doe'),
+        policyHolderDob: patientProperty('01/01/1980'),
+        relationship: patientProperty('Self'),
+        zipCode: patientProperty('90001'),
         verificationType: 'elg',
-        filenames: 'jane-doe.pdf',
+        filenames: ['jane-doe.pdf'],
         otherInformation: {},
       },
     ],
@@ -61,30 +60,27 @@ describe('execution rerun helpers', () => {
       clinic: 'clinic-1',
       execution: 'Daily eligibility',
       botName: 'Eligibility Runner',
-      meta: {
+      context: {
         bot: {
           botName: 'Eligibility Runner',
           targetUrl: 'https://carrier.example.com',
           username: 'qa.operator',
           password: 'super-secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
+          otherInformation: {},
         },
         patients: [
           {
-            patientName: 'Jane',
-            patientLastName: 'Doe',
-            patientMemberId: '111111',
-            patientDob: '01/01/1990',
-            policyHolderName: 'Jane',
-            policyHolderLastName: 'Doe',
-            policyHolderDob: '01/01/1980',
-            relationship: 'Self',
-            zipCode: '90001',
-            clinic: 'Downtown Clinic',
+            patientName: patientProperty('Jane', 'patient_first_name'),
+            patientLastName: patientProperty('Doe', 'patient_last_name'),
+            patientMemberId: patientProperty('111111'),
+            patientDob: patientProperty('01/01/1990'),
+            policyHolderName: patientProperty('Jane'),
+            policyHolderLastName: patientProperty('Doe'),
+            policyHolderDob: patientProperty('01/01/1980'),
+            relationship: patientProperty('Self'),
+            zipCode: patientProperty('90001'),
             verificationType: 'elg',
-            filenames: 'jane-doe.pdf',
+            filenames: ['jane-doe.pdf'],
             otherInformation: {},
           },
         ],
@@ -96,16 +92,6 @@ describe('execution rerun helpers', () => {
         retries: 2,
       },
     })
-  })
-
-  it('returns null when the execution does not include the original payload details', () => {
-    expect(
-      buildExecutionRerunPayload(
-        createExecution({
-          meta: undefined,
-        }),
-      ),
-    ).toBeNull()
   })
 
   it('reports the required top-level fields that are missing', () => {
@@ -113,85 +99,26 @@ describe('execution rerun helpers', () => {
       prepareExecutionRerun(
         createExecution({
           createdBy: '',
-          meta: undefined,
         }),
       ).missingFields,
-    ).toEqual(['createdBy', 'meta'])
+    ).toEqual(['createdBy'])
   })
 
-  it('rebuilds the payload even when rv is not an empty object in the stored execution meta', () => {
+  it('rebuilds the payload even when rv is not an empty object in the stored execution context', () => {
     expect(
       buildExecutionRerunPayload(
         createExecution({
-          meta: {
-            ...createExecution().meta!,
+          context: {
+            ...createExecution().context,
             rv: {
               previousAttempt: true,
             },
-          } as unknown as NonNullable<Execution['meta']>,
+          },
         }),
       ),
     ).toMatchObject({
-      meta: {
+      context: {
         rv: {},
-      },
-    })
-  })
-
-  it('does not report patient clinic as missing and omits it from the payload when blank', () => {
-    const baseMeta = createExecution().meta!
-    const execution = createExecution({
-      meta: {
-        ...baseMeta,
-        patients: [
-          {
-            ...baseMeta.patients[0],
-            clinic: '',
-          },
-        ],
-      },
-    })
-
-    expect(prepareExecutionRerun(execution).missingFields).not.toContain('meta.patients[0].clinic')
-    expect(buildExecutionRerunPayload(execution)).toEqual({
-      project: 'liberty',
-      createdBy: 'user-1',
-      client: 'client-1',
-      clinic: 'clinic-1',
-      execution: 'Daily eligibility',
-      botName: 'Eligibility Runner',
-      meta: {
-        bot: {
-          botName: 'Eligibility Runner',
-          targetUrl: 'https://carrier.example.com',
-          username: 'qa.operator',
-          password: 'super-secret',
-          otherInformation: {
-            specifyPayer: 'None',
-          },
-        },
-        patients: [
-          {
-            patientName: 'Jane',
-            patientLastName: 'Doe',
-            patientMemberId: '111111',
-            patientDob: '01/01/1990',
-            policyHolderName: 'Jane',
-            policyHolderLastName: 'Doe',
-            policyHolderDob: '01/01/1980',
-            relationship: 'Self',
-            zipCode: '90001',
-            verificationType: 'elg',
-            filenames: 'jane-doe.pdf',
-            otherInformation: {},
-          },
-        ],
-        config: {
-          parallel: true,
-        },
-        rv: {},
-        workers: 4,
-        retries: 2,
       },
     })
   })
@@ -214,14 +141,7 @@ describe('execution rerun helpers', () => {
   })
 
   it('builds a fallback summary even when the payload cannot be recreated yet', () => {
-    expect(
-      getExecutionRerunSummary(
-        createExecution({
-          meta: undefined,
-        }),
-        null,
-      ),
-    ).toEqual({
+    expect(getExecutionRerunSummary(createExecution(), null)).toEqual({
       botName: 'Eligibility Runner',
       client: 'client-1',
       clinic: 'clinic-1',

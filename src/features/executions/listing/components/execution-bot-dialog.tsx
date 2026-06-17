@@ -26,7 +26,7 @@ interface ExecutionBotDialogProps {
 export function ExecutionBotDialog({ execution, executionLabel, emptyValue }: ExecutionBotDialogProps) {
   const { t } = useTranslation('executions')
   const titleRef = useRef<HTMLHeadingElement>(null)
-  const bot = execution.meta?.bot
+  const bot = execution.context.bot
   const botName = getExecutionBotName(execution, emptyValue)
 
   return (

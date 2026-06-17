@@ -49,7 +49,7 @@ const executionPayload: ExecutionCreatePayload = {
   client: 'Legacy Dental Care',
   clinic: 'Main Clinic',
   botName: 'eligibility-bot',
-  meta: {
+  context: {
     bot: {
       botName: 'eligibility-bot',
       targetUrl: 'https://portal.example.com',

@@ -2,6 +2,7 @@ import { useContext, useMemo, useState, startTransition } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '@/features/auth'
+import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 import {
   getExecutionRequestErrorMessage,
   useCreateExecutionMutation,
@@ -11,7 +12,7 @@ import {
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
-import { buildExecutionPayload } from '../lib/execution-wizard-payload'
+import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
@@ -30,7 +31,12 @@ import {
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
-import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem } from '../services/ccc.service'
+import {
+  decryptClinicBotPassword,
+  getClinicMacroConfig,
+  type ClinicBotRecord,
+  type CustomerSearchItem,
+} from '../services/ccc.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
 
 export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
@@ -48,6 +54,10 @@ interface DecryptSelectedBotPasswordMutationVariables {
   requestId: string
   selectedBot: PlaywrightProjectBot
   selectedClinicBot: ClinicBotRecord
+}
+
+interface ClinicMacroConfigMutationVariables {
+  clinicId: string
 }
 
 const createIdleBotPasswordRequestState = (): BotPasswordRequestState => ({
@@ -73,7 +83,8 @@ const resetDraftDependentSelections = (
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
-  const { user } = useContext(AuthContext)
+  const { token, user } = useContext(AuthContext)
+  const { cccApiUrl } = useCccApiUrl()
   const createdBy = user?.fullName ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
@@ -84,6 +95,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   )
   const customerSearch = draft.context.clientName.trim()
   const wizardData = useExecutionWizardData({
+    cccApiUrl,
     context: draft.context,
     customerSearch,
     onPatientsImported: ({ executionId, patients }) => {
@@ -136,7 +148,14 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxWorkers,
     appLimits.maxRetries,
   ])
-  const payloadPreview = useMemo(() => buildExecutionPayload(draft, createdBy), [createdBy, draft])
+  const payloadPreview = useMemo(
+    () => buildExecutionPayloadPreview(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
+    [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
+  )
+  const submitPayload = useMemo(
+    () => buildExecutionPayload(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
+    [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
+  )
   const stepValidity = [
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
@@ -244,10 +263,34 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       )
     },
   })
+  const clinicMacroConfigMutation = useMutation({
+    mutationFn: async ({ clinicId }: ClinicMacroConfigMutationVariables) => {
+      const response = await getClinicMacroConfig(clinicId)
+
+      return {
+        clinicId,
+        config: JSON.stringify(response.data.data[0], null, 2),
+      }
+    },
+    onSuccess: ({ clinicId, config }) => {
+      setDraft((previousDraft) =>
+        previousDraft.context.clinic === clinicId
+          ? {
+              ...previousDraft,
+              execution: {
+                ...previousDraft.execution,
+                config,
+              },
+            }
+          : previousDraft,
+      )
+    },
+  })
 
   const resetWizardRequests = () => {
     setBotPasswordRequest(createIdleBotPasswordRequestState())
     decryptSelectedBotPasswordMutation.reset()
+    clinicMacroConfigMutation.reset()
     wizardData.resetImportPatients()
   }
 
@@ -306,6 +349,10 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         clinicName: selectedClinic?.clinicName ?? '',
       }),
     )
+
+    if (clinicId.trim()) {
+      clinicMacroConfigMutation.mutate({ clinicId })
+    }
   }
 
   const selectProject = (projectName: string) => {
@@ -507,7 +554,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       Object.fromEntries(executionWizardSteps.map((_, index) => [index, true])) as Record<number, boolean>,
     )
 
-    if (!payloadPreview || stepValidity.some((isStepValid) => !isStepValid)) {
+    if (!submitPayload || stepValidity.some((isStepValid) => !isStepValid)) {
       const validationToastCopy = getExecutionWizardValidationToastCopy(validationErrors, t)
 
       toast.warning(validationToastCopy?.title ?? t('validation.submitBlockedTitle'), {
@@ -523,15 +570,15 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
     try {
       if (draft.execution.scheduleMode === 'scheduled') {
-        if (!('scheduledAt' in payloadPreview)) {
+        if (!('scheduledAt' in submitPayload)) {
           return
         }
 
-        await scheduleExecutionMutation.mutateAsync(payloadPreview as ExecutionSchedulePayload)
+        await scheduleExecutionMutation.mutateAsync(submitPayload as ExecutionSchedulePayload)
         return
       }
 
-      await submitExecutionMutation.mutateAsync(payloadPreview)
+      await submitExecutionMutation.mutateAsync(submitPayload)
     } catch (error) {
       setSubmitError(getExecutionRequestErrorMessage(error, t('submit.errorDescription')))
     }

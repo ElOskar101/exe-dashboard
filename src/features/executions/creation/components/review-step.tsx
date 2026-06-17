@@ -3,68 +3,20 @@ import { IconCopy } from '@tabler/icons-react'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import type { ExecutionCreatePayload, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
-import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
-import {
-  getExecutionWizardDisplayValue,
-  getExecutionWizardPatientFullName,
-  parseExecutionMetadataString,
-} from '../lib/execution-wizard-display'
+import type { ExecutionWizardDraft } from '../model/execution-create'
+import type { ExecutionPayloadPreview } from '../lib/execution-wizard-payload'
+import { getExecutionWizardDisplayValue, getExecutionWizardPatientFullName } from '../lib/execution-wizard-display'
 
 interface ReviewStepProps {
   draft: ExecutionWizardDraft
-  payload: ExecutionCreatePayload | ExecutionSchedulePayload | null
+  payload: ExecutionPayloadPreview
   t: TFunction<'executions'>
 }
 
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
   const patients = draft.execution.patients
-  const reviewPayload = useMemo(
-    () =>
-      payload ?? {
-        project: draft.context.project.trim(),
-        client: draft.context.client.trim(),
-        clinic: draft.context.clinic.trim(),
-        ...(draft.execution.executionName.trim() || draft.execution.execution.trim()
-          ? { execution: draft.execution.executionName.trim() || draft.execution.execution.trim() }
-          : {}),
-        botName: draft.bot.botName.trim(),
-        ...(draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt
-          ? { scheduledAt: new Date(draft.execution.scheduledAt).toISOString() }
-          : {}),
-        meta: {
-          bot: {
-            botName: draft.bot.botName.trim(),
-            targetUrl: draft.bot.targetUrl.trim(),
-            username: draft.bot.username.trim(),
-            password: draft.bot.password,
-            otherInformation: createDefaultBotOtherInformation(),
-          },
-          patients: draft.execution.patients.map((patient) => ({
-            patientName: patient.patientName.trim(),
-            patientLastName: patient.patientLastName.trim(),
-            patientMemberId: patient.patientMemberId.trim(),
-            patientDob: patient.patientDob,
-            policyHolderName: patient.policyHolderName.trim(),
-            policyHolderLastName: patient.policyHolderLastName.trim(),
-            policyHolderDob: patient.policyHolderDob,
-            relationship: patient.relationship.trim(),
-            zipCode: patient.zipCode.trim(),
-            ...(patient.clinic.trim() ? { clinic: patient.clinic.trim() } : {}),
-            verificationType: patient.verificationType.toLowerCase(),
-            filenames: patient.filenames.trim(),
-            otherInformation: patient.otherInformation,
-          })),
-          config: parseExecutionMetadataString(draft.execution.config),
-          rv: {},
-          workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
-          retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
-        },
-      },
-    [draft, payload],
-  )
-  const payloadText = useMemo(() => JSON.stringify(reviewPayload, null, 2), [reviewPayload])
+  const payloadText = useMemo(() => JSON.stringify(payload, null, 2), [payload])
 
   const handleCopyPayload = async () => {
     if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
@@ -237,6 +189,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             <div>
               <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
               <dd className="mt-1 font-medium">{getExecutionWizardDisplayValue(draft.context.project, emptyValue)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.headed')}</dt>
+              <dd className="mt-1 font-medium">{t('options.disabled')}</dd>
             </div>
           </dl>
         </div>

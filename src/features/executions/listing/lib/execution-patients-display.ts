@@ -3,7 +3,7 @@ import type { ExecutionPayloadPatient } from '@/features/executions/shared'
 const MAX_VISIBLE_PATIENTS = 1
 
 export const getExecutionPatientFullName = (patient: ExecutionPayloadPatient, emptyValue: string) => {
-  const fullName = [patient.patientName.trim(), patient.patientLastName.trim()].filter(Boolean).join(' ')
+  const fullName = [patient.patientName.value.trim(), patient.patientLastName.value.trim()].filter(Boolean).join(' ')
 
   return fullName || emptyValue
 }

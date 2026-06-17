@@ -19,15 +19,12 @@ Run the following check commands after any code changes:
 
 Code quality you MUST follow:
 
-- Always try to fix lint issues and don't disable linter rules only if completely necessary. Trust the changes made by the linter, do not revert them.
-
+- Always fix lint issues and don't disable linter rules only if completely necessary. Trust the changes made by the linter, do not revert them.
 - Write simple and scalable code, don't overload components with business logic and extract it into separate lib, hooks, or services.
-
 - Always use one source of truth for data types. If you need other data types derive them from the one source of truth. Trust the typescript types and interfaces, don't write runtime type checks like `if (typeof value === 'string') { ... }`. Always prefer type inference and let compiler catch type errors.
-
 - Don't use magic strings or numbers, use named constants instead, and if it's going to be reused, extract it into a config file. E.g. query keys must be extracted into a separated config file based on the entity they are querying.
-
 - Don't create big files, and if you find out modifying big files, split them into smaller ones with single responsability.
+- Don't write small utility functions or methods that only contain a single expression or only a few lines of code. Instead write the functionality right where it's needed.
 
 
 ## Project structure

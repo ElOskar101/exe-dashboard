@@ -25,6 +25,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
       ]),
     ).toEqual([
       {
+        id: 'row-1',
         patientName: 'Soledad',
         patientLastName: 'Valdez',
         patientMemberId: '44457159',
