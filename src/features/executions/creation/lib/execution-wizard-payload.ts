@@ -9,6 +9,16 @@ import type {
 import { parseExecutionMetadata } from './execution-metadata'
 import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
+type ExecutionPayloadNumericPreviewValue = number | ''
+
+export type ExecutionPayloadPreview = Omit<ExecutionCreatePayload, 'context'> & {
+  context: Omit<ExecutionCreatePayload['context'], 'retries' | 'workers'> & {
+    retries: ExecutionPayloadNumericPreviewValue
+    workers: ExecutionPayloadNumericPreviewValue
+  }
+  scheduledAt?: string
+}
+
 const PATIENT_SOURCE_KEYS = {
   patientName: 'patient_first_name',
   patientLastName: 'patient_last_name',
@@ -37,44 +47,37 @@ const createPatientFilenames = (value: string) => {
   return filename ? [filename] : []
 }
 
-export const buildExecutionPayload = (
+const createExecutionPayloadNumberPreview = (value: string): ExecutionPayloadNumericPreviewValue => {
+  const trimmedValue = value.trim()
+
+  return trimmedValue ? Number(trimmedValue) : ''
+}
+
+const createExecutionPayloadScheduledAtPreview = (value: string) => {
+  const trimmedValue = value.trim()
+
+  if (!trimmedValue) {
+    return ''
+  }
+
+  const scheduledAt = new Date(trimmedValue)
+
+  return Number.isNaN(scheduledAt.getTime()) ? trimmedValue : scheduledAt.toISOString()
+}
+
+export const buildExecutionPayloadPreview = (
   draft: ExecutionWizardDraft,
   createdBy: string,
   accessToken: string,
   apiUrl: string,
   rv: ExecutionMetadata | undefined,
-): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
-  if (
-    !createdBy ||
-    !accessToken.trim() ||
-    !apiUrl.trim() ||
-    !rv ||
-    !draft.context.project.trim() ||
-    !draft.context.client.trim() ||
-    !draft.context.clientName.trim() ||
-    !draft.context.clinic.trim() ||
-    !draft.context.clinicName.trim() ||
-    !draft.bot.clinicBotId.trim() ||
-    !draft.bot.botName.trim() ||
-    !draft.bot.targetUrl.trim() ||
-    !draft.bot.username.trim() ||
-    !draft.bot.password.trim() ||
-    !draft.execution.workers.trim() ||
-    !draft.execution.retries.trim()
-  ) {
-    return null
-  }
-
+): ExecutionPayloadPreview => {
   const patientOtherInformation = draft.execution.patients.map((patient) =>
     parseExecutionMetadata(patient.otherInformation),
   )
   const configMetadata = parseExecutionMetadata(draft.execution.config)
-
-  if (patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
-    return null
-  }
-
-  const payload: ExecutionCreatePayload = {
+  const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
+  const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
     createdBy: createdBy.trim(),
     client: draft.context.clientName.trim(),
@@ -110,18 +113,73 @@ export const buildExecutionPayload = (
         filenames: createPatientFilenames(patient.filenames),
         otherInformation: patientOtherInformation[index] ?? {},
       })),
-      config: configMetadata,
-      rv,
+      config: configMetadata ?? {},
+      rv: rv ?? {},
       headed: DEFAULT_HEADED_MODE,
-      workers: Number(draft.execution.workers),
-      retries: Number(draft.execution.retries),
+      workers: createExecutionPayloadNumberPreview(draft.execution.workers),
+      retries: createExecutionPayloadNumberPreview(draft.execution.retries),
     },
   }
 
-  const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
-
   if (execution) {
     payload.execution = execution
+  }
+
+  if (draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt.trim()) {
+    payload.scheduledAt = createExecutionPayloadScheduledAtPreview(draft.execution.scheduledAt)
+  }
+
+  return payload
+}
+
+export const buildExecutionPayload = (
+  draft: ExecutionWizardDraft,
+  createdBy: string,
+  accessToken: string,
+  apiUrl: string,
+  rv: ExecutionMetadata | undefined,
+): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
+  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, apiUrl, rv)
+
+  if (
+    !createdBy ||
+    !accessToken.trim() ||
+    !apiUrl.trim() ||
+    !rv ||
+    !draft.context.project.trim() ||
+    !draft.context.client.trim() ||
+    !draft.context.clientName.trim() ||
+    !draft.context.clinic.trim() ||
+    !draft.context.clinicName.trim() ||
+    !draft.bot.clinicBotId.trim() ||
+    !draft.bot.botName.trim() ||
+    !draft.bot.targetUrl.trim() ||
+    !draft.bot.username.trim() ||
+    !draft.bot.password.trim() ||
+    !draft.execution.workers.trim() ||
+    !draft.execution.retries.trim()
+  ) {
+    return null
+  }
+
+  const patientOtherInformation = draft.execution.patients.map((patient) =>
+    parseExecutionMetadata(patient.otherInformation),
+  )
+  const configMetadata = parseExecutionMetadata(draft.execution.config)
+
+  if (patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
+    return null
+  }
+
+  const payload: ExecutionCreatePayload = {
+    ...payloadPreview,
+    context: {
+      ...payloadPreview.context,
+      config: configMetadata,
+      rv,
+      workers: Number(draft.execution.workers),
+      retries: Number(draft.execution.retries),
+    },
   }
 
   if (draft.execution.scheduleMode === 'scheduled') {

@@ -12,7 +12,7 @@ import {
 import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
-import { buildExecutionPayload } from '../lib/execution-wizard-payload'
+import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
@@ -149,6 +149,10 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxRetries,
   ])
   const payloadPreview = useMemo(
+    () => buildExecutionPayloadPreview(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
+    [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
+  )
+  const submitPayload = useMemo(
     () => buildExecutionPayload(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
     [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
   )
@@ -550,7 +554,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       Object.fromEntries(executionWizardSteps.map((_, index) => [index, true])) as Record<number, boolean>,
     )
 
-    if (!payloadPreview || stepValidity.some((isStepValid) => !isStepValid)) {
+    if (!submitPayload || stepValidity.some((isStepValid) => !isStepValid)) {
       const validationToastCopy = getExecutionWizardValidationToastCopy(validationErrors, t)
 
       toast.warning(validationToastCopy?.title ?? t('validation.submitBlockedTitle'), {
@@ -566,15 +570,15 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
     try {
       if (draft.execution.scheduleMode === 'scheduled') {
-        if (!('scheduledAt' in payloadPreview)) {
+        if (!('scheduledAt' in submitPayload)) {
           return
         }
 
-        await scheduleExecutionMutation.mutateAsync(payloadPreview as ExecutionSchedulePayload)
+        await scheduleExecutionMutation.mutateAsync(submitPayload as ExecutionSchedulePayload)
         return
       }
 
-      await submitExecutionMutation.mutateAsync(payloadPreview)
+      await submitExecutionMutation.mutateAsync(submitPayload)
     } catch (error) {
       setSubmitError(getExecutionRequestErrorMessage(error, t('submit.errorDescription')))
     }
@@ -658,7 +662,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     reviewStep: {
       draft,
       payload: payloadPreview,
-      runtimeVariables: wizardData.runtimeVariablesQuery.data,
     },
     stepper: {
       currentStep,

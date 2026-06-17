@@ -3,77 +3,20 @@ import { IconCopy } from '@tabler/icons-react'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import type {
-  ExecutionCreatePayload,
-  ExecutionMetadata,
-  ExecutionSchedulePayload,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
-import { parseExecutionMetadata } from '../lib/execution-metadata'
-import { createDefaultBotOtherInformation } from '../lib/execution-wizard-payload'
-import {
-  getExecutionWizardDisplayValue,
-  getExecutionWizardPatientFullName,
-  parseExecutionMetadataString,
-} from '../lib/execution-wizard-display'
+import type { ExecutionWizardDraft } from '../model/execution-create'
+import type { ExecutionPayloadPreview } from '../lib/execution-wizard-payload'
+import { getExecutionWizardDisplayValue, getExecutionWizardPatientFullName } from '../lib/execution-wizard-display'
 
 interface ReviewStepProps {
   draft: ExecutionWizardDraft
-  payload: ExecutionCreatePayload | ExecutionSchedulePayload | null
-  runtimeVariables?: ExecutionMetadata
+  payload: ExecutionPayloadPreview
   t: TFunction<'executions'>
 }
 
-export function ReviewStep({ draft, payload, runtimeVariables, t }: ReviewStepProps) {
+export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
   const patients = draft.execution.patients
-  const reviewPayload = useMemo(
-    () =>
-      payload ?? {
-        project: draft.context.project.trim(),
-        client: draft.context.clientName.trim(),
-        clinic: draft.context.clinicName.trim(),
-        ...(draft.execution.executionName.trim() || draft.execution.execution.trim()
-          ? { execution: draft.execution.executionName.trim() || draft.execution.execution.trim() }
-          : {}),
-        botName: draft.bot.botName.trim(),
-        ...(draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt
-          ? { scheduledAt: new Date(draft.execution.scheduledAt).toISOString() }
-          : {}),
-        context: {
-          bot: {
-            botName: draft.bot.botName.trim(),
-            targetUrl: draft.bot.targetUrl.trim(),
-            username: draft.bot.username.trim(),
-            password: draft.bot.password,
-            otherInformation: createDefaultBotOtherInformation(),
-          },
-          executionId: draft.execution.execution.trim(),
-          patients: draft.execution.patients.map((patient) => ({
-            ...(patient.id?.trim() ? { id: patient.id.trim() } : {}),
-            patientName: { key: 'patient_first_name', value: patient.patientName.trim() },
-            patientLastName: { key: 'patient_last_name', value: patient.patientLastName.trim() },
-            patientMemberId: { key: 'memberid', value: patient.patientMemberId.trim() },
-            patientDob: { key: 'patient_dob', value: patient.patientDob },
-            policyHolderName: { key: 'subscriber_first_name', value: patient.policyHolderName.trim() },
-            policyHolderLastName: { key: 'subscriber_last_name', value: patient.policyHolderLastName.trim() },
-            policyHolderDob: { key: 'subscriber_dob', value: patient.policyHolderDob },
-            relationship: { key: 'relationship_to_subscriber', value: patient.relationship.trim() },
-            zipCode: { key: 'subscriber_zip_code', value: patient.zipCode.trim() },
-            verificationType: patient.verificationType.toLowerCase(),
-            filenames: patient.filenames.trim() ? [patient.filenames.trim()] : [],
-            otherInformation: parseExecutionMetadata(patient.otherInformation) ?? {},
-          })),
-          config: parseExecutionMetadataString(draft.execution.config),
-          rv: runtimeVariables ?? {},
-          headed: false,
-          workers: draft.execution.workers.trim() ? Number(draft.execution.workers) : '',
-          retries: draft.execution.retries.trim() ? Number(draft.execution.retries) : '',
-        },
-      },
-    [draft, payload, runtimeVariables],
-  )
-  const payloadText = useMemo(() => JSON.stringify(reviewPayload, null, 2), [reviewPayload])
+  const payloadText = useMemo(() => JSON.stringify(payload, null, 2), [payload])
 
   const handleCopyPayload = async () => {
     if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
