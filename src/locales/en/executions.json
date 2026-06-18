@@ -236,6 +236,7 @@
     "scheduledStartedToastTitle": "Scheduled execution started",
     "scheduledStartedToastDescription": "Execution {{execution}} reached its scheduled start time.",
     "deleteAction": "Delete {{execution}}",
+    "deleteSelectedAction": "Delete selected execution {{execution}}",
     "deleteTitle": "Delete execution?",
     "deleteDescription": "This deletes {{execution}} when it is not running.",
     "cancelDelete": "Cancel",

@@ -54,8 +54,8 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
             size="icon"
             variant="outline"
             className="text-destructive hover:text-destructive"
-            aria-label={t('sidebar.deleteAction', { execution: executionLabel })}
-            title={t('sidebar.deleteAction', { execution: executionLabel })}
+            aria-label={t('sidebar.deleteSelectedAction', { execution: executionLabel })}
+            title={t('sidebar.deleteSelectedAction', { execution: executionLabel })}
             disabled={deleteMutation.isPending}
           >
             <IconTrash />

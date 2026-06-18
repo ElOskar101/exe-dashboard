@@ -10,7 +10,11 @@ _Avoid_: Job, run item, process row
 
 **Scheduled Execution**:
 An **Execution** that was created with a parseable scheduled start time recorded in `scheduledAt`.
-_Avoid_: Scheduled status, scheduled row
+_Avoid_: Scheduled status, scheduled row, scheduled lifecycle state
+
+**Waiting Scheduled Execution**:
+A **Scheduled Execution** whose scheduled start time is still in the future.
+_Avoid_: Scheduled status, pending schedule status
 
 **Client**:
 The customer or practice organization that owns one or more clinics and can be associated with an **Execution**.
@@ -59,6 +63,8 @@ _Avoid_: Execution API, selected app API
 ## Relationships
 
 - An **Execution** has exactly one current **Execution Status**
+- `scheduled` is not an **Execution Status**; waiting is derived from `scheduledAt`
+- Legacy execution payloads may use `scheduled` to mean queued lifecycle state with `scheduledAt`
 - A **Scheduled Execution** is identified by its scheduled start time, not by its **Execution Status**
 - A **Scheduled Execution** remains a **Scheduled Execution** after it starts or finishes
 - A **Scheduled Execution** is considered waiting until the current time reaches its scheduled start time
@@ -79,11 +85,14 @@ _Avoid_: Execution API, selected app API
 - Execution reports follow the same execution target as execution API requests
 - The **Default Carrier API** provides the catalog of available **Playwright Runtimes**
 - The **Default Carrier API** provides the catalog of available **Playwright Projects**
-- The sidebar and detail page both present the same **Execution Status** for a given **Execution**
+- The sidebar, execution list, and detail page all present the same **Execution Status** for a given **Execution**
 - An **Execution Control Request** does not change **Execution Status** by itself; the status changes only when the lifecycle update is confirmed by the system
-- The sidebar and detail page both read confirmed status from the same **Execution Status Read Model**
+- The sidebar, execution list, and detail page all read confirmed status from the same **Execution Status Read Model**
+- The **Execution Status Read Model** is maintained independently of any single execution view
+- The home overview may present HTTP snapshot status and is not an **Execution Status Read Model** consumer
 - Websocket status events are the authoritative live transition feed for **Execution Status**
 - HTTP execution payloads may repair the **Execution Status Read Model** when websocket events were missed
+- When confirmed **Execution Status** observations conflict, the newest observation wins
 
 ## Example dialogue
 
