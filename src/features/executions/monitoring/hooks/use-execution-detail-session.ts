@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCurrentTime } from '@/hooks/use-current-time'
 import {
   getExecutionReportIndexUrl,
   executionKeys,
@@ -62,11 +63,15 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const { t } = useTranslation('executions')
   const queryClient = useQueryClient()
   const { target } = useExecutionTarget()
+  const currentTime = useCurrentTime('second')
   const executionQuery = useExecutionQuery(executionId)
   const realtimeLogs = useExecutionRealtimeLogs(executionId, {
     historyContent: executionQuery.data?.logs ?? '',
-    onStatus: (status) => {
-      syncExecutionStatusReadModelForTarget(queryClient, executionId, status, target.key)
+    onStatus: (payload) => {
+      syncExecutionStatusReadModelForTarget(queryClient, executionId, payload.status, target.key, {
+        observedAt: payload.timestamp,
+        source: 'realtime',
+      })
     },
   })
   const currentStatus = useExecutionStatusValue(executionId, executionQuery.data?.status)
@@ -114,7 +119,11 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   })
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])
   const displayStatus = formatExecutionStatusLabel(currentStatus)
-  const { canPauseExecution, canResumeExecution, canStopExecution } = getExecutionControlAvailability(currentStatus)
+  const { canPauseExecution, canResumeExecution, canStopExecution } = getExecutionControlAvailability(
+    currentStatus,
+    executionQuery.data?.scheduledAt,
+    currentTime,
+  )
 
   return {
     canPauseExecution,

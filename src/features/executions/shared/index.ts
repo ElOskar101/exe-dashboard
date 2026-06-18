@@ -15,6 +15,7 @@ export {
   syncExecutionFromDetailSnapshot,
   syncExecutionStatusReadModelForTarget,
   syncExecutionsFromListSnapshot,
+  type ExecutionStatusReadModelEntry,
   type ExecutionStatusReadModel,
 } from './lib/execution-status-cache'
 export { formatExecutionDate, formatExecutionDateTime } from './lib/format-execution-date-time'
@@ -148,4 +149,6 @@ export {
   useUpdatePlaywrightRuntimeMutation,
 } from './hooks/use-execution-target'
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
+export { useExecutionStatusUpdates } from './hooks/use-execution-status-updates'
+export { ExecutionStatusSubscriber } from './components/execution-status-subscriber'
 export { RequireExecutionTarget, RuntimeApplicationTargetGate } from './components/runtime-application-target-gate'

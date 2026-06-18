@@ -33,6 +33,7 @@ export {
   EXECUTION_APPLICATION_SEARCH_PARAM,
   EXECUTION_RUNTIME_SEARCH_PARAM,
   EXECUTION_TARGET_URL_SEARCH_PARAM,
+  ExecutionStatusSubscriber,
   EXECUTION_STATUSES,
   createExecution,
   createPlaywrightRuntime,

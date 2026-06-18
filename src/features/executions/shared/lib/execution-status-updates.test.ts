@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shouldInvalidateExecutionsOnConnect } from '../lib/execution-status-updates'
+import { shouldInvalidateExecutionsOnConnect } from './execution-status-updates'
 
 describe('shouldInvalidateExecutionsOnConnect', () => {
   it('skips the initial invalidation when the list was not cached yet', () => {

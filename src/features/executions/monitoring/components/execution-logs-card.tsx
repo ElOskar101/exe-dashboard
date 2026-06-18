@@ -48,6 +48,8 @@ import { ExecutionLogList } from './execution-log-list'
 import { ExecutionRerunDialog } from './execution-rerun-dialog'
 import { ExecutionReportPanel } from './execution-report-panel'
 
+const SCHEDULED_STATUS_BADGE_CLASS_NAME = 'text-purple-600 dark:text-purple-400'
+
 type LogScrollBehavior = 'auto' | 'smooth'
 
 interface UpdateLogScrollStateOptions {
@@ -306,7 +308,7 @@ export function ExecutionLogsCard({
     ? t('detail.scheduledCountdownStatus', { countdown: scheduledCountdownLabel })
     : (currentStatus ?? t('detail.statusUnknown'))
   const statusBadgeClassName = scheduledCountdownLabel
-    ? getStatusBadgeClassName('scheduled')
+    ? SCHEDULED_STATUS_BADGE_CLASS_NAME
     : getStatusBadgeClassName(currentStatus)
   const isCurrentExecutionRunning = !scheduledCountdownLabel && isExecutionRunning(currentStatus)
   const shouldShowScheduledFor =

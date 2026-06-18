@@ -1,13 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useMountEffect } from '@/hooks/use-mount-effect'
-import {
-  executionKeys,
-  subscribeToExecutionStatus,
-  syncExecutionStatusReadModelForTarget,
-  useExecutionTarget,
-  type Execution,
-} from '@/features/executions/shared'
+import { executionKeys } from '../lib/execution-query-keys'
+import { subscribeToExecutionStatus } from '../lib/execution-realtime'
+import { syncExecutionStatusReadModelForTarget } from '../lib/execution-status-cache'
 import { shouldInvalidateExecutionsOnConnect } from '../lib/execution-status-updates'
+import type { Execution } from '../model/execution'
+import { useExecutionTarget } from './use-execution-target'
 
 export const useExecutionStatusUpdates = () => {
   const queryClient = useQueryClient()
@@ -37,7 +35,10 @@ export const useExecutionStatusUpdates = () => {
     const unsubscribe = subscribeToExecutionStatus({
       onConnect: handleConnect,
       onStatus: (payload) => {
-        syncExecutionStatusReadModelForTarget(queryClient, payload.executionId, payload.status, target.key)
+        syncExecutionStatusReadModelForTarget(queryClient, payload.executionId, payload.status, target.key, {
+          observedAt: payload.timestamp,
+          source: 'realtime',
+        })
       },
       socketUrl: target.requestTarget.socketUrl,
     })

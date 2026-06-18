@@ -3,6 +3,7 @@ import { EXECUTION_STATUSES, type Execution, type ExecutionStatus } from '../mod
 const executionStatusSet = new Set<string>(EXECUTION_STATUSES)
 const legacyExecutionStatusMap: Record<string, ExecutionStatus> = {
   process: 'running',
+  scheduled: 'queued',
 }
 
 export const isExecutionStatus = (status: string): status is ExecutionStatus => {
@@ -44,7 +45,7 @@ export const isExecutionFailed = (status?: string | null) => {
 export const isExecutionPending = (status?: string | null) => {
   const normalizedStatus = normalizeExecutionStatus(status)
 
-  return normalizedStatus === 'queued' || normalizedStatus === 'running' || normalizedStatus === 'scheduled'
+  return normalizedStatus === 'queued' || normalizedStatus === 'running'
 }
 
 export const updateExecutionStatus = (

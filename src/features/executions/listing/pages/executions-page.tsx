@@ -23,7 +23,6 @@ const executionStatusOptionKeys = {
   paused: 'list.statusOptions.paused',
   queued: 'list.statusOptions.queued',
   running: 'list.statusOptions.running',
-  scheduled: 'list.statusOptions.scheduled',
   unknown: 'list.statusOptions.unknown',
 } as const satisfies Record<
   (typeof EXECUTION_STATUSES)[number],

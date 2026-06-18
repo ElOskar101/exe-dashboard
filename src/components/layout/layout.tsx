@@ -1,13 +1,14 @@
 import Header from './header.tsx'
 import { Outlet } from 'react-router-dom'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { ExecutionsSidebar, useExecutionTarget } from '@/features/executions'
+import { ExecutionsSidebar, ExecutionStatusSubscriber, useExecutionTarget } from '@/features/executions'
 
 function Layout() {
   const { target } = useExecutionTarget()
 
   return (
     <SidebarProvider>
+      <ExecutionStatusSubscriber key={`status:${target.key}`} />
       <ExecutionsSidebar key={target.key} />
       <SidebarInset>
         <div className="flex h-screen flex-col">

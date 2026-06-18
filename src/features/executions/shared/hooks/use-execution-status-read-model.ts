@@ -20,5 +20,5 @@ export const useExecutionStatusReadModel = () => {
 export const useExecutionStatusValue = (executionId: string, fallbackStatus?: string | null) => {
   const executionStatusReadModel = useExecutionStatusReadModel()
 
-  return executionStatusReadModel.data[executionId] ?? normalizeExecutionStatus(fallbackStatus)
+  return executionStatusReadModel.data[executionId]?.status ?? normalizeExecutionStatus(fallbackStatus)
 }

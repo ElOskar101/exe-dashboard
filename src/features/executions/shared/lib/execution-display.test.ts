@@ -65,6 +65,7 @@ describe('execution display helpers', () => {
   it('normalizes status and only treats running as stoppable', () => {
     expect(normalizeExecutionStatus('RUNNING')).toBe('running')
     expect(normalizeExecutionStatus('process')).toBe('running')
+    expect(normalizeExecutionStatus('scheduled')).toBe('queued')
     expect(normalizeExecutionStatus('PAUSED')).toBe('paused')
     expect(isExecutionRunning('running')).toBe(true)
     expect(isExecutionRunning('RUNNING')).toBe(true)

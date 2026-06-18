@@ -20,7 +20,7 @@ import { resolveBufferUpdate } from '../lib/execution-realtime-log-utils'
 
 interface UseExecutionRealtimeLogsOptions {
   historyContent?: string
-  onStatus?: Dispatch<ExecutionStatus>
+  onStatus?: Dispatch<ExecutionStatusPayload>
 }
 
 export const useExecutionRealtimeLogs = (executionId: string, options: UseExecutionRealtimeLogsOptions = {}) => {
@@ -76,7 +76,7 @@ export const useExecutionRealtimeLogs = (executionId: string, options: UseExecut
         const nextStatus = normalizeExecutionStatus(payload.status)
 
         setStatus(nextStatus)
-        options.onStatus?.(nextStatus)
+        options.onStatus?.(payload)
       },
       socketUrl: target.requestTarget.socketUrl,
     })

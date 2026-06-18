@@ -3,27 +3,99 @@ import type { Execution, ExecutionStatus } from '../model/execution'
 import { executionKeys } from './execution-query-keys'
 import { mergeExecutionIntoList, normalizeExecutionStatus, updateExecutionStatus } from './execution-display'
 
-export type ExecutionStatusReadModel = Record<string, ExecutionStatus>
+type ExecutionStatusObservationSource = 'http' | 'realtime'
+
+interface ExecutionStatusObservation {
+  observedAt?: string | null
+  receivedAt?: number
+  source: ExecutionStatusObservationSource
+}
+
+export interface ExecutionStatusReadModelEntry {
+  observedAt: number | null
+  status: ExecutionStatus
+}
+
+export type ExecutionStatusReadModel = Record<string, ExecutionStatusReadModelEntry>
 
 export const normalizeExecutionRecord = (execution: Execution): Execution => ({
   ...execution,
   status: normalizeExecutionStatus(execution.status),
 })
 
+const parseObservationTime = (value?: string | null) => {
+  if (!value?.trim()) return null
+
+  const observedAt = new Date(value).getTime()
+
+  return Number.isNaN(observedAt) ? null : observedAt
+}
+
+const getObservationTime = (observation: ExecutionStatusObservation) => {
+  const observedAt = parseObservationTime(observation.observedAt)
+
+  if (observedAt !== null) return observedAt
+  if (observation.source === 'realtime') return observation.receivedAt ?? Date.now()
+
+  return null
+}
+
+const shouldPreserveExistingStatus = (
+  currentEntry: ExecutionStatusReadModelEntry | undefined,
+  nextObservedAt: number | null,
+) => {
+  if (!currentEntry) return false
+  if (nextObservedAt === null) return currentEntry.observedAt !== null
+  if (currentEntry.observedAt === null) return false
+
+  return nextObservedAt < currentEntry.observedAt
+}
+
+const createExecutionStatusReadModelEntry = (
+  currentEntry: ExecutionStatusReadModelEntry | undefined,
+  status: string,
+  observation: ExecutionStatusObservation,
+): ExecutionStatusReadModelEntry => {
+  const nextObservedAt = getObservationTime(observation)
+
+  if (currentEntry && shouldPreserveExistingStatus(currentEntry, nextObservedAt)) {
+    return currentEntry
+  }
+
+  const normalizedStatus = normalizeExecutionStatus(status)
+
+  if (currentEntry && currentEntry.status === normalizedStatus && currentEntry.observedAt === nextObservedAt) {
+    return currentEntry
+  }
+
+  return {
+    observedAt: nextObservedAt,
+    status: normalizedStatus,
+  }
+}
+
+const getFreshExecutionStatus = (
+  statusReadModel: ExecutionStatusReadModel | undefined,
+  executionId: string,
+  status: string,
+  observation: ExecutionStatusObservation,
+) => createExecutionStatusReadModelEntry(statusReadModel?.[executionId], status, observation).status
+
 const mergeExecutionStatusReadModelEntry = (
   statusReadModel: ExecutionStatusReadModel | undefined,
   executionId: string,
   status: string,
+  observation: ExecutionStatusObservation,
 ) => {
-  const normalizedStatus = normalizeExecutionStatus(status)
+  const nextEntry = createExecutionStatusReadModelEntry(statusReadModel?.[executionId], status, observation)
 
-  if (statusReadModel?.[executionId] === normalizedStatus) {
+  if (statusReadModel?.[executionId] === nextEntry) {
     return statusReadModel
   }
 
   return {
     ...(statusReadModel ?? {}),
-    [executionId]: normalizedStatus,
+    [executionId]: nextEntry,
   }
 }
 
@@ -39,13 +111,16 @@ const mergeExecutionStatusReadModelSnapshot = (
   const nextStatusReadModel = { ...(statusReadModel ?? {}) }
 
   executions.forEach((execution) => {
-    const normalizedStatus = normalizeExecutionStatus(execution.status)
+    const nextEntry = createExecutionStatusReadModelEntry(nextStatusReadModel[execution._id], execution.status, {
+      observedAt: execution.updatedAt,
+      source: 'http',
+    })
 
-    if (nextStatusReadModel[execution._id] === normalizedStatus) {
+    if (nextStatusReadModel[execution._id] === nextEntry) {
       return
     }
 
-    nextStatusReadModel[execution._id] = normalizedStatus
+    nextStatusReadModel[execution._id] = nextEntry
     updated = true
   })
 
@@ -99,24 +174,43 @@ export const syncExecutionStatusReadModelForTarget = (
   executionId: string,
   status: string,
   targetKey: string,
+  observation: Partial<ExecutionStatusObservation> = {},
 ) => {
+  const statusObservation: ExecutionStatusObservation = {
+    source: observation.source ?? 'realtime',
+    observedAt: observation.observedAt,
+    receivedAt: observation.receivedAt,
+  }
+  const statusReadModel = queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey))
+  const freshStatus = getFreshExecutionStatus(statusReadModel, executionId, status, statusObservation)
+
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
-    mergeExecutionStatusReadModelEntry(statusReadModel, executionId, status),
+    mergeExecutionStatusReadModelEntry(statusReadModel, executionId, status, statusObservation),
   )
   queryClient.setQueriesData<Execution[]>({ queryKey: executionKeys.listRoot(targetKey) }, (executions) =>
-    updateExecutionStatus(executions, executionId, status),
+    updateExecutionStatus(executions, executionId, freshStatus),
   )
   queryClient.setQueryData<Execution>(executionKeys.detail(executionId, targetKey), (execution) =>
-    updateDetailExecutionStatus(execution, status),
+    updateDetailExecutionStatus(execution, freshStatus),
   )
 }
 
 export const syncExecutionFromDetailSnapshot = (queryClient: QueryClient, execution: Execution, targetKey: string) => {
-  const normalizedExecution = normalizeExecutionRecord(execution)
+  const statusReadModel = queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey))
+  const normalizedExecution = {
+    ...normalizeExecutionRecord(execution),
+    status: getFreshExecutionStatus(statusReadModel, execution._id, execution.status, {
+      observedAt: execution.updatedAt,
+      source: 'http',
+    }),
+  }
   const listRootKey = executionKeys.listRoot(targetKey)
 
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
-    mergeExecutionStatusReadModelEntry(statusReadModel, normalizedExecution._id, normalizedExecution.status),
+    mergeExecutionStatusReadModelEntry(statusReadModel, execution._id, execution.status, {
+      observedAt: execution.updatedAt,
+      source: 'http',
+    }),
   )
   queryClient.getQueriesData<Execution[]>({ queryKey: listRootKey }).forEach(([queryKey, executions]) => {
     const nextExecutions =
@@ -135,7 +229,14 @@ export const syncExecutionsFromListSnapshot = (
   executions: Execution[],
   targetKey: string,
 ) => {
-  const normalizedExecutions = executions.map(normalizeExecutionRecord)
+  const statusReadModel = queryClient.getQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey))
+  const normalizedExecutions = executions.map((execution) => ({
+    ...normalizeExecutionRecord(execution),
+    status: getFreshExecutionStatus(statusReadModel, execution._id, execution.status, {
+      observedAt: execution.updatedAt,
+      source: 'http',
+    }),
+  }))
 
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
     mergeExecutionStatusReadModelSnapshot(statusReadModel, normalizedExecutions),

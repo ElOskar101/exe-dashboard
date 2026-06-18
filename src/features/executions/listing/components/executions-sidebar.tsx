@@ -59,6 +59,7 @@ import {
   getScheduledExecutionCountdownLabel,
   isExecutionRunning,
   isScheduledExecution,
+  isWaitingScheduledExecution,
   normalizeExecutionStatus,
   syncExecutionsFromListSnapshot,
   useExecutionTargetNavigation,
@@ -66,7 +67,6 @@ import {
   type Execution,
   type ExecutionQuery,
 } from '@/features/executions/shared'
-import { useExecutionStatusUpdates } from '../hooks/use-execution-status-updates'
 import { useScheduledExecutionStartToasts } from '../hooks/use-scheduled-execution-start-toasts'
 import {
   getExecutionDayLabel,
@@ -80,6 +80,7 @@ const MIN_REFRESH_SPIN_DURATION_MS = 1000
 const SIDEBAR_PROJECT_EXECUTIONS_LIMIT = 5
 const NORMAL_EXECUTIONS_SECTION_ID = 'normal' as const
 const SCHEDULED_EXECUTIONS_SECTION_ID = 'scheduled' as const
+const WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME = 'bg-purple-500'
 
 type SidebarExecutionSectionId = typeof NORMAL_EXECUTIONS_SECTION_ID | typeof SCHEDULED_EXECUTIONS_SECTION_ID
 
@@ -157,7 +158,6 @@ export function ExecutionsSidebar() {
   const refreshSpinnerTimeoutId = useRef<number | null>(null)
   const currentTime = useCurrentTime('second')
   const userFullName = user?.fullName
-  useExecutionStatusUpdates()
   const queryClient = useQueryClient()
   const { target } = useExecutionTarget()
   const playwrightProjectsQuery = usePlaywrightProjectsQuery(!isLoadingUser && Boolean(userFullName))
@@ -540,8 +540,12 @@ export function ExecutionsSidebar() {
                                 const executionDayLabel = getExecutionDayLabel(execution)
                                 const secondaryLabel = getExecutionSecondaryLabel(execution, label, true)
                                 const status =
-                                  executionStatusReadModel.data[execution._id] ??
+                                  executionStatusReadModel.data[execution._id]?.status ??
                                   normalizeExecutionStatus(execution.status)
+                                const isWaitingScheduled = isWaitingScheduledExecution(
+                                  execution.scheduledAt,
+                                  currentTime,
+                                )
                                 const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                                 return (
@@ -563,7 +567,9 @@ export function ExecutionsSidebar() {
                                               aria-label={status}
                                               className={cn(
                                                 'mt-1 size-2 shrink-0 rounded-full',
-                                                getStatusDotClassName(status),
+                                                isWaitingScheduled
+                                                  ? WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME
+                                                  : getStatusDotClassName(status),
                                               )}
                                             />
                                           )}
@@ -820,8 +826,12 @@ export function ExecutionsSidebar() {
                                   const executionDayLabel = getExecutionDayLabel(execution)
                                   const secondaryLabel = getExecutionSecondaryLabel(execution, label, false)
                                   const status =
-                                    executionStatusReadModel.data[execution._id] ??
+                                    executionStatusReadModel.data[execution._id]?.status ??
                                     normalizeExecutionStatus(execution.status)
+                                  const isWaitingScheduled = isWaitingScheduledExecution(
+                                    execution.scheduledAt,
+                                    currentTime,
+                                  )
                                   const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                                   return (
@@ -852,7 +862,9 @@ export function ExecutionsSidebar() {
                                                 aria-label={status}
                                                 className={cn(
                                                   'mt-1 size-2 shrink-0 rounded-full',
-                                                  getStatusDotClassName(status),
+                                                  isWaitingScheduled
+                                                    ? WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME
+                                                    : getStatusDotClassName(status),
                                                 )}
                                               />
                                             )}
