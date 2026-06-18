@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useCurrentTime } from '@/hooks/use-current-time'
 import {
   getExecutionReportIndexUrl,
@@ -56,11 +55,10 @@ export interface ExecutionDetailSession {
   scheduledAt?: string
   showReport: boolean
   stopError: boolean
-  title: string
+  title: string | null
 }
 
 export const useExecutionDetailSession = (executionId: string): ExecutionDetailSession => {
-  const { t } = useTranslation('executions')
   const queryClient = useQueryClient()
   const { target } = useExecutionTarget()
   const currentTime = useCurrentTime('second')
@@ -88,23 +86,11 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     [realtimeLogs.lines, realtimeLogs.partial, realtimeLogs.partialStream, realtimeLogs.partialTimestamp],
   )
   const rawExecutionJson = useMemo(() => JSON.stringify(executionQuery.data ?? null, null, 2), [executionQuery.data])
-  const executionSubtitle = useMemo(() => {
-    if (!executionQuery.data) return null
-
-    const botName = executionQuery.data.botName || executionQuery.data.bot || t('detail.subtitleUnknownBot')
-    const executionName = executionQuery.data.execution || executionId
-
-    return t('detail.subtitle', {
-      botName,
-      execution: executionName,
-    })
-  }, [executionId, executionQuery.data, t])
   const rerun = useExecutionRerun(executionQuery.data)
   const showReport = isExecutionSuccessful(currentStatus) || isExecutionFailed(currentStatus)
-  const reportExecutionId = executionQuery.data?.playwrightExecutionId || executionId
-  const reportSource = getExecutionReportIndexUrl(target.requestTarget.reportsUrl, reportExecutionId)
+  const reportSource = getExecutionReportIndexUrl(target.requestTarget.reportsUrl, executionId)
   const reportAvailabilityQuery = useQuery({
-    queryKey: [...executionKeys.report(reportExecutionId, target.key), 'availability'],
+    queryKey: [...executionKeys.report(executionId, target.key), 'availability'],
     queryFn: async () => {
       const response = await fetch(reportSource, { method: 'HEAD' })
 
@@ -132,7 +118,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     canStopExecution,
     connectionState: realtimeLogs.connectionState,
     currentStatus: displayStatus,
-    description: executionSubtitle,
+    description: null,
     execution: executionQuery.data,
     isLoading: executionQuery.isPending,
     isPausing: pauseMutation.isPending,
@@ -158,6 +144,9 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     scheduledAt: executionQuery.data?.scheduledAt,
     showReport,
     stopError: stopMutation.isError,
-    title: t('detail.title'),
+    title:
+      executionQuery.data?.project && executionQuery.data?.execution
+        ? `${executionQuery.data.project} ${executionQuery.data.execution}`
+        : null,
   }
 }

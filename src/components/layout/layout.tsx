@@ -14,7 +14,7 @@ function Layout() {
         <div className="flex h-screen flex-col">
           <Header />
           <div className="min-h-0 flex-1 overflow-auto">
-            <div className="container mx-auto flex min-h-full flex-col px-4 py-6 md:px-6">
+            <div className="flex min-h-full w-full flex-col px-4 py-6 md:px-6">
               <Outlet />
             </div>
           </div>

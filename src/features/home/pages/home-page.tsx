@@ -388,9 +388,7 @@ export default function HomePage() {
 
           {!shouldShowExecutionsFallback ? (
             <ExecutionsTable
-              variant="latest"
               executions={latestExecutions}
-              getStatusLabel={(status) => translate(`stats.status.labels.${status}`)}
               translations={{
                 columns: {
                   project: translate('latest.columns.project'),
@@ -398,8 +396,10 @@ export default function HomePage() {
                   status: translate('latest.columns.status'),
                   client: translate('latest.columns.client'),
                   clinic: translate('latest.columns.clinic'),
+                  patients: translate('latest.columns.patients'),
                   bot: translate('latest.columns.bot'),
                   createdAt: translate('latest.columns.createdAt'),
+                  creator: translate('latest.columns.creator'),
                 },
                 emptyValue: translate('latest.emptyValue'),
                 empty: translate('latest.empty'),

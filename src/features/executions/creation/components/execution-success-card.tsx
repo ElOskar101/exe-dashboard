@@ -41,10 +41,6 @@ export function ExecutionSuccessCard({ execution, onReset, t }: ExecutionSuccess
             <p className="text-sm text-muted-foreground">{t('success.createdAt')}</p>
             <p className="mt-1 text-base font-medium">{formatExecutionDateTime(execution.createdAt)}</p>
           </div>
-          <div className="rounded-3xl border border-border/70 bg-muted/30 p-4">
-            <p className="text-sm text-muted-foreground">{t('success.jobId')}</p>
-            <p className="mt-1 break-all text-base font-medium">{execution.jobId || '—'}</p>
-          </div>
         </div>
       </CardContent>
       <CardFooter className="border-t border-border">

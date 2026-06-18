@@ -28,9 +28,6 @@ export interface Execution {
   context: ExecutionPayloadContext
   createdAt: string
   updatedAt: string
-  jobId: string
-  playwrightExecutionId: string
-  pid?: number
   startedAt?: string
   finishedAt?: string
   scheduledAt?: string

@@ -24,7 +24,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -36,9 +36,10 @@ import {
   getStatusBadgeClassName,
   isExecutionRunning,
   isExecutionSuccessful,
+  type Execution,
 } from '@/features/executions/shared'
 import { useCurrentTime } from '@/hooks/use-current-time'
-import { IconArrowDown, IconPlayerPause, IconPlayerPlay, IconPlayerStop, IconTerminal2 } from '@tabler/icons-react'
+import { IconArrowDown, IconPlayerPause, IconPlayerPlay, IconPlayerStop } from '@tabler/icons-react'
 import type { useExecutionRealtimeLogs } from '../hooks/use-execution-realtime-logs'
 import type { ExecutionLogLine } from '../lib/execution-log-buffer'
 import { getCanScrollToBottom, getIsScrolledToBottom } from '../lib/execution-log-scroll'
@@ -46,6 +47,7 @@ import type { ExecutionRerunSummary } from '../lib/execution-rerun'
 import { ExecutionDebugSheet } from './execution-debug-sheet'
 import { ExecutionLogList } from './execution-log-list'
 import { ExecutionRerunDialog } from './execution-rerun-dialog'
+import { ExecutionDetailPanel } from './execution-detail-panel'
 import { ExecutionReportPanel } from './execution-report-panel'
 
 const SCHEDULED_STATUS_BADGE_CLASS_NAME = 'text-purple-600 dark:text-purple-400'
@@ -240,13 +242,13 @@ const useExecutionLogScroll = (contentVersion: string) => {
 
 interface ExecutionLogsCardProps {
   canPauseExecution: boolean
+  execution?: Execution
   canRerunExecution: boolean
   canResumeExecution: boolean
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
   deleteAction?: ReactNode
-  description: string | null
   isLoading: boolean
   missingRerunFields: string[]
   isPausing: boolean
@@ -266,7 +268,7 @@ interface ExecutionLogsCardProps {
   rerunSummary: ExecutionRerunSummary | null
   scheduledAt?: string
   showReport: boolean
-  title: string
+  title: string | null
 }
 
 export function ExecutionLogsCard({
@@ -277,7 +279,7 @@ export function ExecutionLogsCard({
   connectionState,
   currentStatus,
   deleteAction,
-  description,
+  execution,
   isLoading,
   missingRerunFields,
   isPausing,
@@ -324,8 +326,7 @@ export function ExecutionLogsCard({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex min-w-0 flex-col gap-1">
             <CardTitle className="flex items-center gap-2">
-              <IconTerminal2 className="text-muted-foreground" />
-              {title}
+              {title ?? <Skeleton aria-hidden="true" className="h-6 w-48 rounded-md" />}
               {isStatusLoading ? (
                 <Skeleton aria-hidden="true" className="h-5 w-24 rounded-full" />
               ) : (
@@ -335,11 +336,6 @@ export function ExecutionLogsCard({
                 </Badge>
               )}
             </CardTitle>
-            {isLoading ? (
-              <Skeleton aria-hidden="true" className="h-5 w-56 rounded-md" />
-            ) : description ? (
-              <CardDescription>{description}</CardDescription>
-            ) : null}
             {!isLoading && shouldShowScheduledFor ? (
               <p className="text-sm text-muted-foreground">
                 {t('detail.scheduledFor', { scheduledAt: scheduledForLabel })}
@@ -415,6 +411,7 @@ export function ExecutionLogsCard({
             <TabsTrigger value="report" disabled={!showReport}>
               {t('detail.reportTab')}
             </TabsTrigger>
+            <TabsTrigger value="details">{t('detail.detailsTab')}</TabsTrigger>
           </TabsList>
           <TabsContent keepMounted value="logs" className="min-h-0 min-w-0">
             <div className="relative min-w-0">
@@ -447,6 +444,15 @@ export function ExecutionLogsCard({
           </TabsContent>
           <TabsContent value="report" className="min-h-0 min-w-0">
             <ExecutionReportPanel isError={isReportError} isLoading={isReportLoading} reportSource={reportSource} />
+          </TabsContent>
+          <TabsContent value="details" className="min-h-0 min-w-0">
+            {execution ? (
+              <ExecutionDetailPanel execution={execution} />
+            ) : (
+              <div className="flex h-[calc(100vh-16rem)] min-h-96 items-center justify-center rounded-2xl border border-border bg-background">
+                <p className="text-sm text-muted-foreground">{t('detail.loadErrorDescription')}</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

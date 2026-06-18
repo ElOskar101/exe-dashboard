@@ -26,8 +26,6 @@ const createExecution = (execution: Partial<Execution>): Execution => ({
   },
   createdAt: '2026-05-23T00:00:00.000Z',
   updatedAt: '2026-05-23T00:00:00.000Z',
-  jobId: 'job-1',
-  playwrightExecutionId: 'playwright-1',
   ...execution,
 })
 

@@ -78,7 +78,8 @@
     "verificationType": "Verification type",
     "inNetwork": "In network",
     "shortForm": "Short form",
-    "claimsForm": "Claims form"
+    "claimsForm": "Claims form",
+    "status": "Status"
   },
   "placeholders": {
     "project": "Select a project",
@@ -297,6 +298,7 @@
       "patients": "Patients",
       "bot": "Robot",
       "createdAt": "Created at",
+      "creator": "Created by",
       "actions": "Actions"
     },
     "statusOptions": {
@@ -321,6 +323,17 @@
     "loadErrorTitle": "Execution details could not be loaded",
     "loadErrorDescription": "The realtime log connection is still active, so logs will appear here if the worker sends them.",
     "debugButton": "Debug",
+    "detailsGeneralSection": "General",
+    "detailsTimingSection": "Timing",
+    "detailsBotSection": "Bot",
+    "detailsPatientsSection": "Patients",
+    "detailsConfigSection": "Config",
+    "detailsFieldExecutionId": "Execution ID",
+    "detailsFieldCreatedBy": "Created by",
+    "detailsFieldStartedAt": "Started at",
+    "detailsFieldFinishedAt": "Finished at",
+    "detailsFieldUpdatedAt": "Updated at",
+    "detailsFieldNoConfig": "No config data available.",
     "debugTitle": "Execution debug details",
     "debugDescription": "Inspect the raw execution payload and the current client-side runtime snapshot for this execution.",
     "debugEmptyValue": "None",
@@ -371,6 +384,7 @@
     "contentTabsLabel": "Execution results",
     "reportTab": "Report",
     "historyTab": "Logs",
+    "detailsTab": "Details",
     "reportLoading": "Loading execution report",
     "reportFrameTitle": "Execution report",
     "reportErrorTitle": "Execution report could not be loaded",

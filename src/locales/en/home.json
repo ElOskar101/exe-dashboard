@@ -59,7 +59,9 @@
       "client": "Client",
       "clinic": "Clinic",
       "bot": "Robot",
-      "createdAt": "Created at"
+      "patients": "Patients",
+      "createdAt": "Created at",
+      "creator": "Created by"
     }
   }
 }

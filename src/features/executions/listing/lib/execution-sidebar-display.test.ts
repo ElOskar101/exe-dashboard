@@ -25,8 +25,6 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   },
   createdAt: '2026-05-20T14:00:00.000Z',
   updatedAt: '2026-05-20T14:10:00.000Z',
-  jobId: 'job-1',
-  playwrightExecutionId: 'report-1',
   ...overrides,
 })
 

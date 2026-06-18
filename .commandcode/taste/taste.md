@@ -9,3 +9,4 @@
 # UI Patterns
 
 - For long text cells in tables (descriptions, api URLs, etc.), truncate the text and show the full content in a popover triggered by a link button (e.g. "..." or "...more"), rather than displaying the full text inline. Prefer a generic reusable `TruncatedText` component over per-column implementations. Confidence: 0.80
+- During loading states, show a Skeleton placeholder instead of rendering static fallback text. Confidence: 0.65

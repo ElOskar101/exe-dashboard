@@ -15,8 +15,6 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   botName: 'Eligibility Runner',
   createdAt: '2026-05-27T12:00:00.000Z',
   updatedAt: '2026-05-27T12:10:00.000Z',
-  jobId: 'job-1',
-  playwrightExecutionId: 'report-1',
   context: {
     bot: {
       botName: 'Eligibility Runner',

@@ -134,7 +134,6 @@ export default function ExecutionsPage() {
 
           {!executionsQuery.isLoading && !executionsQuery.isError ? (
             <ExecutionsTable
-              variant="list"
               executionStatusReadModel={executionStatusReadModel.data}
               executions={filteredExecutions}
               translations={{
@@ -147,6 +146,7 @@ export default function ExecutionsPage() {
                   patients: t('list.columns.patients'),
                   bot: t('list.columns.bot'),
                   createdAt: t('list.columns.createdAt'),
+                  creator: t('list.columns.creator'),
                 },
                 emptyValue: t('list.emptyValue'),
                 empty: t('list.noExecutions'),
