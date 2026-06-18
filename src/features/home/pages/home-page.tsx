@@ -124,6 +124,7 @@ export default function HomePage() {
     [sortedExecutions],
   )
   const statusExecutionTotal = sortedExecutions.length
+  const statusEmptyLabel = translate('stats.status.empty')
   const jobChartConfig = useMemo(
     () =>
       ({
@@ -270,6 +271,10 @@ export default function HomePage() {
           <CardContent>
             {shouldShowExecutionsFallback ? (
               <Skeleton className={`${CHART_HEIGHT_CLASS} w-full rounded-2xl`} />
+            ) : statusExecutionTotal === 0 ? (
+              <div className={`flex ${CHART_HEIGHT_CLASS} items-center justify-center text-sm text-muted-foreground`}>
+                {statusEmptyLabel}
+              </div>
             ) : (
               <ChartContainer config={statusChartConfig} className={DONUT_CHART_CLASS}>
                 <PieChart accessibilityLayer>

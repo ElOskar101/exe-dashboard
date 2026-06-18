@@ -13,6 +13,7 @@
     "targetLabel": "Choose executions app",
     "targetPlaceholder": "Choose an execution target",
     "noDescription": "No description available.",
+    "emptyApplications": "No apps available.",
     "noApiUrl": "No API URL configured",
     "descriptionLabel": "Description",
     "configLabel": "Config",

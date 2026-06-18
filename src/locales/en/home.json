@@ -9,6 +9,7 @@
     "status": {
       "title": "Executions by status",
       "description": "Total executions grouped by their current status.",
+      "empty": "No executions yet.",
       "valueLabel": "Executions",
       "totalLabel": "executions",
       "labels": {

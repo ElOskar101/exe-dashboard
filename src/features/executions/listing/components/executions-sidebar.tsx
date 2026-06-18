@@ -500,90 +500,105 @@ export function ExecutionsSidebar() {
                 section.groups.map((group) => {
                   const sectionProjectTitle =
                     section.id === SCHEDULED_EXECUTIONS_SECTION_ID
-                      ? t('sidebar.sectionProjectTitle', { section: section.title, project: group.project })
+                      ? t('sidebar.scheduledProjectTitle', { project: group.project })
                       : group.project
+                  const projectExecutionsLabel = t('sidebar.projectExecutions', { project: sectionProjectTitle })
                   const hasActiveExecution = group.executions.some((execution) => execution._id === currentExecutionId)
 
                   return (
                     <SidebarMenuItem key={getSectionProjectKey(section.id, group.project)}>
-                      <Popover>
-                        <PopoverTrigger
-                          render={
-                            <Button
-                              type="button"
-                              variant={hasActiveExecution ? 'secondary' : 'ghost'}
-                              size="icon-sm"
-                              aria-label={t('sidebar.projectExecutions', { project: sectionProjectTitle })}
-                              title={t('sidebar.projectExecutions', { project: sectionProjectTitle })}
-                              className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                            >
-                              <IconFolder />
-                            </Button>
-                          }
-                        />
-                        <PopoverContent side="right" align="start" className="w-80 gap-3 p-3">
-                          <PopoverHeader>
-                            <PopoverTitle>{sectionProjectTitle}</PopoverTitle>
-                          </PopoverHeader>
-                          <SidebarMenu>
-                            {group.executions.map((execution) => {
-                              const label = getExecutionLabel(execution)
-                              const executionDayLabel = getExecutionDayLabel(execution)
-                              const secondaryLabel = getExecutionSecondaryLabel(execution, label, true)
-                              const status =
-                                executionStatusReadModel.data[execution._id] ??
-                                normalizeExecutionStatus(execution.status)
-
-                              return (
-                                <SidebarMenuItem key={execution._id}>
-                                  <SidebarMenuButton
-                                    render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
-                                    isActive={currentExecutionId === execution._id}
-                                    className="h-auto min-h-9 items-start"
+                      <Tooltip>
+                        <Popover>
+                          <TooltipTrigger
+                            render={
+                              <PopoverTrigger
+                                render={
+                                  <Button
+                                    type="button"
+                                    variant={hasActiveExecution ? 'secondary' : 'ghost'}
+                                    size="icon-sm"
+                                    aria-label={projectExecutionsLabel}
+                                    title={projectExecutionsLabel}
+                                    className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                   >
-                                    <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
-                                      {isExecutionRunning(status) ? (
-                                        <Spinner aria-label={status} className="mt-0.5 size-3 shrink-0 text-blue-500" />
-                                      ) : (
-                                        <span
-                                          aria-label={status}
-                                          className={cn(
-                                            'mt-1 size-2 shrink-0 rounded-full',
-                                            getStatusDotClassName(status),
-                                          )}
-                                        />
-                                      )}
-                                      <div className="min-w-0">
-                                        <div className="truncate">{executionDayLabel}</div>
-                                        <div className="truncate text-xs text-sidebar-foreground/60">
-                                          {secondaryLabel}
+                                    <IconFolder />
+                                  </Button>
+                                }
+                              />
+                            }
+                          />
+                          <TooltipContent side="right" align="center">
+                            {sectionProjectTitle}
+                          </TooltipContent>
+                          <PopoverContent side="right" align="start" className="w-80 gap-3 p-3">
+                            <PopoverHeader>
+                              <PopoverTitle>{sectionProjectTitle}</PopoverTitle>
+                            </PopoverHeader>
+                            <SidebarMenu>
+                              {group.executions.map((execution) => {
+                                const label = getExecutionLabel(execution)
+                                const executionDayLabel = getExecutionDayLabel(execution)
+                                const secondaryLabel = getExecutionSecondaryLabel(execution, label, true)
+                                const status =
+                                  executionStatusReadModel.data[execution._id] ??
+                                  normalizeExecutionStatus(execution.status)
+
+                                return (
+                                  <SidebarMenuItem key={execution._id}>
+                                    <SidebarMenuButton
+                                      render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
+                                      isActive={currentExecutionId === execution._id}
+                                      className="h-auto min-h-9 items-start"
+                                    >
+                                      <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
+                                        {isExecutionRunning(status) ? (
+                                          <Spinner
+                                            aria-label={status}
+                                            className="mt-0.5 size-3 shrink-0 text-blue-500"
+                                          />
+                                        ) : (
+                                          <span
+                                            aria-label={status}
+                                            className={cn(
+                                              'mt-1 size-2 shrink-0 rounded-full',
+                                              getStatusDotClassName(status),
+                                            )}
+                                          />
+                                        )}
+                                        <div className="min-w-0">
+                                          <div className="truncate">{executionDayLabel}</div>
+                                          <div className="truncate text-xs text-sidebar-foreground/60">
+                                            {secondaryLabel}
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  </SidebarMenuButton>
-                                </SidebarMenuItem>
-                              )
-                            })}
-                          </SidebarMenu>
-                          {group.isExpandable ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="w-full"
-                              disabled={group.isFetching}
-                              onClick={() => setProjectExecutionsExpanded(section.id, group.project, !group.isExpanded)}
-                            >
-                              {group.isFetching ? <Spinner data-icon="inline-start" /> : null}
-                              {group.isFetching
-                                ? t('sidebar.loadingMore')
-                                : group.isExpanded
-                                  ? t('sidebar.showLess')
-                                  : t('sidebar.showAll')}
-                            </Button>
-                          ) : null}
-                        </PopoverContent>
-                      </Popover>
+                                    </SidebarMenuButton>
+                                  </SidebarMenuItem>
+                                )
+                              })}
+                            </SidebarMenu>
+                            {group.isExpandable ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-full"
+                                disabled={group.isFetching}
+                                onClick={() =>
+                                  setProjectExecutionsExpanded(section.id, group.project, !group.isExpanded)
+                                }
+                              >
+                                {group.isFetching ? <Spinner data-icon="inline-start" /> : null}
+                                {group.isFetching
+                                  ? t('sidebar.loadingMore')
+                                  : group.isExpanded
+                                    ? t('sidebar.showLess')
+                                    : t('sidebar.showAll')}
+                              </Button>
+                            ) : null}
+                          </PopoverContent>
+                        </Popover>
+                      </Tooltip>
                     </SidebarMenuItem>
                   )
                 }),

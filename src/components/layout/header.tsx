@@ -1,6 +1,7 @@
 import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
+import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -69,6 +70,10 @@ const Header: () => JSX.Element = () => {
   const isLoadingStats = appStatsQuery.isLoading
   const activeJobs = appStatsQuery.data?.jobs.active
   const runningJobs = appStatsQuery.data?.jobs.running
+  const selectedRuntimeLabel = selectedRuntime?.name ?? target.runtimeId
+  const selectedApplicationEnvironment = selectedApplication?.nonProduction
+    ? t('settings:runtime.nonProduction')
+    : t('settings:runtime.production')
 
   const handleTargetChange = (value: string | null) => {
     if (!value) {
@@ -86,50 +91,61 @@ const Header: () => JSX.Element = () => {
             <img className="h-auto w-24 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
             <div className="flex min-w-0 items-center gap-1.5">
               {isLoadingStats ? (
-                <>
-                  <Skeleton className="h-6 w-20 rounded-3xl" />
-                  <Skeleton className="h-6 w-16 rounded-3xl" />
-                  <Skeleton className="h-6 w-14 rounded-3xl" />
-                </>
+                <Skeleton className="h-6 w-28 rounded-3xl" />
               ) : (
-                <>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
+                <Popover>
+                  <PopoverTrigger
+                    openOnHover
+                    render={
+                      <Badge
+                        variant="outline"
+                        render={<button type="button" />}
+                        className="h-6 max-w-48 gap-1.5 border-border bg-transparent px-2"
+                        aria-label={t('settings:status.title')}
+                      />
+                    }
+                  >
                     <IconDeviceDesktop data-icon="inline-start" />
-                    <span>{selectedRuntime?.name ?? target.runtimeId}</span>
+                    <span className="truncate">{selectedRuntimeLabel}</span>
                     <span
                       aria-label={isServerUp ? 'Server up' : 'Server unavailable'}
                       className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
-                      title={appStatsQuery.data?.server.status ?? 'Unknown'}
                     />
-                  </Badge>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                    <span>
-                      {selectedApplication?.nonProduction
-                        ? t('settings:runtime.nonProduction')
-                        : t('settings:runtime.production')}
-                    </span>
-                  </Badge>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                    {activeJobs === 0 ? (
-                      <span>{t('settings:status.jobs.noneActive')}</span>
-                    ) : (
-                      <>
-                        <span>{activeJobs ?? '-'}</span>
-                        <span>{t('settings:status.jobs.active')}</span>
-                      </>
-                    )}
-                  </Badge>
-                  <Badge variant="outline" className="h-6 gap-1.5 border-border bg-transparent px-2">
-                    {runningJobs === 0 ? (
-                      <span>{t('settings:status.jobs.noneRunning')}</span>
-                    ) : (
-                      <>
-                        <span>{runningJobs ?? '-'}</span>
-                        <span title={t('settings:status.jobs.running')}>{t('settings:status.jobs.running')}</span>
-                      </>
-                    )}
-                  </Badge>
-                </>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-72 gap-3">
+                    <PopoverHeader>
+                      <PopoverTitle>{t('settings:status.title')}</PopoverTitle>
+                    </PopoverHeader>
+                    <dl className="grid gap-2 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">{t('settings:runtime.runtime')}</dt>
+                        <dd className="truncate font-medium">{selectedRuntimeLabel}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">{t('settings:runtime.configLabel')}</dt>
+                        <dd className="font-medium">{selectedApplicationEnvironment}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">{t('settings:status.services.server')}</dt>
+                        <dd className="flex items-center gap-1.5 font-medium">
+                          <span
+                            aria-hidden="true"
+                            className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
+                          />
+                          {appStatsQuery.data?.server.status ?? t('settings:runtime.none')}
+                        </dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">{t('settings:status.jobs.active')}</dt>
+                        <dd className="font-medium">{activeJobs ?? '-'}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">{t('settings:status.jobs.running')}</dt>
+                        <dd className="font-medium">{runningJobs ?? '-'}</dd>
+                      </div>
+                    </dl>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
           </div>
@@ -148,42 +164,51 @@ const Header: () => JSX.Element = () => {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="end">
-                {runtimesQuery.data?.map((runtime, runtimeIndex) => (
-                  <SelectGroup key={runtime._id}>
-                    {runtimeIndex > 0 ? <SelectSeparator /> : null}
-                    <SelectLabel>{runtime.name}</SelectLabel>
-                    {getPlaywrightRuntimeApplications(runtime).map((application) => {
-                      const unavailableLabel = getRuntimeApplicationUnavailableLabel(
-                        application,
-                        availableApiUrls,
-                        isCheckingAvailability,
-                        runtimeApplicationUnavailableLabels,
-                      )
+                {runtimesQuery.data?.map((runtime, runtimeIndex) => {
+                  const runtimeApplications = getPlaywrightRuntimeApplications(runtime)
 
-                      return (
-                        <SelectItem
-                          key={`${runtime._id}-${application.name}`}
-                          value={getRuntimeApplicationOptionValue(runtime._id, application)}
-                          disabled={
-                            !isRuntimeApplicationSelectable(application, availableApiUrls, isCheckingAvailability)
-                          }
-                        >
-                          <span className="flex min-w-0 flex-col gap-0.5">
-                            <span className="flex min-w-0 items-center gap-1.5">
-                              <IconBox className="size-4 shrink-0 text-muted-foreground" />
-                              <span className="truncate">{application.name}</span>
-                            </span>
-                            {unavailableLabel ? (
-                              <span className="truncate text-xs font-normal text-muted-foreground">
-                                {unavailableLabel}
+                  return (
+                    <SelectGroup key={runtime._id}>
+                      {runtimeIndex > 0 ? <SelectSeparator /> : null}
+                      <SelectLabel>{runtime.name}</SelectLabel>
+                      {runtimeApplications.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {t('settings:runtime.emptyApplications')}
+                        </div>
+                      ) : null}
+                      {runtimeApplications.map((application) => {
+                        const unavailableLabel = getRuntimeApplicationUnavailableLabel(
+                          application,
+                          availableApiUrls,
+                          isCheckingAvailability,
+                          runtimeApplicationUnavailableLabels,
+                        )
+
+                        return (
+                          <SelectItem
+                            key={`${runtime._id}-${application.name}`}
+                            value={getRuntimeApplicationOptionValue(runtime._id, application)}
+                            disabled={
+                              !isRuntimeApplicationSelectable(application, availableApiUrls, isCheckingAvailability)
+                            }
+                          >
+                            <span className="flex min-w-0 flex-col gap-0.5">
+                              <span className="flex min-w-0 items-center gap-1.5">
+                                <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                                <span className="truncate">{application.name}</span>
                               </span>
-                            ) : null}
-                          </span>
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectGroup>
-                ))}
+                              {unavailableLabel ? (
+                                <span className="truncate text-xs font-normal text-muted-foreground">
+                                  {unavailableLabel}
+                                </span>
+                              ) : null}
+                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectGroup>
+                  )
+                })}
               </SelectContent>
             </Select>
             <UserCard

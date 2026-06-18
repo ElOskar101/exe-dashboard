@@ -231,6 +231,7 @@
     "executionRelativeLabel": "{{relativeCreatedAt}} - {{label}}",
     "projectExecutionTooltip": "{{project}} {{label}}",
     "sectionProjectTitle": "{{section}}: {{project}}",
+    "scheduledProjectTitle": "{{project}} (scheduled)",
     "scheduledCountdown": "Starts {{countdown}}",
     "scheduledStartedToastTitle": "Scheduled execution started",
     "scheduledStartedToastDescription": "Execution {{execution}} reached its scheduled start time.",
