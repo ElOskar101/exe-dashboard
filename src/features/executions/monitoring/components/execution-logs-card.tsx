@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
   type KeyboardEventHandler,
+  type ReactNode,
   type TouchEventHandler,
   type UIEventHandler,
   type WheelEventHandler,
@@ -242,6 +243,7 @@ interface ExecutionLogsCardProps {
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
+  deleteAction?: ReactNode
   description: string | null
   isLoading: boolean
   missingRerunFields: string[]
@@ -272,6 +274,7 @@ export function ExecutionLogsCard({
   canStopExecution,
   connectionState,
   currentStatus,
+  deleteAction,
   description,
   isLoading,
   missingRerunFields,
@@ -342,6 +345,7 @@ export function ExecutionLogsCard({
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {deleteAction}
             <ExecutionDebugSheet
               connectionState={connectionState}
               currentStatus={currentStatus}

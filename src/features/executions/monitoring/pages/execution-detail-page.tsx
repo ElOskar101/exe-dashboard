@@ -38,6 +38,53 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
   })
   const executionLabel = session.execution ? getExecutionLabel(session.execution) : executionId
   const canDeleteExecution = Boolean(session.execution) && !isExecutionRunning(session.currentStatus)
+  const deleteAction = canDeleteExecution ? (
+    <AlertDialog
+      open={isDeleteDialogOpen}
+      onOpenChange={(open) => {
+        if (deleteMutation.isPending) return
+
+        setIsDeleteDialogOpen(open)
+      }}
+    >
+      <AlertDialogTrigger
+        render={
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="text-destructive hover:text-destructive"
+            aria-label={t('sidebar.deleteAction', { execution: executionLabel })}
+            title={t('sidebar.deleteAction', { execution: executionLabel })}
+            disabled={deleteMutation.isPending}
+          >
+            <IconTrash />
+          </Button>
+        }
+      />
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('sidebar.deleteTitle')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('sidebar.deleteDescription', {
+              execution: executionLabel,
+            })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteMutation.isPending}>{t('sidebar.cancelDelete')}</AlertDialogCancel>
+          <Button
+            variant="destructive"
+            disabled={deleteMutation.isPending}
+            onClick={() => deleteMutation.mutate(executionId)}
+          >
+            {deleteMutation.isPending ? <Spinner data-icon="inline-start" /> : null}
+            {deleteMutation.isPending ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  ) : null
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
@@ -81,57 +128,11 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         </Alert>
       ) : null}
 
-      {canDeleteExecution ? (
-        <div className="flex justify-end">
-          <AlertDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={(open) => {
-              if (deleteMutation.isPending) return
-
-              setIsDeleteDialogOpen(open)
-            }}
-          >
-            <AlertDialogTrigger
-              render={
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  className="text-destructive hover:text-destructive"
-                  aria-label={t('sidebar.deleteAction', { execution: executionLabel })}
-                  title={t('sidebar.deleteAction', { execution: executionLabel })}
-                  disabled={deleteMutation.isPending}
-                >
-                  <IconTrash />
-                </Button>
-              }
-            />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('sidebar.deleteTitle')}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('sidebar.deleteDescription', {
-                    execution: executionLabel,
-                  })}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={deleteMutation.isPending}>{t('sidebar.cancelDelete')}</AlertDialogCancel>
-                <Button
-                  variant="destructive"
-                  disabled={deleteMutation.isPending}
-                  onClick={() => deleteMutation.mutate(executionId)}
-                >
-                  {deleteMutation.isPending ? <Spinner data-icon="inline-start" /> : null}
-                  {deleteMutation.isPending ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      ) : null}
-
-      <ExecutionLogsCard key={session.showReport ? 'finished' : 'unfinished'} {...session} />
+      <ExecutionLogsCard
+        key={session.showReport ? 'finished' : 'unfinished'}
+        deleteAction={deleteAction}
+        {...session}
+      />
     </div>
   )
 }
