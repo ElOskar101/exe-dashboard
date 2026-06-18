@@ -17,6 +17,7 @@
     "noApiUrl": "No API URL configured",
     "descriptionLabel": "Description",
     "configLabel": "Config",
+    "environmentLabel": "Environment",
     "active": "Active",
     "inactive": "Inactive",
     "checkingAvailability": "Checking API availability",

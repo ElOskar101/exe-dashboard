@@ -1,7 +1,7 @@
 import { JSX } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
-import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -113,16 +113,13 @@ const Header: () => JSX.Element = () => {
                     />
                   </PopoverTrigger>
                   <PopoverContent align="start" className="w-72 gap-3">
-                    <PopoverHeader>
-                      <PopoverTitle>{t('settings:status.title')}</PopoverTitle>
-                    </PopoverHeader>
                     <dl className="grid gap-2 text-sm">
                       <div className="flex items-center justify-between gap-3">
                         <dt className="text-muted-foreground">{t('settings:runtime.runtime')}</dt>
                         <dd className="truncate font-medium">{selectedRuntimeLabel}</dd>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <dt className="text-muted-foreground">{t('settings:runtime.configLabel')}</dt>
+                        <dt className="text-muted-foreground">{t('settings:runtime.environmentLabel')}</dt>
                         <dd className="font-medium">{selectedApplicationEnvironment}</dd>
                       </div>
                       <div className="flex items-center justify-between gap-3">
@@ -132,7 +129,6 @@ const Header: () => JSX.Element = () => {
                             aria-hidden="true"
                             className={isServerUp ? 'size-2 rounded-full bg-success' : 'size-2 rounded-full bg-muted'}
                           />
-                          {appStatsQuery.data?.server.status ?? t('settings:runtime.none')}
                         </dd>
                       </div>
                       <div className="flex items-center justify-between gap-3">

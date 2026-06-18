@@ -542,37 +542,85 @@ export function ExecutionsSidebar() {
                                 const status =
                                   executionStatusReadModel.data[execution._id] ??
                                   normalizeExecutionStatus(execution.status)
+                                const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                                 return (
                                   <SidebarMenuItem key={execution._id}>
-                                    <SidebarMenuButton
-                                      render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
-                                      isActive={currentExecutionId === execution._id}
-                                      className="h-auto min-h-9 items-start"
-                                    >
-                                      <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
-                                        {isExecutionRunning(status) ? (
-                                          <Spinner
-                                            aria-label={status}
-                                            className="mt-0.5 size-3 shrink-0 text-blue-500"
-                                          />
-                                        ) : (
-                                          <span
-                                            aria-label={status}
-                                            className={cn(
-                                              'mt-1 size-2 shrink-0 rounded-full',
-                                              getStatusDotClassName(status),
-                                            )}
-                                          />
-                                        )}
-                                        <div className="min-w-0">
-                                          <div className="truncate">{executionDayLabel}</div>
-                                          <div className="truncate text-xs text-sidebar-foreground/60">
-                                            {secondaryLabel}
+                                    <div className="flex items-center">
+                                      <SidebarMenuButton
+                                        render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
+                                        isActive={currentExecutionId === execution._id}
+                                        className="h-auto min-h-9 items-start"
+                                      >
+                                        <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
+                                          {isExecutionRunning(status) ? (
+                                            <Spinner
+                                              aria-label={status}
+                                              className="mt-0.5 size-3 shrink-0 text-blue-500"
+                                            />
+                                          ) : (
+                                            <span
+                                              aria-label={status}
+                                              className={cn(
+                                                'mt-1 size-2 shrink-0 rounded-full',
+                                                getStatusDotClassName(status),
+                                              )}
+                                            />
+                                          )}
+                                          <div className="min-w-0">
+                                            <div className="truncate">{executionDayLabel}</div>
+                                            <div className="truncate text-xs text-sidebar-foreground/60">
+                                              {secondaryLabel}
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    </SidebarMenuButton>
+                                      </SidebarMenuButton>
+                                      <AlertDialog
+                                        open={openDeleteId === execution._id}
+                                        onOpenChange={(open) => {
+                                          if (isDeleting) return
+
+                                          setOpenDeleteId(open ? execution._id : null)
+                                        }}
+                                      >
+                                        <AlertDialogTrigger
+                                          render={
+                                            <SidebarMenuAction
+                                              className="right-2 !top-1/2 !-translate-y-1/2 hover:bg-sidebar-accent/60"
+                                              aria-label={t('sidebar.deleteAction', {
+                                                execution: executionDayLabel,
+                                              })}
+                                              disabled={isDeleting}
+                                            >
+                                              <IconTrash />
+                                            </SidebarMenuAction>
+                                          }
+                                        />
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>{t('sidebar.deleteTitle')}</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              {t('sidebar.deleteDescription', {
+                                                execution: executionDayLabel,
+                                              })}
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel disabled={isDeleting}>
+                                              {t('sidebar.cancelDelete')}
+                                            </AlertDialogCancel>
+                                            <Button
+                                              variant="destructive"
+                                              disabled={isDeleting}
+                                              onClick={() => deleteMutation.mutate(execution._id)}
+                                            >
+                                              {isDeleting ? <Spinner data-icon="inline-start" /> : null}
+                                              {isDeleting ? t('sidebar.deleting') : t('sidebar.confirmDelete')}
+                                            </Button>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </div>
                                   </SidebarMenuItem>
                                 )
                               })}
