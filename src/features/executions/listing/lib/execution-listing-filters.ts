@@ -1,7 +1,7 @@
 import { endOfDay, isAfter, isBefore, isValid, parseISO, startOfDay } from 'date-fns'
 
 import { type CustomerSearchItem } from '@/features/executions/creation'
-import { normalizeExecutionStatus, type Execution, type ExecutionStatus } from '@/features/executions/shared'
+import { normalizeExecutionStatus, type Execution, type ExecutionStatusReadModel } from '@/features/executions/shared'
 
 export const ALL_FILTER_VALUE = 'all'
 export const EXECUTION_DATE_FIELD = 'createdAt'
@@ -20,10 +20,8 @@ export interface ExecutionFilterOption {
 const compareFilterOptions = (a: ExecutionFilterOption, b: ExecutionFilterOption) =>
   a.label.localeCompare(b.label) || a.value.localeCompare(b.value)
 
-export const getResolvedExecutionStatus = (
-  execution: Execution,
-  executionStatusReadModel: Record<string, ExecutionStatus>,
-) => executionStatusReadModel[execution._id] ?? normalizeExecutionStatus(execution.status)
+export const getResolvedExecutionStatus = (execution: Execution, executionStatusReadModel: ExecutionStatusReadModel) =>
+  executionStatusReadModel[execution._id]?.status ?? normalizeExecutionStatus(execution.status)
 
 export const getExecutionProjectLabel = (execution: Execution) => execution.project || UNKNOWN_PROJECT_LABEL
 

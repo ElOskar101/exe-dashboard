@@ -1,6 +1,10 @@
 import { normalizeExecutionStatus } from './execution-display'
 
 export const getStatusBadgeClassName = (status?: string | null) => {
+  if (status?.toLowerCase() === 'scheduled') {
+    return 'text-purple-600 dark:text-purple-400'
+  }
+
   const normalizedStatus = normalizeExecutionStatus(status)
 
   if (normalizedStatus === 'completed') {
@@ -21,9 +25,5 @@ export const getStatusBadgeClassName = (status?: string | null) => {
   if (normalizedStatus === 'queued') {
     return 'text-muted-foreground'
   }
-  if (normalizedStatus === 'scheduled') {
-    return 'text-purple-600 dark:text-purple-400'
-  }
-
   return 'text-foreground/70'
 }

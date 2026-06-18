@@ -9,6 +9,7 @@ import {
   useExecutionTargetNavigation,
   type Execution,
   type ExecutionStatus,
+  type ExecutionStatusReadModel,
 } from '@/features/executions/shared'
 
 import { ExecutionBotDialog } from './execution-bot-dialog'
@@ -43,7 +44,7 @@ interface ExecutionsTableTranslations {
 
 interface ExecutionsTableProps {
   variant: ExecutionsTableVariant
-  executionStatusReadModel?: Record<string, ExecutionStatus>
+  executionStatusReadModel?: ExecutionStatusReadModel
   executions: Execution[]
   translations: ExecutionsTableTranslations
   getStatusLabel?: (status: ExecutionStatus) => string
