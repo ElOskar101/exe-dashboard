@@ -1,9 +1,9 @@
 import { isExecutionPaused, isExecutionRunning, isWaitingScheduledExecution } from '@/features/executions/shared'
 
 export const getExecutionControlAvailability = (
-  status?: string | null,
-  scheduledAt?: string | null,
-  currentTime = Date.now(),
+  status: string | null | undefined,
+  scheduledAt: string | null | undefined,
+  currentTime: number,
 ) => {
   if (isWaitingScheduledExecution(scheduledAt, currentTime)) {
     return {

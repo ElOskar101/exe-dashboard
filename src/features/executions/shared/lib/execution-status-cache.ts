@@ -239,7 +239,7 @@ export const syncExecutionsFromListSnapshot = (
   }))
 
   queryClient.setQueryData<ExecutionStatusReadModel>(executionKeys.statuses(targetKey), (statusReadModel) =>
-    mergeExecutionStatusReadModelSnapshot(statusReadModel, executions),
+    mergeExecutionStatusReadModelSnapshot(statusReadModel, normalizedExecutions),
   )
 
   normalizedExecutions.forEach((execution) => {
