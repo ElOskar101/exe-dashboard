@@ -82,8 +82,8 @@ const Header: () => JSX.Element = () => {
     <>
       <header className="z-1 w-full border-b border-border">
         <nav className="container mx-auto flex items-center justify-between px-4 py-2.5 md:px-6">
-          <div className="hidden min-w-0 flex-col items-start gap-1.5 sm:flex">
-            <img className="h-auto w-12 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
+          <div className="hidden min-w-0 flex items-center gap-1.5 sm:flex">
+            <img className="h-auto w-24 object-contain" src="/agent-icon.svg" alt={t('common:project-name')} />
             <div className="flex min-w-0 items-center gap-1.5">
               {isLoadingStats ? (
                 <>

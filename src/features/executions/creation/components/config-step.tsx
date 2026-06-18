@@ -17,7 +17,6 @@ export function ConfigStep({
   showErrors,
   onWorkersChange,
   onRetriesChange,
-  onConfigChange,
   onScheduleModeChange,
   onScheduledAtChange,
   t,
@@ -112,19 +111,6 @@ export function ConfigStep({
             placeholder={t('placeholders.retries')}
           />
           <FieldError>{showErrors ? errors.retries : null}</FieldError>
-        </Field>
-
-        <Field data-invalid={showErrors && Boolean(errors.config)} className="md:col-span-2">
-          <FieldLabel htmlFor="config">{t('fields.otherConfig')}</FieldLabel>
-          <textarea
-            id="config"
-            value={draft.execution.config}
-            onChange={(event) => onConfigChange(event.target.value)}
-            aria-invalid={showErrors && Boolean(errors.config)}
-            className="min-h-32 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-sm transition-[color,box-shadow,background-color] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
-            spellCheck={false}
-          />
-          <FieldError>{showErrors ? errors.config : null}</FieldError>
         </Field>
       </FieldGroup>
     </FieldSet>

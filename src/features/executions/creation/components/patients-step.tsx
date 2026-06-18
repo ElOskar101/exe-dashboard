@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import { IconAlertCircle, IconDownload, IconTrash } from '@tabler/icons-react'
+import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
 import { hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionWizardPatientsStepState } from '../hooks/use-execution-wizard'
@@ -48,7 +48,6 @@ export function PatientsStep({
   onCustomerSelect,
   onClinicSelect,
   onExecutionDaySelect,
-  onImportPatients,
   onRemovePatient,
   t,
 }: PatientsStepProps) {
@@ -57,7 +56,7 @@ export function PatientsStep({
   return (
     <FieldSet>
       <FieldGroup>
-        <FieldGroup className="gap-4 md:grid md:grid-cols-4">
+        <FieldGroup className="gap-4 md:grid md:grid-cols-3">
           <Field data-invalid={showErrors && Boolean(contextErrors.client)}>
             <FieldLabel htmlFor="client">{t('fields.client')}</FieldLabel>
             <CustomerSearchField
@@ -135,22 +134,12 @@ export function PatientsStep({
                 </SelectGroup>
               </SelectContent>
             </Select>
-          </Field>
-
-          <Field>
-            <FieldLabel aria-hidden="true" className="invisible">
-              {t('buttons.getPatients')}
-            </FieldLabel>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onImportPatients}
-              disabled={!execution || isImportingPatients}
-              className="w-full"
-            >
-              {isImportingPatients ? <Spinner data-icon="inline-start" /> : <IconDownload data-icon="inline-start" />}
-              {isImportingPatients ? t('buttons.gettingPatients') : t('buttons.getPatients')}
-            </Button>
+            {isImportingPatients ? (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Spinner data-icon="inline-start" />
+                {t('buttons.gettingPatients')}
+              </p>
+            ) : null}
           </Field>
         </FieldGroup>
 

@@ -91,6 +91,32 @@ export interface CustomerDetailsResponse {
   clinic: CustomerClinic[]
 }
 
+export interface ClinicStateSetter {
+  _id: string
+  createForm: boolean
+  createShortForm: boolean
+  createPrint: boolean
+  overwrite: boolean
+}
+
+export interface ClinicDetailsResponse {
+  _id: string
+  networkType: string
+  defaultCharacter: string
+  activePrint: boolean
+  onlyPrint: boolean
+  onlyElg: boolean
+  onlyForm: boolean
+  shortForm: boolean
+  claimForm: boolean
+  vouchers: boolean
+  planChecker: boolean
+  otherInformation: Array<Record<string, string>>
+  stateSetter: ClinicStateSetter
+  smartSearch: boolean
+  maxOutForm: boolean
+}
+
 export interface ClinicExecutionDay {
   _id: string
   sheetName: string
@@ -174,6 +200,8 @@ export const getAllCustomers = async () => {
 
 export const getCustomerById = (customerId: string) =>
   cccClient.get<CustomerDetailsResponse>(`v2/customers/${customerId}`)
+
+export const getClinicById = (clinicId: string) => cccClient.get<ClinicDetailsResponse>(`v2/clinics/${clinicId}`)
 
 export const getClinicExecutionDays = (clinicId: string) =>
   cccClient.get<ClinicExecutionDay[]>(`v2/executions/${clinicId}/days`)

@@ -5,6 +5,29 @@ const executionTargetSearch = 'runtime=runtime-1&app=App+1&targetUrl=https%3A%2F
 
 const withExecutionTarget = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${executionTargetSearch}`
 
+const clinicConfig = {
+  networkType: 'INN',
+  defaultCharacter: '-',
+  activePrint: true,
+  onlyPrint: false,
+  onlyElg: true,
+  onlyForm: true,
+  shortForm: false,
+  claimForm: false,
+  vouchers: true,
+  planChecker: false,
+  otherInformation: [{ npi: '1801501028' }],
+  stateSetter: {
+    _id: 'state-setter-1',
+    createForm: true,
+    createShortForm: true,
+    createPrint: true,
+    overwrite: true,
+  },
+  smartSearch: true,
+  maxOutForm: false,
+}
+
 async function stubProtectedRouteDependencies(page: Page) {
   await page.route('**/users/me', async (route) => {
     await route.fulfill({ json: e2eUser })
@@ -19,6 +42,12 @@ async function stubProtectedRouteDependencies(page: Page) {
           _id: 'customer-1',
           clientName: 'Legacy Dental Care',
           isActive: true,
+          instantPrinter: true,
+          alerts: false,
+          statusPrinter: true,
+          isDiva: false,
+          plans: true,
+          twoFA: false,
           clinic: [
             {
               _id: 'clinic-1',
@@ -43,6 +72,15 @@ async function stubProtectedRouteDependencies(page: Page) {
             createdAt: '2026-05-21T14:00:00.000Z',
           },
         ],
+      },
+    })
+  })
+
+  await page.route('**/api/v2/clinics/clinic-1', async (route) => {
+    await route.fulfill({
+      json: {
+        _id: 'clinic-1',
+        ...clinicConfig,
       },
     })
   })
@@ -257,7 +295,6 @@ async function importPatientsFromCCC(page: Page) {
   await page.getByRole('combobox', { name: 'Execution' }).click()
   await page.getByRole('option', { name: '2026-04-27' }).click()
   await expect(page.getByRole('option', { name: '2026-05-09' })).not.toBeVisible()
-  await page.getByRole('button', { name: 'Get patients' }).click()
   await expect(page.getByText('Imported patients: 2')).toBeVisible()
   await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('John', { exact: true }).first()).toBeVisible()
@@ -441,7 +478,6 @@ test.describe('protected executions route', () => {
 
     await page.getByLabel('Workers').fill('4')
     await page.getByLabel('Retries').fill('2')
-    await page.getByLabel('Other config').fill('{ "parallel": true, "inNetwork": true }')
     await page.getByRole('button', { name: 'Next' }).click()
 
     await expect(page.getByText('"workers": 4')).toBeVisible()
@@ -504,8 +540,13 @@ test.describe('protected executions route', () => {
           },
         ],
         config: {
-          parallel: true,
-          inNetwork: true,
+          instantPrinter: true,
+          alerts: false,
+          statusPrinter: true,
+          isDiva: false,
+          plans: true,
+          twoFA: false,
+          ...clinicConfig,
         },
         rv: {
           carrierDomain: 'dev-carrier',

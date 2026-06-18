@@ -13,7 +13,11 @@ import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
-import { formatCustomerExecutionConfig } from '../lib/customer-execution-config'
+import {
+  createClinicExecutionConfig,
+  createCustomerExecutionConfig,
+  mergeExecutionConfig,
+} from '../lib/customer-execution-config'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
 import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
@@ -35,6 +39,7 @@ import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-
 import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
 import {
   decryptClinicBotPassword,
+  getClinicById,
   getCustomerById,
   type ClinicBotRecord,
   type CustomerSearchItem,
@@ -289,7 +294,34 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
               ...previousDraft,
               execution: {
                 ...previousDraft.execution,
-                config: formatCustomerExecutionConfig(customer),
+                config: mergeExecutionConfig(previousDraft.execution.config, createCustomerExecutionConfig(customer)),
+              },
+            }
+          : previousDraft,
+      )
+    } catch {
+      return
+    }
+  }
+
+  const loadSelectedClinicConfig = async (clinicId: string) => {
+    try {
+      const clinic = await queryClient.fetchQuery({
+        queryKey: executionWizardKeys.clinic(clinicId),
+        queryFn: async () => {
+          const response = await getClinicById(clinicId)
+
+          return response.data
+        },
+      })
+
+      setDraft((previousDraft) =>
+        previousDraft.context.clinic === clinic._id
+          ? {
+              ...previousDraft,
+              execution: {
+                ...previousDraft.execution,
+                config: mergeExecutionConfig(previousDraft.execution.config, createClinicExecutionConfig(clinic)),
               },
             }
           : previousDraft,
@@ -377,13 +409,18 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const selectClinic = (clinicId: string) => {
     resetWizardRequests()
     const selectedClinic = clinicOptions.find((clinic) => clinic._id === clinicId)
+    const isDeselectingClinic = draft.context.clinic === clinicId
 
     setDraft((previousDraft) =>
       resetDraftDependentSelections(previousDraft, {
-        clinic: clinicId,
-        clinicName: selectedClinic?.clinicName ?? '',
+        clinic: isDeselectingClinic ? '' : clinicId,
+        clinicName: isDeselectingClinic ? '' : (selectedClinic?.clinicName ?? ''),
       }),
     )
+
+    if (!isDeselectingClinic) {
+      void loadSelectedClinicConfig(clinicId)
+    }
   }
 
   const selectProject = (projectName: string) => {
@@ -498,16 +535,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         patients: [],
       },
     }))
-  }
 
-  const updateConfig = (value: string) => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      execution: {
-        ...previousDraft.execution,
-        config: value,
-      },
-    }))
+    wizardData.importPatients(executionDayId)
   }
 
   const updateScheduleMode = (scheduleMode: ExecutionScheduleMode) => {
@@ -528,10 +557,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         scheduledAt: value,
       },
     }))
-  }
-
-  const importPatients = () => {
-    wizardData.importPatients(draft.execution.execution)
   }
 
   const removePatient = (index: number) => {
@@ -647,7 +672,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       errors: validationErrors.config,
       maxRetries: appLimits.maxRetries,
       maxWorkers: appLimits.maxWorkers,
-      onConfigChange: updateConfig,
       onRetriesChange: updateRetries,
       onScheduleModeChange: updateScheduleMode,
       onScheduledAtChange: updateScheduledAt,
@@ -683,7 +707,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       onCustomerSearchChange: updateCustomerSearch,
       onCustomerSelect: selectCustomer,
       onExecutionDaySelect: selectExecutionDay,
-      onImportPatients: importPatients,
       onRemovePatient: removePatient,
       patients: draft.execution.patients,
       selectedCustomerError:

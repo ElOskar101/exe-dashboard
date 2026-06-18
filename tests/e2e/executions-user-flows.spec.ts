@@ -5,6 +5,29 @@ const executionTargetSearch = 'runtime=runtime-1&app=App+1&targetUrl=https%3A%2F
 
 const withExecutionTarget = (path: string) => `${path}${path.includes('?') ? '&' : '?'}${executionTargetSearch}`
 
+const clinicConfig = {
+  networkType: 'INN',
+  defaultCharacter: '-',
+  activePrint: true,
+  onlyPrint: false,
+  onlyElg: true,
+  onlyForm: true,
+  shortForm: false,
+  claimForm: false,
+  vouchers: true,
+  planChecker: false,
+  otherInformation: [{ npi: '1801501028' }],
+  stateSetter: {
+    _id: 'state-setter-1',
+    createForm: true,
+    createShortForm: true,
+    createPrint: true,
+    overwrite: true,
+  },
+  smartSearch: true,
+  maxOutForm: false,
+}
+
 interface ExecutionFixture {
   _id: string
   createdBy: string
@@ -210,6 +233,12 @@ async function stubWizardDependencies(page: Page, incompletePatient = false) {
           _id: 'customer-1',
           clientName: 'Legacy Dental Care',
           isActive: true,
+          instantPrinter: true,
+          alerts: false,
+          statusPrinter: true,
+          isDiva: false,
+          plans: true,
+          twoFA: false,
           clinic: [{ _id: 'clinic-1', clinicName: 'Downtown Clinic' }],
         },
       })
@@ -221,6 +250,14 @@ async function stubWizardDependencies(page: Page, incompletePatient = false) {
         totalDocs: 1,
         totalPages: 1,
         customers: [{ _id: 'customer-1', clientName: 'Legacy Dental Care', isActive: true }],
+      },
+    })
+  })
+  await page.route('**/api/v2/clinics/clinic-1', async (route) => {
+    await route.fulfill({
+      json: {
+        _id: 'clinic-1',
+        ...clinicConfig,
       },
     })
   })
@@ -295,7 +332,6 @@ async function selectExecutionPatients(page: Page) {
   await page.getByRole('option', { name: 'Downtown Clinic' }).click()
   await page.getByRole('combobox', { name: 'Execution' }).click()
   await page.getByRole('option', { name: '2026-04-27' }).click()
-  await page.getByRole('button', { name: 'Get patients' }).click()
 }
 
 test.describe('execution user flows', () => {
@@ -768,19 +804,19 @@ test.describe('execution user flows', () => {
     ).toBeVisible()
   })
 
-  test('surfaces invalid configuration before submission', async ({ page }) => {
+  test('keeps generated configuration read-only before submission', async ({ page }) => {
     await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
+    await stubWizardDependencies(page)
 
     await page.goto(withExecutionTarget('/create'))
+    await selectExecutionPatients(page)
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByLabel('Other config').fill('[]')
-    await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByRole('button', { name: 'Create execution' }).click()
 
-    await expect(page.getByText(/Other config/)).toBeVisible()
-    await page.getByRole('button', { name: 'Back' }).click()
-    await expect(page.getByText('Enter a valid JSON object.')).toBeVisible()
+    await expect(page.getByLabel('Other config')).not.toBeVisible()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByText('"networkType": "INN"')).toBeVisible()
+    await expect(page.getByText('"instantPrinter": true')).toBeVisible()
   })
 })

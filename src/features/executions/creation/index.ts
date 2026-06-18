@@ -6,6 +6,7 @@ export type { ExecutionPatient, ExecutionWizardDraft } from './model/execution-c
 export { default as ExecutionCreatePage } from './pages/execution-create-page'
 export {
   getAllCustomers,
+  getClinicById,
   getClinicBots,
   getCustomerById,
   searchCCCUsers,
@@ -17,6 +18,7 @@ export type {
   CCCUserArea,
   CCCUserRole,
   CCCUserSearchResponse,
+  ClinicDetailsResponse,
   ClinicBotDefinition,
   ClinicBotRecord,
   ClinicBotStatus,

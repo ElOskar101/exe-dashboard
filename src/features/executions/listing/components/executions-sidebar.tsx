@@ -605,9 +605,9 @@ export function ExecutionsSidebar() {
             variant="ghost"
             aria-label={t('common:project-name')}
             title={t('common:project-name')}
-            className="h-auto w-auto rounded-xl px-2 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="size-9 rounded-lg p-1.5 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
-            <img className="h-auto w-12 object-contain" src="/favicon.svg" alt={t('common:project-name')} />
+            <img className="size-6 object-contain" src="/favicon.svg" alt={t('common:project-name')} />
           </Button>
           <Button
             type="button"

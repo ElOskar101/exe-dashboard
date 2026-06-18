@@ -10,7 +10,7 @@
     "upNext": "Up next",
     "patients": {
       "title": "Patients",
-      "description": "Select the client, clinic, and execution day, then import the patients for this run."
+      "description": "Select the client, clinic, and execution day to import the patients for this run."
     },
     "bot": {
       "title": "Bot",
@@ -28,7 +28,7 @@
   "sections": {
     "patients": {
       "legend": "Patients",
-      "description": "Choose a clinic and import patients from a selected CC execution day.",
+      "description": "Choose a clinic and CC execution day to import patients.",
       "patientTitle": "Patient {{index}}",
       "patientDescription": "Every patient row becomes one item in execution.patients."
     },
@@ -120,7 +120,6 @@
     "submit": "Create execution",
     "submitting": "Creating execution...",
     "addPatient": "Add patient",
-    "getPatients": "Get patients",
     "gettingPatients": "Getting patients...",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -176,7 +175,7 @@
     "selectClinic": "Choose one of the clinics available for this client.",
     "noActiveClinicBots": "This clinic has no active bots available. Choose a different clinic to continue.",
     "noAssociatedBots": "This Playwright Project has no active associated bots. Choose a different project to continue.",
-    "noImportedPatients": "Select an execution day and get patients to continue.",
+    "noImportedPatients": "Select an execution day to import patients and continue.",
     "importedPatients": "Imported patients: {{count}}",
     "readonlyFieldBadge": "Read-only",
     "readonlyFieldTooltip": "This value is loaded from the selected bot and cannot be edited.",
