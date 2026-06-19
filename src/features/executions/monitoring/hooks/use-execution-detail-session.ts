@@ -1,5 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { useCurrentTime } from '@/hooks/use-current-time'
 import {
   getExecutionReportIndexUrl,
@@ -16,11 +18,27 @@ import {
   type Execution,
 } from '@/features/executions/shared'
 import { useExecutionRealtimeLogs } from './use-execution-realtime-logs'
-import { useExecutionRerun } from './use-execution-rerun'
+import { useExecutionRerun, type ExecutionRerunScheduleInput } from './use-execution-rerun'
 import { formatExecutionStatusLabel } from '../lib/execution-detail-display'
 import { getExecutionControlAvailability } from '../lib/execution-control-actions'
 import { createExecutionLogDisplayLines, type ExecutionLogBufferState } from '../lib/execution-log-buffer'
 import type { ExecutionRerunSummary } from '../lib/execution-rerun'
+
+const getExecutionDetailSubtitle = (execution: Execution | undefined, t: TFunction<'executions'>): string | null => {
+  if (!execution) return null
+
+  const botName = execution.botName || execution.context?.bot?.botName || t('detail.subtitleUnknownBot')
+
+  if (!execution.client || !execution.clinic) {
+    return null
+  }
+
+  return t('detail.subtitleContext', {
+    clientName: execution.client,
+    clinicName: execution.clinic,
+    botName,
+  })
+}
 
 export interface ExecutionDetailSession {
   canPauseExecution: boolean
@@ -42,8 +60,9 @@ export interface ExecutionDetailSession {
   loadError: boolean
   logLines: ReturnType<typeof createExecutionLogDisplayLines>
   missingRerunFields: string[]
+  subtitle: string | null
   onPauseExecution: () => void
-  onRerunExecution: () => void
+  onRerunExecution: (scheduleInput?: ExecutionRerunScheduleInput) => void
   onResumeExecution: () => void
   onStopExecution: () => void
   pauseError: boolean
@@ -59,6 +78,7 @@ export interface ExecutionDetailSession {
 }
 
 export const useExecutionDetailSession = (executionId: string): ExecutionDetailSession => {
+  const { t } = useTranslation('executions')
   const queryClient = useQueryClient()
   const { target } = useExecutionTarget()
   const currentTime = useCurrentTime('second')
@@ -132,7 +152,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     logLines,
     missingRerunFields: rerun.missingRerunFields,
     onPauseExecution: () => pauseMutation.mutate(),
-    onRerunExecution: rerun.triggerRerun,
+    onRerunExecution: (scheduleInput) => rerun.triggerRerun(scheduleInput),
     onResumeExecution: () => resumeMutation.mutate(),
     onStopExecution: () => stopMutation.mutate(),
     pauseError: pauseMutation.isError,
@@ -144,6 +164,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     scheduledAt: executionQuery.data?.scheduledAt,
     showReport,
     stopError: stopMutation.isError,
+    subtitle: getExecutionDetailSubtitle(executionQuery.data, t),
     title:
       executionQuery.data?.project && executionQuery.data?.execution
         ? `${executionQuery.data.project} ${executionQuery.data.execution}`

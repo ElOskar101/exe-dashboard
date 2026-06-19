@@ -315,6 +315,7 @@
   "detail": {
     "title": "Execution details",
     "subtitle": "{{botName}} - {{execution}}",
+    "subtitleContext": "{{clientName}} - {{clinicName}} - {{botName}}",
     "subtitleUnknownBot": "Unknown bot",
     "missingIdTitle": "Execution ID is required",
     "statusUnknown": "Unknown",

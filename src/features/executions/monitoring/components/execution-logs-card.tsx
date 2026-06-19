@@ -24,7 +24,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -268,6 +268,7 @@ interface ExecutionLogsCardProps {
   rerunSummary: ExecutionRerunSummary | null
   scheduledAt?: string
   showReport: boolean
+  subtitle: string | null
   title: string | null
 }
 
@@ -299,6 +300,7 @@ export function ExecutionLogsCard({
   rerunSummary,
   scheduledAt,
   showReport,
+  subtitle,
   title,
 }: ExecutionLogsCardProps) {
   const { t } = useTranslation('executions')
@@ -336,6 +338,7 @@ export function ExecutionLogsCard({
                 </Badge>
               )}
             </CardTitle>
+            {subtitle ? <CardDescription>{subtitle}</CardDescription> : null}
             {!isLoading && shouldShowScheduledFor ? (
               <p className="text-sm text-muted-foreground">
                 {t('detail.scheduledFor', { scheduledAt: scheduledForLabel })}
