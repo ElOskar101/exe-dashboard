@@ -461,7 +461,7 @@ test.describe('execution user flows', () => {
     await page.getByRole('link', { name: '2026-05-25', exact: true }).click()
 
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
-    await expect(page.getByText('Execution details')).toBeVisible()
+    await expect(page.locator('[data-slot="card-title"]').getByText('chromium 2026-05-25')).toBeVisible()
   })
 
   test('loads execution history and opens an execution detail page', async ({ page }) => {
@@ -484,7 +484,7 @@ test.describe('execution user flows', () => {
     await page.getByText('2026-05-25').click()
 
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
-    await expect(page.getByText('Execution details')).toBeVisible()
+    await expect(page.locator('[data-slot="card-title"]').getByText('chromium 2026-05-25')).toBeVisible()
   })
 
   test('shows project execution popovers in the minimized sidebar', async ({ page }) => {
@@ -613,7 +613,7 @@ test.describe('execution user flows', () => {
 
     await page.goto(withExecutionTarget('/execution/execution-1'))
 
-    await expect(page.getByText('Eligibility Runner - 2026-05-25')).toBeVisible()
+    await expect(page.locator('[data-slot="card-title"]').getByText('chromium 2026-05-25')).toBeVisible()
     await expect(page.locator('[data-slot="card-title"]').getByText('Running')).toBeVisible()
     await expect(page.getByText('Starting carrier login')).toBeVisible()
     await page.getByRole('button', { name: 'Debug' }).click()
@@ -730,7 +730,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/reports/report-1/index.html', async (route) => {
+    await page.route('**/reports/execution-1/index.html', async (route) => {
       await route.fulfill({
         contentType: 'text/html',
         body: '<!doctype html><html><body><h1>Completed report</h1><p>Jane Doe passed.</p></body></html>',
@@ -750,7 +750,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/reports/report-1/index.html', async (route) => {
+    await page.route('**/reports/execution-1/index.html', async (route) => {
       await route.fulfill({ status: 404, body: 'Missing report' })
     })
 
