@@ -1,18 +1,32 @@
-## Environment variables
+## App configuration
 
-Create `.env.development` for local app runtime config. Production values can
-live in `.env.production`.
+The app runtime does not require environment variables.
+
+The auth login URL and fixed CCC API URLs are defined in
+`src/app.config.ts`. Execution API URLs are still selected at runtime from the
+Playwright runtime catalog and persisted in the page URL.
+
+## Docker
+
+Build and start the production-like container with Docker Compose:
 
 ```bash
-VITE_URL_LOGIN=
+docker compose up --build
 ```
 
-- `VITE_URL_LOGIN`: External login app URL used when a protected route has no
-  token.
+The app will be available at `http://localhost:8080`.
 
-The Carrier auth/user API URL is fixed in `src/app.config.ts`. Execution API
-URLs are selected at runtime from the Playwright runtime catalog and persisted
-in the page URL.
+To stop it:
+
+```bash
+docker compose down
+```
+
+To rebuild after code changes:
+
+```bash
+docker compose up --build
+```
 
 ## E2E tests
 
