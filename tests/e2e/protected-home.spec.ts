@@ -546,6 +546,8 @@ test.describe('protected executions route', () => {
           isDiva: false,
           plans: true,
           twoFA: false,
+          clientName: 'Legacy Dental Care',
+          clinicName: 'Downtown Clinic',
           ...clinicConfig,
         },
         rv: {

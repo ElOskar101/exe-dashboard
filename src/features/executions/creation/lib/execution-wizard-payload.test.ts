@@ -93,6 +93,8 @@ describe('buildExecutionPayload', () => {
           },
         ],
         config: {
+          clientName: 'Legacy Dental Care',
+          clinicName: 'Legacy Dental Care',
           parallel: true,
         },
         rv: RUNTIME_VARIABLES,

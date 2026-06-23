@@ -33,6 +33,8 @@ const PATIENT_SOURCE_KEYS = {
 } as const
 
 const DEFAULT_HEADED_MODE = false
+const CLIENT_NAME_CONFIG_KEY = 'clientName'
+const CLINIC_NAME_CONFIG_KEY = 'clinicName'
 
 export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({})
 
@@ -76,6 +78,11 @@ export const buildExecutionPayloadPreview = (
     parseExecutionMetadata(patient.otherInformation),
   )
   const configMetadata = parseExecutionMetadata(draft.execution.config)
+  const configWithSelectedNames = {
+    ...(configMetadata ?? {}),
+    [CLIENT_NAME_CONFIG_KEY]: draft.context.clientName.trim(),
+    [CLINIC_NAME_CONFIG_KEY]: draft.context.clinicName.trim(),
+  }
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
@@ -113,7 +120,7 @@ export const buildExecutionPayloadPreview = (
         filenames: createPatientFilenames(patient.filenames),
         otherInformation: patientOtherInformation[index] ?? {},
       })),
-      config: configMetadata ?? {},
+      config: configWithSelectedNames,
       rv: rv ?? {},
       headed: DEFAULT_HEADED_MODE,
       workers: createExecutionPayloadNumberPreview(draft.execution.workers),
@@ -175,7 +182,7 @@ export const buildExecutionPayload = (
     ...payloadPreview,
     context: {
       ...payloadPreview.context,
-      config: configMetadata,
+      config: payloadPreview.context.config,
       rv,
       workers: Number(draft.execution.workers),
       retries: Number(draft.execution.retries),
