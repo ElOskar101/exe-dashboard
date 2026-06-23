@@ -13,7 +13,7 @@ export interface ExecutionPayloadBot {
   targetUrl: string
   username: string
   password: string
-  otherInformation: ExecutionMetadata
+  otherInformation?: ExecutionMetadata
 }
 
 export interface ExecutionPayloadPatient {
