@@ -94,6 +94,13 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
 
             <div className="flex min-w-0 flex-col gap-6">
               <DetailSection>
+                <DetailRow label={t('fields.botName')} value={execution.botName} />
+                <DetailRow label={t('fields.url')} value={execution.context?.bot?.targetUrl ?? null} />
+                <DetailRow label={t('fields.username')} value={execution.context?.bot?.username ?? null} />
+                <DetailRow label={t('fields.password')} value={execution.context?.bot?.password ?? null} />
+              </DetailSection>
+
+              <DetailSection>
                 <DetailRow
                   label={t('detail.detailsFieldStartedAt')}
                   value={formatExecutionDateTime(execution.startedAt)}
@@ -110,13 +117,6 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
                   label={t('fields.scheduledAt')}
                   value={execution.scheduledAt ? formatExecutionDateTime(execution.scheduledAt) : null}
                 />
-              </DetailSection>
-
-              <DetailSection>
-                <DetailRow label={t('fields.botName')} value={execution.botName} />
-                <DetailRow label={t('fields.url')} value={execution.context?.bot?.targetUrl ?? null} />
-                <DetailRow label={t('fields.username')} value={execution.context?.bot?.username ?? null} />
-                <DetailRow label={t('fields.password')} value={execution.context?.bot?.password ?? null} />
               </DetailSection>
             </div>
           </div>
