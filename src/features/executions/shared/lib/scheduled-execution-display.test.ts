@@ -44,6 +44,12 @@ describe('scheduled execution display helpers', () => {
     const scheduledAt = '2026-05-29T12:15:00.000Z'
 
     expect(isWaitingScheduledExecution(scheduledAt, new Date('2026-05-29T12:14:59.999Z').getTime())).toBe(true)
+    expect(isWaitingScheduledExecution(scheduledAt, new Date('2026-05-29T12:14:59.999Z').getTime(), 'queued')).toBe(
+      true,
+    )
+    expect(isWaitingScheduledExecution(scheduledAt, new Date('2026-05-29T12:14:59.999Z').getTime(), 'running')).toBe(
+      false,
+    )
     expect(isWaitingScheduledExecution(scheduledAt, new Date('2026-05-29T12:15:00.000Z').getTime())).toBe(false)
     expect(isWaitingScheduledExecution('not-a-date', new Date('2026-05-29T12:14:00.000Z').getTime())).toBe(false)
   })

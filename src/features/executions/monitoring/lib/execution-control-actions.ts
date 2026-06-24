@@ -5,7 +5,7 @@ export const getExecutionControlAvailability = (
   scheduledAt: string | null | undefined,
   currentTime: number,
 ) => {
-  if (isWaitingScheduledExecution(scheduledAt, currentTime)) {
+  if (isWaitingScheduledExecution(scheduledAt, currentTime, status)) {
     return {
       canPauseExecution: false,
       canResumeExecution: false,

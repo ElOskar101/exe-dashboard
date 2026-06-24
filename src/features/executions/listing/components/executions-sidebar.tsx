@@ -212,10 +212,14 @@ export function ExecutionsSidebar() {
 
       for (const execution of projectExecutionsQueries[index]?.data ?? []) {
         const executionProject = execution.project?.trim()
-        const isScheduled = isScheduledExecution(execution)
+        const status =
+          executionStatusReadModel.data[execution._id]?.status ?? normalizeExecutionStatus(execution.status)
+        const isWaitingScheduled = isWaitingScheduledExecution(execution.scheduledAt, currentTime, status)
 
         if (!executionProject) {
-          const unknownExecutionsById = isScheduled ? unknownScheduledExecutionsById : unknownNormalExecutionsById
+          const unknownExecutionsById = isWaitingScheduled
+            ? unknownScheduledExecutionsById
+            : unknownNormalExecutionsById
 
           unknownExecutionsById.set(execution._id, execution)
           continue
@@ -225,7 +229,7 @@ export function ExecutionsSidebar() {
           continue
         }
 
-        if (isScheduled) {
+        if (isWaitingScheduled) {
           projectScheduledExecutions.push(execution)
         } else {
           projectNormalExecutions.push(execution)
@@ -281,12 +285,21 @@ export function ExecutionsSidebar() {
       normal: normalProjectGroups,
       scheduled: scheduledProjectGroups,
     }
-  }, [availableProjects, expandedSectionProjectKeysSet, projectExecutionsQueries])
-  const visibleScheduledExecutions = useMemo(
-    () => executionSidebarSections.scheduled.flatMap((group) => group.executions),
-    [executionSidebarSections.scheduled],
+  }, [
+    availableProjects,
+    currentTime,
+    expandedSectionProjectKeysSet,
+    executionStatusReadModel.data,
+    projectExecutionsQueries,
+  ])
+  const scheduledExecutionsForStartToasts = useMemo(
+    () =>
+      projectExecutionsQueries
+        .flatMap((query) => query.data ?? [])
+        .filter((execution) => isScheduledExecution(execution)),
+    [projectExecutionsQueries],
   )
-  useScheduledExecutionStartToasts(visibleScheduledExecutions, currentTime)
+  useScheduledExecutionStartToasts(scheduledExecutionsForStartToasts, currentTime)
   const skeletonRows = useMemo(() => ['one', 'two', 'three', 'four'], [])
   const isCollapsedDesktop = state === 'collapsed' && !isMobile
   const isExecutionsLoading =
@@ -543,6 +556,7 @@ export function ExecutionsSidebar() {
                                 const isWaitingScheduled = isWaitingScheduledExecution(
                                   execution.scheduledAt,
                                   currentTime,
+                                  status,
                                 )
                                 const scheduledCountdownLabel =
                                   section.id === SCHEDULED_EXECUTIONS_SECTION_ID
@@ -560,22 +574,17 @@ export function ExecutionsSidebar() {
                                         className="h-auto min-h-9 items-start"
                                       >
                                         <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
-                                          {isExecutionRunning(status) ? (
-                                            <Spinner
-                                              aria-label={status}
-                                              className="mt-0.5 size-3 shrink-0 text-blue-500"
-                                            />
-                                          ) : (
-                                            <span
-                                              aria-label={status}
-                                              className={cn(
-                                                'mt-1 size-2 shrink-0 rounded-full',
-                                                isWaitingScheduled
+                                          <span
+                                            aria-label={status}
+                                            className={cn(
+                                              'mt-1 size-2 shrink-0 rounded-full',
+                                              isExecutionRunning(status)
+                                                ? 'bg-blue-500'
+                                                : isWaitingScheduled
                                                   ? WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME
                                                   : getStatusDotClassName(status),
-                                              )}
-                                            />
-                                          )}
+                                            )}
+                                          />
                                           <div className="min-w-0">
                                             <div className="flex min-w-0 items-baseline gap-1">
                                               <span className="truncate">{executionDayLabel}</span>
@@ -647,8 +656,8 @@ export function ExecutionsSidebar() {
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="sm"
-                                className="w-full"
+                                size="xs"
+                                className="w-full text-xs font-normal text-sidebar-foreground!"
                                 disabled={group.isFetching}
                                 onClick={() =>
                                   setProjectExecutionsExpanded(section.id, group.project, !group.isExpanded)
@@ -844,6 +853,7 @@ export function ExecutionsSidebar() {
                                   const isWaitingScheduled = isWaitingScheduledExecution(
                                     execution.scheduledAt,
                                     currentTime,
+                                    status,
                                   )
                                   const scheduledCountdownLabel =
                                     section.id === SCHEDULED_EXECUTIONS_SECTION_ID
@@ -868,22 +878,17 @@ export function ExecutionsSidebar() {
                                                 className="h-auto min-h-9 items-start"
                                               >
                                                 <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
-                                                  {isExecutionRunning(status) ? (
-                                                    <Spinner
-                                                      aria-label={status}
-                                                      className="mt-0.5 size-3 shrink-0 text-blue-500"
-                                                    />
-                                                  ) : (
-                                                    <span
-                                                      aria-label={status}
-                                                      className={cn(
-                                                        'mt-1 size-2 shrink-0 rounded-full',
-                                                        isWaitingScheduled
+                                                  <span
+                                                    aria-label={status}
+                                                    className={cn(
+                                                      'mt-1 size-2 shrink-0 rounded-full',
+                                                      isExecutionRunning(status)
+                                                        ? 'bg-blue-500'
+                                                        : isWaitingScheduled
                                                           ? WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME
                                                           : getStatusDotClassName(status),
-                                                      )}
-                                                    />
-                                                  )}
+                                                    )}
+                                                  />
                                                   <div className="min-w-0">
                                                     <div className="flex min-w-0 items-baseline gap-1">
                                                       <span className="truncate">{executionDayLabel}</span>
@@ -968,8 +973,8 @@ export function ExecutionsSidebar() {
                                 <Button
                                   type="button"
                                   variant="ghost"
-                                  size="sm"
-                                  className="mt-1 w-full justify-start"
+                                  size="xs"
+                                  className="mt-1 w-full justify-start text-xs font-normal"
                                   disabled={group.isFetching}
                                   onClick={() =>
                                     setProjectExecutionsExpanded(section.id, group.project, !group.isExpanded)

@@ -1,5 +1,6 @@
 import { intlFormatDistance, isValid, parseISO } from 'date-fns'
 import type { Execution } from '../model/execution'
+import { normalizeExecutionStatus } from './execution-display'
 
 const FINAL_MINUTE_MS = 60_000
 const HOUR_MS = 60 * 60_000
@@ -25,10 +26,19 @@ export const isScheduledExecution = (execution: Execution) => {
   return getScheduledExecutionStartDate(execution.scheduledAt) !== null
 }
 
-export const isWaitingScheduledExecution = (scheduledAt: string | null | undefined, currentTime: number) => {
+export const isWaitingScheduledExecution = (
+  scheduledAt: string | null | undefined,
+  currentTime: number,
+  status?: string | null,
+) => {
   const scheduledStartTime = getScheduledExecutionStartTime(scheduledAt)
 
-  return scheduledStartTime !== null && currentTime < scheduledStartTime
+  if (scheduledStartTime === null || currentTime >= scheduledStartTime) return false
+  if (status === undefined || status === null) return true
+
+  const normalizedStatus = normalizeExecutionStatus(status)
+
+  return normalizedStatus === 'queued' || normalizedStatus === 'unknown'
 }
 
 const formatClockCountdown = (remainingMs: number) => {

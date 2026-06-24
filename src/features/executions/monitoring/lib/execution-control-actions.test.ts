@@ -41,7 +41,7 @@ describe('execution control actions', () => {
   it('hides pause, resume, and stop for waiting scheduled executions', () => {
     expect(
       getExecutionControlAvailability(
-        'running',
+        'queued',
         '2026-05-23T00:05:00.000Z',
         new Date('2026-05-23T00:04:59.999Z').getTime(),
       ),
@@ -49,6 +49,20 @@ describe('execution control actions', () => {
       canPauseExecution: false,
       canResumeExecution: false,
       canStopExecution: false,
+    })
+  })
+
+  it('allows running executions to be controlled when stale scheduledAt remains after run now', () => {
+    expect(
+      getExecutionControlAvailability(
+        'running',
+        '2026-05-23T00:05:00.000Z',
+        new Date('2026-05-23T00:04:59.999Z').getTime(),
+      ),
+    ).toEqual({
+      canPauseExecution: true,
+      canResumeExecution: false,
+      canStopExecution: true,
     })
   })
 })
