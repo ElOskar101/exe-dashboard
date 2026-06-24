@@ -56,7 +56,6 @@ import {
   useExecutionTarget,
   useExecutionStatusReadModel,
   getExecutionLabel,
-  getScheduledExecutionCountdownLabel,
   isExecutionRunning,
   isScheduledExecution,
   isWaitingScheduledExecution,
@@ -74,6 +73,7 @@ import {
   getStatusDotClassName,
   groupExecutionsByProject,
 } from '../lib/execution-sidebar-display'
+import { getExecutionBotName } from '../lib/execution-bot-display'
 import { UNKNOWN_PROJECT_LABEL } from '../lib/execution-listing-filters'
 
 const MIN_REFRESH_SPIN_DURATION_MS = 1000
@@ -383,19 +383,15 @@ export function ExecutionsSidebar() {
     }
   }
 
-  const getExecutionSecondaryLabel = (execution: Execution, label: string, includeExecutionLabel: boolean) => {
-    const countdownLabel = getScheduledExecutionCountdownLabel(execution.scheduledAt, currentTime)
-    const relativeTimeLabel = countdownLabel
-      ? t('sidebar.scheduledCountdown', { countdown: countdownLabel })
-      : getRelativeCreatedAt(execution.createdAt, currentTime)
+  const getExecutionSecondaryLabel = (execution: Execution) => getExecutionBotName(execution, t('list.emptyValue'))
 
-    if (includeExecutionLabel) {
-      return relativeTimeLabel
-        ? t('sidebar.executionRelativeLabel', { relativeCreatedAt: relativeTimeLabel, label })
-        : label
-    }
+  const getExecutionTriggerTooltip = (execution: Execution, project: string, label: string) => {
+    const relativeCreatedAt = getRelativeCreatedAt(execution.createdAt, currentTime)
+    const tooltipLabel = t('sidebar.projectExecutionTooltip', { project, label })
 
-    return relativeTimeLabel
+    return relativeCreatedAt
+      ? t('sidebar.executionRelativeLabel', { relativeCreatedAt, label: tooltipLabel })
+      : tooltipLabel
   }
 
   const renderCollapsedSidebarContent = () => (
@@ -538,7 +534,8 @@ export function ExecutionsSidebar() {
                               {group.executions.map((execution) => {
                                 const label = getExecutionLabel(execution)
                                 const executionDayLabel = getExecutionDayLabel(execution)
-                                const secondaryLabel = getExecutionSecondaryLabel(execution, label, true)
+                                const secondaryLabel = getExecutionSecondaryLabel(execution)
+                                const tooltipLabel = getExecutionTriggerTooltip(execution, sectionProjectTitle, label)
                                 const status =
                                   executionStatusReadModel.data[execution._id]?.status ??
                                   normalizeExecutionStatus(execution.status)
@@ -554,6 +551,7 @@ export function ExecutionsSidebar() {
                                       <SidebarMenuButton
                                         render={<Link to={getPathWithExecutionTarget(`/execution/${execution._id}`)} />}
                                         isActive={currentExecutionId === execution._id}
+                                        tooltip={tooltipLabel}
                                         className="h-auto min-h-9 items-start"
                                       >
                                         <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
@@ -824,7 +822,8 @@ export function ExecutionsSidebar() {
                                 {group.executions.map((execution) => {
                                   const label = getExecutionLabel(execution)
                                   const executionDayLabel = getExecutionDayLabel(execution)
-                                  const secondaryLabel = getExecutionSecondaryLabel(execution, label, false)
+                                  const secondaryLabel = getExecutionSecondaryLabel(execution)
+                                  const tooltipLabel = getExecutionTriggerTooltip(execution, sectionProjectTitle, label)
                                   const status =
                                     executionStatusReadModel.data[execution._id]?.status ??
                                     normalizeExecutionStatus(execution.status)
@@ -837,47 +836,52 @@ export function ExecutionsSidebar() {
                                   return (
                                     <SidebarMenuItem key={execution._id}>
                                       <div className="flex items-center">
-                                        <SidebarMenuButton
-                                          render={
-                                            <Link
-                                              to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
-                                              onClick={closeSidebarOnMobile}
-                                            />
-                                          }
-                                          isActive={currentExecutionId === execution._id}
-                                          tooltip={t('sidebar.projectExecutionTooltip', {
-                                            project: sectionProjectTitle,
-                                            label,
-                                          })}
-                                          className="h-auto min-h-9 items-start"
-                                        >
-                                          <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
-                                            {isExecutionRunning(status) ? (
-                                              <Spinner
-                                                aria-label={status}
-                                                className="mt-0.5 size-3 shrink-0 text-blue-500"
-                                              />
-                                            ) : (
-                                              <span
-                                                aria-label={status}
-                                                className={cn(
-                                                  'mt-1 size-2 shrink-0 rounded-full',
-                                                  isWaitingScheduled
-                                                    ? WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME
-                                                    : getStatusDotClassName(status),
-                                                )}
-                                              />
-                                            )}
-                                            <div className="min-w-0">
-                                              <div className="truncate">{executionDayLabel}</div>
-                                              {secondaryLabel ? (
-                                                <div className="truncate text-xs text-sidebar-foreground/60">
-                                                  {secondaryLabel}
+                                        <Tooltip>
+                                          <TooltipTrigger
+                                            render={
+                                              <SidebarMenuButton
+                                                render={
+                                                  <Link
+                                                    to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
+                                                    onClick={closeSidebarOnMobile}
+                                                  />
+                                                }
+                                                isActive={currentExecutionId === execution._id}
+                                                className="h-auto min-h-9 items-start"
+                                              >
+                                                <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2 gap-y-0.5">
+                                                  {isExecutionRunning(status) ? (
+                                                    <Spinner
+                                                      aria-label={status}
+                                                      className="mt-0.5 size-3 shrink-0 text-blue-500"
+                                                    />
+                                                  ) : (
+                                                    <span
+                                                      aria-label={status}
+                                                      className={cn(
+                                                        'mt-1 size-2 shrink-0 rounded-full',
+                                                        isWaitingScheduled
+                                                          ? WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME
+                                                          : getStatusDotClassName(status),
+                                                      )}
+                                                    />
+                                                  )}
+                                                  <div className="min-w-0">
+                                                    <div className="truncate">{executionDayLabel}</div>
+                                                    {secondaryLabel ? (
+                                                      <div className="truncate text-xs text-sidebar-foreground/60">
+                                                        {secondaryLabel}
+                                                      </div>
+                                                    ) : null}
+                                                  </div>
                                                 </div>
-                                              ) : null}
-                                            </div>
-                                          </div>
-                                        </SidebarMenuButton>
+                                              </SidebarMenuButton>
+                                            }
+                                          />
+                                          <TooltipContent side="right" align="center">
+                                            {tooltipLabel}
+                                          </TooltipContent>
+                                        </Tooltip>
                                         <AlertDialog
                                           open={openDeleteId === execution._id}
                                           onOpenChange={(open) => {
