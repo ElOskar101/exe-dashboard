@@ -416,7 +416,7 @@ test.describe('execution user flows', () => {
     await expect(page.getByRole('cell', { name: 'Running' })).toBeVisible()
 
     await expect(page.getByText('Jane Doe, +3')).toBeVisible()
-    await expect(page.getByText('Eligibility Runner')).toBeVisible()
+    await expect(page.getByRole('table').getByText('Eligibility Runner')).toBeVisible()
 
     const patientTrigger = page.getByRole('button', { name: 'View patients for execution 2026-05-25' })
     await patientTrigger.click()
