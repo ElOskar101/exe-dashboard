@@ -56,6 +56,7 @@ import {
   useExecutionTarget,
   useExecutionStatusReadModel,
   getExecutionLabel,
+  getScheduledExecutionCountdownLabel,
   isExecutionRunning,
   isScheduledExecution,
   isWaitingScheduledExecution,
@@ -543,6 +544,10 @@ export function ExecutionsSidebar() {
                                   execution.scheduledAt,
                                   currentTime,
                                 )
+                                const scheduledCountdownLabel =
+                                  section.id === SCHEDULED_EXECUTIONS_SECTION_ID
+                                    ? getScheduledExecutionCountdownLabel(execution.scheduledAt, currentTime)
+                                    : null
                                 const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                                 return (
@@ -572,7 +577,16 @@ export function ExecutionsSidebar() {
                                             />
                                           )}
                                           <div className="min-w-0">
-                                            <div className="truncate">{executionDayLabel}</div>
+                                            <div className="flex min-w-0 items-baseline gap-1">
+                                              <span className="truncate">{executionDayLabel}</span>
+                                              {scheduledCountdownLabel ? (
+                                                <span className="shrink-0 text-xs text-sidebar-foreground/60">
+                                                  {t('sidebar.scheduledCountdown', {
+                                                    countdown: scheduledCountdownLabel,
+                                                  })}
+                                                </span>
+                                              ) : null}
+                                            </div>
                                             <div className="truncate text-xs text-sidebar-foreground/60">
                                               {secondaryLabel}
                                             </div>
@@ -831,6 +845,10 @@ export function ExecutionsSidebar() {
                                     execution.scheduledAt,
                                     currentTime,
                                   )
+                                  const scheduledCountdownLabel =
+                                    section.id === SCHEDULED_EXECUTIONS_SECTION_ID
+                                      ? getScheduledExecutionCountdownLabel(execution.scheduledAt, currentTime)
+                                      : null
                                   const isDeleting = deleteMutation.isPending && pendingDeleteId === execution._id
 
                                   return (
@@ -867,7 +885,16 @@ export function ExecutionsSidebar() {
                                                     />
                                                   )}
                                                   <div className="min-w-0">
-                                                    <div className="truncate">{executionDayLabel}</div>
+                                                    <div className="flex min-w-0 items-baseline gap-1">
+                                                      <span className="truncate">{executionDayLabel}</span>
+                                                      {scheduledCountdownLabel ? (
+                                                        <span className="shrink-0 text-xs text-sidebar-foreground/60">
+                                                          {t('sidebar.scheduledCountdown', {
+                                                            countdown: scheduledCountdownLabel,
+                                                          })}
+                                                        </span>
+                                                      ) : null}
+                                                    </div>
                                                     {secondaryLabel ? (
                                                       <div className="truncate text-xs text-sidebar-foreground/60">
                                                         {secondaryLabel}
