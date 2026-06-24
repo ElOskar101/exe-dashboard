@@ -418,7 +418,7 @@ export function ExecutionLogsCard({
           </TabsList>
           <TabsContent keepMounted value="logs" className="min-h-0 min-w-0">
             <div className="relative min-w-0">
-              <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-background">
+              <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-background">
                 <ScrollArea
                   className="h-[calc(100vh-16rem)] min-h-96 min-w-0 bg-background"
                   viewportProps={{
@@ -452,7 +452,7 @@ export function ExecutionLogsCard({
             {execution ? (
               <ExecutionDetailPanel execution={execution} />
             ) : (
-              <div className="flex h-[calc(100vh-16rem)] min-h-96 items-center justify-center rounded-2xl border border-border bg-background">
+              <div className="flex h-[calc(100vh-16rem)] min-h-96 items-center justify-center">
                 <p className="text-sm text-muted-foreground">{t('detail.loadErrorDescription')}</p>
               </div>
             )}

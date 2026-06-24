@@ -23,20 +23,21 @@ import {
   type ExecutionPayloadPatient,
 } from '@/features/executions/shared'
 import { cn } from '@/lib/utils'
-import { IconEye } from '@tabler/icons-react'
+import { IconListDetails, IconSettings, IconUsers } from '@tabler/icons-react'
 
 const DETAILS_PANEL_HEIGHT_CLASS_NAME = 'h-[calc(100vh-16rem)] min-h-96'
 
 interface DetailRowProps {
   label: string
+  valueClassName?: string
   value: string | number | null | undefined
 }
 
-function DetailRow({ label, value }: DetailRowProps) {
+function DetailRow({ label, value, valueClassName }: DetailRowProps) {
   return (
     <div className="grid grid-cols-[180px_1fr] gap-2 text-sm">
       <span className="text-foreground">{label}</span>
-      <span className="text-muted-foreground">{value ?? '—'}</span>
+      <span className={cn('text-muted-foreground', valueClassName)}>{value ?? '—'}</span>
     </div>
   )
 }
@@ -68,17 +69,38 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
 
   return (
     <div className={cn(DETAILS_PANEL_HEIGHT_CLASS_NAME, 'min-w-0')}>
-      <Tabs defaultValue="overview" className="min-h-0 min-w-0">
-        <TabsList variant="line" aria-label={t('detail.detailsTabsLabel')} className="max-w-full overflow-x-auto">
-          <TabsTrigger value="overview">{t('detail.detailsOverviewTab')}</TabsTrigger>
-          <TabsTrigger value="patients">{t('detail.detailsPatientsSection')}</TabsTrigger>
-          <TabsTrigger value="config">{t('detail.detailsConfigSection')}</TabsTrigger>
+      <Tabs
+        defaultValue="overview"
+        orientation="vertical"
+        className="min-h-0 min-w-0 flex-col gap-6 sm:items-stretch sm:flex-row"
+      >
+        <TabsList
+          variant="line"
+          aria-label={t('detail.detailsTabsLabel')}
+          className="w-full shrink-0 items-stretch justify-start overflow-x-auto rounded-none border-border sm:min-h-full sm:w-40 sm:self-stretch sm:overflow-visible sm:border-r sm:pr-4"
+        >
+          <TabsTrigger value="overview" className="after:hidden data-active:font-semibold data-active:text-foreground">
+            <IconListDetails data-icon="inline-start" />
+            {t('detail.detailsOverviewTab')}
+          </TabsTrigger>
+          <TabsTrigger value="patients" className="after:hidden data-active:font-semibold data-active:text-foreground">
+            <IconUsers data-icon="inline-start" />
+            {t('detail.detailsPatientsSection')}
+          </TabsTrigger>
+          <TabsTrigger value="config" className="after:hidden data-active:font-semibold data-active:text-foreground">
+            <IconSettings data-icon="inline-start" />
+            {t('detail.detailsConfigSection')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="min-h-0 min-w-0">
           <div className="grid min-w-0 gap-6 overflow-y-auto py-1 lg:grid-cols-2">
             <DetailSection>
-              <DetailRow label={t('detail.detailsFieldExecutionId')} value={execution._id} />
+              <DetailRow
+                label={t('detail.detailsFieldExecutionId')}
+                value={execution._id}
+                valueClassName="min-w-0 max-w-prose break-words"
+              />
               <DetailRow label={t('fields.project')} value={execution.project} />
               <DetailRow label={t('fields.client')} value={execution.client} />
               <DetailRow label={t('fields.clinic')} value={execution.clinic} />
@@ -95,7 +117,11 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
             <div className="flex min-w-0 flex-col gap-6">
               <DetailSection>
                 <DetailRow label={t('fields.botName')} value={execution.botName} />
-                <DetailRow label={t('fields.url')} value={execution.context?.bot?.targetUrl ?? null} />
+                <DetailRow
+                  label={t('fields.url')}
+                  value={execution.context?.bot?.targetUrl ?? null}
+                  valueClassName="min-w-0 max-w-prose break-words"
+                />
                 <DetailRow label={t('fields.username')} value={execution.context?.bot?.username ?? null} />
                 <DetailRow label={t('fields.password')} value={execution.context?.bot?.password ?? null} />
               </DetailSection>
@@ -127,7 +153,7 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
         </TabsContent>
 
         <TabsContent value="config" className="min-h-0 min-w-0">
-          <pre className="max-h-[calc(100vh-20rem)] overflow-auto rounded-lg border border-border bg-muted/30 p-4 text-xs">
+          <pre className="max-h-[calc(100vh-20rem)] overflow-auto text-xs">
             {execution.context?.config
               ? JSON.stringify(execution.context.config, null, 2)
               : t('detail.detailsFieldNoConfig')}
@@ -161,19 +187,14 @@ function PatientsTable({ execution }: { execution: Execution }) {
 
   if (patients.length === 0) {
     return (
-      <div
-        className={cn(
-          DETAILS_PANEL_HEIGHT_CLASS_NAME,
-          'flex items-center justify-center rounded-lg border border-dashed',
-        )}
-      >
+      <div className={cn(DETAILS_PANEL_HEIGHT_CLASS_NAME, 'flex items-center justify-center')}>
         <p className="text-sm text-muted-foreground">{t('list.noPatients')}</p>
       </div>
     )
   }
 
   return (
-    <div className="overflow-auto rounded-lg border border-border">
+    <div className="overflow-auto">
       <Table className="table-auto">
         <TableHeader>
           <TableRow>
@@ -183,36 +204,15 @@ function PatientsTable({ execution }: { execution: Execution }) {
             <TableHead>{t('detail.patientColumns.policyHolder')}</TableHead>
             <TableHead>{t('detail.patientColumns.policyHolderDob')}</TableHead>
             <TableHead>{t('detail.patientColumns.verificationType')}</TableHead>
-            <TableHead>{t('detail.patientColumns.relationship')}</TableHead>
-            <TableHead className="w-12 text-right">{t('detail.patientColumns.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {patients.map((patient, index) => (
-            <TableRow key={patient.id ?? `${execution._id}-patient-${index}`}>
-              <TableCell className="whitespace-normal break-words">
-                {[patient.patientName.value, patient.patientLastName.value].filter(Boolean).join(' ') ||
-                  t('list.emptyValue')}
-              </TableCell>
-              <TableCell className="whitespace-nowrap">{patient.patientDob.value || t('list.emptyValue')}</TableCell>
-              <TableCell className="whitespace-normal break-words">
-                {patient.patientMemberId.value || t('list.emptyValue')}
-              </TableCell>
-              <TableCell className="whitespace-normal break-words">
-                {[patient.policyHolderName.value, patient.policyHolderLastName.value].filter(Boolean).join(' ') ||
-                  t('list.emptyValue')}
-              </TableCell>
-              <TableCell className="whitespace-nowrap">
-                {patient.policyHolderDob.value || t('list.emptyValue')}
-              </TableCell>
-              <TableCell className="whitespace-nowrap">{patient.verificationType || t('list.emptyValue')}</TableCell>
-              <TableCell className="whitespace-normal break-words">
-                {patient.relationship.value || t('list.emptyValue')}
-              </TableCell>
-              <TableCell className="text-right">
-                <PatientDetailsDialog patient={patient} patientIndex={index} />
-              </TableCell>
-            </TableRow>
+            <PatientDetailsDialog
+              key={patient.id ?? `${execution._id}-patient-${index}`}
+              patient={patient}
+              patientIndex={index}
+            />
           ))}
         </TableBody>
       </Table>
@@ -232,15 +232,27 @@ function PatientDetailsDialog({ patient, patientIndex }: { patient: ExecutionPay
     <Dialog>
       <DialogTrigger
         render={
-          <Button
-            type="button"
-            size="icon-xs"
-            variant="ghost"
+          <TableRow
+            className="cursor-pointer transition-colors hover:bg-muted/40"
             aria-label={t('detail.patientDetailsActionLabel', { patient: patientLabel })}
           />
         }
       >
-        <IconEye />
+        <TableCell className="whitespace-normal break-words">
+          {[patient.patientName.value, patient.patientLastName.value].filter(Boolean).join(' ') || t('list.emptyValue')}
+        </TableCell>
+        <TableCell className="whitespace-nowrap">{patient.patientDob.value || t('list.emptyValue')}</TableCell>
+        <TableCell className="whitespace-normal break-words">
+          {patient.patientMemberId.value || t('list.emptyValue')}
+        </TableCell>
+        <TableCell className="whitespace-normal break-words">
+          {[patient.policyHolderName.value, patient.policyHolderLastName.value].filter(Boolean).join(' ') ||
+            t('list.emptyValue')}
+        </TableCell>
+        <TableCell className="whitespace-nowrap">{patient.policyHolderDob.value || t('list.emptyValue')}</TableCell>
+        <TableCell className="whitespace-nowrap uppercase">
+          {patient.verificationType || t('list.emptyValue')}
+        </TableCell>
       </DialogTrigger>
       <DialogContent initialFocus={titleRef} className="sm:max-w-3xl">
         <DialogHeader>

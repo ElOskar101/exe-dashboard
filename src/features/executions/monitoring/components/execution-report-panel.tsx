@@ -14,7 +14,7 @@ export function ExecutionReportPanel({ isError, isLoading, reportSource }: Execu
 
   if (isLoading) {
     return (
-      <Skeleton aria-label={t('detail.reportLoading')} className="h-[calc(100vh-16rem)] min-h-96 w-full rounded-2xl" />
+      <Skeleton aria-label={t('detail.reportLoading')} className="h-[calc(100vh-16rem)] min-h-96 w-full rounded-lg" />
     )
   }
 
@@ -30,7 +30,7 @@ export function ExecutionReportPanel({ isError, isLoading, reportSource }: Execu
 
   return (
     <iframe
-      className="h-[calc(100vh-16rem)] min-h-96 w-full rounded-2xl border border-border bg-background"
+      className="h-[calc(100vh-16rem)] min-h-96 w-full rounded-lg border border-border bg-background"
       loading="lazy"
       referrerPolicy="no-referrer"
       src={reportSource}
