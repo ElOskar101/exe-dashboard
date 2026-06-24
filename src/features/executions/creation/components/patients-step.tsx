@@ -1,14 +1,13 @@
 import type { TFunction } from 'i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
-import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
+import { IconAlertCircle } from '@tabler/icons-react'
 import { hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionWizardPatientsStepState } from '../hooks/use-execution-wizard'
 import { CustomerSearchField } from './customer-search-field'
+import { ImportedPatientCard } from './imported-patient-card'
 
 interface PatientsStepProps extends ExecutionWizardPatientsStepState {
   t: TFunction<'executions'>
@@ -182,7 +181,7 @@ export function PatientsStep({
         ) : null}
 
         {patients.length > 0 ? (
-          <div className="max-h-[28rem] space-y-4 overflow-y-auto sm:max-h-[34rem] sm:pr-1">
+          <div className="grid max-h-[13rem] gap-4 overflow-y-auto p-1 pr-3 sm:max-h-[16rem] md:grid-cols-2 xl:grid-cols-3">
             {patients.map((patient, index) =>
               (() => {
                 const rowErrors = errors.rows[index] ?? {}
@@ -192,115 +191,18 @@ export function PatientsStep({
                 const hasRowErrors = hasErrors(rowErrors)
 
                 return (
-                  <div
+                  <ImportedPatientCard
                     key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
-                    className="rounded-3xl border border-border/70 bg-muted/20 p-4"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="font-medium">
-                        {t('sections.patients.patientTitle', {
-                          index: index + 1,
-                        })}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        type="button"
-                        onClick={() => onRemovePatient(index)}
-                        aria-label={t('buttons.removePatient')}
-                        className="w-full sm:w-auto"
-                      >
-                        <IconTrash data-icon="inline-start" />
-                        {t('buttons.removePatient')}
-                      </Button>
-                    </div>
-
-                    <dl className="mt-4 grid gap-3 md:grid-cols-3">
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.patientName')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.patientName, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.patientLastName')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.patientLastName, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.memberId')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.patientDob')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.policyHolderName')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.policyHolderName, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.policyHolderLastName')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.policyHolderLastName, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.policyHolderDob')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.policyHolderDob, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.relationship')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.relationship, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.zipCode')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.zipCode, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.patientClinic')}</dt>
-                        <dd className="mt-1 font-medium">
-                          {getExecutionWizardDisplayValue(patient.clinic, emptyValue)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.verificationType')}</dt>
-                        <dd className="mt-1 font-medium">{patient.verificationType || emptyValue}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('fields.filenames')}</dt>
-                        <dd className="mt-1 break-words font-medium">
-                          {getExecutionWizardDisplayValue(patient.filenames, emptyValue)}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    {showErrors && hasRowErrors ? (
-                      <Alert variant="destructive" className="mt-4">
-                        <IconAlertCircle />
-                        <AlertTitle>{t('validation.patientDetailsTitle')}</AlertTitle>
-                        <AlertDescription>
-                          {missingFields.length > 0
-                            ? t('validation.patientDetailsDescription', {
-                                fields: missingFields.join(', '),
-                              })
-                            : rowErrors.otherInformation}
-                        </AlertDescription>
-                      </Alert>
-                    ) : null}
-                  </div>
+                    emptyValue={emptyValue}
+                    hasRowErrors={hasRowErrors}
+                    index={index}
+                    missingFields={missingFields}
+                    patient={patient}
+                    rowErrorMessage={rowErrors.otherInformation}
+                    showErrors={showErrors}
+                    onRemovePatient={onRemovePatient}
+                    t={t}
+                  />
                 )
               })(),
             )}
