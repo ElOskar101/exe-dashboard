@@ -2,7 +2,10 @@ import { intlFormatDistance, isValid, parseISO } from 'date-fns'
 import type { Execution } from '../model/execution'
 
 const FINAL_MINUTE_MS = 60_000
+const HOUR_MS = 60 * 60_000
+const MINUTE_MS = 60_000
 const SECOND_MS = 1000
+const minuteCountdownFormatter = new Intl.RelativeTimeFormat(undefined, { numeric: 'always' })
 
 export const getScheduledExecutionStartDate = (scheduledAt?: string | null) => {
   if (!scheduledAt?.trim()) return null
@@ -45,6 +48,7 @@ export const getScheduledExecutionCountdownLabel = (scheduledAt: string | null |
 
   if (remainingMs <= 0) return null
   if (remainingMs <= FINAL_MINUTE_MS) return `in ${formatClockCountdown(remainingMs)}`
+  if (remainingMs < HOUR_MS) return minuteCountdownFormatter.format(Math.ceil(remainingMs / MINUTE_MS), 'minute')
 
   return intlFormatDistance(scheduledStartDate, currentTime, { numeric: 'always' })
 }

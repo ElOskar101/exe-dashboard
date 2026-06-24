@@ -48,10 +48,13 @@ describe('scheduled execution display helpers', () => {
     expect(isWaitingScheduledExecution('not-a-date', new Date('2026-05-29T12:14:00.000Z').getTime())).toBe(false)
   })
 
-  it('formats natural remaining time until the final minute', () => {
+  it('rounds minute countdowns up until the final minute', () => {
     expect(
       getScheduledExecutionCountdownLabel('2026-05-29T12:15:00.000Z', new Date('2026-05-29T12:13:59.000Z').getTime()),
-    ).toBe(new Intl.RelativeTimeFormat(undefined, { numeric: 'always' }).format(1, 'minute'))
+    ).toBe(new Intl.RelativeTimeFormat(undefined, { numeric: 'always' }).format(2, 'minute'))
+    expect(
+      getScheduledExecutionCountdownLabel('2026-05-29T12:15:00.000Z', new Date('2026-05-29T12:12:30.000Z').getTime()),
+    ).toBe(new Intl.RelativeTimeFormat(undefined, { numeric: 'always' }).format(3, 'minute'))
   })
 
   it('formats the final minute as a clock countdown', () => {
