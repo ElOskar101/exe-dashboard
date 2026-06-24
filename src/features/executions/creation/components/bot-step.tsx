@@ -166,7 +166,7 @@ export function BotStep({
               <SelectTrigger
                 id="associatedBot"
                 aria-invalid={showErrors && Boolean(errors.clinicBotId)}
-                className="w-full"
+                className="hidden w-full md:flex"
               >
                 <SelectValue placeholder={t('placeholders.bot')}>{selectedBotName || undefined}</SelectValue>
               </SelectTrigger>
@@ -180,6 +180,21 @@ export function BotStep({
                 </SelectGroup>
               </SelectContent>
             </Select>
+            <select
+              id="associatedBotMobile"
+              value={selectedBotId}
+              onChange={(event) => onBotSelect(event.target.value)}
+              disabled={isBotSelectDisabled}
+              aria-invalid={showErrors && Boolean(errors.clinicBotId)}
+              className="flex h-9 w-full rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-sm outline-none transition-[color,box-shadow,background-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:hidden"
+            >
+              <option value="">{t('placeholders.bot')}</option>
+              {associatedBotOptions.map((associatedBot) => (
+                <option key={associatedBot._id} value={associatedBot._id}>
+                  {associatedBot.botName}
+                </option>
+              ))}
+            </select>
             <FieldError>{showErrors ? errors.clinicBotId : null}</FieldError>
           </Field>
 

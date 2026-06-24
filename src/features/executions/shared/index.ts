@@ -82,6 +82,7 @@ export {
   pauseExecution,
   removePlaywrightRuntimeShareMembers,
   resumeExecution,
+  runExecutionNow,
   scheduleExecution,
   stopExecution,
   updateExecution,
@@ -131,6 +132,7 @@ export {
   useExecutionsQuery,
   usePauseExecutionMutation,
   useResumeExecutionMutation,
+  useRunExecutionNowMutation,
   useScheduleExecutionMutation,
   useStopExecutionMutation,
 } from './hooks/use-execution-records'

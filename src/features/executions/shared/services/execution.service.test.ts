@@ -18,6 +18,7 @@ import {
   pauseExecution,
   removePlaywrightRuntimeShareMembers,
   resumeExecution,
+  runExecutionNow,
   scheduleExecution,
   stopExecution,
   updateExecution,
@@ -414,6 +415,16 @@ describe('execution.service', () => {
     await resumeExecution('exe-1', runtimeTarget)
 
     expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/resume', undefined, {
+      baseURL: 'https://runtime.example.com/api/v1',
+    })
+  })
+
+  it('runExecutionNow posts to the scheduled execution run-now endpoint', async () => {
+    vi.mocked(exeClient.post).mockResolvedValueOnce({ data: { _id: 'exe-1' } })
+
+    await runExecutionNow('exe-1', runtimeTarget)
+
+    expect(exeClient.post).toHaveBeenCalledWith('executions/exe-1/run-now', undefined, {
       baseURL: 'https://runtime.example.com/api/v1',
     })
   })

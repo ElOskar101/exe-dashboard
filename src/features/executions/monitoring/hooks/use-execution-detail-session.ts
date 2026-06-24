@@ -7,11 +7,14 @@ import {
   getExecutionReportIndexUrl,
   executionKeys,
   isExecutionFailed,
+  isExecutionRunning,
   isExecutionSuccessful,
+  normalizeExecutionStatus,
   useExecutionQuery,
   useExecutionStatusValue,
   usePauseExecutionMutation,
   useResumeExecutionMutation,
+  useRunExecutionNowMutation,
   syncExecutionStatusReadModelForTarget,
   useExecutionTarget,
   useStopExecutionMutation,
@@ -44,6 +47,7 @@ export interface ExecutionDetailSession {
   canPauseExecution: boolean
   canResumeExecution: boolean
   canRerunExecution: boolean
+  canRunExecutionNow: boolean
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
@@ -54,6 +58,7 @@ export interface ExecutionDetailSession {
   isReportError: boolean
   isReportLoading: boolean
   isResuming: boolean
+  isRunningNow: boolean
   isRerunAvailable: boolean
   isRerunning: boolean
   isStopping: boolean
@@ -64,11 +69,13 @@ export interface ExecutionDetailSession {
   onPauseExecution: () => void
   onRerunExecution: (scheduleInput?: ExecutionRerunScheduleInput) => void
   onResumeExecution: () => void
+  onRunExecutionNow: () => void
   onStopExecution: () => void
   pauseError: boolean
   rawExecutionJson: string
   reportSource: string
   rerunErrorMessage: string | null
+  runNowError: boolean
   rerunSummary: ExecutionRerunSummary | null
   resumeError: boolean
   scheduledAt?: string
@@ -96,6 +103,9 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   const stopMutation = useStopExecutionMutation(executionId)
   const pauseMutation = usePauseExecutionMutation(executionId)
   const resumeMutation = useResumeExecutionMutation(executionId)
+  const runNowMutation = useRunExecutionNowMutation(executionId)
+  const scheduledAt =
+    runNowMutation.isPending || runNowMutation.isSuccess ? undefined : executionQuery.data?.scheduledAt
   const logState = useMemo<ExecutionLogBufferState>(
     () => ({
       lines: realtimeLogs.lines,
@@ -125,16 +135,24 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   })
   const logLines = useMemo(() => createExecutionLogDisplayLines(logState), [logState])
   const displayStatus = formatExecutionStatusLabel(currentStatus)
+  const normalizedStatus = normalizeExecutionStatus(currentStatus)
   const { canPauseExecution, canResumeExecution, canStopExecution } = getExecutionControlAvailability(
     currentStatus,
-    executionQuery.data?.scheduledAt,
+    scheduledAt,
     currentTime,
   )
+  const canRunExecutionNow =
+    Boolean(scheduledAt) &&
+    !isExecutionRunning(currentStatus) &&
+    !isExecutionSuccessful(currentStatus) &&
+    !isExecutionFailed(currentStatus) &&
+    normalizedStatus !== 'cancelled'
 
   return {
     canPauseExecution,
     canResumeExecution,
     canRerunExecution: Boolean(executionQuery.data) && showReport,
+    canRunExecutionNow,
     canStopExecution,
     connectionState: realtimeLogs.connectionState,
     currentStatus: displayStatus,
@@ -145,6 +163,7 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     isReportError: reportAvailabilityQuery.isError,
     isReportLoading: showReport && reportAvailabilityQuery.isLoading,
     isResuming: resumeMutation.isPending,
+    isRunningNow: runNowMutation.isPending,
     isRerunAvailable: rerun.isRerunAvailable,
     isRerunning: rerun.isRerunning,
     isStopping: stopMutation.isPending,
@@ -154,14 +173,16 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     onPauseExecution: () => pauseMutation.mutate(),
     onRerunExecution: (scheduleInput) => rerun.triggerRerun(scheduleInput),
     onResumeExecution: () => resumeMutation.mutate(),
+    onRunExecutionNow: () => runNowMutation.mutate(),
     onStopExecution: () => stopMutation.mutate(),
     pauseError: pauseMutation.isError,
     rawExecutionJson,
     reportSource,
     rerunErrorMessage: rerun.rerunErrorMessage,
+    runNowError: runNowMutation.isError,
     rerunSummary: rerun.rerunSummary,
     resumeError: resumeMutation.isError,
-    scheduledAt: executionQuery.data?.scheduledAt,
+    scheduledAt,
     showReport,
     stopError: stopMutation.isError,
     subtitle: getExecutionDetailSubtitle(executionQuery.data, t),

@@ -120,6 +120,14 @@ function ExecutionDetailPageContent({ executionId }: { executionId: string }) {
         </Alert>
       ) : null}
 
+      {session.runNowError ? (
+        <Alert variant="destructive">
+          <IconAlertCircle />
+          <AlertTitle>{t('detail.runNowErrorTitle')}</AlertTitle>
+          <AlertDescription>{t('detail.runNowErrorDescription')}</AlertDescription>
+        </Alert>
+      ) : null}
+
       {session.rerunErrorMessage ? (
         <Alert variant="destructive">
           <IconAlertCircle />

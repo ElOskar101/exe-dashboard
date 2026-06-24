@@ -39,6 +39,7 @@ vi.mock('../services/execution.service', () => ({
   getExecutions: vi.fn(),
   pauseExecution: vi.fn(),
   resumeExecution: vi.fn(),
+  runExecutionNow: vi.fn(),
   scheduleExecution: vi.fn(),
   stopExecution: vi.fn(),
 }))

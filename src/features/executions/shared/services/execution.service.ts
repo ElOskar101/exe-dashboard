@@ -217,6 +217,12 @@ export const pauseExecution = (executionId: string, target: ExecutionApiRequestT
   return exeClient.post<Execution>(`executions/${executionId}/pause`, undefined, config)
 }
 
+export const runExecutionNow = (executionId: string, target: ExecutionApiRequestTarget) => {
+  const config = getExecutionRequestConfig(target)
+
+  return exeClient.post<Execution>(`executions/${executionId}/run-now`, undefined, config)
+}
+
 export const resumeExecution = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionRequestConfig(target)
 

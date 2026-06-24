@@ -245,6 +245,7 @@ interface ExecutionLogsCardProps {
   execution?: Execution
   canRerunExecution: boolean
   canResumeExecution: boolean
+  canRunExecutionNow: boolean
   canStopExecution: boolean
   connectionState: ReturnType<typeof useExecutionRealtimeLogs>['connectionState']
   currentStatus?: string | null
@@ -255,6 +256,7 @@ interface ExecutionLogsCardProps {
   isReportError: boolean
   isReportLoading: boolean
   isResuming: boolean
+  isRunningNow: boolean
   isRerunning: boolean
   isRerunAvailable: boolean
   isStopping: boolean
@@ -262,6 +264,7 @@ interface ExecutionLogsCardProps {
   onPauseExecution: () => void
   onRerunExecution: () => void
   onResumeExecution: () => void
+  onRunExecutionNow: () => void
   onStopExecution: () => void
   rawExecutionJson: string
   reportSource: string
@@ -276,6 +279,7 @@ export function ExecutionLogsCard({
   canPauseExecution,
   canRerunExecution,
   canResumeExecution,
+  canRunExecutionNow,
   canStopExecution,
   connectionState,
   currentStatus,
@@ -287,6 +291,7 @@ export function ExecutionLogsCard({
   isReportError,
   isReportLoading,
   isResuming,
+  isRunningNow,
   isRerunning,
   isRerunAvailable,
   isStopping,
@@ -294,6 +299,7 @@ export function ExecutionLogsCard({
   onPauseExecution,
   onRerunExecution,
   onResumeExecution,
+  onRunExecutionNow,
   onStopExecution,
   rawExecutionJson,
   reportSource,
@@ -361,6 +367,12 @@ export function ExecutionLogsCard({
                 onConfirm={onRerunExecution}
                 rerunSummary={rerunSummary}
               />
+            ) : null}
+            {canRunExecutionNow ? (
+              <Button disabled={isRunningNow} onClick={onRunExecutionNow} type="button" variant="outline">
+                {isRunningNow ? <Spinner data-icon="inline-start" /> : <IconPlayerPlay data-icon="inline-start" />}
+                {isRunningNow ? t('detail.runningNow') : t('detail.runNowExecution')}
+              </Button>
             ) : null}
             {canPauseExecution ? (
               <Button disabled={isPausing || isStopping} onClick={onPauseExecution} type="button" variant="outline">

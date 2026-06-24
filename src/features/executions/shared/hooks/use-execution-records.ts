@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
 import type { Dispatch } from 'react'
 import type { Execution } from '../model/execution'
@@ -16,6 +17,7 @@ import {
   getExecutions,
   pauseExecution,
   resumeExecution,
+  runExecutionNow,
   scheduleExecution,
   stopExecution,
 } from '../services/execution.service'
@@ -42,6 +44,22 @@ const invalidateExecutionDetail = async (
   targetKey: string,
 ) => {
   await queryClient.invalidateQueries({ queryKey: executionKeys.detail(executionId, targetKey) })
+}
+
+const clearScheduledAt = (execution: Execution): Execution => ({
+  ...execution,
+  scheduledAt: undefined,
+})
+
+const clearRunNowScheduleFromCache = (queryClient: QueryClient, executionId: string, targetKey: string) => {
+  queryClient.setQueryData<Execution>(executionKeys.detail(executionId, targetKey), (execution) =>
+    execution ? clearScheduledAt(execution) : execution,
+  )
+  queryClient.getQueriesData<Execution[]>({ queryKey: executionKeys.listRoot(targetKey) }).forEach(([queryKey]) => {
+    queryClient.setQueryData<Execution[]>(queryKey, (executions) =>
+      executions?.map((execution) => (execution._id === executionId ? clearScheduledAt(execution) : execution)),
+    )
+  })
 }
 
 export const useExecutionsQuery = (query: ExecutionQuery = {}, options: ExecutionQueryOptions = {}) => {
@@ -193,6 +211,18 @@ export const usePauseExecutionMutation = (executionId: string, options: Executio
 
 export const useResumeExecutionMutation = (executionId: string, options: ExecutionActionMutationOptions = {}) =>
   useExecutionActionMutation(resumeExecution, executionId, options)
+
+export const useRunExecutionNowMutation = (executionId: string, options: ExecutionActionMutationOptions = {}) => {
+  const queryClient = useQueryClient()
+  const { target } = useExecutionTarget()
+
+  return useExecutionActionMutation(runExecutionNow, executionId, {
+    onSuccess: async (payload) => {
+      clearRunNowScheduleFromCache(queryClient, executionId, target.key)
+      await options.onSuccess?.(payload)
+    },
+  })
+}
 
 export const useStopExecutionMutation = (executionId: string, options: ExecutionActionMutationOptions = {}) =>
   useExecutionActionMutation(stopExecution, executionId, options)
