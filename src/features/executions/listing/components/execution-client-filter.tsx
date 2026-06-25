@@ -4,6 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { executionWizardKeys } from '@/features/executions/creation/lib/execution-wizard-query-keys'
 import { searchCustomers, type CustomerSearchItem } from '@/features/executions/creation/services/ccc.service'
+import { getExecutionRequestErrorMessage } from '@/features/executions/shared/services/execution-errors'
 
 import { getClientFilterOptions } from '../lib/execution-listing-filters'
 import { ExecutionMultiSelectFilter } from './execution-multi-select-filter'
@@ -27,6 +28,7 @@ interface ExecutionClientFilterProps {
   onSelectedCustomersChange?: Dispatch<CustomerSearchItem[]>
   onSelectedValuesChange: Dispatch<string[]>
   placeholder: string
+  searchErrorMessage: string
   searchPlaceholder: string
   selectedCountLabel: string
   selectedValueLabels?: Record<string, string>
@@ -49,6 +51,7 @@ export function ExecutionClientFilter({
   onSelectedCustomersChange,
   onSelectedValuesChange,
   placeholder,
+  searchErrorMessage,
   searchPlaceholder,
   selectedCountLabel,
   selectedValueLabels = {},
@@ -88,6 +91,10 @@ export function ExecutionClientFilter({
       }),
     [getOptionValue, searchedCustomers, selectedValueLabels, selectedValues],
   )
+  const clientSearchError = clientSearchQuery.error
+    ? getExecutionRequestErrorMessage(clientSearchQuery.error, searchErrorMessage)
+    : null
+  const displayedError = error ?? clientSearchError
   const handleSelectedValuesChange = (nextSelectedValues: string[]) => {
     onSelectedValuesChange(nextSelectedValues)
 
@@ -102,12 +109,12 @@ export function ExecutionClientFilter({
     <ExecutionMultiSelectFilter
       clearSelectionLabel={clearSelectionLabel}
       clearSelectionPlacement="bottom"
-      error={error}
+      error={displayedError}
       fieldClassName={fieldClassName}
       filterOptionsLocally={false}
       hasMoreOptions={clientSearchQuery.hasNextPage}
       id={id}
-      invalid={invalid}
+      invalid={invalid || Boolean(displayedError)}
       isLoadingMoreOptions={clientSearchQuery.isFetchingNextPage}
       isLoadingOptions={clientSearchQuery.isLoading}
       label={label}
@@ -117,7 +124,7 @@ export function ExecutionClientFilter({
       selectedCountLabel={selectedCountLabel}
       selectedValues={selectedValues}
       options={clientOptions}
-      emptyMessage={emptyMessage}
+      emptyMessage={clientSearchError ?? emptyMessage}
       searchPlaceholder={searchPlaceholder}
       onLoadMoreOptions={() => void clientSearchQuery.fetchNextPage()}
       onSearchValueChange={setSearchValue}

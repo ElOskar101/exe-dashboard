@@ -48,7 +48,9 @@ export function PatientsStep({
   t,
 }: PatientsStepProps) {
   const emptyValue = t('review.emptyValue')
-  const executionPlaceholder = isLoadingExecutionDays
+  const selectedExecutionLabel = executionName || execution || undefined
+  const shouldShowExecutionLoading = isLoadingExecutionDays && !selectedExecutionLabel
+  const executionPlaceholder = shouldShowExecutionLoading
     ? t('placeholders.loadingExecutions')
     : t('placeholders.execution')
 
@@ -68,6 +70,7 @@ export function PatientsStep({
             loadingMessage={t('help.searchingCustomers')}
             loadingMoreMessage={t('help.searchingCustomers')}
             placeholder={t('placeholders.client')}
+            searchErrorMessage={t('validation.customerSearchTitle')}
             searchPlaceholder={t('placeholders.client')}
             selectedCountLabel={context.clientName || t('fields.client')}
             selectedValueLabels={context.client ? { [context.client]: context.clientName } : undefined}
@@ -130,7 +133,7 @@ export function PatientsStep({
             >
               <SelectTrigger id="execution" className="w-full">
                 <SelectValue placeholder={executionPlaceholder}>
-                  {isLoadingExecutionDays ? executionPlaceholder : executionName || execution || undefined}
+                  {shouldShowExecutionLoading ? executionPlaceholder : selectedExecutionLabel}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="start">
