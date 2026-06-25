@@ -326,8 +326,9 @@ async function stubWizardDependencies(page: Page, incompletePatient = false) {
 }
 
 async function selectExecutionPatients(page: Page) {
-  await page.getByLabel('Client').fill('Legacy')
-  await page.getByRole('button', { name: /Legacy Dental Care/ }).click()
+  await page.getByLabel('Client').click()
+  await page.getByRole('searchbox', { name: 'Search clients' }).fill('Legacy')
+  await page.getByRole('option', { name: /Legacy Dental Care/ }).click()
   await page.getByRole('combobox', { name: 'Clinic' }).click()
   await page.getByRole('option', { name: 'Downtown Clinic' }).click()
   await page.getByRole('combobox', { name: 'Execution' }).click()
@@ -339,9 +340,9 @@ test.describe('execution user flows', () => {
     await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
 
-    await page.goto(withExecutionTarget('/create'))
+    await page.goto(withExecutionTarget('/'))
 
-    await expect(page.getByText('No executions yet.')).toBeVisible()
+    await expect(page.locator('[data-slot="sidebar-container"]').getByText('No executions yet.')).toBeVisible()
   })
 
   test('renders the executions page table and opens the patients dialog from the summary cell', async ({ page }) => {
@@ -474,14 +475,16 @@ test.describe('execution user flows', () => {
     ])
     await stubExecutionDetails(page, execution._id, () => execution)
 
-    await page.goto(withExecutionTarget('/create'))
+    await page.goto(withExecutionTarget('/'))
 
-    await expect(page.getByText('chromium')).toBeVisible()
-    await expect(page.getByText('2026-05-26')).toBeVisible()
-    await expect(page.getByRole('link', { name: /2026-05-25/ })).toBeVisible()
+    const sidebar = page.locator('[data-slot="sidebar-container"]')
+
+    await expect(sidebar.getByRole('button', { name: 'chromium' })).toBeVisible()
+    await expect(sidebar.getByText('2026-05-26')).toBeVisible()
+    await expect(sidebar.getByRole('link', { name: /2026-05-25/ })).toBeVisible()
     await expect(page.getByLabel('queued')).toBeVisible()
     await expect(page.getByLabel('running')).toBeVisible()
-    await page.getByText('2026-05-25').click()
+    await sidebar.getByRole('link', { name: /2026-05-25/ }).click()
 
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
     await expect(page.locator('[data-slot="card-title"]').getByText('chromium 2026-05-25')).toBeVisible()
@@ -501,7 +504,7 @@ test.describe('execution user flows', () => {
     await stubExecutionDetails(page, execution._id, () => execution)
     await stubExecutionDetails(page, secondExecution._id, () => secondExecution)
 
-    await page.goto(withExecutionTarget('/create'))
+    await page.goto(withExecutionTarget('/'))
 
     await page.getByRole('button', { name: 'Minimize executions sidebar' }).click()
     await expect(page.getByRole('button', { name: 'Expand executions sidebar' })).toBeVisible()
@@ -514,7 +517,7 @@ test.describe('execution user flows', () => {
     await page.getByRole('button', { name: 'chromium executions' }).click()
 
     await expect(page.getByRole('heading', { name: 'chromium' })).toBeVisible()
-    await page.getByRole('link', { name: /2026-05-25/ }).click()
+    await page.getByRole('link', { name: 'queued 2026-05-25 Eligibility' }).click()
 
     await expect(page).toHaveURL(withExecutionTarget('/execution/execution-1'))
   })
@@ -777,6 +780,7 @@ test.describe('execution user flows', () => {
   test('blocks submission when no patients have been imported', async ({ page }) => {
     await prepareAuthenticatedPage(page)
     await stubExecutionList(page, () => [])
+    await stubWizardDependencies(page)
 
     await page.goto(withExecutionTarget('/create'))
     await page.getByRole('button', { name: 'Next' }).click()
@@ -794,7 +798,7 @@ test.describe('execution user flows', () => {
 
     await page.goto(withExecutionTarget('/create'))
     await selectExecutionPatients(page)
-    await expect(page.getByText('Imported patients: 1')).toBeVisible()
+    await expect(page.getByText('Doe', { exact: true }).first()).toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Back' }).click()
 

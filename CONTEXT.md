@@ -71,7 +71,8 @@ _Avoid_: Execution API, selected app API
 - Waiting **Scheduled Executions** present time remaining until their scheduled start time; started **Scheduled Executions** present elapsed time like other **Executions**
 - A waiting **Scheduled Execution** presents natural remaining time until the final minute, then presents a clock-style countdown
 - A **Waiting Scheduled Execution** does not receive lifecycle **Execution Control Requests** until it starts
-- In the sidebar, a **Scheduled Execution** appears only in the scheduled section and not in the normal execution section
+- In the sidebar, a **Waiting Scheduled Execution** appears only in the scheduled section and not in the normal execution section
+- In the sidebar, a started or finished **Scheduled Execution** appears in the normal execution section
 - An **Execution** is associated with one **Client**
 - An **Execution** can reference one **Playwright Project**
 - A **Client** can own many clinics

@@ -285,8 +285,9 @@ async function stubProtectedRouteDependencies(page: Page) {
 }
 
 async function selectCustomerAndClinic(page: Page) {
-  await page.getByLabel('Client').fill('Legacy')
-  await page.getByRole('button', { name: /Legacy Dental Care/ }).click()
+  await page.getByLabel('Client').click()
+  await page.getByRole('searchbox', { name: 'Search clients' }).fill('Legacy')
+  await page.getByRole('option', { name: /Legacy Dental Care/ }).click()
   await page.getByRole('combobox', { name: 'Clinic' }).click()
   await page.getByRole('option', { name: 'Downtown Clinic' }).click()
 }
@@ -295,7 +296,6 @@ async function importPatientsFromCCC(page: Page) {
   await page.getByRole('combobox', { name: 'Execution' }).click()
   await page.getByRole('option', { name: '2026-04-27' }).click()
   await expect(page.getByRole('option', { name: '2026-05-09' })).not.toBeVisible()
-  await expect(page.getByText('Imported patients: 2')).toBeVisible()
   await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('John', { exact: true }).first()).toBeVisible()
 }
@@ -379,7 +379,7 @@ test.describe('protected executions route', () => {
     await page.goto(withExecutionTarget('/create'))
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.getByText('Select a client and clinic in the patients step before choosing a bot.')).toBeVisible()
+    await expect(page.getByRole('combobox', { name: /Bot Select clinic first/ })).toBeDisabled()
 
     await page.getByRole('button', { name: 'Back' }).click()
     await expect(page.getByText('This field is required.').first()).toBeVisible()

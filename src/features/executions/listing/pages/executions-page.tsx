@@ -68,6 +68,7 @@ export default function ExecutionsPage() {
               selectedCountLabel={t('list.filters.selectedClients', { count: selectedClientIds.length })}
               selectedValues={selectedClientIds}
               emptyMessage={t('list.filters.noClients')}
+              searchErrorMessage={t('list.filters.loadClientsError')}
               searchPlaceholder={t('list.filters.searchClients')}
               onSelectedValuesChange={updateSelectedClientIds}
             />
