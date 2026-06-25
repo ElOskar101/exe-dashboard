@@ -540,7 +540,11 @@ export function ExecutionsSidebar() {
                           <TooltipContent side="right" align="center">
                             {sectionProjectTitle}
                           </TooltipContent>
-                          <PopoverContent side="right" align="start" className="w-80 gap-3 p-3">
+                          <PopoverContent
+                            side="right"
+                            align="start"
+                            className="max-h-(--available-height) w-80 gap-3 overflow-y-auto p-3"
+                          >
                             <PopoverHeader>
                               <PopoverTitle>{sectionProjectTitle}</PopoverTitle>
                             </PopoverHeader>
