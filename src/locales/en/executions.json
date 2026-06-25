@@ -245,7 +245,11 @@
     "deleteDescription": "This deletes {{execution}} when it is not running.",
     "cancelDelete": "Cancel",
     "confirmDelete": "Delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "deleteSuccessTitle": "Execution deleted",
+    "deleteSuccessDescription": "{{execution}} was deleted successfully.",
+    "deleteErrorTitle": "Execution could not be deleted",
+    "deleteErrorDescription": "The delete request failed. Check whether the execution is still running and try again."
   },
   "list": {
     "title": "All executions",

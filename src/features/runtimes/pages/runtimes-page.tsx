@@ -157,11 +157,11 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
               {canMutate ? <TableHead className="w-12 text-right">{t('columns.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="text-foreground/80 dark:text-white/80">
             {applications.length > 0 ? (
               applications.map((application) => (
                 <TableRow key={`${runtime._id}-${application.name}`}>
-                  <TableCell className="whitespace-normal break-words text-white/80">
+                  <TableCell className="whitespace-normal break-words">
                     <span className="flex min-w-0 items-center gap-2">
                       <IconBox className="size-4 shrink-0 text-muted-foreground" />
                       <AppDetailsDialog runtime={runtime} application={application}>
@@ -170,7 +170,7 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
                             <Button
                               type="button"
                               variant="link"
-                              className="h-auto p-0 text-white/80 hover:text-white"
+                              className="h-auto p-0 text-inherit hover:text-foreground dark:hover:text-white"
                             />
                           }
                         >
@@ -179,7 +179,7 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
                       </AppDetailsDialog>
                     </span>
                   </TableCell>
-                  <TableCell className="whitespace-normal break-all text-white/80">
+                  <TableCell className="whitespace-normal break-all">
                     <TruncatedText value={application.apiUrl} previewLength={API_URL_PREVIEW_LENGTH} />
                   </TableCell>
                   <TableCell>
@@ -192,13 +192,13 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
                       </Badge>
                     </div>
                   </TableCell>
-                  <TableCell className="text-white/80">
+                  <TableCell>
                     {application.nonProduction ? t('environment.development') : t('environment.production')}
                   </TableCell>
                   <TableCell>
                     <AccessBadge type={application.accessInfo.type} />
                   </TableCell>
-                  <TableCell className="whitespace-normal break-words text-white/80">
+                  <TableCell className="whitespace-normal break-words">
                     {getPlaywrightRuntimeCreatorLabel(application.accessInfo.createdBy) ?? t('creator.unknown')}
                   </TableCell>
                   {canMutate ? (
@@ -210,7 +210,7 @@ function RuntimeCatalogCard({ canMutate, runtime }: { canMutate: boolean; runtim
               ))
             ) : (
               <TableRow>
-                <TableCell className="h-24 text-center text-white/80" colSpan={canMutate ? 7 : 6}>
+                <TableCell className="h-24 text-center" colSpan={canMutate ? 7 : 6}>
                   {t('runtimeSummary.emptyApplications')}
                 </TableCell>
               </TableRow>
