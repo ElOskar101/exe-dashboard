@@ -11,7 +11,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <TooltipProvider>
         <AuthProvider>
           {children}
-          <Toaster position="top-right" richColors />
+          <Toaster position="top-right" />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
