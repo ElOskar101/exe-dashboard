@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 import { IconAlertCircle } from '@tabler/icons-react'
 import { ExecutionClientFilter } from '@/features/executions/listing'
 import { hasErrors } from '../lib/execution-wizard-validation'
@@ -14,6 +14,7 @@ interface PatientsStepProps extends ExecutionWizardPatientsStepState {
 }
 
 const patientErrorFieldKeys = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob'] as const
+const patientCardSkeletonCount = 6
 
 const patientErrorLabels = {
   patientName: 'fields.patientName',
@@ -142,12 +143,6 @@ export function PatientsStep({
                 </SelectGroup>
               </SelectContent>
             </Select>
-            {isImportingPatients ? (
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Spinner data-icon="inline-start" />
-                {t('buttons.gettingPatients')}
-              </p>
-            ) : null}
           </Field>
         </FieldGroup>
 
@@ -167,7 +162,7 @@ export function PatientsStep({
           </Alert>
         ) : null}
 
-        {errors.form && showErrors ? (
+        {errors.form && showErrors && !isImportingPatients ? (
           <Alert variant="destructive">
             <IconAlertCircle />
             <AlertTitle>{t('validation.patientListTitle')}</AlertTitle>
@@ -175,22 +170,33 @@ export function PatientsStep({
           </Alert>
         ) : null}
 
-        {patients.length === 0 ? (
+        {isImportingPatients ? (
+          <div className="grid max-h-[13rem] gap-4 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: patientCardSkeletonCount }).map((_, index) => (
+              <div key={index} className="flex min-w-0 flex-col gap-4 rounded-3xl border bg-muted/15 p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="size-8 rounded-full" />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-10" />
+                  <Skeleton className="h-10" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {!isImportingPatients && patients.length === 0 ? (
           <div className="rounded-3xl border border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
             {t('help.noImportedPatients')}
           </div>
         ) : null}
 
-        {patients.length > 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('help.importedPatients', {
-              count: patients.length,
-            })}
-          </p>
-        ) : null}
-
-        {patients.length > 0 ? (
-          <div className="grid max-h-[13rem] gap-4 overflow-y-auto p-1 pr-3 sm:max-h-[16rem] md:grid-cols-2 xl:grid-cols-3">
+        {!isImportingPatients && patients.length > 0 ? (
+          <div className="grid max-h-[13rem] gap-4 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 xl:grid-cols-3">
             {patients.map((patient, index) =>
               (() => {
                 const rowErrors = errors.rows[index] ?? {}

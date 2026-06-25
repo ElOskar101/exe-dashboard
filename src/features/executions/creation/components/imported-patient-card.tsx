@@ -1,8 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react'
 import type { TFunction } from 'i18next'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogClose,
@@ -15,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
+import { IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
 import type { ExecutionPatient } from '../model/execution-create'
 
@@ -74,6 +73,20 @@ export function ImportedPatientCard({
         >
           <CardHeader>
             <CardTitle className="truncate">{patientLabel}</CardTitle>
+            {showErrors && hasRowErrors ? (
+              <CardDescription role="alert" className="col-start-1 row-start-2 text-destructive">
+                <span className="flex flex-col gap-1">
+                  <span className="font-medium">{t('validation.patientDetailsTitle')}</span>
+                  <span>
+                    {missingFields.length > 0
+                      ? t('validation.patientDetailsDescription', {
+                          fields: missingFields.join(', '),
+                        })
+                      : rowErrorMessage}
+                  </span>
+                </span>
+              </CardDescription>
+            ) : null}
             <CardAction>
               <Button
                 variant="ghost"
@@ -101,20 +114,6 @@ export function ImportedPatientCard({
         </DialogTrigger>
         <PatientDetailsDialog emptyValue={emptyValue} patient={patient} patientLabel={patientLabel} t={t} />
       </Dialog>
-
-      {showErrors && hasRowErrors ? (
-        <Alert variant="destructive">
-          <IconAlertCircle />
-          <AlertTitle>{t('validation.patientDetailsTitle')}</AlertTitle>
-          <AlertDescription>
-            {missingFields.length > 0
-              ? t('validation.patientDetailsDescription', {
-                  fields: missingFields.join(', '),
-                })
-              : rowErrorMessage}
-          </AlertDescription>
-        </Alert>
-      ) : null}
     </div>
   )
 }

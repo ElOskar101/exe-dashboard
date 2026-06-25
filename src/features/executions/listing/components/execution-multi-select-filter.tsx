@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch, type UIEvent } from 'react'
-import { IconChevronDown, IconX } from '@tabler/icons-react'
+import { IconCheck, IconChevronDown, IconX } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -71,7 +71,9 @@ export function ExecutionMultiSelectFilter({
   selectionMode = 'multiple',
   triggerClassName,
 }: ExecutionMultiSelectFilterProps) {
+  const [isOpen, setIsOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const isSingleSelection = selectionMode === 'single'
   const filteredOptions = useMemo(() => {
     if (!filterOptionsLocally) return options
 
@@ -99,12 +101,14 @@ export function ExecutionMultiSelectFilter({
     onSearchValueChange?.('')
   }
   const setOptionSelected = (value: string, selected: boolean) => {
-    if (selected && selectionMode === 'single') {
+    if (selected && isSingleSelection) {
+      clearSearchValue()
       onSelectedValuesChange([value])
+      setIsOpen(false)
       return
     }
 
-    if (!selected && selectionMode === 'single') {
+    if (!selected && isSingleSelection) {
       clearSearchValue()
     }
 
@@ -121,7 +125,7 @@ export function ExecutionMultiSelectFilter({
       size="sm"
       className={cn(clearSelectionPlacement === 'bottom' ? 'w-full justify-start' : 'w-fit')}
       onClick={() => {
-        if (selectionMode === 'single') {
+        if (isSingleSelection) {
           clearSearchValue()
         }
 
@@ -129,7 +133,7 @@ export function ExecutionMultiSelectFilter({
       }}
     >
       <IconX data-icon="inline-start" />
-      {clearSelectionLabel ?? placeholder}
+      {isSingleSelection ? selectedLabel : (clearSelectionLabel ?? placeholder)}
     </Button>
   )
   const handleSearchValueChange = (value: string) => {
@@ -150,7 +154,7 @@ export function ExecutionMultiSelectFilter({
   return (
     <Field className={fieldClassName} data-invalid={invalid}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Popover>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger
           render={
             <Button
@@ -197,18 +201,33 @@ export function ExecutionMultiSelectFilter({
                 {loadingMessage ?? emptyMessage}
               </div>
             ) : filteredOptions.length > 0 ? (
-              filteredOptions.map((option) => (
-                <Label
-                  key={option.value}
-                  className="flex min-h-9 cursor-pointer items-center rounded-2xl px-2 py-1.5 hover:bg-muted"
-                >
-                  <Checkbox
-                    checked={selectedValuesSet.has(option.value)}
-                    onCheckedChange={(checked) => setOptionSelected(option.value, checked)}
-                  />
-                  <span className="truncate">{option.label}</span>
-                </Label>
-              ))
+              filteredOptions.map((option) =>
+                isSingleSelection ? (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    variant="ghost"
+                    role="option"
+                    aria-selected={selectedValuesSet.has(option.value)}
+                    className="min-h-9 w-full justify-start rounded-2xl px-2 py-1.5 font-normal"
+                    onClick={() => setOptionSelected(option.value, true)}
+                  >
+                    <span className="flex-1 truncate text-left">{option.label}</span>
+                    {selectedValuesSet.has(option.value) ? <IconCheck data-icon="inline-end" /> : null}
+                  </Button>
+                ) : (
+                  <Label
+                    key={option.value}
+                    className="flex min-h-9 cursor-pointer items-center rounded-2xl px-2 py-1.5 hover:bg-muted"
+                  >
+                    <Checkbox
+                      checked={selectedValuesSet.has(option.value)}
+                      onCheckedChange={(checked) => setOptionSelected(option.value, checked)}
+                    />
+                    <span className="truncate">{option.label}</span>
+                  </Label>
+                ),
+              )
             ) : (
               <div className="rounded-2xl px-2 py-1.5 text-muted-foreground">{emptyMessage}</div>
             )}
