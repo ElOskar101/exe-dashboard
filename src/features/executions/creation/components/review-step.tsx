@@ -93,14 +93,35 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
           </dl>
         </div>
 
-        <div className="max-h-[26rem] overflow-auto rounded-2xl border border-border/70 bg-muted/40 md:max-h-48">
+        <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
+          <dl className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.workers')}</dt>
+              <dd className="mt-1 font-medium">
+                {getExecutionWizardDisplayValue(draft.execution.workers, emptyValue)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
+              <dd className="mt-1 font-medium">
+                {getExecutionWizardDisplayValue(draft.execution.retries, emptyValue)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
+              <dd className="mt-1 font-medium">{getExecutionWizardDisplayValue(draft.context.project, emptyValue)}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className="max-h-[26rem] overflow-auto rounded-3xl border border-border/70 bg-muted/20 md:max-h-48">
           {patients.length > 0 ? (
             <>
               <div className="space-y-3 p-3 md:hidden">
                 {patients.map((patient, index) => (
                   <div
                     key={`${patient.patientMemberId}-${index}`}
-                    className="rounded-2xl border border-border/60 bg-background/60 p-3"
+                    className="rounded-2xl border border-border/60 bg-muted/20 p-3"
                   >
                     <p className="font-medium">{getExecutionWizardPatientFullName(patient, emptyValue)}</p>
                     <dl className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -133,7 +154,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
 
               <div className="hidden md:block">
                 <table className="w-full min-w-[40rem] text-left text-sm">
-                  <thead className="sticky top-0 bg-muted/70">
+                  <thead className="sticky top-0 bg-card">
                     <tr className="border-b border-border/70">
                       <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientName')}</th>
                       <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientDob')}</th>
@@ -171,40 +192,15 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             </div>
           )}
         </div>
-
-        <div className="rounded-3xl border border-border/70 bg-muted/20 p-4">
-          <dl className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.workers')}</dt>
-              <dd className="mt-1 font-medium">
-                {getExecutionWizardDisplayValue(draft.execution.workers, emptyValue)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.retries')}</dt>
-              <dd className="mt-1 font-medium">
-                {getExecutionWizardDisplayValue(draft.execution.retries, emptyValue)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.project')}</dt>
-              <dd className="mt-1 font-medium">{getExecutionWizardDisplayValue(draft.context.project, emptyValue)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('fields.headed')}</dt>
-              <dd className="mt-1 font-medium">{t('options.disabled')}</dd>
-            </div>
-          </dl>
-        </div>
       </div>
 
-      <div className="flex max-h-[24rem] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card p-4 sm:max-h-96">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-muted-foreground">{t('review.payloadTitle')}</span>
+      <div className="flex max-h-[42rem] min-h-0 min-w-0 flex-col rounded-3xl border border-border/70 bg-card sm:max-h-[70vh]">
+        <div className="relative min-h-0 min-w-0 flex-1">
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="absolute top-4 right-4 z-10 inline-flex h-auto bg-background/95 shadow-sm backdrop-blur"
             onClick={() => {
               void handleCopyPayload()
             }}
@@ -213,10 +209,10 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
             <IconCopy data-icon="inline-start" />
             {t('buttons.copyPayload')}
           </Button>
+          <pre className="h-full min-h-[28rem] min-w-0 overflow-auto whitespace-pre-wrap break-all rounded-3xl bg-muted/70 p-6 text-xs leading-6">
+            {payloadText}
+          </pre>
         </div>
-        <pre className="min-h-0 min-w-0 flex-1 overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-muted/70 p-4 text-xs leading-6">
-          {payloadText}
-        </pre>
       </div>
     </div>
   )

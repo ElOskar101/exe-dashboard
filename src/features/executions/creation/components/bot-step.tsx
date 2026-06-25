@@ -63,75 +63,6 @@ export function BotStep({
   return (
     <FieldSet>
       <FieldGroup>
-        {playwrightProjectsError ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.playwrightProjectsTitle')}</AlertTitle>
-            <AlertDescription>{playwrightProjectsError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {clinicBotsError ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
-            <AlertDescription>{clinicBotsError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {botPasswordError ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
-            <AlertDescription>{botPasswordError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {!hasSelectedClinic ? (
-          <Alert>
-            <IconAlertCircle />
-            <AlertDescription>{t('help.selectClientAndClinicFirst')}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {hasSelectedClinicWithoutActiveBots ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
-            <AlertDescription>{t('help.noActiveClinicBots')}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {hasSelectedProjectWithoutAssociatedBots ? (
-          <Alert variant="destructive">
-            <IconAlertCircle />
-            <AlertTitle>{t('validation.associatedBotsTitle')}</AlertTitle>
-            <AlertDescription>{t('help.noAssociatedBots')}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {hasSelectedProject &&
-        hasSelectedClinic &&
-        !selectedBotId.trim().length &&
-        !isLoadingPlaywrightProjects &&
-        !isLoadingClinicBots &&
-        !hasSelectedClinicWithoutActiveBots &&
-        !hasSelectedProjectWithoutAssociatedBots &&
-        !clinicBotsError &&
-        !playwrightProjectsError ? (
-          <Alert>
-            <IconAlertCircle />
-            <AlertDescription>{t('help.selectBotToEdit')}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {isDecryptingBotPassword ? (
-          <Alert>
-            <IconAlertCircle />
-            <AlertDescription>{t('help.decryptingClinicBotPassword')}</AlertDescription>
-          </Alert>
-        ) : null}
-
         <FieldGroup className="md:grid md:grid-cols-2">
           <Field data-invalid={showErrors && Boolean(projectError)}>
             <FieldLabel htmlFor="project">{t('fields.project')}</FieldLabel>
@@ -157,7 +88,14 @@ export function BotStep({
           </Field>
 
           <Field data-invalid={showErrors && Boolean(errors.clinicBotId)}>
-            <FieldLabel htmlFor="associatedBot">{t('fields.bot')}</FieldLabel>
+            <FieldLabel htmlFor="associatedBot">
+              <span className="flex items-center gap-2">
+                {t('fields.bot')}
+                {!hasSelectedClinic ? (
+                  <span className="text-xs font-normal text-muted-foreground">{t('help.selectClinicFirst')}</span>
+                ) : null}
+              </span>
+            </FieldLabel>
             <Select
               value={selectedBotId}
               onValueChange={(value) => onBotSelect(value ?? '')}
@@ -270,7 +208,16 @@ export function BotStep({
           </Field>
 
           <Field data-invalid={showBotFieldErrors && Boolean(errors.password)}>
-            <FieldLabel htmlFor="botPassword">{t('fields.password')}</FieldLabel>
+            <FieldLabel htmlFor="botPassword">
+              <span className="flex items-center gap-2">
+                {t('fields.password')}
+                {isDecryptingBotPassword ? (
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {t('placeholders.decryptingClinicBotPassword')}
+                  </span>
+                ) : null}
+              </span>
+            </FieldLabel>
             <div className="relative">
               <Input
                 id="botPassword"
@@ -297,6 +244,46 @@ export function BotStep({
             <FieldError>{showBotFieldErrors ? errors.password : null}</FieldError>
           </Field>
         </FieldGroup>
+
+        {playwrightProjectsError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.playwrightProjectsTitle')}</AlertTitle>
+            <AlertDescription>{playwrightProjectsError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {clinicBotsError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
+            <AlertDescription>{clinicBotsError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {botPasswordError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.decryptClinicBotPasswordTitle')}</AlertTitle>
+            <AlertDescription>{botPasswordError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {hasSelectedClinicWithoutActiveBots ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.clinicBotsTitle')}</AlertTitle>
+            <AlertDescription>{t('help.noActiveClinicBots')}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {hasSelectedProjectWithoutAssociatedBots ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>{t('validation.associatedBotsTitle')}</AlertTitle>
+            <AlertDescription>{t('help.noAssociatedBots')}</AlertDescription>
+          </Alert>
+        ) : null}
       </FieldGroup>
     </FieldSet>
   )

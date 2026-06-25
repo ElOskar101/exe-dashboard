@@ -168,6 +168,7 @@
     "searchingCustomers": "Searching clients...",
     "noCustomersFound": "No clients matched your search.",
     "selected": "Selected",
+    "selectClinicFirst": "Select clinic first.",
     "selectClientAndClinicFirst": "Select a client and clinic in the patients step before choosing a bot.",
     "selectBotToEdit": "Select a bot to load its default execution settings.",
     "decryptingClinicBotPassword": "Decrypting the selected bot password.",
