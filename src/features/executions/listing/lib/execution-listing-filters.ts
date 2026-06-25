@@ -1,6 +1,6 @@
 import { endOfDay, isAfter, isBefore, isValid, parseISO, startOfDay } from 'date-fns'
 
-import { type CustomerSearchItem } from '@/features/executions/creation'
+import { type CustomerSearchItem } from '@/features/executions/creation/services/ccc.service'
 import { normalizeExecutionStatus, type Execution, type ExecutionStatusReadModel } from '@/features/executions/shared'
 
 export const ALL_FILTER_VALUE = 'all'
@@ -15,6 +15,11 @@ export interface ExecutionDisplayNames {
 export interface ExecutionFilterOption {
   value: string
   label: string
+}
+
+interface ClientFilterOptionsConfig {
+  getOptionValue?: (customer: CustomerSearchItem) => string
+  selectedValueLabels?: Record<string, string>
 }
 
 const compareFilterOptions = (a: ExecutionFilterOption, b: ExecutionFilterOption) =>
@@ -33,15 +38,17 @@ export const getExecutionDisplayNames = (execution: Execution): ExecutionDisplay
 export const getClientFilterOptions = (
   customers: CustomerSearchItem[],
   selectedClientIds: string[],
+  { getOptionValue = (customer) => customer.clientName, selectedValueLabels = {} }: ClientFilterOptionsConfig = {},
 ): ExecutionFilterOption[] => {
   const optionsByValue = new Map<string, ExecutionFilterOption>()
 
   customers.forEach((customer) => {
-    const value = customer.clientName.trim()
+    const value = getOptionValue(customer).trim()
+    const label = customer.clientName.trim()
 
-    if (!value) return
+    if (!value || !label) return
 
-    optionsByValue.set(value, { value, label: value })
+    optionsByValue.set(value, { value, label })
   })
 
   selectedClientIds.forEach((clientId) => {
@@ -49,7 +56,7 @@ export const getClientFilterOptions = (
 
     if (!value) return
 
-    const label = optionsByValue.get(value)?.label || value
+    const label = optionsByValue.get(value)?.label || selectedValueLabels[value] || value
 
     optionsByValue.set(value, { value, label })
   })

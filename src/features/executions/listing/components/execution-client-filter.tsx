@@ -2,7 +2,8 @@ import { useMemo, useState, type Dispatch } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
-import { executionWizardKeys, searchCustomers } from '@/features/executions/creation'
+import { executionWizardKeys } from '@/features/executions/creation/lib/execution-wizard-query-keys'
+import { searchCustomers, type CustomerSearchItem } from '@/features/executions/creation/services/ccc.service'
 
 import { getClientFilterOptions } from '../lib/execution-listing-filters'
 import { ExecutionMultiSelectFilter } from './execution-multi-select-filter'
@@ -10,30 +11,50 @@ import { ExecutionMultiSelectFilter } from './execution-multi-select-filter'
 const CLIENT_FILTER_PAGE_SIZE = 15
 const CLIENT_FILTER_SEARCH_DELAY_MS = 300
 
+const getCustomerClientName = (customer: CustomerSearchItem) => customer.clientName
+
 interface ExecutionClientFilterProps {
   clearSelectionLabel: string
   emptyMessage: string
+  error?: string | null
+  fieldClassName?: string
+  getOptionValue?: (customer: CustomerSearchItem) => string
+  id?: string
+  invalid?: boolean
   label: string
   loadingMessage: string
   loadingMoreMessage: string
+  onSelectedCustomersChange?: Dispatch<CustomerSearchItem[]>
   onSelectedValuesChange: Dispatch<string[]>
   placeholder: string
   searchPlaceholder: string
   selectedCountLabel: string
+  selectedValueLabels?: Record<string, string>
   selectedValues: string[]
+  selectionMode?: 'multiple' | 'single'
+  triggerClassName?: string
 }
 
 export function ExecutionClientFilter({
   clearSelectionLabel,
   emptyMessage,
+  error,
+  fieldClassName,
+  getOptionValue = getCustomerClientName,
+  id = 'execution-client-filter',
+  invalid = false,
   label,
   loadingMessage,
   loadingMoreMessage,
+  onSelectedCustomersChange,
   onSelectedValuesChange,
   placeholder,
   searchPlaceholder,
   selectedCountLabel,
+  selectedValueLabels = {},
   selectedValues,
+  selectionMode = 'multiple',
+  triggerClassName,
 }: ExecutionClientFilterProps) {
   const [searchValue, setSearchValue] = useState('')
   const debouncedSearchValue = useDebouncedValue(searchValue, CLIENT_FILTER_SEARCH_DELAY_MS)
@@ -60,17 +81,33 @@ export function ExecutionClientFilter({
     [clientSearchQuery.data],
   )
   const clientOptions = useMemo(
-    () => getClientFilterOptions(searchedCustomers, selectedValues),
-    [searchedCustomers, selectedValues],
+    () =>
+      getClientFilterOptions(searchedCustomers, selectedValues, {
+        getOptionValue,
+        selectedValueLabels,
+      }),
+    [getOptionValue, searchedCustomers, selectedValueLabels, selectedValues],
   )
+  const handleSelectedValuesChange = (nextSelectedValues: string[]) => {
+    onSelectedValuesChange(nextSelectedValues)
+
+    if (onSelectedCustomersChange) {
+      const selectedValuesSet = new Set(nextSelectedValues)
+
+      onSelectedCustomersChange(searchedCustomers.filter((customer) => selectedValuesSet.has(getOptionValue(customer))))
+    }
+  }
 
   return (
     <ExecutionMultiSelectFilter
       clearSelectionLabel={clearSelectionLabel}
       clearSelectionPlacement="bottom"
+      error={error}
+      fieldClassName={fieldClassName}
       filterOptionsLocally={false}
       hasMoreOptions={clientSearchQuery.hasNextPage}
-      id="execution-client-filter"
+      id={id}
+      invalid={invalid}
       isLoadingMoreOptions={clientSearchQuery.isFetchingNextPage}
       isLoadingOptions={clientSearchQuery.isLoading}
       label={label}
@@ -84,7 +121,9 @@ export function ExecutionClientFilter({
       searchPlaceholder={searchPlaceholder}
       onLoadMoreOptions={() => void clientSearchQuery.fetchNextPage()}
       onSearchValueChange={setSearchValue}
-      onSelectedValuesChange={onSelectedValuesChange}
+      onSelectedValuesChange={handleSelectedValuesChange}
+      selectionMode={selectionMode}
+      triggerClassName={triggerClassName}
     />
   )
 }

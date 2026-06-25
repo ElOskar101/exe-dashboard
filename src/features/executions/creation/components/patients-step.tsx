@@ -4,9 +4,9 @@ import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/component
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { IconAlertCircle } from '@tabler/icons-react'
+import { ExecutionClientFilter } from '@/features/executions/listing'
 import { hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionWizardPatientsStepState } from '../hooks/use-execution-wizard'
-import { CustomerSearchField } from './customer-search-field'
 import { ImportedPatientCard } from './imported-patient-card'
 
 interface PatientsStepProps extends ExecutionWizardPatientsStepState {
@@ -30,9 +30,6 @@ export function PatientsStep({
   contextErrors,
   errors,
   showErrors,
-  customerOptions,
-  isSearchingCustomers,
-  customerSearchError,
   selectedCustomerError,
   clinicOptions,
   isLoadingClinics,
@@ -42,7 +39,6 @@ export function PatientsStep({
   executionDaysError,
   isImportingPatients,
   importPatientsError,
-  onCustomerSearchChange,
   onCustomerClear,
   onCustomerSelect,
   onClinicSelect,
@@ -51,32 +47,45 @@ export function PatientsStep({
   t,
 }: PatientsStepProps) {
   const emptyValue = t('review.emptyValue')
+  const executionPlaceholder = isLoadingExecutionDays
+    ? t('placeholders.loadingExecutions')
+    : t('placeholders.execution')
 
   return (
     <FieldSet>
       <FieldGroup>
         <FieldGroup className="gap-4 md:grid md:grid-cols-3">
-          <Field data-invalid={showErrors && Boolean(contextErrors.client)}>
-            <FieldLabel htmlFor="client">{t('fields.client')}</FieldLabel>
-            <CustomerSearchField
-              id="client"
-              value={context.clientName}
-              selectedCustomerName={context.clientName}
-              invalid={showErrors && Boolean(contextErrors.client)}
-              placeholder={t('placeholders.client')}
-              isLoading={isSearchingCustomers}
-              searchError={customerSearchError}
-              options={customerOptions}
-              noResultsText={t('help.noCustomersFound')}
-              searchingText={t('help.searchingCustomers')}
-              selectedText={t('help.selected')}
-              onValueChange={onCustomerSearchChange}
-              onClearSelection={onCustomerClear}
-              onSelect={onCustomerSelect}
-              selectedCustomerId={context.client}
-            />
-            <FieldError>{showErrors ? contextErrors.client : null}</FieldError>
-          </Field>
+          <ExecutionClientFilter
+            clearSelectionLabel={t('fields.client')}
+            emptyMessage={t('help.noCustomersFound')}
+            error={showErrors ? contextErrors.client : null}
+            fieldClassName="gap-3"
+            getOptionValue={(customer) => customer._id}
+            id="client"
+            invalid={showErrors && Boolean(contextErrors.client)}
+            label={t('fields.client')}
+            loadingMessage={t('help.searchingCustomers')}
+            loadingMoreMessage={t('help.searchingCustomers')}
+            placeholder={t('placeholders.client')}
+            searchPlaceholder={t('placeholders.client')}
+            selectedCountLabel={context.clientName || t('fields.client')}
+            selectedValueLabels={context.client ? { [context.client]: context.clientName } : undefined}
+            selectedValues={context.client ? [context.client] : []}
+            selectionMode="single"
+            triggerClassName="rounded-3xl border-transparent bg-input/50 hover:bg-input/50 aria-expanded:bg-input/50 dark:bg-input/50 dark:hover:bg-input/50"
+            onSelectedCustomersChange={(selectedCustomers) => {
+              const selectedCustomer = selectedCustomers[0]
+
+              if (selectedCustomer) {
+                onCustomerSelect(selectedCustomer)
+              }
+            }}
+            onSelectedValuesChange={(selectedValues) => {
+              if (selectedValues.length === 0) {
+                onCustomerClear()
+              }
+            }}
+          />
 
           <Field data-invalid={showErrors && Boolean(contextErrors.clinic)}>
             <FieldLabel htmlFor="clinic">{t('fields.clinic')}</FieldLabel>
@@ -119,8 +128,8 @@ export function PatientsStep({
               }
             >
               <SelectTrigger id="execution" className="w-full">
-                <SelectValue placeholder={t('placeholders.execution')}>
-                  {executionName || execution || undefined}
+                <SelectValue placeholder={executionPlaceholder}>
+                  {isLoadingExecutionDays ? executionPlaceholder : executionName || execution || undefined}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="start">

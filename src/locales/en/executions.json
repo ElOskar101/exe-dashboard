@@ -83,7 +83,7 @@
   },
   "placeholders": {
     "project": "Select a project",
-    "client": "Search clients by name",
+    "client": "Search clients",
     "clinic": "Select a clinic",
     "bot": "Select a bot",
     "botName": "Eligibility Runner",
@@ -102,6 +102,7 @@
     "filenames": "jane-doe.pdf",
     "numberOfThreads": "4",
     "execution": "Select an execution day",
+    "loadingExecutions": "Loading executions...",
     "workers": "2",
     "retries": "1"
   },
