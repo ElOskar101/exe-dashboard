@@ -14,7 +14,6 @@ export type StepErrors = {
   config: {
     workers?: string
     retries?: string
-    config?: string
     scheduledAt?: string
   }
 }
@@ -58,6 +57,8 @@ export const getExecutionWizardValidationErrors = (
 
   if (!draft.context.clinic.trim()) {
     context.clinic = t('validation.required')
+  } else if (!draft.context.config) {
+    context.clinic = t('validation.macroConfigRequired')
   }
 
   if (options.hasSelectedCustomerWithoutClinics) {
@@ -139,10 +140,6 @@ export const getExecutionWizardValidationErrors = (
     config.retries = t('validation.nonNegativeNumber')
   } else if (typeof options.retriesLimit === 'number' && Number(draft.execution.retries) > options.retriesLimit) {
     config.retries = t('validation.exceedsMax', { max: options.retriesLimit })
-  }
-
-  if (!isExecutionMetadataStringValid(draft.execution.config)) {
-    config.config = t('validation.validJsonObject')
   }
 
   if (draft.execution.scheduleMode === 'scheduled') {

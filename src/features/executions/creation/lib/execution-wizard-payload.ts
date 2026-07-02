@@ -67,6 +67,12 @@ const createExecutionPayloadScheduledAtPreview = (value: string) => {
   return Number.isNaN(scheduledAt.getTime()) ? trimmedValue : scheduledAt.toISOString()
 }
 
+const createExecutionPayloadConfig = (draft: ExecutionWizardDraft): ExecutionMetadata => ({
+  ...(draft.context.config ?? {}),
+  [CLIENT_NAME_CONFIG_KEY]: draft.context.clientName.trim(),
+  [CLINIC_NAME_CONFIG_KEY]: draft.context.clinicName.trim(),
+})
+
 export const buildExecutionPayloadPreview = (
   draft: ExecutionWizardDraft,
   createdBy: string,
@@ -77,12 +83,6 @@ export const buildExecutionPayloadPreview = (
   const patientOtherInformation = draft.execution.patients.map((patient) =>
     parseExecutionMetadata(patient.otherInformation),
   )
-  const configMetadata = parseExecutionMetadata(draft.execution.config)
-  const configWithSelectedNames = {
-    ...(configMetadata ?? {}),
-    [CLIENT_NAME_CONFIG_KEY]: draft.context.clientName.trim(),
-    [CLINIC_NAME_CONFIG_KEY]: draft.context.clinicName.trim(),
-  }
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
@@ -120,7 +120,7 @@ export const buildExecutionPayloadPreview = (
         filenames: createPatientFilenames(patient.filenames),
         otherInformation: patientOtherInformation[index] ?? {},
       })),
-      config: configWithSelectedNames,
+      config: createExecutionPayloadConfig(draft),
       rv: rv ?? {},
       headed: DEFAULT_HEADED_MODE,
       workers: createExecutionPayloadNumberPreview(draft.execution.workers),
@@ -158,6 +158,7 @@ export const buildExecutionPayload = (
     !draft.context.clientName.trim() ||
     !draft.context.clinic.trim() ||
     !draft.context.clinicName.trim() ||
+    !draft.context.config ||
     !draft.bot.clinicBotId.trim() ||
     !draft.bot.botName.trim() ||
     !draft.bot.targetUrl.trim() ||
@@ -172,9 +173,7 @@ export const buildExecutionPayload = (
   const patientOtherInformation = draft.execution.patients.map((patient) =>
     parseExecutionMetadata(patient.otherInformation),
   )
-  const configMetadata = parseExecutionMetadata(draft.execution.config)
-
-  if (patientOtherInformation.some((metadata) => !metadata) || !configMetadata) {
+  if (patientOtherInformation.some((metadata) => !metadata)) {
     return null
   }
 

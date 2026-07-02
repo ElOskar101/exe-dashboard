@@ -35,16 +35,6 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.context.clinic).toBe('validation.customerHasNoClinics')
   })
 
-  it('validates execution config as a JSON object', () => {
-    const draft = createEmptyDraft()
-
-    draft.execution.config = '[]'
-
-    const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
-
-    expect(errors.config.config).toBe('validation.validJsonObject')
-  })
-
   it('requires a future scheduled time when scheduled mode is selected', () => {
     const draft = createEmptyDraft()
 

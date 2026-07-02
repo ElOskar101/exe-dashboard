@@ -134,6 +134,7 @@
   "validation": {
     "required": "This field is required.",
     "customerHasNoClinics": "The selected client has no clinics available.",
+    "macroConfigRequired": "Wait for the selected clinic configuration to load before submitting.",
     "validUrl": "Enter a valid URL.",
     "validDate": "Enter a valid date.",
     "futureDateTime": "Choose a future date and time.",

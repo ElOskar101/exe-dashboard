@@ -5,9 +5,13 @@ import { buildExecutionPayload } from './execution-wizard-payload'
 const ACCESS_TOKEN = 'token-123'
 const CCC_API_URL = 'https://dev-carrier.dentalautomation.ai'
 const RUNTIME_VARIABLES = { carrierDomain: 'dev-carrier' }
+const MACRO_CONFIG = { shortForm: true }
 
-const buildPayload = (draft: ReturnType<typeof createEmptyDraft>, createdBy: string) =>
-  buildExecutionPayload(draft, createdBy, ACCESS_TOKEN, CCC_API_URL, RUNTIME_VARIABLES)
+const buildPayload = (draft: ReturnType<typeof createEmptyDraft>, createdBy: string) => {
+  draft.context.config ??= MACRO_CONFIG
+
+  return buildExecutionPayload(draft, createdBy, ACCESS_TOKEN, CCC_API_URL, RUNTIME_VARIABLES)
+}
 
 const toDateTimeLocalValue = (date: Date) => {
   const pad = (value: number) => value.toString().padStart(2, '0')
@@ -34,7 +38,7 @@ describe('buildExecutionPayload', () => {
     draft.bot.username = 'operator'
     draft.bot.password = '  secret  '
     draft.bot.verificationType = 'FBD'
-    draft.execution.config = '{ "parallel": true }'
+    draft.context.config = MACRO_CONFIG
     draft.execution.patients = [
       {
         id: 'row-1',
@@ -95,7 +99,7 @@ describe('buildExecutionPayload', () => {
         config: {
           clientName: 'Legacy Dental Care',
           clinicName: 'Legacy Dental Care',
-          parallel: true,
+          shortForm: true,
         },
         rv: RUNTIME_VARIABLES,
         headed: false,
@@ -105,7 +109,7 @@ describe('buildExecutionPayload', () => {
     })
   })
 
-  it('returns null when metadata JSON is invalid or createdBy is missing', () => {
+  it('returns null when createdBy is missing', () => {
     const draft = createEmptyDraft()
 
     draft.context.project = 'liberty'
@@ -121,10 +125,6 @@ describe('buildExecutionPayload', () => {
     draft.bot.verificationType = 'ELG'
 
     expect(buildPayload(draft, '')).toBeNull()
-
-    draft.execution.config = '[]'
-
-    expect(buildPayload(draft, 'user-1')).toBeNull()
   })
 
   it('returns null while runtime variables are unavailable', () => {

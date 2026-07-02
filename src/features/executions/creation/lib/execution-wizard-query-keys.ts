@@ -3,6 +3,7 @@ export const executionWizardKeys = {
   clinic: (clinicId: string) => [...executionWizardKeys.all, 'clinic', clinicId] as const,
   clinicBots: (clinicId: string) => [...executionWizardKeys.all, 'clinic-bots', clinicId] as const,
   clinicExecutionDays: (clinicId: string) => [...executionWizardKeys.all, 'clinic-execution-days', clinicId] as const,
+  clinicMacroConfig: (clinicId: string) => [...executionWizardKeys.all, 'clinic-macro-config', clinicId] as const,
   customer: (customerId: string) => [...executionWizardKeys.all, 'customer', customerId] as const,
   customers: () => [...executionWizardKeys.all, 'customers'] as const,
   customerSearch: (customerSearch: string, options: { limit?: number } = {}) =>

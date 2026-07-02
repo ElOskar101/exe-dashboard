@@ -52,6 +52,7 @@ export const getExecutionWizardValidationToastCopy = (
     t('validation.noActiveClinicBots'),
     t('validation.noAssociatedBots'),
     t('validation.selectedBotNotInClinicBots'),
+    t('validation.macroConfigRequired'),
     t('validation.userRequired'),
   ])
 
@@ -94,7 +95,6 @@ export const getExecutionWizardValidationToastCopy = (
   addFieldSummary(items, errors.config.workers, t('fields.workers'), passthroughErrors)
   addFieldSummary(items, errors.config.retries, t('fields.retries'), passthroughErrors)
   addFieldSummary(items, errors.config.scheduledAt, t('fields.scheduledAt'), passthroughErrors)
-  addFieldSummary(items, errors.config.config, t('fields.otherConfig'), passthroughErrors)
 
   const summaries = Array.from(items)
 

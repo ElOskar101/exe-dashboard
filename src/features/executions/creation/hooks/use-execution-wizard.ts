@@ -13,11 +13,6 @@ import type { TFunction } from 'i18next'
 import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
-import {
-  createClinicExecutionConfig,
-  createCustomerExecutionConfig,
-  mergeExecutionConfig,
-} from '../lib/customer-execution-config'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
 import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
@@ -27,7 +22,7 @@ import {
   mapPlaywrightProjectBotToExecutionBot,
   mapPlaywrightProjectBotWithClinicBotToExecutionBot,
 } from '../lib/execution-playwright-projects'
-import { createEmptyDraft, DEFAULT_EXECUTION_CONFIG } from '../lib/execution-wizard-draft'
+import { createEmptyDraft } from '../lib/execution-wizard-draft'
 import {
   createEmptyBotSelection,
   createEmptyExecutionSelection,
@@ -37,13 +32,8 @@ import {
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
-import {
-  decryptClinicBotPassword,
-  getClinicById,
-  getCustomerById,
-  type ClinicBotRecord,
-  type CustomerSearchItem,
-} from '../services/ccc.service'
+import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem } from '../services/ccc.service'
+import { getClinicMacroConfig } from '../services/sync.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
 
 export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
@@ -277,51 +267,24 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     wizardData.resetImportPatients()
   }
 
-  const loadSelectedCustomerConfig = async (customerId: string) => {
-    try {
-      const customer = await queryClient.fetchQuery({
-        queryKey: executionWizardKeys.customer(customerId),
-        queryFn: async () => {
-          const response = await getCustomerById(customerId)
-
-          return response.data
-        },
-      })
-
-      setDraft((previousDraft) =>
-        previousDraft.context.client === customer._id
-          ? {
-              ...previousDraft,
-              execution: {
-                ...previousDraft.execution,
-                config: mergeExecutionConfig(previousDraft.execution.config, createCustomerExecutionConfig(customer)),
-              },
-            }
-          : previousDraft,
-      )
-    } catch {
-      return
-    }
-  }
-
   const loadSelectedClinicConfig = async (clinicId: string) => {
     try {
-      const clinic = await queryClient.fetchQuery({
-        queryKey: executionWizardKeys.clinic(clinicId),
+      const macroConfig = await queryClient.fetchQuery({
+        queryKey: executionWizardKeys.clinicMacroConfig(clinicId),
         queryFn: async () => {
-          const response = await getClinicById(clinicId)
+          const response = await getClinicMacroConfig(clinicId)
 
-          return response.data
+          return response.data.data[0]?.shortConfig ?? null
         },
       })
 
       setDraft((previousDraft) =>
-        previousDraft.context.clinic === clinic._id
+        previousDraft.context.clinic === clinicId
           ? {
               ...previousDraft,
-              execution: {
-                ...previousDraft.execution,
-                config: mergeExecutionConfig(previousDraft.execution.config, createClinicExecutionConfig(clinic)),
+              context: {
+                ...previousDraft.context,
+                config: macroConfig,
               },
             }
           : previousDraft,
@@ -335,18 +298,13 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     resetWizardRequests()
     startTransition(() => {
       setDraft((previousDraft) =>
-        resetDraftDependentSelections(
-          previousDraft,
-          {
-            client: '',
-            clientName: value,
-            clinic: '',
-            clinicName: '',
-          },
-          {
-            config: DEFAULT_EXECUTION_CONFIG,
-          },
-        ),
+        resetDraftDependentSelections(previousDraft, {
+          client: '',
+          clientName: value,
+          clinic: '',
+          clinicName: '',
+          config: null,
+        }),
       )
     })
   }
@@ -354,56 +312,36 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const clearCustomerSelection = () => {
     resetWizardRequests()
     setDraft((previousDraft) =>
-      resetDraftDependentSelections(
-        previousDraft,
-        {
-          client: '',
-          clinic: '',
-          clinicName: '',
-        },
-        {
-          config: DEFAULT_EXECUTION_CONFIG,
-        },
-      ),
+      resetDraftDependentSelections(previousDraft, {
+        client: '',
+        clinic: '',
+        clinicName: '',
+        config: null,
+      }),
     )
   }
 
   const selectCustomer = (customer: CustomerSearchItem) => {
     resetWizardRequests()
-    const isDeselectingCustomer = draft.context.client === customer._id
 
     setDraft((previousDraft) => {
       if (previousDraft.context.client === customer._id) {
-        return resetDraftDependentSelections(
-          previousDraft,
-          {
-            client: '',
-            clinic: '',
-            clinicName: '',
-          },
-          {
-            config: DEFAULT_EXECUTION_CONFIG,
-          },
-        )
-      }
-
-      return resetDraftDependentSelections(
-        previousDraft,
-        {
-          client: customer._id,
-          clientName: customer.clientName,
+        return resetDraftDependentSelections(previousDraft, {
+          client: '',
           clinic: '',
           clinicName: '',
-        },
-        {
-          config: DEFAULT_EXECUTION_CONFIG,
-        },
-      )
-    })
+          config: null,
+        })
+      }
 
-    if (!isDeselectingCustomer) {
-      void loadSelectedCustomerConfig(customer._id)
-    }
+      return resetDraftDependentSelections(previousDraft, {
+        client: customer._id,
+        clientName: customer.clientName,
+        clinic: '',
+        clinicName: '',
+        config: null,
+      })
+    })
   }
 
   const selectClinic = (clinicId: string) => {
@@ -415,6 +353,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       resetDraftDependentSelections(previousDraft, {
         clinic: isDeselectingClinic ? '' : clinicId,
         clinicName: isDeselectingClinic ? '' : (selectedClinic?.clinicName ?? ''),
+        config: null,
       }),
     )
 
