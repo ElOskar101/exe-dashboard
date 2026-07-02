@@ -28,6 +28,16 @@ const clinicConfig = {
   maxOutForm: false,
 }
 
+const clinicMacroConfig = {
+  instantPrinter: true,
+  alerts: false,
+  statusPrinter: true,
+  isDiva: false,
+  plans: true,
+  twoFA: false,
+  ...clinicConfig,
+}
+
 async function stubProtectedRouteDependencies(page: Page) {
   await page.route('**/users/me', async (route) => {
     await route.fulfill({ json: e2eUser })
@@ -81,6 +91,20 @@ async function stubProtectedRouteDependencies(page: Page) {
       json: {
         _id: 'clinic-1',
         ...clinicConfig,
+      },
+    })
+  })
+
+  await page.route('**/api/v1/clinics/clinic-1/macro-config', async (route) => {
+    await route.fulfill({
+      json: {
+        code: 200,
+        data: [
+          {
+            shortConfig: clinicMacroConfig,
+          },
+        ],
+        message: 'Clinic macro config loaded',
       },
     })
   })
@@ -540,15 +564,9 @@ test.describe('protected executions route', () => {
           },
         ],
         config: {
-          instantPrinter: true,
-          alerts: false,
-          statusPrinter: true,
-          isDiva: false,
-          plans: true,
-          twoFA: false,
+          ...clinicMacroConfig,
           clientName: 'Legacy Dental Care',
           clinicName: 'Downtown Clinic',
-          ...clinicConfig,
         },
         rv: {
           carrierDomain: 'dev-carrier',

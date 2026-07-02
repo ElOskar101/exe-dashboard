@@ -28,6 +28,16 @@ const clinicConfig = {
   maxOutForm: false,
 }
 
+const clinicMacroConfig = {
+  instantPrinter: true,
+  alerts: false,
+  statusPrinter: true,
+  isDiva: false,
+  plans: true,
+  twoFA: false,
+  ...clinicConfig,
+}
+
 interface ExecutionFixture {
   _id: string
   createdBy: string
@@ -258,6 +268,19 @@ async function stubWizardDependencies(page: Page, incompletePatient = false) {
       json: {
         _id: 'clinic-1',
         ...clinicConfig,
+      },
+    })
+  })
+  await page.route('**/api/v1/clinics/clinic-1/macro-config', async (route) => {
+    await route.fulfill({
+      json: {
+        code: 200,
+        data: [
+          {
+            shortConfig: clinicMacroConfig,
+          },
+        ],
+        message: 'Clinic macro config loaded',
       },
     })
   })
@@ -822,5 +845,7 @@ test.describe('execution user flows', () => {
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByText('"networkType": "INN"')).toBeVisible()
     await expect(page.getByText('"instantPrinter": true')).toBeVisible()
+    await expect(page.getByText('"clientName": "Legacy Dental Care"')).toBeVisible()
+    await expect(page.getByText('"clinicName": "Downtown Clinic"')).toBeVisible()
   })
 })
