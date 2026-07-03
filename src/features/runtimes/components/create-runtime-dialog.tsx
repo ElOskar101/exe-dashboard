@@ -55,7 +55,7 @@ const normalizeApplicationsForRuntimeAccessType = (
       }))
     : [...applications]
 
-export function CreateRuntimeDialog() {
+export function CreateRuntimeDialog({ triggerClassName }: { triggerClassName?: string }) {
   const { t } = useTranslation('runtimes')
   const [isOpen, setIsOpen] = useState(false)
   const [selectedTab, setSelectedTab] = useState('runtime')
@@ -141,7 +141,7 @@ export function CreateRuntimeDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button type="button" />}>
+      <DialogTrigger render={<Button type="button" className={triggerClassName} />}>
         <IconPlus data-icon="inline-start" />
         {t('createRuntime.trigger')}
       </DialogTrigger>

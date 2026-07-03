@@ -29,6 +29,7 @@ import {
 import { usePlaywrightRuntimesQuery, useRuntimeApplicationAvailability } from '../hooks/use-execution-target'
 
 const SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM = 'returnTo'
+const SELECT_RUNTIME_APPLICATION_PATH = '/select-runtime-application'
 
 const runtimeApplicationUnavailableLabels = {
   checkingAvailability: 'Checking API availability',
@@ -298,6 +299,50 @@ function RuntimeApplicationTargetCardContent({
   )
 }
 
+function EmptyRuntimeApplicationTargetCardContent() {
+  return (
+    <>
+      <CardContent className="gap-4">
+        <FieldGroup>
+          <Field data-disabled>
+            <FieldLabel htmlFor="required-execution-runtime">
+              <IconDeviceDesktop data-icon="inline-start" />
+              Runtime
+            </FieldLabel>
+            <Select disabled>
+              <SelectTrigger id="required-execution-runtime" className="w-full">
+                <SelectValue placeholder="No selectable runtime" />
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup />
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field data-disabled>
+            <FieldLabel htmlFor="required-execution-application">
+              <IconBox data-icon="inline-start" />
+              Application
+            </FieldLabel>
+            <Select disabled>
+              <SelectTrigger id="required-execution-application" className="w-full">
+                <SelectValue placeholder="No selectable app" />
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectGroup />
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
+      </CardContent>
+
+      <CardFooter>
+        <CreateRuntimeDialog triggerClassName="w-full" />
+      </CardFooter>
+    </>
+  )
+}
+
 export function RuntimeApplicationTargetGate() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -361,16 +406,7 @@ export function RuntimeApplicationTargetGate() {
         ) : null}
 
         {!runtimesQuery.isLoading && !isCheckingAvailability && runtimesQuery.data && !firstSelection ? (
-          <CardContent>
-            <Alert variant="destructive">
-              <IconAlertCircle />
-              <AlertTitle>No selectable apps</AlertTitle>
-              <AlertDescription className="flex flex-col items-start gap-3">
-                Every runtime application is inactive, missing an API URL, or failing its stats check.
-                <CreateRuntimeDialog />
-              </AlertDescription>
-            </Alert>
-          </CardContent>
+          <EmptyRuntimeApplicationTargetCardContent />
         ) : null}
 
         {runtimesQuery.data && firstSelection ? (
@@ -391,14 +427,39 @@ export function RuntimeApplicationTargetGate() {
 export function RequireExecutionTarget({ children }: { children: ReactNode }) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const hasCompleteTarget = Boolean(getExecutionTargetSearchSelection(searchParams))
+  const runtimesQuery = usePlaywrightRuntimesQuery()
+  const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
+  const selection = getExecutionTargetSearchSelection(searchParams)
+  const isSelectingTarget = location.pathname === SELECT_RUNTIME_APPLICATION_PATH
 
-  if (hasCompleteTarget) {
+  if (!selection) {
+    const returnTo = `${location.pathname}${location.search}${location.hash}`
+    const selectorSearchParams = new URLSearchParams({ [SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM]: returnTo })
+
+    return <Navigate to={`${SELECT_RUNTIME_APPLICATION_PATH}?${selectorSearchParams.toString()}`} replace />
+  }
+
+  if (runtimesQuery.isLoading || isCheckingAvailability) {
+    return null
+  }
+
+  const hasSelectableTarget = Boolean(
+    runtimesQuery.data &&
+    findApplicationSelection(
+      runtimesQuery.data,
+      selection.runtimeId,
+      selection.applicationName,
+      availableApiUrls,
+      isCheckingAvailability,
+    ),
+  )
+
+  if (hasSelectableTarget || isSelectingTarget) {
     return children
   }
 
   const returnTo = `${location.pathname}${location.search}${location.hash}`
   const selectorSearchParams = new URLSearchParams({ [SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM]: returnTo })
 
-  return <Navigate to={`/select-runtime-application?${selectorSearchParams.toString()}`} replace />
+  return <Navigate to={`${SELECT_RUNTIME_APPLICATION_PATH}?${selectorSearchParams.toString()}`} replace />
 }

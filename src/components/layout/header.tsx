@@ -46,6 +46,14 @@ const runtimeApplicationUnavailableLabels = {
   statsUnavailable: 'Stats endpoint did not respond successfully',
 }
 
+const getApiUrlDomain = (apiUrl: string) => {
+  try {
+    return new URL(apiUrl).host
+  } catch {
+    return apiUrl.trim()
+  }
+}
+
 const Header: () => JSX.Element = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { theme, handleTheme } = useTheme()
@@ -71,6 +79,7 @@ const Header: () => JSX.Element = () => {
   const activeJobs = appStatsQuery.data?.jobs.active
   const runningJobs = appStatsQuery.data?.jobs.running
   const selectedRuntimeLabel = selectedRuntime?.name ?? target.runtimeId
+  const selectedApiUrlDomain = getApiUrlDomain(target.requestTarget.apiUrl)
   const selectedApplicationEnvironment = selectedApplication?.nonProduction
     ? t('settings:runtime.nonProduction')
     : t('settings:runtime.production')
@@ -151,13 +160,18 @@ const Header: () => JSX.Element = () => {
             <Select value={selectedValue} onValueChange={handleTargetChange}>
               <SelectTrigger
                 size="sm"
-                className="max-w-44 border-border bg-transparent sm:max-w-64"
+                className="h-auto! min-h-9 max-w-44 border-border bg-transparent py-1.5 sm:max-w-64"
                 title={targetTitle}
                 aria-label="Choose app target"
               >
-                <IconBox className="size-4" />
+                <IconBox />
                 <SelectValue placeholder="Choose app">
-                  <span className="truncate">{target.label}</span>
+                  <span className="flex min-w-0 flex-col items-start gap-0.5">
+                    <span className="truncate">{target.label}</span>
+                    <span className="truncate text-xs leading-none font-normal text-muted-foreground">
+                      {selectedApiUrlDomain}
+                    </span>
+                  </span>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="end">
@@ -180,6 +194,7 @@ const Header: () => JSX.Element = () => {
                           isCheckingAvailability,
                           runtimeApplicationUnavailableLabels,
                         )
+                        const apiUrlDomain = getApiUrlDomain(getSelectedExecutionRequestTarget(application).apiUrl)
 
                         return (
                           <SelectItem
@@ -191,9 +206,14 @@ const Header: () => JSX.Element = () => {
                           >
                             <span className="flex min-w-0 flex-col gap-0.5">
                               <span className="flex min-w-0 items-center gap-1.5">
-                                <IconBox className="size-4 shrink-0 text-muted-foreground" />
+                                <IconBox className="shrink-0 text-muted-foreground" />
                                 <span className="truncate">{application.name}</span>
                               </span>
+                              {apiUrlDomain ? (
+                                <span className="truncate text-xs font-normal text-muted-foreground">
+                                  {apiUrlDomain}
+                                </span>
+                              ) : null}
                               {unavailableLabel ? (
                                 <span className="truncate text-xs font-normal text-muted-foreground">
                                   {unavailableLabel}
