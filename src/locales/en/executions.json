@@ -58,6 +58,7 @@
     "policyHolderLastName": "Policy holder last name",
     "policyHolderDob": "Policy holder date of birth",
     "relationship": "Relationship",
+    "carrierName": "Carrier",
     "zipCode": "ZIP code",
     "patientClinic": "Patient clinic",
     "filenames": "Filenames",

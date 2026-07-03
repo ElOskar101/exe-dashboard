@@ -17,6 +17,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
             { key: 'subscriber_dob', value: '03/27/1959' },
             { key: 'relationship_to_subscriber', value: 'Self' },
             { key: 'subscriber_zip_code', value: '77075' },
+            { key: 'carrier_name', value: 'Delta Dental' },
             { key: 'practice', value: 'HERALDSQ' },
             { key: 'type_of_verification', value: 'FBD' },
             { key: 'files_s_name', value: 'Eligibility_status.pdf' },
@@ -26,6 +27,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
     ).toEqual([
       {
         id: 'row-1',
+        carrierName: 'Delta Dental',
         patientName: 'Soledad',
         patientLastName: 'Valdez',
         patientMemberId: '44457159',
@@ -59,6 +61,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
     ).toMatchObject([
       {
         patientName: '',
+        carrierName: '',
         patientLastName: 'Patient',
         patientMemberId: '',
         verificationType: '',
@@ -96,6 +99,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
     ).toEqual([
       expect.objectContaining({
         patientName: 'Jessica',
+        carrierName: '',
         patientDob: "07/24/2025 00:00 AM'",
         otherInformation: '{}',
       }),

@@ -26,6 +26,7 @@ export const mapCCCExecutionRowsToPatients = (rows: CCCExecutionRow[]): Executio
     const cellsByKey = new Map(row.cells.map((cell) => [cell.key, cell.value]))
     const patient: ExecutionPatient = {
       id: row._id,
+      carrierName: getCellValue(cellsByKey, 'carrier_name'),
       patientName: getCellValue(cellsByKey, 'patient_first_name'),
       patientLastName: getCellValue(cellsByKey, 'patient_last_name'),
       patientMemberId: getCellValue(cellsByKey, 'memberid'),

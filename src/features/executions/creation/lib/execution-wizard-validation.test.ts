@@ -131,6 +131,7 @@ describe('getExecutionWizardValidationErrors', () => {
     draft.bot.verificationType = 'ELG'
     draft.execution.patients = [
       {
+        carrierName: '',
         patientName: 'Jane',
         patientLastName: '',
         patientMemberId: '',

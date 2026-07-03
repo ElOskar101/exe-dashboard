@@ -13,6 +13,7 @@ export interface ExecutionBot {
 
 export interface ExecutionPatient {
   id?: string
+  carrierName: string
   patientName: string
   patientLastName: string
   patientMemberId: string
@@ -32,6 +33,7 @@ export interface ExecutionWizardMacroConfig {
   default_enable: unknown
   default_characters: unknown
   data: Record<string, unknown>
+  [botName: string]: unknown
 }
 
 export interface ExecutionWizardDraft {

@@ -51,6 +51,7 @@ describe('buildExecutionPayload', () => {
     draft.execution.patients = [
       {
         id: 'row-1',
+        carrierName: 'Delta Dental',
         patientName: 'Ana',
         patientLastName: 'Lopez',
         patientMemberId: 'A10001',
@@ -257,6 +258,7 @@ describe('buildExecutionPayload', () => {
     draft.bot.verificationType = 'ELG'
     draft.execution.patients = [
       {
+        carrierName: 'Delta Dental',
         patientName: 'Ana',
         patientLastName: 'Lopez',
         patientMemberId: 'A10001',

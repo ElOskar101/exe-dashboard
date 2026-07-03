@@ -7,6 +7,7 @@ import type {
   ExecutionWizardDraft,
 } from '../model/execution-create'
 import { parseExecutionMetadata } from './execution-metadata'
+import { getPatientsEnabledForBot } from './execution-patient-bot-match'
 import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
 type ExecutionPayloadNumericPreviewValue = number | ''
@@ -103,9 +104,8 @@ export const buildExecutionPayloadPreview = (
   apiUrl: string,
   rv: ExecutionMetadata | undefined,
 ): ExecutionPayloadPreview => {
-  const patientOtherInformation = draft.execution.patients.map((patient) =>
-    parseExecutionMetadata(patient.otherInformation),
-  )
+  const enabledPatients = getPatientsEnabledForBot(draft)
+  const patientOtherInformation = enabledPatients.map((patient) => parseExecutionMetadata(patient.otherInformation))
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
@@ -124,7 +124,7 @@ export const buildExecutionPayloadPreview = (
         otherInformation: createDefaultBotOtherInformation(),
       },
       executionId: draft.execution.execution.trim(),
-      patients: draft.execution.patients.map((patient, index) => ({
+      patients: enabledPatients.map((patient, index) => ({
         ...(patient.id?.trim() ? { id: patient.id.trim() } : {}),
         patientName: createPatientProperty(PATIENT_SOURCE_KEYS.patientName, patient.patientName),
         patientLastName: createPatientProperty(PATIENT_SOURCE_KEYS.patientLastName, patient.patientLastName),
@@ -192,9 +192,12 @@ export const buildExecutionPayload = (
     return null
   }
 
-  const patientOtherInformation = draft.execution.patients.map((patient) =>
-    parseExecutionMetadata(patient.otherInformation),
-  )
+  const enabledPatients = getPatientsEnabledForBot(draft)
+  const patientOtherInformation = enabledPatients.map((patient) => parseExecutionMetadata(patient.otherInformation))
+  if (draft.execution.patients.length > 0 && enabledPatients.length === 0) {
+    return null
+  }
+
   if (patientOtherInformation.some((metadata) => !metadata)) {
     return null
   }

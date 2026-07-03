@@ -23,6 +23,7 @@ const patientSummaryFields = [
   { key: 'patientLastName', label: 'fields.patientLastName' },
   { key: 'patientMemberId', label: 'fields.memberId' },
   { key: 'patientDob', label: 'fields.patientDob' },
+  { key: 'carrierName', label: 'fields.carrierName' },
 ] as const satisfies ReadonlyArray<{
   key: keyof ExecutionPatient
   label: Parameters<TFunction<'executions'>>[0]
@@ -32,6 +33,7 @@ interface ImportedPatientCardProps {
   emptyValue: string
   hasRowErrors: boolean
   index: number
+  isDisabled: boolean
   missingFields: string[]
   patient: ExecutionPatient
   rowErrorMessage?: string
@@ -44,6 +46,7 @@ export function ImportedPatientCard({
   emptyValue,
   hasRowErrors,
   index,
+  isDisabled,
   missingFields,
   patient,
   rowErrorMessage,
@@ -66,7 +69,11 @@ export function ImportedPatientCard({
           render={
             <Card
               size="sm"
-              className="h-full cursor-pointer bg-muted/15 text-left shadow-sm transition-colors hover:bg-muted/25"
+              className={cn(
+                'h-full cursor-pointer bg-muted/15 text-left shadow-sm transition-colors hover:bg-muted/25',
+                isDisabled && 'opacity-40',
+              )}
+              aria-disabled={isDisabled}
               aria-label={t('detail.patientDetailsActionLabel', { patient: patientLabel })}
             />
           }
@@ -159,6 +166,7 @@ function PatientDetailsDialog({
           </PatientDetailGroup>
           <PatientDetailGroup title={t('detail.patientDetailsCoverageSection')}>
             <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />
+            <PatientField emptyValue={emptyValue} label={t('fields.carrierName')} value={patient.carrierName} />
             <PatientField emptyValue={emptyValue} label={t('fields.patientClinic')} value={patient.clinic} />
             <PatientField
               emptyValue={emptyValue}

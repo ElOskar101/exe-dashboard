@@ -1,6 +1,7 @@
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
 
 export const createEmptyPatient = (): ExecutionPatient => ({
+  carrierName: '',
   patientName: '',
   patientLastName: '',
   patientMemberId: '',

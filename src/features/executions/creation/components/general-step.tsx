@@ -68,6 +68,7 @@ export function GeneralStep({
   playwrightProjectOptions,
   projectError,
   selectedBotId,
+  disabledPatientIds,
   onCustomerClear,
   onCustomerSelect,
   onClinicSelect,
@@ -471,6 +472,7 @@ export function GeneralStep({
                   .filter((field) => Boolean(rowErrors[field]))
                   .map((field) => t(patientErrorLabels[field]))
                 const hasRowErrors = hasErrors(rowErrors)
+                const isPatientDisabled = Boolean(patient.id && disabledPatientIds.has(patient.id))
 
                 return (
                   <ImportedPatientCard
@@ -478,6 +480,7 @@ export function GeneralStep({
                     emptyValue={emptyValue}
                     hasRowErrors={hasRowErrors}
                     index={index}
+                    isDisabled={isPatientDisabled}
                     missingFields={missingFields}
                     patient={patient}
                     rowErrorMessage={rowErrors.otherInformation}
