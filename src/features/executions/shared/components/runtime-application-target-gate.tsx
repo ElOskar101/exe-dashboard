@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { UserCard } from '@/features/auth'
 import { CreateRuntimeDialog } from '@/features/runtimes/components/create-runtime-dialog'
+import { useTheme } from '@/hooks/use-theme'
 import { IconAlertCircle, IconBox, IconDeviceDesktop, IconRefresh } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import {
   EXECUTION_APPLICATION_SEARCH_PARAM,
   EXECUTION_RUNTIME_SEARCH_PARAM,
@@ -343,6 +346,20 @@ function EmptyRuntimeApplicationTargetCardContent() {
   )
 }
 
+function RuntimeApplicationTargetHeader() {
+  const { t } = useTranslation('common')
+  const { theme, handleTheme } = useTheme()
+
+  return (
+    <header className="w-full border-b border-border">
+      <nav className="flex w-full items-center justify-between px-4 py-2.5 md:px-6">
+        <img className="h-auto w-24 object-contain" src="/agent-icon.svg" alt={t('project-name')} />
+        <UserCard theme={theme} onToggleTheme={handleTheme} />
+      </nav>
+    </header>
+  )
+}
+
 export function RuntimeApplicationTargetGate() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -364,62 +381,65 @@ export function RuntimeApplicationTargetGate() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Setup runtime and application</CardTitle>
-        </CardHeader>
+    <div className="flex min-h-screen flex-col">
+      <RuntimeApplicationTargetHeader />
+      <main className="flex flex-1 items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Setup runtime and application</CardTitle>
+          </CardHeader>
 
-        {runtimesQuery.isError ? (
-          <CardContent>
-            <Alert variant="destructive">
-              <IconAlertCircle />
-              <AlertTitle>Runtime catalog could not be loaded</AlertTitle>
-              <AlertDescription className="flex flex-col items-start gap-3">
-                <span>Reload the catalog to choose the runtime application for this dashboard.</span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void runtimesQuery.refetch()
-                  }}
-                >
-                  <IconRefresh data-icon="inline-start" />
-                  Retry
-                </Button>
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        ) : null}
+          {runtimesQuery.isError ? (
+            <CardContent>
+              <Alert variant="destructive">
+                <IconAlertCircle />
+                <AlertTitle>Runtime catalog could not be loaded</AlertTitle>
+                <AlertDescription className="flex flex-col items-start gap-3">
+                  <span>Reload the catalog to choose the runtime application for this dashboard.</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      void runtimesQuery.refetch()
+                    }}
+                  >
+                    <IconRefresh data-icon="inline-start" />
+                    Retry
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          ) : null}
 
-        {runtimesQuery.isLoading ? (
-          <CardContent>
-            <div className="text-sm text-muted-foreground">Loading apps...</div>
-          </CardContent>
-        ) : null}
+          {runtimesQuery.isLoading ? (
+            <CardContent>
+              <div className="text-sm text-muted-foreground">Loading apps...</div>
+            </CardContent>
+          ) : null}
 
-        {isCheckingAvailability ? (
-          <CardContent>
-            <div className="text-sm text-muted-foreground">Checking app availability...</div>
-          </CardContent>
-        ) : null}
+          {isCheckingAvailability ? (
+            <CardContent>
+              <div className="text-sm text-muted-foreground">Checking app availability...</div>
+            </CardContent>
+          ) : null}
 
-        {!runtimesQuery.isLoading && !isCheckingAvailability && runtimesQuery.data && !firstSelection ? (
-          <EmptyRuntimeApplicationTargetCardContent />
-        ) : null}
+          {!runtimesQuery.isLoading && !isCheckingAvailability && runtimesQuery.data && !firstSelection ? (
+            <EmptyRuntimeApplicationTargetCardContent />
+          ) : null}
 
-        {runtimesQuery.data && firstSelection ? (
-          <RuntimeApplicationTargetCardContent
-            key={`${firstSelection.runtimeId}-${firstSelection.applicationName}`}
-            defaultValue={firstSelection}
-            onSelectionConfirmed={handleSelectionConfirmed}
-            runtimes={runtimesQuery.data}
-            availableApiUrls={availableApiUrls}
-            isCheckingAvailability={isCheckingAvailability}
-          />
-        ) : null}
-      </Card>
+          {runtimesQuery.data && firstSelection ? (
+            <RuntimeApplicationTargetCardContent
+              key={`${firstSelection.runtimeId}-${firstSelection.applicationName}`}
+              defaultValue={firstSelection}
+              onSelectionConfirmed={handleSelectionConfirmed}
+              runtimes={runtimesQuery.data}
+              availableApiUrls={availableApiUrls}
+              isCheckingAvailability={isCheckingAvailability}
+            />
+          ) : null}
+        </Card>
+      </main>
     </div>
   )
 }
