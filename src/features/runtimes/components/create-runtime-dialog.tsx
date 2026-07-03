@@ -18,8 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   type PlaywrightRuntimeAccessType,
   type PlaywrightRuntimeApplicationPayload,
-  useCreatePlaywrightRuntimeMutation,
-} from '@/features/executions'
+} from '@/features/executions/shared/model/playwright-runtime'
+import { useCreatePlaywrightRuntimeMutation } from '@/features/executions/shared/hooks/use-execution-target'
 import { IconBox, IconPlus, IconX } from '@tabler/icons-react'
 import type { FormEvent } from 'react'
 import { useState } from 'react'

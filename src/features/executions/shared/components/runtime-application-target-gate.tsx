@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CreateRuntimeDialog } from '@/features/runtimes/components/create-runtime-dialog'
 import { IconAlertCircle, IconBox, IconDeviceDesktop, IconRefresh } from '@tabler/icons-react'
 import {
   EXECUTION_APPLICATION_SEARCH_PARAM,
@@ -364,8 +365,9 @@ export function RuntimeApplicationTargetGate() {
             <Alert variant="destructive">
               <IconAlertCircle />
               <AlertTitle>No selectable apps</AlertTitle>
-              <AlertDescription>
+              <AlertDescription className="flex flex-col items-start gap-3">
                 Every runtime application is inactive, missing an API URL, or failing its stats check.
+                <CreateRuntimeDialog />
               </AlertDescription>
             </Alert>
           </CardContent>
