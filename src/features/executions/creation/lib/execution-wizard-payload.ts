@@ -34,6 +34,8 @@ const PATIENT_SOURCE_KEYS = {
 
 const DEFAULT_HEADED_MODE = false
 const MACRO_CONFIG_KEYS = {
+  clinicName: 'clinicName',
+  clientName: 'clientName',
   data: 'data',
   defaultCharacters: 'defaultCharacters',
   defaultEnable: 'defaultEnable',
@@ -87,6 +89,8 @@ const createExecutionPayloadConfig = (draft: ExecutionWizardDraft): ExecutionMet
   }
 
   return {
+    [MACRO_CONFIG_KEYS.clientName]: draft.context.clientName.trim(),
+    [MACRO_CONFIG_KEYS.clinicName]: draft.context.clinicName.trim(),
     [MACRO_CONFIG_KEYS.defaultEnable]: macroConfig.default_enable,
     [MACRO_CONFIG_KEYS.defaultCharacters]: macroConfig.default_characters,
     [MACRO_CONFIG_KEYS.data]: createExecutionPayloadConfigData(macroConfig.data),

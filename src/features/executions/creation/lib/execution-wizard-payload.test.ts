@@ -106,6 +106,8 @@ describe('buildExecutionPayload', () => {
           },
         ],
         config: {
+          clientName: 'Legacy Dental Care',
+          clinicName: 'Legacy Dental Care',
           defaultEnable: true,
           defaultCharacters: '-',
           data: {
