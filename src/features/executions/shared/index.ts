@@ -110,8 +110,10 @@ export {
 } from './lib/execution-target'
 export {
   getFirstSelectableRuntimeApplication,
+  getRuntimeApplicationApiUrlDomain,
   getRuntimeApplicationUnavailableLabel,
   hasRuntimeApplicationApiUrl,
+  isRuntimeApplicationStatsUnavailable,
   isRuntimeApplicationSelectable,
   type RuntimeApplicationUnavailableLabels,
 } from './lib/runtime-application-availability'

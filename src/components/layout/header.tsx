@@ -17,9 +17,11 @@ import { UserCard } from '@/features/auth'
 import {
   decodeExecutionTargetValue,
   encodeExecutionTargetValue,
+  getRuntimeApplicationApiUrlDomain,
   getPlaywrightRuntimeApplications,
   getRuntimeApplicationUnavailableLabel,
   getSelectedExecutionRequestTarget,
+  isRuntimeApplicationStatsUnavailable,
   isRuntimeApplicationSelectable,
   type PlaywrightRuntimeApplication,
   useExecutionAppStatsQuery,
@@ -30,6 +32,7 @@ import {
   useRuntimeApplicationAvailability,
 } from '@/features/executions'
 import { useTheme } from '@/hooks/use-theme'
+import { cn } from '@/lib/utils'
 import { IconBox, IconDeviceDesktop } from '@tabler/icons-react'
 
 const getRuntimeApplicationOptionValue = (runtimeId: string, application: PlaywrightRuntimeApplication) =>
@@ -44,14 +47,6 @@ const runtimeApplicationUnavailableLabels = {
   inactive: 'Inactive',
   noApiUrl: 'No API URL configured',
   statsUnavailable: 'Stats endpoint did not respond successfully',
-}
-
-const getApiUrlDomain = (apiUrl: string) => {
-  try {
-    return new URL(apiUrl).host
-  } catch {
-    return apiUrl.trim()
-  }
 }
 
 const Header: () => JSX.Element = () => {
@@ -188,7 +183,12 @@ const Header: () => JSX.Element = () => {
                           isCheckingAvailability,
                           runtimeApplicationUnavailableLabels,
                         )
-                        const apiUrlDomain = getApiUrlDomain(getSelectedExecutionRequestTarget(application).apiUrl)
+                        const apiUrlDomain = getRuntimeApplicationApiUrlDomain(application)
+                        const isStatsUnavailable = isRuntimeApplicationStatsUnavailable(
+                          application,
+                          availableApiUrls,
+                          isCheckingAvailability,
+                        )
 
                         return (
                           <SelectItem
@@ -204,11 +204,16 @@ const Header: () => JSX.Element = () => {
                                 <span className="truncate">{application.name}</span>
                               </span>
                               {apiUrlDomain ? (
-                                <span className="truncate text-xs font-normal text-muted-foreground">
+                                <span
+                                  className={cn(
+                                    'truncate text-xs font-normal',
+                                    isStatsUnavailable ? 'text-destructive' : 'text-muted-foreground',
+                                  )}
+                                >
                                   {apiUrlDomain}
                                 </span>
                               ) : null}
-                              {unavailableLabel ? (
+                              {unavailableLabel && !isStatsUnavailable ? (
                                 <span className="truncate text-xs font-normal text-muted-foreground">
                                   {unavailableLabel}
                                 </span>

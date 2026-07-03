@@ -15,6 +15,16 @@ export interface RuntimeApplicationUnavailableLabels {
 export const getRuntimeApplicationApiUrl = (application: PlaywrightRuntimeApplication) =>
   getSelectedExecutionRequestTarget(application).apiUrl
 
+export const getRuntimeApplicationApiUrlDomain = (application: PlaywrightRuntimeApplication) => {
+  const apiUrl = getRuntimeApplicationApiUrl(application)
+
+  try {
+    return new URL(apiUrl).host
+  } catch {
+    return apiUrl.trim()
+  }
+}
+
 export const hasRuntimeApplicationApiUrl = (application: PlaywrightRuntimeApplication) =>
   Boolean(application.apiUrl?.trim())
 
@@ -27,6 +37,16 @@ export const isRuntimeApplicationSelectable = (
   hasRuntimeApplicationApiUrl(application) &&
   !isCheckingAvailability &&
   availableApiUrls.has(getRuntimeApplicationApiUrl(application))
+
+export const isRuntimeApplicationStatsUnavailable = (
+  application: PlaywrightRuntimeApplication,
+  availableApiUrls: ReadonlySet<string>,
+  isCheckingAvailability: boolean,
+) =>
+  application.active !== false &&
+  hasRuntimeApplicationApiUrl(application) &&
+  !isCheckingAvailability &&
+  !availableApiUrls.has(getRuntimeApplicationApiUrl(application))
 
 export const getRuntimeApplicationUnavailableLabel = (
   application: PlaywrightRuntimeApplication,
@@ -46,7 +66,7 @@ export const getRuntimeApplicationUnavailableLabel = (
     return labels.checkingAvailability
   }
 
-  if (!availableApiUrls.has(getRuntimeApplicationApiUrl(application))) {
+  if (isRuntimeApplicationStatsUnavailable(application, availableApiUrls, isCheckingAvailability)) {
     return labels.statsUnavailable
   }
 

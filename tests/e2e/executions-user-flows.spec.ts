@@ -325,10 +325,12 @@ async function stubWizardDependencies(page: Page, incompletePatient = false) {
           rows: [
             {
               _id: 'row-1',
+              executed: false,
+              readyToReview: false,
               cells: [
                 { key: 'patient_first_name', value: incompletePatient ? '' : 'Jane' },
                 { key: 'patient_last_name', value: 'Doe' },
-                { key: 'memberid', value: '111111' },
+                { key: 'member_id', value: '111111' },
                 { key: 'patient_dob', value: '01/01/1990' },
                 { key: 'subscriber_first_name', value: 'Jane' },
                 { key: 'subscriber_last_name', value: 'Doe' },

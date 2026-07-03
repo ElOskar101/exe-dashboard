@@ -259,9 +259,11 @@ async function stubProtectedRouteDependencies(page: Page) {
           rows: [
             {
               _id: 'row-1',
+              executed: false,
+              readyToReview: false,
               cells: [
                 { key: 'practice', value: 'Downtown Clinic' },
-                { key: 'memberid', value: '111111' },
+                { key: 'member_id', value: '111111' },
                 { key: 'subscriber_zip_code', value: '90001' },
                 { key: 'subscriber_first_name', value: 'Jane' },
                 { key: 'subscriber_last_name', value: 'Doe' },
@@ -276,9 +278,11 @@ async function stubProtectedRouteDependencies(page: Page) {
             },
             {
               _id: 'row-2',
+              executed: false,
+              readyToReview: false,
               cells: [
                 { key: 'practice', value: 'Downtown Clinic' },
-                { key: 'memberid', value: '222222' },
+                { key: 'member_id', value: '222222' },
                 { key: 'subscriber_zip_code', value: '90002' },
                 { key: 'subscriber_first_name', value: 'Janet' },
                 { key: 'subscriber_last_name', value: 'Doe' },
@@ -293,10 +297,12 @@ async function stubProtectedRouteDependencies(page: Page) {
             },
             {
               _id: 'row-blank',
+              executed: false,
+              readyToReview: false,
               cells: [
                 { key: 'patient_first_name', value: 'EMPTY' },
                 { key: 'patient_last_name', value: ' ' },
-                { key: 'memberid', value: 'Empty' },
+                { key: 'member_id', value: 'Empty' },
               ],
             },
           ],
@@ -536,7 +542,7 @@ test.describe('protected executions route', () => {
             id: 'row-1',
             patientName: { key: 'patient_first_name', value: 'Jane' },
             patientLastName: { key: 'patient_last_name', value: 'Doe' },
-            patientMemberId: { key: 'memberid', value: '111111' },
+            patientMemberId: { key: 'member_id', value: '111111' },
             patientDob: { key: 'patient_dob', value: '01/01/1990' },
             policyHolderName: { key: 'subscriber_first_name', value: 'Jane' },
             policyHolderLastName: { key: 'subscriber_last_name', value: 'Doe' },
@@ -552,7 +558,7 @@ test.describe('protected executions route', () => {
             id: 'row-2',
             patientName: { key: 'patient_first_name', value: 'John' },
             patientLastName: { key: 'patient_last_name', value: 'Doe' },
-            patientMemberId: { key: 'memberid', value: '222222' },
+            patientMemberId: { key: 'member_id', value: '222222' },
             patientDob: { key: 'patient_dob', value: '02/02/1992' },
             policyHolderName: { key: 'subscriber_first_name', value: 'Janet' },
             policyHolderLastName: { key: 'subscriber_last_name', value: 'Doe' },

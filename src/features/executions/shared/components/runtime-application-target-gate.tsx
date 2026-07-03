@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { UserCard } from '@/features/auth'
 import { CreateRuntimeDialog } from '@/features/runtimes/components/create-runtime-dialog'
 import { useTheme } from '@/hooks/use-theme'
+import { cn } from '@/lib/utils'
 import { IconAlertCircle, IconBox, IconDeviceDesktop, IconRefresh } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -21,7 +22,9 @@ import {
 } from '../lib/execution-target'
 import {
   getFirstSelectableRuntimeApplication,
+  getRuntimeApplicationApiUrlDomain,
   getRuntimeApplicationUnavailableLabel,
+  isRuntimeApplicationStatsUnavailable,
   isRuntimeApplicationSelectable,
 } from '../lib/runtime-application-availability'
 import {
@@ -141,6 +144,8 @@ function ApplicationOptionLabel({
     isCheckingAvailability,
     runtimeApplicationUnavailableLabels,
   )
+  const apiUrlDomain = getRuntimeApplicationApiUrlDomain(application)
+  const isStatsUnavailable = isRuntimeApplicationStatsUnavailable(application, availableApiUrls, isCheckingAvailability)
 
   return (
     <span className="flex min-w-0 flex-col gap-1">
@@ -153,7 +158,17 @@ function ApplicationOptionLabel({
         <Badge variant="outline">{application.nonProduction ? 'Development' : 'Production'}</Badge>
         <Badge variant="outline">{getApplicationAccessLabel(application)}</Badge>
       </span>
-      {unavailableLabel ? (
+      {apiUrlDomain ? (
+        <span
+          className={cn(
+            'truncate text-xs font-normal',
+            isStatsUnavailable ? 'text-destructive' : 'text-muted-foreground',
+          )}
+        >
+          {apiUrlDomain}
+        </span>
+      ) : null}
+      {unavailableLabel && !isStatsUnavailable ? (
         <span className="truncate text-xs font-normal text-muted-foreground">{unavailableLabel}</span>
       ) : null}
     </span>
