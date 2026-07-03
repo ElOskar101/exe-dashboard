@@ -18,6 +18,8 @@ import type { ExecutionApiRequestTarget } from '../lib/execution-target'
 
 export type ExecutionUpdatePayload = Partial<Omit<Execution, '_id'>>
 
+const EXECUTION_REPORT_INDEX_PATH = 'Report/index.html'
+
 export interface PlaywrightRuntimeApiResponse<TData> {
   data: TData
   error?: string
@@ -186,7 +188,7 @@ export const removePlaywrightRuntimeShareMembers = (
 export const getExecutionReportHtml = (executionId: string, target: ExecutionApiRequestTarget) => {
   const config = getExecutionReportsRequestConfig(target)
 
-  return exeReportsClient.get<string>(`${executionId}/index.html`, config)
+  return exeReportsClient.get<string>(`${executionId}/${EXECUTION_REPORT_INDEX_PATH}`, config)
 }
 
 export const updateExecution = (

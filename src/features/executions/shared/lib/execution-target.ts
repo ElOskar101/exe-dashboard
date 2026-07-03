@@ -33,6 +33,7 @@ export interface ExecutionTargetSearchSelection {
 
 const EXECUTION_TARGET_VALUE_SEPARATOR = '\u001f'
 const URL_PROTOCOL_PATTERN = /^[a-z][a-z\d+\-.]*:\/\//i
+const EXECUTION_REPORT_INDEX_PATH = 'Report/index.html'
 
 export const getExecutionTargetKey = (runtimeId: string, applicationName: string) =>
   `runtime:${runtimeId}:application:${applicationName}`
@@ -136,4 +137,4 @@ export const getExecutionReportUrl = (reportsUrl: string, executionId: string) =
   `${stripTrailingSlash(reportsUrl)}/${executionId}`
 
 export const getExecutionReportIndexUrl = (reportsUrl: string, executionId: string) =>
-  `${getExecutionReportUrl(reportsUrl, executionId)}/index.html`
+  `${getExecutionReportUrl(reportsUrl, executionId)}/${EXECUTION_REPORT_INDEX_PATH}`

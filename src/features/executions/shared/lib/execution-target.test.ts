@@ -111,7 +111,7 @@ describe('execution target', () => {
 
   it('builds the direct report index URL from the selected reports endpoint', () => {
     expect(getExecutionReportIndexUrl('https://api.runtime.example.com/reports', 'exe-1')).toBe(
-      'https://api.runtime.example.com/reports/exe-1/index.html',
+      'https://api.runtime.example.com/reports/exe-1/Report/index.html',
     )
   })
 })

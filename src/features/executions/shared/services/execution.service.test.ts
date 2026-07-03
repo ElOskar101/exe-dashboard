@@ -356,7 +356,7 @@ describe('execution.service', () => {
 
     await getExecutionReportHtml('exe-1', runtimeTarget)
 
-    expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/index.html', {
+    expect(exeReportsClient.get).toHaveBeenCalledWith('exe-1/Report/index.html', {
       baseURL: 'https://runtime.example.com/reports',
     })
   })
