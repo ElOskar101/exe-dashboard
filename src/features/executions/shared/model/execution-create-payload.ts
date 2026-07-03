@@ -39,7 +39,6 @@ export interface ExecutionPayloadContext {
   bot: ExecutionPayloadBot
   config: ExecutionMetadata
   executionId?: string
-  headed?: boolean
   logsPath?: string
   outputPath?: string
   patients: ExecutionPayloadPatient[]

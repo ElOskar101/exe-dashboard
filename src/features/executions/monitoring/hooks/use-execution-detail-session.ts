@@ -143,10 +143,10 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
   )
   const canRunExecutionNow =
     Boolean(scheduledAt) &&
+    normalizedStatus === 'queued' &&
     !isExecutionRunning(currentStatus) &&
     !isExecutionSuccessful(currentStatus) &&
-    !isExecutionFailed(currentStatus) &&
-    normalizedStatus !== 'cancelled'
+    !isExecutionFailed(currentStatus)
 
   return {
     canPauseExecution,

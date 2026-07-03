@@ -19,24 +19,19 @@ export const createEmptyExecutionSelection = (previousExecution: ExecutionWizard
   patients: [],
 })
 
-export const isPatientsStepDirty = (draft: ExecutionWizardDraft) => {
+export const isGeneralStepDirty = (draft: ExecutionWizardDraft) => {
   return (
     draft.context.clientName !== emptyDraft.context.clientName ||
     draft.context.client !== emptyDraft.context.client ||
     draft.context.clinic !== emptyDraft.context.clinic ||
-    draft.execution.execution !== emptyDraft.execution.execution ||
-    draft.execution.patients.length !== emptyDraft.execution.patients.length
-  )
-}
-
-export const isBotStepDirty = (draft: ExecutionWizardDraft) => {
-  return (
     draft.context.project !== emptyDraft.context.project ||
     draft.bot.clinicBotId !== emptyDraft.bot.clinicBotId ||
     draft.bot.botName !== emptyDraft.bot.botName ||
     draft.bot.targetUrl !== emptyDraft.bot.targetUrl ||
     draft.bot.username !== emptyDraft.bot.username ||
-    draft.bot.password !== emptyDraft.bot.password
+    draft.bot.password !== emptyDraft.bot.password ||
+    draft.execution.execution !== emptyDraft.execution.execution ||
+    draft.execution.patients.length !== emptyDraft.execution.patients.length
   )
 }
 

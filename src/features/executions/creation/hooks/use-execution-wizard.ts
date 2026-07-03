@@ -26,9 +26,8 @@ import { createEmptyDraft } from '../lib/execution-wizard-draft'
 import {
   createEmptyBotSelection,
   createEmptyExecutionSelection,
-  isBotStepDirty,
   isConfigStepDirty,
-  isPatientsStepDirty,
+  isGeneralStepDirty,
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
@@ -36,9 +35,9 @@ import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem
 import { getClinicMacroConfig } from '../services/sync.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
 
-export type ExecutionWizardStepKey = 'patients' | 'bot' | 'config' | 'review'
+export type ExecutionWizardStepKey = 'general' | 'config' | 'review'
 
-export const executionWizardSteps: ExecutionWizardStepKey[] = ['patients', 'bot', 'config', 'review']
+export const executionWizardSteps: ExecutionWizardStepKey[] = ['general', 'config', 'review']
 
 interface BotPasswordRequestState {
   error: string | null
@@ -158,24 +157,21 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
       !validationErrors.patients.form &&
-      validationErrors.patients.rows.every((row) => !hasErrors(row)),
-    !validationErrors.context.client &&
-      !validationErrors.context.clinic &&
+      validationErrors.patients.rows.every((row) => !hasErrors(row)) &&
       !hasErrors(validationErrors.bot) &&
       !validationErrors.context.project,
     !validationErrors.context.createdBy && !hasErrors(validationErrors.config),
     true,
   ]
-  const stepIsDirty = [isPatientsStepDirty(draft), isBotStepDirty(draft), isConfigStepDirty(draft), false]
+  const stepIsDirty = [isGeneralStepDirty(draft), isConfigStepDirty(draft), false]
   const stepNeedsAttention = stepValidity.map(
     (isStepValid, index) =>
       index < executionWizardSteps.length - 1 && !isStepValid && (stepIsDirty[index] || attemptedSteps[index]),
   )
 
   const showErrors = {
-    patients: Boolean(attemptedSteps[0]),
-    bot: Boolean(attemptedSteps[1]),
-    config: Boolean(attemptedSteps[2]),
+    general: Boolean(attemptedSteps[0]),
+    config: Boolean(attemptedSteps[1]),
   }
   const submitExecutionMutation = useCreateExecutionMutation({
     onSuccess: async ([response]) => {
@@ -580,45 +576,14 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }
 
   return {
-    botStep: {
+    generalStep: {
       associatedBotOptions: wizardData.associatedBotOptions,
       bot: draft.bot,
+      botErrors: validationErrors.bot,
       botPasswordError: selectedBotPasswordStatus.error,
-      context: draft.context,
-      errors: validationErrors.bot,
+      clinicOptions,
       clinicBotsError:
         wizardData.clinicBotsQuery.error instanceof Error ? wizardData.clinicBotsQuery.error.message : null,
-      hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
-      hasSelectedProjectWithoutAssociatedBots: wizardData.hasSelectedProjectWithoutAssociatedBots,
-      isDecryptingBotPassword: selectedBotPasswordStatus.isPending,
-      isLoadingClinicBots: wizardData.clinicBotsQuery.isFetching,
-      isLoadingPlaywrightProjects: wizardData.playwrightProjectsQuery.isFetching,
-      onBotFieldChange: updateBotField,
-      onBotSelect: selectBot,
-      onProjectSelect: selectProject,
-      projectError: validationErrors.context.project,
-      playwrightProjectsError:
-        wizardData.playwrightProjectsQuery.error instanceof Error
-          ? wizardData.playwrightProjectsQuery.error.message
-          : null,
-      playwrightProjectOptions: wizardData.playwrightProjectOptions,
-      selectedBotId,
-      showErrors: showErrors.bot,
-    },
-    configStep: {
-      contextErrors: validationErrors.context,
-      draft,
-      errors: validationErrors.config,
-      maxRetries: appLimits.maxRetries,
-      maxWorkers: appLimits.maxWorkers,
-      onRetriesChange: updateRetries,
-      onScheduleModeChange: updateScheduleMode,
-      onScheduledAtChange: updateScheduledAt,
-      onWorkersChange: updateWorkers,
-      showErrors: showErrors.config,
-    },
-    patientsStep: {
-      clinicOptions,
       context: draft.context,
       contextErrors: validationErrors.context,
       customerOptions: wizardData.customerSearchQuery.data?.customers ?? [],
@@ -632,25 +597,52 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
           ? wizardData.clinicExecutionDaysQuery.error.message
           : null,
       executionName: draft.execution.executionName,
+      hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
       hasSelectedCustomerWithoutClinics: wizardData.hasSelectedCustomerWithoutClinics,
+      hasSelectedProjectWithoutAssociatedBots: wizardData.hasSelectedProjectWithoutAssociatedBots,
       importPatientsError:
         wizardData.importPatientsMutation.error instanceof Error
           ? wizardData.importPatientsMutation.error.message
           : null,
+      isDecryptingBotPassword: selectedBotPasswordStatus.isPending,
       isImportingPatients: wizardData.importPatientsMutation.isPending,
       isLoadingClinics: wizardData.selectedCustomerQuery.isFetching,
+      isLoadingClinicBots: wizardData.clinicBotsQuery.isFetching,
       isLoadingExecutionDays: wizardData.clinicExecutionDaysQuery.isFetching,
+      isLoadingPlaywrightProjects: wizardData.playwrightProjectsQuery.isFetching,
       isSearchingCustomers: wizardData.customerSearchQuery.isFetching,
+      onBotFieldChange: updateBotField,
+      onBotSelect: selectBot,
       onClinicSelect: selectClinic,
       onCustomerClear: clearCustomerSelection,
       onCustomerSearchChange: updateCustomerSearch,
       onCustomerSelect: selectCustomer,
       onExecutionDaySelect: selectExecutionDay,
+      onProjectSelect: selectProject,
       onRemovePatient: removePatient,
       patients: draft.execution.patients,
+      projectError: validationErrors.context.project,
+      playwrightProjectsError:
+        wizardData.playwrightProjectsQuery.error instanceof Error
+          ? wizardData.playwrightProjectsQuery.error.message
+          : null,
+      playwrightProjectOptions: wizardData.playwrightProjectOptions,
       selectedCustomerError:
         wizardData.selectedCustomerQuery.error instanceof Error ? wizardData.selectedCustomerQuery.error.message : null,
-      showErrors: showErrors.patients,
+      selectedBotId,
+      showErrors: showErrors.general,
+    },
+    configStep: {
+      contextErrors: validationErrors.context,
+      draft,
+      errors: validationErrors.config,
+      maxRetries: appLimits.maxRetries,
+      maxWorkers: appLimits.maxWorkers,
+      onRetriesChange: updateRetries,
+      onScheduleModeChange: updateScheduleMode,
+      onScheduledAtChange: updateScheduledAt,
+      onWorkersChange: updateWorkers,
+      showErrors: showErrors.config,
     },
     reviewStep: {
       draft,
@@ -675,8 +667,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
 
 export type UseExecutionWizardResult = ReturnType<typeof useExecutionWizard>
 export type ExecutionWizardStepperState = UseExecutionWizardResult['stepper']
-export type ExecutionWizardPatientsStepState = UseExecutionWizardResult['patientsStep']
-export type ExecutionWizardBotStepState = UseExecutionWizardResult['botStep']
+export type ExecutionWizardGeneralStepState = UseExecutionWizardResult['generalStep']
 export type ExecutionWizardConfigStepState = UseExecutionWizardResult['configStep']
 export type ExecutionWizardReviewStepState = UseExecutionWizardResult['reviewStep']
 export type ExecutionWizardSubmissionState = UseExecutionWizardResult['submission']

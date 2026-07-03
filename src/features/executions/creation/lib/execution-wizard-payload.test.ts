@@ -118,7 +118,6 @@ describe('buildExecutionPayload', () => {
           },
         },
         rv: RUNTIME_VARIABLES,
-        headed: false,
         workers: 2,
         retries: 1,
       },

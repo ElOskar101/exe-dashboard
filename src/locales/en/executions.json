@@ -8,13 +8,9 @@
     "complete": "Complete",
     "inProgress": "In progress",
     "upNext": "Up next",
-    "patients": {
-      "title": "Patients",
-      "description": "Select the client, clinic, and execution day to import the patients for this run."
-    },
-    "bot": {
-      "title": "Bot",
-      "description": "Pick the Playwright Project and associated bot, then update the execution bot fields before submission."
+    "general": {
+      "title": "General",
+      "description": "Select the client, clinic, project, robot, and execution day for this run."
     },
     "config": {
       "title": "Execution config",
@@ -125,6 +121,7 @@
     "gettingPatients": "Getting patients...",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
+    "editBotCredentials": "Edit bot credentials",
     "removePatient": "Remove patient",
     "startOver": "Create another execution",
     "copyPayload": "Copy payload",
@@ -198,6 +195,11 @@
     "emptyValue": "Not filled",
     "noFlags": "No flags enabled",
     "noPatients": "No patients added yet."
+  },
+  "botCredentials": {
+    "title": "Bot credentials",
+    "description": "Review the selected bot and adjust the credentials for this execution.",
+    "close": "Done"
   },
   "submit": {
     "errorTitle": "Execution could not be created",

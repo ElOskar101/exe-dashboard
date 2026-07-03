@@ -32,7 +32,6 @@ const PATIENT_SOURCE_KEYS = {
   clinic: 'practice',
 } as const
 
-const DEFAULT_HEADED_MODE = false
 const MACRO_CONFIG_KEYS = {
   clinicName: 'clinicName',
   clientName: 'clientName',
@@ -146,7 +145,6 @@ export const buildExecutionPayloadPreview = (
       })),
       config: createExecutionPayloadConfig(draft),
       rv: rv ?? {},
-      headed: DEFAULT_HEADED_MODE,
       workers: createExecutionPayloadNumberPreview(draft.execution.workers),
       retries: createExecutionPayloadNumberPreview(draft.execution.retries),
     },

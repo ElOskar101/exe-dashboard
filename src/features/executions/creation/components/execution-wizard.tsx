@@ -5,11 +5,10 @@ import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
 import { IconArrowLeft, IconArrowRight, IconSend2 } from '@tabler/icons-react'
 import { executionWizardSteps, useExecutionWizard } from '../hooks/use-execution-wizard'
-import { BotStep } from './bot-step'
 import { ConfigStep } from './config-step'
 import { ExecutionSubmitErrorAlert } from './execution-submit-error-alert'
 import { ExecutionWizardStepper } from './execution-wizard-stepper'
-import { PatientsStep } from './patients-step'
+import { GeneralStep } from './general-step'
 import { ReviewStep } from './review-step'
 
 export default function ExecutionWizard() {
@@ -34,13 +33,11 @@ export default function ExecutionWizard() {
         ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col gap-6">
-          {wizard.stepper.currentStep === 0 ? <PatientsStep {...wizard.patientsStep} t={t} /> : null}
+          {wizard.stepper.currentStep === 0 ? <GeneralStep {...wizard.generalStep} t={t} /> : null}
 
-          {wizard.stepper.currentStep === 1 ? <BotStep {...wizard.botStep} t={t} /> : null}
+          {wizard.stepper.currentStep === 1 ? <ConfigStep {...wizard.configStep} t={t} /> : null}
 
-          {wizard.stepper.currentStep === 2 ? <ConfigStep {...wizard.configStep} t={t} /> : null}
-
-          {wizard.stepper.currentStep === 3 ? (
+          {wizard.stepper.currentStep === 2 ? (
             <ReviewStep draft={wizard.reviewStep.draft} payload={wizard.reviewStep.payload} t={t} />
           ) : null}
         </div>
