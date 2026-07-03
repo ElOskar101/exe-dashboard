@@ -566,6 +566,8 @@ test.describe('protected executions route', () => {
           },
         ],
         config: {
+          clientName: 'Legacy Dental Care',
+          clinicName: 'Downtown Clinic',
           defaultEnable: true,
           defaultCharacters: '-',
           data: {
