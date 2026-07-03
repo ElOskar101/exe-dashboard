@@ -328,8 +328,8 @@ async function importPatientsFromCCC(page: Page) {
   await page.getByRole('combobox', { name: 'Execution' }).click()
   await page.getByRole('option', { name: '2026-04-27' }).click()
   await expect(page.getByRole('option', { name: '2026-05-09' })).not.toBeVisible()
-  await expect(page.getByText('Jane', { exact: true }).first()).toBeVisible()
-  await expect(page.getByText('John', { exact: true }).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: /View details for Jane Doe/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /View details for John Doe/ })).toBeVisible()
 }
 
 async function completeBotStep(
@@ -343,12 +343,14 @@ async function completeBotStep(
     password = 'super-secret',
   } = {},
 ) {
-  const passwordInput = page.getByRole('textbox', { name: 'Password' })
-
   await page.getByRole('combobox', { name: 'Project' }).click()
   await page.getByRole('option', { name: projectName }).click()
   await page.getByRole('combobox', { name: 'Bot' }).click()
   await page.getByRole('option', { name: associatedBotName }).click()
+  await page.getByRole('button', { name: 'Edit bot credentials' }).click()
+
+  const passwordInput = page.getByRole('textbox', { name: 'Password' })
+
   await expect(passwordInput).toBeEnabled()
   await expect(passwordInput).toHaveValue('super-secret')
   await expect(page.getByLabel('Bot name')).toHaveValue(botName)
@@ -357,7 +359,7 @@ async function completeBotStep(
   await expect(page.getByLabel('Portal URL')).toHaveAttribute('readonly', '')
   await page.getByLabel('Username').fill(username)
   await passwordInput.fill(password)
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Done' }).click()
 }
 
 test.describe('protected executions route', () => {
@@ -411,7 +413,7 @@ test.describe('protected executions route', () => {
     await page.goto(withExecutionTarget('/create'))
 
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.getByRole('combobox', { name: /Bot Select clinic first/ })).toBeDisabled()
+    await expect(page.getByLabel('Workers')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
     await expect(page.getByText('This field is required.').first()).toBeVisible()
@@ -419,17 +421,18 @@ test.describe('protected executions route', () => {
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)
-    await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByRole('combobox', { name: 'Project' })).toBeVisible()
     await expect(page.getByText('This field is required.').first()).toBeVisible()
 
     await completeBotStep(page)
+    await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByLabel('Workers')).toBeVisible()
 
     await page.getByRole('button', { name: 'Back' }).click()
 
-    await expect(page.getByLabel('Bot name')).toBeVisible()
+    await page.getByRole('button', { name: 'Edit bot credentials' }).click()
     await expect(page.getByLabel('Bot name')).toHaveValue('Eligibility Runner')
+    await page.getByRole('button', { name: 'Done' }).click()
   })
 
   test('shows review content for an empty draft', async ({ page }) => {
@@ -438,7 +441,6 @@ test.describe('protected executions route', () => {
 
     await page.goto(withExecutionTarget('/create'))
 
-    await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
 
@@ -505,8 +507,8 @@ test.describe('protected executions route', () => {
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)
-    await page.getByRole('button', { name: 'Next' }).click()
     await completeBotStep(page)
+    await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Workers').fill('4')
     await page.getByLabel('Retries').fill('2')
@@ -619,11 +621,11 @@ test.describe('protected executions route', () => {
 
     await selectCustomerAndClinic(page)
     await importPatientsFromCCC(page)
-    await page.getByRole('button', { name: 'Next' }).click()
     await completeBotStep(page, {
       username: 'retry.user',
       password: 'retry-secret',
     })
+    await page.getByRole('button', { name: 'Next' }).click()
 
     await page.getByLabel('Workers').fill('2')
     await page.getByRole('button', { name: 'Next' }).click()

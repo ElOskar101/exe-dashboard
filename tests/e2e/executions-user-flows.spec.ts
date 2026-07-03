@@ -760,7 +760,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/reports/execution-1/index.html', async (route) => {
+    await page.route('**/reports/execution-1/Report/index.html', async (route) => {
       await route.fulfill({
         contentType: 'text/html',
         body: '<!doctype html><html><body><h1>Completed report</h1><p>Jane Doe passed.</p></body></html>',
@@ -780,7 +780,7 @@ test.describe('execution user flows', () => {
 
     await stubExecutionList(page, () => [execution])
     await stubExecutionDetails(page, execution._id, () => execution)
-    await page.route('**/reports/execution-1/index.html', async (route) => {
+    await page.route('**/reports/execution-1/Report/index.html', async (route) => {
       await route.fulfill({ status: 404, body: 'Missing report' })
     })
 
@@ -812,7 +812,6 @@ test.describe('execution user flows', () => {
     await page.goto(withExecutionTarget('/create'))
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
-    await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Create execution' }).click()
 
     await expect(page.getByText(/Add at least one patient before continuing/)).toBeVisible()
@@ -825,7 +824,7 @@ test.describe('execution user flows', () => {
 
     await page.goto(withExecutionTarget('/create'))
     await selectExecutionPatients(page)
-    await expect(page.getByText('Doe', { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /View details for Doe/ })).toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Back' }).click()
 
@@ -842,7 +841,6 @@ test.describe('execution user flows', () => {
 
     await page.goto(withExecutionTarget('/create'))
     await selectExecutionPatients(page)
-    await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Next' }).click()
 
     await expect(page.getByLabel('Other config')).not.toBeVisible()
