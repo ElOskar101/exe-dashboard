@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import type { ExecutionWizardDraft } from '../model/execution-create'
 import type { ExecutionPayloadPreview } from '../lib/execution-wizard-payload'
+import { getPatientsAvailableForExecution } from '../lib/execution-patient-bot-match'
 import { getExecutionWizardDisplayValue, getExecutionWizardPatientFullName } from '../lib/execution-wizard-display'
 
 interface ReviewStepProps {
@@ -15,7 +16,7 @@ interface ReviewStepProps {
 
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
-  const patients = draft.execution.patients
+  const patients = getPatientsAvailableForExecution(draft)
   const payloadText = useMemo(() => JSON.stringify(payload, null, 2), [payload])
 
   const handleCopyPayload = async () => {

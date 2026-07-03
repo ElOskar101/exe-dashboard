@@ -14,11 +14,13 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { IconAlertCircle, IconEye, IconEyeOff, IconPencil } from '@tabler/icons-react'
 import { ExecutionClientFilter } from '@/features/executions/listing'
+import { executionPatientFilters, type ExecutionPatientFilter } from '../model/execution-create'
 import { hasErrors } from '../lib/execution-wizard-validation'
 import type { ExecutionWizardGeneralStepState } from '../hooks/use-execution-wizard'
 import { ImportedPatientCard } from './imported-patient-card'
@@ -29,6 +31,12 @@ interface GeneralStepProps extends ExecutionWizardGeneralStepState {
 
 const patientErrorFieldKeys = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob'] as const
 const patientCardSkeletonCount = 6
+const patientFilterLabels = {
+  all: 'filters.patients.all',
+  review: 'filters.patients.review',
+  empty: 'filters.patients.empty',
+  notExecuted: 'filters.patients.notExecuted',
+} as const
 
 const patientErrorLabels = {
   patientName: 'fields.patientName',
@@ -69,6 +77,8 @@ export function GeneralStep({
   projectError,
   selectedBotId,
   disabledPatientIds,
+  includedPatientIds,
+  patientFilter,
   onCustomerClear,
   onCustomerSelect,
   onClinicSelect,
@@ -76,6 +86,7 @@ export function GeneralStep({
   onBotSelect,
   onBotFieldChange,
   onExecutionDaySelect,
+  onPatientFilterChange,
   onRemovePatient,
   t,
 }: GeneralStepProps) {
@@ -116,6 +127,10 @@ export function GeneralStep({
     isLoadingExecutionDays ||
     Boolean(executionDaysError) ||
     executionDayOptions.length === 0
+  const isPatientFilterDisabled = isImportingPatients || patients.length === 0
+  const hasVisiblePatients = patients.some(
+    (patient) => patient.id && includedPatientIds.has(patient.id) && !disabledPatientIds.has(patient.id),
+  )
 
   return (
     <FieldSet>
@@ -374,6 +389,24 @@ export function GeneralStep({
           </div>
         </div>
 
+        <Field>
+          <FieldLabel>{t('fields.patientFilter')}</FieldLabel>
+          <RadioGroup
+            value={patientFilter}
+            disabled={isPatientFilterDisabled}
+            className="w-fit grid-flow-col auto-cols-max"
+            aria-label={t('fields.patientFilter')}
+            onValueChange={(value) => onPatientFilterChange(value as ExecutionPatientFilter)}
+          >
+            {executionPatientFilters.map((filter) => (
+              <Field key={filter} orientation="horizontal" data-disabled={isPatientFilterDisabled}>
+                <RadioGroupItem id={`patientFilter-${filter}`} value={filter} />
+                <FieldLabel htmlFor={`patientFilter-${filter}`}>{t(patientFilterLabels[filter])}</FieldLabel>
+              </Field>
+            ))}
+          </RadioGroup>
+        </Field>
+
         {playwrightProjectsError ? (
           <Alert variant="destructive">
             <IconAlertCircle />
@@ -439,7 +472,7 @@ export function GeneralStep({
         ) : null}
 
         {isImportingPatients ? (
-          <div className="grid max-h-[13rem] gap-4 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid max-h-[13rem] gap-3 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: patientCardSkeletonCount }).map((_, index) => (
               <div key={index} className="flex min-w-0 flex-col gap-4 rounded-3xl border bg-muted/15 p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
@@ -463,34 +496,40 @@ export function GeneralStep({
           </div>
         ) : null}
 
-        {!isImportingPatients && patients.length > 0 ? (
-          <div className="grid max-h-[13rem] gap-4 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 xl:grid-cols-3">
-            {patients.map((patient, index) =>
-              (() => {
-                const rowErrors = errors.rows[index] ?? {}
-                const missingFields = patientErrorFieldKeys
-                  .filter((field) => Boolean(rowErrors[field]))
-                  .map((field) => t(patientErrorLabels[field]))
-                const hasRowErrors = hasErrors(rowErrors)
-                const isPatientDisabled = Boolean(patient.id && disabledPatientIds.has(patient.id))
+        {!isImportingPatients && patients.length > 0 && !hasVisiblePatients ? (
+          <div className="rounded-3xl border border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
+            {t('help.noFilteredPatients')}
+          </div>
+        ) : null}
 
-                return (
-                  <ImportedPatientCard
-                    key={`${patient.patientMemberId}-${patient.patientName}-${index}`}
-                    emptyValue={emptyValue}
-                    hasRowErrors={hasRowErrors}
-                    index={index}
-                    isDisabled={isPatientDisabled}
-                    missingFields={missingFields}
-                    patient={patient}
-                    rowErrorMessage={rowErrors.otherInformation}
-                    showErrors={showErrors}
-                    onRemovePatient={onRemovePatient}
-                    t={t}
-                  />
-                )
-              })(),
-            )}
+        {!isImportingPatients && patients.length > 0 && hasVisiblePatients ? (
+          <div className="grid max-h-[13rem] gap-3 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 lg:grid-cols-4">
+            {patients.flatMap((patient, index) => {
+              if (!patient.id || !includedPatientIds.has(patient.id) || disabledPatientIds.has(patient.id)) {
+                return []
+              }
+
+              const rowErrors = errors.rows[index] ?? {}
+              const missingFields = patientErrorFieldKeys
+                .filter((field) => Boolean(rowErrors[field]))
+                .map((field) => t(patientErrorLabels[field]))
+              const hasRowErrors = hasErrors(rowErrors)
+
+              return [
+                <ImportedPatientCard
+                  key={`${patient.id}-${patient.patientMemberId}-${patient.patientName}`}
+                  emptyValue={emptyValue}
+                  hasRowErrors={hasRowErrors}
+                  index={index}
+                  missingFields={missingFields}
+                  patient={patient}
+                  rowErrorMessage={rowErrors.otherInformation}
+                  showErrors={showErrors}
+                  onRemovePatient={onRemovePatient}
+                  t={t}
+                />,
+              ]
+            })}
           </div>
         ) : null}
       </FieldGroup>

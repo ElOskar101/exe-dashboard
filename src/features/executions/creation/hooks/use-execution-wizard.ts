@@ -15,6 +15,7 @@ import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
 import { getSelectedBotCarrierRegex, isPatientEnabledForBot } from '../lib/execution-patient-bot-match'
+import { getPatientsMatchingFilter } from '../lib/execution-patient-filters'
 import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
@@ -31,7 +32,12 @@ import {
   isGeneralStepDirty,
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
-import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
+import type {
+  ExecutionPatientFilter,
+  ExecutionScheduleMode,
+  ExecutionSchedulePayload,
+  ExecutionWizardDraft,
+} from '../model/execution-create'
 import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem } from '../services/ccc.service'
 import { getClinicMacroConfig } from '../services/sync.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
@@ -111,14 +117,22 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const selectedBotId = draft.bot.clinicBotId
   const appLimits = useExecutionAppLimits()
   const selectedBotCarrierRegex = useMemo(() => getSelectedBotCarrierRegex(draft), [draft])
+  const filteredPatients = useMemo(
+    () => getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter),
+    [draft.execution.patientFilter, draft.execution.patients],
+  )
+  const includedPatientIds = useMemo(
+    () => new Set(filteredPatients.flatMap((patient) => (patient.id ? [patient.id] : []))),
+    [filteredPatients],
+  )
   const disabledPatientIds = useMemo(
     () =>
       new Set(
-        draft.execution.patients.flatMap((patient) =>
+        filteredPatients.flatMap((patient) =>
           patient.id && !isPatientEnabledForBot(patient, selectedBotCarrierRegex) ? [patient.id] : [],
         ),
       ),
-    [draft.execution.patients, selectedBotCarrierRegex],
+    [filteredPatients, selectedBotCarrierRegex],
   )
   const selectedBotPasswordStatus =
     botPasswordRequest.selectedBotId === selectedBotId
@@ -141,6 +155,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
       hasSelectedProjectWithoutAssociatedBots: wizardData.hasSelectedProjectWithoutAssociatedBots,
       disabledPatientIds,
+      includedPatientIds,
       selectedBotMissingFromClinicBots: draft.bot.clinicBotId.trim().length > 0 && !selectedClinicBot,
       workersLimit: appLimits.maxWorkers,
       retriesLimit: appLimits.maxRetries,
@@ -149,6 +164,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     wizardData.associatedBotOptions,
     wizardData.clinicBotOptions,
     disabledPatientIds,
+    includedPatientIds,
     createdBy,
     draft,
     t,
@@ -480,6 +496,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         ...previousDraft.execution,
         execution: executionDayId,
         executionName: selectedDay?.sheetName ?? '',
+        patientFilter: 'all',
         patients: [],
       },
     }))
@@ -493,6 +510,16 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       execution: {
         ...previousDraft.execution,
         scheduleMode,
+      },
+    }))
+  }
+
+  const updatePatientFilter = (patientFilter: ExecutionPatientFilter) => {
+    setDraft((previousDraft) => ({
+      ...previousDraft,
+      execution: {
+        ...previousDraft.execution,
+        patientFilter,
       },
     }))
   }
@@ -631,10 +658,13 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       onCustomerSearchChange: updateCustomerSearch,
       onCustomerSelect: selectCustomer,
       onExecutionDaySelect: selectExecutionDay,
+      onPatientFilterChange: updatePatientFilter,
       onProjectSelect: selectProject,
       onRemovePatient: removePatient,
       patients: draft.execution.patients,
       disabledPatientIds,
+      includedPatientIds,
+      patientFilter: draft.execution.patientFilter,
       projectError: validationErrors.context.project,
       playwrightProjectsError:
         wizardData.playwrightProjectsQuery.error instanceof Error

@@ -2,6 +2,9 @@ import type { ExecutionVerificationType } from '../../shared/model/execution-cre
 
 export type ExecutionScheduleMode = 'instant' | 'scheduled'
 
+export const executionPatientFilters = ['all', 'review', 'empty', 'notExecuted'] as const
+export type ExecutionPatientFilter = (typeof executionPatientFilters)[number]
+
 export interface ExecutionBot {
   clinicBotId: string
   botName: string
@@ -14,6 +17,9 @@ export interface ExecutionBot {
 export interface ExecutionPatient {
   id?: string
   carrierName: string
+  executed: boolean
+  insuranceVerificationProcessResults: string
+  insuranceVerificationStatus: string
   patientName: string
   patientLastName: string
   patientMemberId: string
@@ -49,6 +55,7 @@ export interface ExecutionWizardDraft {
   execution: {
     execution: string
     executionName: string
+    patientFilter: ExecutionPatientFilter
     patients: ExecutionPatient[]
     workers: string
     retries: string

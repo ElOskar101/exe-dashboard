@@ -23,6 +23,7 @@ interface ExecutionWizardValidationOptions {
   hasSelectedClinicWithoutActiveBots?: boolean
   hasSelectedProjectWithoutAssociatedBots?: boolean
   disabledPatientIds?: ReadonlySet<string>
+  includedPatientIds?: ReadonlySet<string>
   selectedBotMissingFromClinicBots?: boolean
   workersLimit?: number
   retriesLimit?: number
@@ -69,6 +70,10 @@ export const getExecutionWizardValidationErrors = (
   const patients: StepErrors['patients'] = {
     rows: draft.execution.patients.map((patient) => {
       const rowErrors: StepErrors['patients']['rows'][number] = {}
+
+      if (patient.id && options.includedPatientIds && !options.includedPatientIds.has(patient.id)) {
+        return rowErrors
+      }
 
       if (patient.id && options.disabledPatientIds?.has(patient.id)) {
         return rowErrors
@@ -160,7 +165,12 @@ export const getExecutionWizardValidationErrors = (
     patients: {
       form:
         draft.execution.patients.length === 0 ||
-        draft.execution.patients.every((patient) => patient.id && options.disabledPatientIds?.has(patient.id))
+        draft.execution.patients.every(
+          (patient) =>
+            !patient.id ||
+            (options.includedPatientIds && !options.includedPatientIds.has(patient.id)) ||
+            options.disabledPatientIds?.has(patient.id),
+        )
           ? t('validation.addPatient')
           : undefined,
       rows: patients.rows,

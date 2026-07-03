@@ -50,6 +50,7 @@
     "username": "Username",
     "password": "Password",
     "botOtherInformation": "Bot other information",
+    "patientFilter": "Patient filter",
     "patientName": "Patient name",
     "patientLastName": "Patient last name",
     "memberId": "Member ID",
@@ -59,6 +60,9 @@
     "policyHolderDob": "Policy holder date of birth",
     "relationship": "Relationship",
     "carrierName": "Carrier",
+    "insuranceVerificationProcessResults": "Verification results",
+    "insuranceVerificationStatus": "Verification status",
+    "executed": "Executed",
     "zipCode": "ZIP code",
     "patientClinic": "Patient clinic",
     "filenames": "Filenames",
@@ -112,6 +116,14 @@
     "verificationFbd": "FBD",
     "enabled": "Enabled",
     "disabled": "Disabled"
+  },
+  "filters": {
+    "patients": {
+      "all": "All",
+      "review": "Only Review",
+      "empty": "Only Empty",
+      "notExecuted": "Only Not Executed"
+    }
   },
   "buttons": {
     "back": "Back",
@@ -179,6 +191,7 @@
     "noActiveClinicBots": "This clinic has no active bots available. Choose a different clinic to continue.",
     "noAssociatedBots": "This Playwright Project has no active associated bots. Choose a different project to continue.",
     "noImportedPatients": "Select an execution day to import patients and continue.",
+    "noFilteredPatients": "No imported patients match the selected filter.",
     "importedPatients": "Imported patients: {{count}}",
     "readonlyFieldBadge": "Read-only",
     "readonlyFieldTooltip": "This value is loaded from the selected bot and cannot be edited.",

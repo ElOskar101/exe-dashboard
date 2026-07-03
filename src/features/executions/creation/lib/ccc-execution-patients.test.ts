@@ -7,6 +7,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
       mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
+          executed: false,
           cells: [
             { key: 'patient_first_name', value: 'Soledad' },
             { key: 'patient_last_name', value: 'Valdez' },
@@ -18,6 +19,8 @@ describe('mapCCCExecutionRowsToPatients', () => {
             { key: 'relationship_to_subscriber', value: 'Self' },
             { key: 'subscriber_zip_code', value: '77075' },
             { key: 'carrier_name', value: 'Delta Dental' },
+            { key: 'insurance_verification_process_results', value: 'Review' },
+            { key: 'insurance_verification_status', value: 'Review' },
             { key: 'practice', value: 'HERALDSQ' },
             { key: 'type_of_verification', value: 'FBD' },
             { key: 'files_s_name', value: 'Eligibility_status.pdf' },
@@ -28,6 +31,9 @@ describe('mapCCCExecutionRowsToPatients', () => {
       {
         id: 'row-1',
         carrierName: 'Delta Dental',
+        executed: false,
+        insuranceVerificationProcessResults: 'Review',
+        insuranceVerificationStatus: 'Review',
         patientName: 'Soledad',
         patientLastName: 'Valdez',
         patientMemberId: '44457159',
@@ -50,6 +56,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
       mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
+          executed: false,
           cells: [
             { key: 'patient_first_name', value: ' Empty ' },
             { key: 'patient_last_name', value: 'Patient' },
@@ -62,6 +69,9 @@ describe('mapCCCExecutionRowsToPatients', () => {
       {
         patientName: '',
         carrierName: '',
+        executed: false,
+        insuranceVerificationProcessResults: '',
+        insuranceVerificationStatus: '',
         patientLastName: 'Patient',
         patientMemberId: '',
         verificationType: '',
@@ -74,6 +84,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
       mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
+          executed: false,
           cells: [
             { key: 'patient_first_name', value: 'EMPTY' },
             { key: 'patient_last_name', value: ' ' },
@@ -89,6 +100,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
       mapCCCExecutionRowsToPatients([
         {
           _id: 'row-1',
+          executed: false,
           cells: [
             { key: 'patient_first_name', value: 'Jessica' },
             { key: 'patient_dob', value: "07/24/2025 00:00 AM'" },
@@ -100,6 +112,9 @@ describe('mapCCCExecutionRowsToPatients', () => {
       expect.objectContaining({
         patientName: 'Jessica',
         carrierName: '',
+        executed: false,
+        insuranceVerificationProcessResults: '',
+        insuranceVerificationStatus: '',
         patientDob: "07/24/2025 00:00 AM'",
         otherInformation: '{}',
       }),

@@ -1,4 +1,5 @@
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
+import { getPatientsMatchingFilter } from './execution-patient-filters'
 
 const CASE_INSENSITIVE_REGEX_PREFIX = '(?i)'
 const REGEX_PROPERTY_NAME = 'regex'
@@ -37,4 +38,11 @@ export const getPatientsEnabledForBot = (draft: ExecutionWizardDraft) => {
   const carrierRegex = getSelectedBotCarrierRegex(draft)
 
   return draft.execution.patients.filter((patient) => isPatientEnabledForBot(patient, carrierRegex))
+}
+
+export const getPatientsAvailableForExecution = (draft: ExecutionWizardDraft) => {
+  const carrierRegex = getSelectedBotCarrierRegex(draft)
+  const filteredPatients = getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter)
+
+  return filteredPatients.filter((patient) => isPatientEnabledForBot(patient, carrierRegex))
 }

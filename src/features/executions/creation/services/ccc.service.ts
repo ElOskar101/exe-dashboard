@@ -131,6 +131,7 @@ export interface CCCExecutionCell {
 export interface CCCExecutionRow {
   _id: string
   cells: CCCExecutionCell[]
+  executed: boolean
 }
 
 export interface CCCExecutionResponse {

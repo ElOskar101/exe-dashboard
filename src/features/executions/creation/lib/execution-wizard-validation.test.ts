@@ -132,6 +132,9 @@ describe('getExecutionWizardValidationErrors', () => {
     draft.execution.patients = [
       {
         carrierName: '',
+        executed: false,
+        insuranceVerificationProcessResults: '',
+        insuranceVerificationStatus: '',
         patientName: 'Jane',
         patientLastName: '',
         patientMemberId: '',

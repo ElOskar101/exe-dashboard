@@ -52,6 +52,9 @@ describe('buildExecutionPayload', () => {
       {
         id: 'row-1',
         carrierName: 'Delta Dental',
+        executed: false,
+        insuranceVerificationProcessResults: '',
+        insuranceVerificationStatus: '',
         patientName: 'Ana',
         patientLastName: 'Lopez',
         patientMemberId: 'A10001',
@@ -259,6 +262,9 @@ describe('buildExecutionPayload', () => {
     draft.execution.patients = [
       {
         carrierName: 'Delta Dental',
+        executed: false,
+        insuranceVerificationProcessResults: '',
+        insuranceVerificationStatus: '',
         patientName: 'Ana',
         patientLastName: 'Lopez',
         patientMemberId: 'A10001',

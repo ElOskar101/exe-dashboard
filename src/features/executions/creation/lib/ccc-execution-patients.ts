@@ -10,15 +10,30 @@ const normalizeCellValue = (value: string | undefined) => {
 }
 
 const getCellValue = (cellsByKey: Map<string, string>, key: string) => normalizeCellValue(cellsByKey.get(key))
+const getRawCellValue = (cellsByKey: Map<string, string>, key: string) => cellsByKey.get(key)?.trim() ?? ''
 
 const getVerificationType = (value: string): ExecutionVerificationType | '' => {
   return value === 'ELG' || value === 'FBD' ? value : ''
 }
 
 const hasImportablePatientData = (patient: ExecutionPatient) => {
-  return Object.entries(patient).some(
-    ([key, value]) => key !== 'id' && key !== 'otherInformation' && value.trim().length > 0,
-  )
+  return [
+    patient.carrierName,
+    patient.insuranceVerificationProcessResults,
+    patient.insuranceVerificationStatus,
+    patient.patientName,
+    patient.patientLastName,
+    patient.patientMemberId,
+    patient.patientDob,
+    patient.policyHolderName,
+    patient.policyHolderLastName,
+    patient.policyHolderDob,
+    patient.relationship,
+    patient.zipCode,
+    patient.clinic,
+    patient.verificationType,
+    patient.filenames,
+  ].some((value) => value.trim().length > 0)
 }
 
 export const mapCCCExecutionRowsToPatients = (rows: CCCExecutionRow[]): ExecutionPatient[] => {
@@ -27,6 +42,9 @@ export const mapCCCExecutionRowsToPatients = (rows: CCCExecutionRow[]): Executio
     const patient: ExecutionPatient = {
       id: row._id,
       carrierName: getCellValue(cellsByKey, 'carrier_name'),
+      executed: row.executed,
+      insuranceVerificationProcessResults: getRawCellValue(cellsByKey, 'insurance_verification_process_results'),
+      insuranceVerificationStatus: getRawCellValue(cellsByKey, 'insurance_verification_status'),
       patientName: getCellValue(cellsByKey, 'patient_first_name'),
       patientLastName: getCellValue(cellsByKey, 'patient_last_name'),
       patientMemberId: getCellValue(cellsByKey, 'memberid'),

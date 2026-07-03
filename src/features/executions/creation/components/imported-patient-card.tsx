@@ -18,22 +18,10 @@ import { IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
 import type { ExecutionPatient } from '../model/execution-create'
 
-const patientSummaryFields = [
-  { key: 'patientName', label: 'fields.patientName' },
-  { key: 'patientLastName', label: 'fields.patientLastName' },
-  { key: 'patientMemberId', label: 'fields.memberId' },
-  { key: 'patientDob', label: 'fields.patientDob' },
-  { key: 'carrierName', label: 'fields.carrierName' },
-] as const satisfies ReadonlyArray<{
-  key: keyof ExecutionPatient
-  label: Parameters<TFunction<'executions'>>[0]
-}>
-
 interface ImportedPatientCardProps {
   emptyValue: string
   hasRowErrors: boolean
   index: number
-  isDisabled: boolean
   missingFields: string[]
   patient: ExecutionPatient
   rowErrorMessage?: string
@@ -46,7 +34,6 @@ export function ImportedPatientCard({
   emptyValue,
   hasRowErrors,
   index,
-  isDisabled,
   missingFields,
   patient,
   rowErrorMessage,
@@ -56,6 +43,10 @@ export function ImportedPatientCard({
 }: ImportedPatientCardProps) {
   const fallbackPatientLabel = t('sections.patients.patientTitle', { index: index + 1 })
   const patientLabel = [patient.patientName, patient.patientLastName].filter(Boolean).join(' ') || fallbackPatientLabel
+  const verificationDescription = [
+    getExecutionWizardDisplayValue(patient.insuranceVerificationStatus, emptyValue),
+    getExecutionWizardDisplayValue(patient.insuranceVerificationProcessResults, emptyValue),
+  ].join(' - ')
   const removePatient = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     event.stopPropagation()
@@ -69,19 +60,18 @@ export function ImportedPatientCard({
           render={
             <Card
               size="sm"
-              className={cn(
-                'h-full cursor-pointer bg-muted/15 text-left shadow-sm transition-colors hover:bg-muted/25',
-                isDisabled && 'opacity-40',
-              )}
-              aria-disabled={isDisabled}
+              className="h-full cursor-pointer gap-0 rounded-3xl bg-muted/15 py-2 text-left shadow-sm data-[size=sm]:gap-0 data-[size=sm]:py-2"
               aria-label={t('detail.patientDetailsActionLabel', { patient: patientLabel })}
             />
           }
         >
-          <CardHeader>
-            <CardTitle className="truncate">{patientLabel}</CardTitle>
+          <CardHeader className="px-4">
+            <CardTitle className="min-w-0 truncate text-sm">
+              {patientLabel}
+              <span className="ml-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</span>
+            </CardTitle>
             {showErrors && hasRowErrors ? (
-              <CardDescription role="alert" className="col-start-1 row-start-2 text-destructive">
+              <CardDescription role="alert" className="col-start-1 text-destructive">
                 <span className="flex flex-col gap-1">
                   <span className="font-medium">{t('validation.patientDetailsTitle')}</span>
                   <span>
@@ -106,17 +96,10 @@ export function ImportedPatientCard({
               </Button>
             </CardAction>
           </CardHeader>
-          <CardContent>
-            <dl className="grid gap-3 sm:grid-cols-2">
-              {patientSummaryFields.map((field) => (
-                <PatientField
-                  key={field.key}
-                  emptyValue={emptyValue}
-                  label={t(field.label)}
-                  value={patient[field.key]}
-                />
-              ))}
-            </dl>
+          <CardContent className="-mt-1 px-4">
+            <div className="min-w-0 truncate text-sm leading-tight text-muted-foreground">
+              {verificationDescription}
+            </div>
           </CardContent>
         </DialogTrigger>
         <PatientDetailsDialog emptyValue={emptyValue} patient={patient} patientLabel={patientLabel} t={t} />
@@ -167,6 +150,21 @@ function PatientDetailsDialog({
           <PatientDetailGroup title={t('detail.patientDetailsCoverageSection')}>
             <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />
             <PatientField emptyValue={emptyValue} label={t('fields.carrierName')} value={patient.carrierName} />
+            <PatientField
+              emptyValue={emptyValue}
+              label={t('fields.insuranceVerificationProcessResults')}
+              value={patient.insuranceVerificationProcessResults}
+            />
+            <PatientField
+              emptyValue={emptyValue}
+              label={t('fields.insuranceVerificationStatus')}
+              value={patient.insuranceVerificationStatus}
+            />
+            <PatientField
+              emptyValue={emptyValue}
+              label={t('fields.executed')}
+              value={patient.executed ? t('options.enabled') : t('options.disabled')}
+            />
             <PatientField emptyValue={emptyValue} label={t('fields.patientClinic')} value={patient.clinic} />
             <PatientField
               emptyValue={emptyValue}
