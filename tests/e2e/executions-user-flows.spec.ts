@@ -29,13 +29,15 @@ const clinicConfig = {
 }
 
 const clinicMacroConfig = {
-  instantPrinter: true,
-  alerts: false,
-  statusPrinter: true,
-  isDiva: false,
-  plans: true,
-  twoFA: false,
-  ...clinicConfig,
+  default_enable: true,
+  default_characters: '-',
+  data: {
+    network_type: 'INN',
+    instant_printer: true,
+    nested_config: {
+      remains_snake_case: true,
+    },
+  },
 }
 
 interface ExecutionFixture {
@@ -843,9 +845,11 @@ test.describe('execution user flows', () => {
 
     await expect(page.getByLabel('Other config')).not.toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByText('"defaultEnable": true')).toBeVisible()
+    await expect(page.getByText('"defaultCharacters": "-"')).toBeVisible()
     await expect(page.getByText('"networkType": "INN"')).toBeVisible()
     await expect(page.getByText('"instantPrinter": true')).toBeVisible()
-    await expect(page.getByText('"clientName": "Legacy Dental Care"')).toBeVisible()
-    await expect(page.getByText('"clinicName": "Downtown Clinic"')).toBeVisible()
+    await expect(page.getByText('"nestedConfig": {')).toBeVisible()
+    await expect(page.getByText('"remains_snake_case": true')).toBeVisible()
   })
 })

@@ -5,7 +5,16 @@ import { buildExecutionPayload } from './execution-wizard-payload'
 const ACCESS_TOKEN = 'token-123'
 const CCC_API_URL = 'https://dev-carrier.dentalautomation.ai'
 const RUNTIME_VARIABLES = { carrierDomain: 'dev-carrier' }
-const MACRO_CONFIG = { shortForm: true }
+const MACRO_CONFIG = {
+  default_enable: true,
+  default_characters: '-',
+  data: {
+    short_form: true,
+    nested_value: {
+      stays_snake_case: true,
+    },
+  },
+}
 
 const buildPayload = (draft: ReturnType<typeof createEmptyDraft>, createdBy: string) => {
   draft.context.config ??= MACRO_CONFIG
@@ -97,9 +106,14 @@ describe('buildExecutionPayload', () => {
           },
         ],
         config: {
-          clientName: 'Legacy Dental Care',
-          clinicName: 'Legacy Dental Care',
-          shortForm: true,
+          defaultEnable: true,
+          defaultCharacters: '-',
+          data: {
+            shortForm: true,
+            nestedValue: {
+              stays_snake_case: true,
+            },
+          },
         },
         rv: RUNTIME_VARIABLES,
         headed: false,

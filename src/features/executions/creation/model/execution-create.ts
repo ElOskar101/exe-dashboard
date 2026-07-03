@@ -1,5 +1,4 @@
 import type { ExecutionVerificationType } from '../../shared/model/execution-create-payload'
-import type { ExecutionMetadata } from '../../shared/model/execution-create-payload'
 
 export type ExecutionScheduleMode = 'instant' | 'scheduled'
 
@@ -29,6 +28,12 @@ export interface ExecutionPatient {
   otherInformation: string
 }
 
+export interface ExecutionWizardMacroConfig {
+  default_enable: unknown
+  default_characters: unknown
+  data: Record<string, unknown>
+}
+
 export interface ExecutionWizardDraft {
   context: {
     project: string
@@ -36,7 +41,7 @@ export interface ExecutionWizardDraft {
     clientName: string
     clinic: string
     clinicName: string
-    config: ExecutionMetadata | null
+    config: ExecutionWizardMacroConfig | null
   }
   bot: ExecutionBot
   execution: {

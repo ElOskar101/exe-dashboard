@@ -29,13 +29,15 @@ const clinicConfig = {
 }
 
 const clinicMacroConfig = {
-  instantPrinter: true,
-  alerts: false,
-  statusPrinter: true,
-  isDiva: false,
-  plans: true,
-  twoFA: false,
-  ...clinicConfig,
+  default_enable: true,
+  default_characters: '-',
+  data: {
+    network_type: 'INN',
+    instant_printer: true,
+    nested_config: {
+      remains_snake_case: true,
+    },
+  },
 }
 
 async function stubProtectedRouteDependencies(page: Page) {
@@ -564,9 +566,15 @@ test.describe('protected executions route', () => {
           },
         ],
         config: {
-          ...clinicMacroConfig,
-          clientName: 'Legacy Dental Care',
-          clinicName: 'Downtown Clinic',
+          defaultEnable: true,
+          defaultCharacters: '-',
+          data: {
+            networkType: 'INN',
+            instantPrinter: true,
+            nestedConfig: {
+              remains_snake_case: true,
+            },
+          },
         },
         rv: {
           carrierDomain: 'dev-carrier',

@@ -1,8 +1,8 @@
 import { syncClient } from '@/lib/axios'
-import type { ExecutionMetadata } from '../../shared/model/execution-create-payload'
+import type { ExecutionWizardMacroConfig } from '../model/execution-create'
 
 export interface ClinicMacroConfig {
-  shortConfig: ExecutionMetadata
+  shortConfig: ExecutionWizardMacroConfig
 }
 
 export interface ClinicMacroConfigResponse {

@@ -33,8 +33,12 @@ const PATIENT_SOURCE_KEYS = {
 } as const
 
 const DEFAULT_HEADED_MODE = false
-const CLIENT_NAME_CONFIG_KEY = 'clientName'
-const CLINIC_NAME_CONFIG_KEY = 'clinicName'
+const MACRO_CONFIG_KEYS = {
+  data: 'data',
+  defaultCharacters: 'defaultCharacters',
+  defaultEnable: 'defaultEnable',
+} as const
+const SNAKE_CASE_SEGMENT_PATTERN = /_([a-z])/g
 
 export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({})
 
@@ -67,11 +71,27 @@ const createExecutionPayloadScheduledAtPreview = (value: string) => {
   return Number.isNaN(scheduledAt.getTime()) ? trimmedValue : scheduledAt.toISOString()
 }
 
-const createExecutionPayloadConfig = (draft: ExecutionWizardDraft): ExecutionMetadata => ({
-  ...(draft.context.config ?? {}),
-  [CLIENT_NAME_CONFIG_KEY]: draft.context.clientName.trim(),
-  [CLINIC_NAME_CONFIG_KEY]: draft.context.clinicName.trim(),
-})
+const createExecutionPayloadConfigData = (data: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(data).map(([key, value]) => [
+      key.replace(SNAKE_CASE_SEGMENT_PATTERN, (_match, character: string) => character.toUpperCase()),
+      value,
+    ]),
+  )
+
+const createExecutionPayloadConfig = (draft: ExecutionWizardDraft): ExecutionMetadata => {
+  const macroConfig = draft.context.config
+
+  if (!macroConfig) {
+    return {}
+  }
+
+  return {
+    [MACRO_CONFIG_KEYS.defaultEnable]: macroConfig.default_enable,
+    [MACRO_CONFIG_KEYS.defaultCharacters]: macroConfig.default_characters,
+    [MACRO_CONFIG_KEYS.data]: createExecutionPayloadConfigData(macroConfig.data),
+  }
+}
 
 export const buildExecutionPayloadPreview = (
   draft: ExecutionWizardDraft,
