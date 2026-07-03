@@ -11,7 +11,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
           cells: [
             { key: 'patient_first_name', value: 'Soledad' },
             { key: 'patient_last_name', value: 'Valdez' },
-            { key: 'memberid', value: '44457159' },
+            { key: 'member_id', value: '44457159' },
             { key: 'patient_dob', value: '03/27/1959' },
             { key: 'subscriber_first_name', value: 'Soledad' },
             { key: 'subscriber_last_name', value: 'Valdez' },
@@ -60,7 +60,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
           cells: [
             { key: 'patient_first_name', value: ' Empty ' },
             { key: 'patient_last_name', value: 'Patient' },
-            { key: 'memberid', value: 'EMPTY' },
+            { key: 'member_id', value: 'EMPTY' },
             { key: 'type_of_verification', value: 'Other' },
           ],
         },
@@ -88,7 +88,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
           cells: [
             { key: 'patient_first_name', value: 'EMPTY' },
             { key: 'patient_last_name', value: ' ' },
-            { key: 'memberid', value: 'Empty' },
+            { key: 'member_id', value: 'Empty' },
           ],
         },
       ]),

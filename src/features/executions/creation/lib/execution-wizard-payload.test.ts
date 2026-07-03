@@ -94,7 +94,7 @@ describe('buildExecutionPayload', () => {
             id: 'row-1',
             patientName: { key: 'patient_first_name', value: 'Ana' },
             patientLastName: { key: 'patient_last_name', value: 'Lopez' },
-            patientMemberId: { key: 'memberid', value: 'A10001' },
+            patientMemberId: { key: 'member_id', value: 'A10001' },
             patientDob: { key: 'patient_dob', value: '1985-03-10' },
             policyHolderName: { key: 'subscriber_first_name', value: 'Ana' },
             policyHolderLastName: { key: 'subscriber_last_name', value: 'Lopez' },

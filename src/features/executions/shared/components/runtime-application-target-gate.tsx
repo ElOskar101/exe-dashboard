@@ -447,10 +447,7 @@ export function RuntimeApplicationTargetGate() {
 export function RequireExecutionTarget({ children }: { children: ReactNode }) {
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const runtimesQuery = usePlaywrightRuntimesQuery()
-  const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
   const selection = getExecutionTargetSearchSelection(searchParams)
-  const isSelectingTarget = location.pathname === SELECT_RUNTIME_APPLICATION_PATH
 
   if (!selection) {
     const returnTo = `${location.pathname}${location.search}${location.hash}`
@@ -459,27 +456,5 @@ export function RequireExecutionTarget({ children }: { children: ReactNode }) {
     return <Navigate to={`${SELECT_RUNTIME_APPLICATION_PATH}?${selectorSearchParams.toString()}`} replace />
   }
 
-  if (runtimesQuery.isLoading || isCheckingAvailability) {
-    return null
-  }
-
-  const hasSelectableTarget = Boolean(
-    runtimesQuery.data &&
-    findApplicationSelection(
-      runtimesQuery.data,
-      selection.runtimeId,
-      selection.applicationName,
-      availableApiUrls,
-      isCheckingAvailability,
-    ),
-  )
-
-  if (hasSelectableTarget || isSelectingTarget) {
-    return children
-  }
-
-  const returnTo = `${location.pathname}${location.search}${location.hash}`
-  const selectorSearchParams = new URLSearchParams({ [SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM]: returnTo })
-
-  return <Navigate to={`${SELECT_RUNTIME_APPLICATION_PATH}?${selectorSearchParams.toString()}`} replace />
+  return children
 }

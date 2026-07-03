@@ -47,7 +47,7 @@ export const mapCCCExecutionRowsToPatients = (rows: CCCExecutionRow[]): Executio
       insuranceVerificationStatus: getRawCellValue(cellsByKey, 'insurance_verification_status'),
       patientName: getCellValue(cellsByKey, 'patient_first_name'),
       patientLastName: getCellValue(cellsByKey, 'patient_last_name'),
-      patientMemberId: getCellValue(cellsByKey, 'memberid'),
+      patientMemberId: getCellValue(cellsByKey, 'member_id'),
       patientDob: getCellValue(cellsByKey, 'patient_dob'),
       policyHolderName: getCellValue(cellsByKey, 'subscriber_first_name'),
       policyHolderLastName: getCellValue(cellsByKey, 'subscriber_last_name'),

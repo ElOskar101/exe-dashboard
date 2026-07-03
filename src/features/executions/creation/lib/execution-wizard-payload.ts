@@ -23,7 +23,7 @@ export type ExecutionPayloadPreview = Omit<ExecutionCreatePayload, 'context'> & 
 const PATIENT_SOURCE_KEYS = {
   patientName: 'patient_first_name',
   patientLastName: 'patient_last_name',
-  patientMemberId: 'memberid',
+  patientMemberId: 'member_id',
   patientDob: 'patient_dob',
   policyHolderName: 'subscriber_first_name',
   policyHolderLastName: 'subscriber_last_name',
