@@ -1,5 +1,4 @@
 import { ReactElement, useContext } from 'react'
-import { Navigate } from 'react-router-dom'
 import { getAuthToken } from '../lib/auth-session'
 import { AuthContext } from '../contexts/context'
 import { redirectToLogin } from '../utils/auth'
@@ -17,7 +16,6 @@ const ProtectedRouteLoading = () => {
 export const ProtectedRoute = (props: { children: ReactElement }) => {
   const token = getAuthToken()
   const authContext = useContext(AuthContext)
-  const noPermission = Object.keys(authContext.permissions || {}).length > 0 && !authContext.permissions['admin']
 
   if (!token) {
     redirectToLogin()
@@ -31,10 +29,6 @@ export const ProtectedRoute = (props: { children: ReactElement }) => {
   if (!authContext.user) {
     redirectToLogin()
     return null
-  }
-
-  if (noPermission) {
-    return <Navigate to="/under-construction" />
   }
 
   return props.children
