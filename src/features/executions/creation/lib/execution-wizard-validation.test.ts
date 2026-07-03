@@ -133,6 +133,7 @@ describe('getExecutionWizardValidationErrors', () => {
       {
         carrierName: '',
         executed: false,
+        review: false,
         insuranceVerificationProcessResults: '',
         insuranceVerificationStatus: '',
         patientName: 'Jane',

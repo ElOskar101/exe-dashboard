@@ -8,6 +8,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
         {
           _id: 'row-1',
           executed: false,
+          readyToReview: true,
           cells: [
             { key: 'patient_first_name', value: 'Soledad' },
             { key: 'patient_last_name', value: 'Valdez' },
@@ -32,6 +33,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
         id: 'row-1',
         carrierName: 'Delta Dental',
         executed: false,
+        review: true,
         insuranceVerificationProcessResults: 'Review',
         insuranceVerificationStatus: 'Review',
         patientName: 'Soledad',
@@ -57,6 +59,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
         {
           _id: 'row-1',
           executed: false,
+          readyToReview: false,
           cells: [
             { key: 'patient_first_name', value: ' Empty ' },
             { key: 'patient_last_name', value: 'Patient' },
@@ -70,6 +73,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
         patientName: '',
         carrierName: '',
         executed: false,
+        review: false,
         insuranceVerificationProcessResults: '',
         insuranceVerificationStatus: '',
         patientLastName: 'Patient',
@@ -85,6 +89,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
         {
           _id: 'row-1',
           executed: false,
+          readyToReview: false,
           cells: [
             { key: 'patient_first_name', value: 'EMPTY' },
             { key: 'patient_last_name', value: ' ' },
@@ -101,6 +106,7 @@ describe('mapCCCExecutionRowsToPatients', () => {
         {
           _id: 'row-1',
           executed: false,
+          readyToReview: false,
           cells: [
             { key: 'patient_first_name', value: 'Jessica' },
             { key: 'patient_dob', value: "07/24/2025 00:00 AM'" },

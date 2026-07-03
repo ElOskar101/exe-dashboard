@@ -53,6 +53,7 @@ describe('buildExecutionPayload', () => {
         id: 'row-1',
         carrierName: 'Delta Dental',
         executed: false,
+        review: false,
         insuranceVerificationProcessResults: '',
         insuranceVerificationStatus: '',
         patientName: 'Ana',
@@ -263,6 +264,7 @@ describe('buildExecutionPayload', () => {
       {
         carrierName: 'Delta Dental',
         executed: false,
+        review: false,
         insuranceVerificationProcessResults: '',
         insuranceVerificationStatus: '',
         patientName: 'Ana',

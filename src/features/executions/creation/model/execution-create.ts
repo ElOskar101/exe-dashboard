@@ -18,6 +18,7 @@ export interface ExecutionPatient {
   id?: string
   carrierName: string
   executed: boolean
+  review: boolean
   insuranceVerificationProcessResults: string
   insuranceVerificationStatus: string
   patientName: string

@@ -3,6 +3,7 @@ import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-
 export const createEmptyPatient = (): ExecutionPatient => ({
   carrierName: '',
   executed: false,
+  review: false,
   insuranceVerificationProcessResults: '',
   insuranceVerificationStatus: '',
   patientName: '',
