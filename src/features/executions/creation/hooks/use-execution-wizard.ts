@@ -14,7 +14,6 @@ import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
-import { getSelectedBotCarrierRegex, isPatientEnabledForBot } from '../lib/execution-patient-bot-match'
 import { getPatientsMatchingFilter } from '../lib/execution-patient-filters'
 import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
@@ -116,7 +115,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const executionDayOptions = wizardData.executionDayOptions
   const selectedBotId = draft.bot.clinicBotId
   const appLimits = useExecutionAppLimits()
-  const selectedBotCarrierRegex = useMemo(() => getSelectedBotCarrierRegex(draft), [draft])
   const filteredPatients = useMemo(
     () => getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter),
     [draft.execution.patientFilter, draft.execution.patients],
@@ -124,15 +122,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const includedPatientIds = useMemo(
     () => new Set(filteredPatients.flatMap((patient) => (patient.id ? [patient.id] : []))),
     [filteredPatients],
-  )
-  const disabledPatientIds = useMemo(
-    () =>
-      new Set(
-        filteredPatients.flatMap((patient) =>
-          patient.id && !isPatientEnabledForBot(patient, selectedBotCarrierRegex) ? [patient.id] : [],
-        ),
-      ),
-    [filteredPatients, selectedBotCarrierRegex],
   )
   const selectedBotPasswordStatus =
     botPasswordRequest.selectedBotId === selectedBotId
@@ -154,7 +143,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       hasSelectedCustomerWithoutClinics: wizardData.hasSelectedCustomerWithoutClinics,
       hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
       hasSelectedProjectWithoutAssociatedBots: wizardData.hasSelectedProjectWithoutAssociatedBots,
-      disabledPatientIds,
       includedPatientIds,
       selectedBotMissingFromClinicBots: draft.bot.clinicBotId.trim().length > 0 && !selectedClinicBot,
       workersLimit: appLimits.maxWorkers,
@@ -163,7 +151,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }, [
     wizardData.associatedBotOptions,
     wizardData.clinicBotOptions,
-    disabledPatientIds,
     includedPatientIds,
     createdBy,
     draft,
@@ -662,7 +649,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       onProjectSelect: selectProject,
       onRemovePatient: removePatient,
       patients: draft.execution.patients,
-      disabledPatientIds,
       includedPatientIds,
       patientFilter: draft.execution.patientFilter,
       projectError: validationErrors.context.project,

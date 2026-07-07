@@ -76,7 +76,6 @@ export function GeneralStep({
   playwrightProjectOptions,
   projectError,
   selectedBotId,
-  disabledPatientIds,
   includedPatientIds,
   patientFilter,
   onCustomerClear,
@@ -128,9 +127,7 @@ export function GeneralStep({
     Boolean(executionDaysError) ||
     executionDayOptions.length === 0
   const isPatientFilterDisabled = isImportingPatients || patients.length === 0
-  const hasVisiblePatients = patients.some(
-    (patient) => patient.id && includedPatientIds.has(patient.id) && !disabledPatientIds.has(patient.id),
-  )
+  const hasVisiblePatients = patients.some((patient) => patient.id && includedPatientIds.has(patient.id))
 
   return (
     <FieldSet>
@@ -505,7 +502,7 @@ export function GeneralStep({
         {!isImportingPatients && patients.length > 0 && hasVisiblePatients ? (
           <div className="grid max-h-[13rem] gap-3 overflow-y-auto p-1 pr-3 sm:max-h-[20rem] md:grid-cols-2 lg:grid-cols-4">
             {patients.flatMap((patient, index) => {
-              if (!patient.id || !includedPatientIds.has(patient.id) || disabledPatientIds.has(patient.id)) {
+              if (!patient.id || !includedPatientIds.has(patient.id)) {
                 return []
               }
 

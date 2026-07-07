@@ -7,7 +7,7 @@ import type {
   ExecutionWizardDraft,
 } from '../model/execution-create'
 import { parseExecutionMetadata } from './execution-metadata'
-import { getPatientsAvailableForExecution } from './execution-patient-bot-match'
+import { getPatientsMatchingFilter } from './execution-patient-filters'
 import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
 type ExecutionPayloadNumericPreviewValue = number | ''
@@ -104,7 +104,7 @@ export const buildExecutionPayloadPreview = (
   apiUrl: string,
   rv: ExecutionMetadata | undefined,
 ): ExecutionPayloadPreview => {
-  const enabledPatients = getPatientsAvailableForExecution(draft)
+  const enabledPatients = getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter)
   const patientOtherInformation = enabledPatients.map((patient) => parseExecutionMetadata(patient.otherInformation))
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
   const payload: ExecutionPayloadPreview = {
@@ -192,7 +192,7 @@ export const buildExecutionPayload = (
     return null
   }
 
-  const enabledPatients = getPatientsAvailableForExecution(draft)
+  const enabledPatients = getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter)
   const patientOtherInformation = enabledPatients.map((patient) => parseExecutionMetadata(patient.otherInformation))
   if (draft.execution.patients.length > 0 && enabledPatients.length === 0) {
     return null
