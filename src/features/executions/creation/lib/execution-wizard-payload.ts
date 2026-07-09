@@ -31,6 +31,7 @@ const PATIENT_SOURCE_KEYS = {
   relationship: 'relationship_to_subscriber',
   zipCode: 'subscriber_zip_code',
   clinic: 'practice',
+  dateOfService: 'date_of_service'
 } as const
 
 const MACRO_CONFIG_KEYS = {
@@ -137,6 +138,7 @@ export const buildExecutionPayloadPreview = (
         ),
         policyHolderDob: createPatientProperty(PATIENT_SOURCE_KEYS.policyHolderDob, patient.policyHolderDob),
         relationship: createPatientProperty(PATIENT_SOURCE_KEYS.relationship, patient.relationship),
+        dateOfService: createPatientProperty(PATIENT_SOURCE_KEYS.dateOfService, patient.dateOfService),
         zipCode: createPatientProperty(PATIENT_SOURCE_KEYS.zipCode, patient.zipCode),
         ...(patient.clinic.trim() ? { clinic: createPatientProperty(PATIENT_SOURCE_KEYS.clinic, patient.clinic) } : {}),
         verificationType: patient.verificationType.toLowerCase() as ExecutionPayloadVerificationType,

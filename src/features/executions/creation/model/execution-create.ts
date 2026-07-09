@@ -31,6 +31,7 @@ export interface ExecutionPatient {
   relationship: string
   zipCode: string
   clinic: string
+  dateOfService: string,
   verificationType: ExecutionVerificationType | ''
   filenames: string
   otherInformation: string
