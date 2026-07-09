@@ -47,7 +47,7 @@ export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({})
 
 const createPatientProperty = (key: string, value: string): ExecutionPayloadPatientPropertyDetail => ({
   key,
-  value: value.trim(),
+  value: value ? value.trim() : '',
 })
 
 const createPatientFilenames = (value: string) => {
