@@ -13,8 +13,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
+import { IconInfoCircle, IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
 import type { ExecutionPatient } from '../model/execution-create'
 
@@ -83,10 +84,21 @@ export function ImportedPatientCard({
               <span className="ml-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</span>
             </CardTitle>
             {hasIncompleteShape ? (
-              <CardDescription className="col-start-1 flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                <IconAlertCircle className="size-4 shrink-0" />
-                <span>{t('validation.patientInsuranceVerificationWarning')}</span>
-              </CardDescription>
+              <Tooltip>
+                <TooltipTrigger
+                  nativeButton={false}
+                  render={
+                    <span
+                      aria-label={t('validation.patientInsuranceVerificationWarning')}
+                      className="col-start-1 inline-flex text-amber-600 dark:text-amber-400"
+                      tabIndex={0}
+                    />
+                  }
+                >
+                  <IconInfoCircle />
+                </TooltipTrigger>
+                <TooltipContent>{t('validation.patientInsuranceVerificationWarning')}</TooltipContent>
+              </Tooltip>
             ) : null}
             {showErrors && hasRowErrors ? (
               <CardDescription role="alert" className="col-start-1 text-destructive">
