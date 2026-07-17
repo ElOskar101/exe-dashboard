@@ -129,7 +129,7 @@ export interface ClinicExecutionDay {
 
 export interface CCCExecutionRow {
   _id: string
-  cells: PatientCells & Record<string, string>
+  cells: Partial<PatientCells> & Record<string, string>
   fileNames: PatientFileNames
   audited: string
   loaded: boolean

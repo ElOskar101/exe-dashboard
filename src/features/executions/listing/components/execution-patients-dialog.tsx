@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { Execution } from '@/features/executions/shared'
+import type { Execution, PatientCellValue } from '@/features/executions/shared'
 import { getExecutionPatientsSummary } from '../lib/execution-patients-display'
 
 const FILENAME_PREVIEW_MAX_LENGTH = 40
@@ -167,7 +167,7 @@ function PatientCard({
   )
 }
 
-function PatientField({ emptyValue, label, value }: { emptyValue: string; label: string; value: string | undefined }) {
+function PatientField({ emptyValue, label, value }: { emptyValue: string; label: string; value: PatientCellValue }) {
   return (
     <div className="min-w-0">
       <dt>{label}</dt>

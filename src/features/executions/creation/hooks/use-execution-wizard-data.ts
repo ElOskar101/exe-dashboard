@@ -100,7 +100,7 @@ export const useExecutionWizardData = ({
     onSuccess: (execution) => {
       onPatientsImported({
         executionId: execution._id,
-        patients: execution.rows.map(({ cells, fileNames }) => ({ ...cells, fileNames })),
+        patients: execution.rows.map(({ _id, cells, fileNames }) => ({ id: _id, ...cells, fileNames })),
       })
     },
   })

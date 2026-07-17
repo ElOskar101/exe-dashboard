@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 import { IconInfoCircle, IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
+import type { PatientCellValue } from '../../shared/model/execution-create-payload'
 import type { ExecutionPatient } from '../model/execution-create'
 
 interface ImportedPatientCardProps {
@@ -199,7 +200,7 @@ function PatientField({
   emptyValue: string
   isWide?: boolean
   label: string
-  value: string
+  value: PatientCellValue
 }) {
   return (
     <div className={cn('min-w-0', isWide && 'sm:col-span-2')}>

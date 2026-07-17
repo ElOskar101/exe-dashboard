@@ -120,7 +120,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               <div className="space-y-3 p-3 md:hidden">
                 {patients.map((patient, index) => (
                   <div
-                    key={`${patient.patientName}-${patient.patientLastName}-${index}`}
+                    key={patient.id ?? `${patient.patientName}-${patient.patientLastName}-${index}`}
                     className="rounded-2xl border border-border/60 bg-muted/20 p-3"
                   >
                     <p className="font-medium">{getExecutionWizardPatientFullName(patient, emptyValue)}</p>
@@ -161,7 +161,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                   <tbody>
                     {patients.map((patient, index) => (
                       <tr
-                        key={`${patient.patientName}-${patient.patientLastName}-${index}`}
+                        key={patient.id ?? `${patient.patientName}-${patient.patientLastName}-${index}`}
                         className="border-b border-border/50 last:border-b-0"
                       >
                         <td className="px-3 py-2 font-medium">

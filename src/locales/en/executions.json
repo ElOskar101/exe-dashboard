@@ -156,7 +156,7 @@
     "patientListTitle": "Patient list is incomplete",
     "patientDetailsTitle": "Patient details are incomplete",
     "patientDetailsDescription": "Fill the missing imported fields before creating the execution: {{fields}}.",
-    "patientInsuranceVerificationWarning": "This patient can't be used in a Insurance Verification",
+    "patientInsuranceVerificationWarning": "This patient can't be used in an insurance verification.",
     "customerSearchTitle": "Clients could not be loaded",
     "clinicBotsTitle": "Clinic bots could not be loaded",
     "noActiveClinicBots": "The selected clinic has no active bots available.",

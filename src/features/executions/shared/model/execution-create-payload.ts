@@ -14,15 +14,18 @@ export interface PatientFileNames {
   otherDocuments: string[]
 }
 
+export type PatientCellValue = string | undefined
+
 export interface PatientCells {
-  patientName: string
-  patientDob: string
-  patientLastName: string
-  subscriberDob: string
-  subscriberName: string
+  patientName?: PatientCellValue
+  patientDob?: PatientCellValue
+  patientLastName?: PatientCellValue
+  subscriberDob?: PatientCellValue
+  subscriberName?: PatientCellValue
 }
 
 export interface Patient extends PatientCells {
+  id?: string
   fileNames: PatientFileNames
 }
 

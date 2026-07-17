@@ -55,6 +55,7 @@ interface ExecutionFixture {
   playwrightExecutionId: string
   logs?: string
   context: {
+    env: 'dev' | 'prod'
     bot: {
       botName: string
       targetUrl: string
@@ -62,30 +63,33 @@ interface ExecutionFixture {
       password: string
       otherInformation: Record<string, unknown>
     }
+    clinicConfig: Record<string, unknown>
+    payloadConfigs: Array<Record<string, unknown>>
     patients: Array<{
-      patientName: { key: string; value: string }
-      patientLastName: { key: string; value: string }
-      patientMemberId: { key: string; value: string }
-      patientDob: { key: string; value: string }
-      policyHolderName: { key: string; value: string }
-      policyHolderLastName: { key: string; value: string }
-      policyHolderDob: { key: string; value: string }
-      relationship: { key: string; value: string }
-      zipCode: { key: string; value: string }
-      verificationType: string
-      filenames: string[]
-      otherInformation: Record<string, unknown>
+      id?: string
+      patientName?: string
+      patientLastName?: string
+      patientDob?: string
+      subscriberDob?: string
+      subscriberName?: string
+      fileNames: {
+        fullForm: string | null
+        shortForm: string | null
+        claimsForm: string | null
+        eligibilityPrint: string | null
+        historyPrint: string | null
+        claimsPrint: string | null
+        otherDocuments: string[]
+      }
     }>
-    config: Record<string, unknown>
-    rv: Record<string, unknown>
+    executionId?: string
     workers: number
     retries: number
   }
 }
 
-const patientProperty = (value: string, key = '') => ({ key, value })
-
 const createExecutionContext = (): ExecutionFixture['context'] => ({
+  env: 'dev',
   bot: {
     botName: 'Eligibility Runner',
     targetUrl: 'https://carrier.example.com',
@@ -93,26 +97,28 @@ const createExecutionContext = (): ExecutionFixture['context'] => ({
     password: 'super-secret',
     otherInformation: {},
   },
+  clinicConfig: {},
+  payloadConfigs: [],
   patients: [
     {
-      patientName: patientProperty('Jane', 'patient_first_name'),
-      patientLastName: patientProperty('Doe', 'patient_last_name'),
-      patientMemberId: patientProperty('111111'),
-      patientDob: patientProperty('01/01/1990'),
-      policyHolderName: patientProperty('Jane'),
-      policyHolderLastName: patientProperty('Doe'),
-      policyHolderDob: patientProperty('01/01/1980'),
-      relationship: patientProperty('Self'),
-      zipCode: patientProperty('90001'),
-      verificationType: 'elg',
-      filenames: ['jane-doe.pdf'],
-      otherInformation: {},
+      id: 'row-1',
+      patientName: 'Jane',
+      patientLastName: 'Doe',
+      patientDob: '01/01/1990',
+      subscriberDob: '01/01/1980',
+      subscriberName: 'Jane',
+      fileNames: {
+        fullForm: null,
+        shortForm: null,
+        claimsForm: null,
+        eligibilityPrint: 'jane-doe.pdf',
+        historyPrint: null,
+        claimsPrint: null,
+        otherDocuments: [],
+      },
     },
   ],
-  config: {
-    parallel: true,
-  },
-  rv: {},
+  executionId: 'execution-1',
   workers: 4,
   retries: 2,
 })
@@ -327,20 +333,22 @@ async function stubWizardDependencies(page: Page, incompletePatient = false) {
               _id: 'row-1',
               executed: false,
               readyToReview: false,
-              cells: [
-                { key: 'patient_first_name', value: incompletePatient ? '' : 'Jane' },
-                { key: 'patient_last_name', value: 'Doe' },
-                { key: 'member_id', value: '111111' },
-                { key: 'patient_dob', value: '01/01/1990' },
-                { key: 'subscriber_first_name', value: 'Jane' },
-                { key: 'subscriber_last_name', value: 'Doe' },
-                { key: 'subscriber_dob', value: '01/01/1980' },
-                { key: 'relationship_to_subscriber', value: 'Self' },
-                { key: 'subscriber_zip_code', value: '90001' },
-                { key: 'practice', value: 'Downtown Clinic' },
-                { key: 'type_of_verification', value: 'ELG' },
-                { key: 'files_s_name', value: 'jane-doe.pdf' },
-              ],
+              cells: {
+                ...(incompletePatient ? {} : { patientName: 'Jane' }),
+                patientLastName: 'Doe',
+                patientDob: '01/01/1990',
+                subscriberName: 'Jane',
+                subscriberDob: '01/01/1980',
+              },
+              fileNames: {
+                fullForm: null,
+                shortForm: null,
+                claimsForm: null,
+                eligibilityPrint: 'jane-doe.pdf',
+                historyPrint: null,
+                claimsPrint: null,
+                otherDocuments: [],
+              },
             },
           ],
         },
@@ -383,42 +391,42 @@ test.describe('execution user flows', () => {
           basePatient,
           {
             ...basePatient,
-            patientName: patientProperty('John', 'patient_first_name'),
-            patientLastName: patientProperty('Smith', 'patient_last_name'),
-            patientMemberId: patientProperty('222222'),
-            patientDob: patientProperty('02/02/1992'),
-            policyHolderName: patientProperty('Janet'),
-            policyHolderLastName: patientProperty('Smith'),
-            policyHolderDob: patientProperty('02/02/1982'),
-            relationship: patientProperty('Child'),
-            zipCode: patientProperty('90002'),
-            filenames: ['john-smith.pdf'],
+            id: 'row-2',
+            patientName: 'John',
+            patientLastName: 'Smith',
+            patientDob: '02/02/1992',
+            subscriberDob: '02/02/1982',
+            subscriberName: 'Janet',
+            fileNames: {
+              ...basePatient.fileNames,
+              eligibilityPrint: 'john-smith.pdf',
+            },
           },
           {
             ...basePatient,
-            patientName: patientProperty('Mary', 'patient_first_name'),
-            patientLastName: patientProperty('Jones', 'patient_last_name'),
-            patientMemberId: patientProperty('333333'),
-            patientDob: patientProperty('03/03/1993'),
-            policyHolderName: patientProperty('Mark'),
-            policyHolderLastName: patientProperty('Jones'),
-            policyHolderDob: patientProperty('03/03/1983'),
-            relationship: patientProperty('Spouse'),
-            zipCode: patientProperty('90003'),
-            filenames: ['mary-jones.pdf'],
+            id: 'row-3',
+            patientName: 'Mary',
+            patientLastName: 'Jones',
+            patientDob: '03/03/1993',
+            subscriberDob: '03/03/1983',
+            subscriberName: 'Mark',
+            fileNames: {
+              ...basePatient.fileNames,
+              eligibilityPrint: 'mary-jones.pdf',
+            },
           },
           {
             ...basePatient,
-            patientName: patientProperty('Alex', 'patient_first_name'),
-            patientLastName: patientProperty('Taylor', 'patient_last_name'),
-            patientMemberId: patientProperty('444444'),
-            patientDob: patientProperty('04/04/1994'),
-            policyHolderName: patientProperty('Avery'),
-            policyHolderLastName: patientProperty('Taylor'),
-            policyHolderDob: patientProperty('04/04/1984'),
-            relationship: patientProperty('Dependent'),
-            zipCode: patientProperty('90004'),
-            filenames: ['alex-taylor.pdf'],
+            id: 'row-4',
+            patientName: 'Alex',
+            patientLastName: 'Taylor',
+            patientDob: '04/04/1994',
+            subscriberDob: '04/04/1984',
+            subscriberName: 'Avery',
+            fileNames: {
+              ...basePatient.fileNames,
+              eligibilityPrint: 'alex-taylor.pdf',
+            },
           },
         ],
       },
@@ -825,13 +833,17 @@ test.describe('execution user flows', () => {
     await page.goto(withExecutionTarget('/create'))
     await selectExecutionPatients(page)
     await expect(page.getByRole('button', { name: /View details for Doe/ })).toBeVisible()
+    const warning = page.locator('[aria-label="This patient can\'t be used in an insurance verification."]')
+
+    await expect(warning).toBeVisible()
+    await warning.hover()
+    await expect(page.getByText("This patient can't be used in an insurance verification.")).toBeVisible()
+
     await page.getByRole('button', { name: 'Next' }).click()
     await page.getByRole('button', { name: 'Back' }).click()
 
-    await expect(page.getByText('Patient details are incomplete')).toBeVisible()
-    await expect(
-      page.getByText('Fill the missing imported fields before creating the execution: Patient name.'),
-    ).toBeVisible()
+    await expect(page.getByText('Patient details are incomplete')).not.toBeVisible()
+    await expect(warning).toBeVisible()
   })
 
   test('keeps generated configuration read-only before submission', async ({ page }) => {
@@ -845,11 +857,7 @@ test.describe('execution user flows', () => {
 
     await expect(page.getByLabel('Other config')).not.toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
-    await expect(page.getByText('"defaultEnable": true')).toBeVisible()
-    await expect(page.getByText('"defaultCharacters": "-"')).toBeVisible()
-    await expect(page.getByText('"networkType": "INN"')).toBeVisible()
-    await expect(page.getByText('"instantPrinter": true')).toBeVisible()
-    await expect(page.getByText('"nestedConfig": {')).toBeVisible()
-    await expect(page.getByText('"remains_snake_case": true')).toBeVisible()
+    await expect(page.getByText('"clinicConfig": {}')).toBeVisible()
+    await expect(page.getByText('"payloadConfigs": []')).toBeVisible()
   })
 })

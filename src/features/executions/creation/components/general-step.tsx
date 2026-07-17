@@ -471,7 +471,7 @@ export function GeneralStep({
 
               return (
                 <ImportedPatientCard
-                  key={`${patient.patientName}-${patient.patientLastName}-${index}`}
+                  key={patient.id ?? `${patient.patientName}-${patient.patientLastName}-${index}`}
                   emptyValue={emptyValue}
                   hasIncompleteShape={hasIncompleteExecutionPatient(patient)}
                   hasRowErrors={hasRowErrors}

@@ -36,6 +36,7 @@ export type {
   ExecutionSchedulePayload,
   ExecutionVerificationType,
   Patient,
+  PatientCellValue,
   PatientCells,
   PatientFileNames,
 } from './model/execution-create-payload'
