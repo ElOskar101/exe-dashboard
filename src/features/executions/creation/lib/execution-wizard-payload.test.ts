@@ -1,340 +1,103 @@
 import { describe, expect, it } from 'vitest'
+import { buildExecutionPayload, buildExecutionPayloadPreview } from './execution-wizard-payload'
 import { createEmptyDraft } from './execution-wizard-draft'
-import { buildExecutionPayload } from './execution-wizard-payload'
 
-const ACCESS_TOKEN = 'token-123'
-const CCC_API_URL = 'https://dev-carrier.dentalautomation.ai'
-const RUNTIME_VARIABLES = { carrierDomain: 'dev-carrier' }
-const MACRO_CONFIG = {
-  default_enable: true,
-  default_characters: '-',
-  data: {
-    short_form: true,
-    nested_value: {
-      stays_snake_case: true,
+const createValidDraft = () => {
+  const draft = createEmptyDraft()
+
+  draft.context = {
+    project: 'liberty',
+    client: 'client-1',
+    clientName: 'Legacy Dental Care',
+    clinic: 'clinic-1',
+    clinicName: 'Downtown Clinic',
+  }
+  draft.bot = {
+    clinicBotId: 'clinic-bot-1',
+    botName: 'Eligibility Runner',
+    targetUrl: 'https://carrier.example.com/login',
+    username: 'operator',
+    password: 'secret',
+    verificationType: 'ELG',
+  }
+  draft.execution.execution = 'execution-1'
+  draft.execution.executionName = 'Daily eligibility'
+  draft.execution.patients = [
+    {
+      patientName: 'Ana',
+      patientDob: '1985-03-10',
+      patientLastName: 'Lopez',
+      subscriberDob: '1985-03-10',
+      subscriberName: 'Ana',
+      fileNames: {
+        fullForm: null,
+        shortForm: null,
+        claimsForm: null,
+        eligibilityPrint: 'eligibility.pdf',
+        historyPrint: null,
+        claimsPrint: null,
+        otherDocuments: ['consent.pdf'],
+      },
     },
-  },
-}
+  ]
 
-const buildPayload = (draft: ReturnType<typeof createEmptyDraft>, createdBy: string) => {
-  draft.context.config ??= MACRO_CONFIG
-
-  return buildExecutionPayload(draft, createdBy, ACCESS_TOKEN, CCC_API_URL, RUNTIME_VARIABLES)
-}
-
-const toDateTimeLocalValue = (date: Date) => {
-  const pad = (value: number) => value.toString().padStart(2, '0')
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(
-    date.getMinutes(),
-  )}`
+  return draft
 }
 
 describe('buildExecutionPayload', () => {
-  it('builds the new create execution payload shape using the selected sheet name for execution', () => {
-    const draft = createEmptyDraft()
+  it('builds the new context shape without transforming patients', () => {
+    const draft = createValidDraft()
+    const patient = draft.execution.patients[0]
 
-    draft.context.project = 'liberty'
-    draft.context.client = 'client-1'
-    draft.context.clientName = 'Legacy Dental Care'
-    draft.context.clinic = 'clinic-1'
-    draft.context.clinicName = 'Legacy Dental Care'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.execution.execution = 'execution-day-id-1'
-    draft.execution.executionName = 'Daily eligibility'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = '  secret  '
-    draft.bot.verificationType = 'FBD'
-    draft.context.config = MACRO_CONFIG
-    draft.execution.patients = [
-      {
-        id: 'row-1',
-        carrierName: 'Delta Dental',
-        executed: false,
-        review: false,
-        insuranceVerificationProcessResults: '',
-        insuranceVerificationStatus: '',
-        patientName: 'Ana',
-        patientLastName: 'Lopez',
-        patientMemberId: 'A10001',
-        patientDob: '1985-03-10',
-        policyHolderName: 'Ana',
-        policyHolderLastName: 'Lopez',
-        policyHolderDob: '1985-03-10',
-        relationship: 'self',
-        zipCode: '90001',
-        clinic: 'Downtown Clinic',
-        verificationType: 'ELG',
-        filenames: 'ana-lopez.pdf',
-        otherInformation: '{ "plan": "Gold" }',
-      },
-    ]
-
-    expect(buildPayload(draft, 'user-1')).toEqual({
+    expect(buildExecutionPayload(draft, 'Operator One', 'dev')).toEqual({
       project: 'liberty',
-      createdBy: 'user-1',
+      createdBy: 'Operator One',
       client: 'Legacy Dental Care',
-      clinic: 'Legacy Dental Care',
-      execution: 'Daily eligibility',
+      clinic: 'Downtown Clinic',
       botName: 'Eligibility Runner',
       context: {
-        accessToken: ACCESS_TOKEN,
-        apiUrl: CCC_API_URL,
+        env: 'dev',
+        executionId: 'execution-1',
         bot: {
+          id: 'clinic-bot-1',
           botName: 'Eligibility Runner',
-          targetUrl: 'https://carrier.example.com',
+          targetUrl: 'https://carrier.example.com/login',
           username: 'operator',
           password: 'secret',
           otherInformation: {},
         },
-        executionId: 'execution-day-id-1',
-        patients: [
-          {
-            id: 'row-1',
-            patientName: { key: 'patient_first_name', value: 'Ana' },
-            patientLastName: { key: 'patient_last_name', value: 'Lopez' },
-            patientMemberId: { key: 'member_id', value: 'A10001' },
-            patientDob: { key: 'patient_dob', value: '1985-03-10' },
-            policyHolderName: { key: 'subscriber_first_name', value: 'Ana' },
-            policyHolderLastName: { key: 'subscriber_last_name', value: 'Lopez' },
-            policyHolderDob: { key: 'subscriber_dob', value: '1985-03-10' },
-            relationship: { key: 'relationship_to_subscriber', value: 'self' },
-            zipCode: { key: 'subscriber_zip_code', value: '90001' },
-            clinic: { key: 'practice', value: 'Downtown Clinic' },
-            verificationType: 'elg',
-            filenames: ['ana-lopez.pdf'],
-            otherInformation: {
-              plan: 'Gold',
-            },
-          },
-        ],
-        config: {
-          clientName: 'Legacy Dental Care',
-          clinicName: 'Legacy Dental Care',
-          defaultEnable: true,
-          defaultCharacters: '-',
-          data: {
-            shortForm: true,
-            nestedValue: {
-              stays_snake_case: true,
-            },
-          },
-        },
-        rv: RUNTIME_VARIABLES,
+        clinicConfig: {},
+        payloadConfigs: [],
         workers: 2,
         retries: 1,
+        patients: [patient],
       },
     })
   })
 
-  it('returns null when createdBy is missing', () => {
-    const draft = createEmptyDraft()
+  it('uses empty config collections in the preview', () => {
+    const preview = buildExecutionPayloadPreview(createValidDraft(), 'Operator One', 'prod')
 
-    draft.context.project = 'liberty'
-    draft.context.client = 'client-1'
-    draft.context.clientName = 'Legacy Dental Care'
-    draft.context.clinic = 'clinic-1'
-    draft.context.clinicName = 'Legacy Dental Care'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-
-    expect(buildPayload(draft, '')).toBeNull()
-  })
-
-  it('returns null while runtime variables are unavailable', () => {
-    const draft = createEmptyDraft()
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'client-1'
-    draft.context.clientName = 'Legacy Dental Care'
-    draft.context.clinic = 'clinic-1'
-    draft.context.clinicName = 'Legacy Dental Care'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-
-    expect(buildExecutionPayload(draft, 'user-1', ACCESS_TOKEN, CCC_API_URL, undefined)).toBeNull()
-  })
-
-  it('submits selected display names from the chosen customer, clinic, and user', () => {
-    const draft = createEmptyDraft()
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'customer-id-42'
-    draft.context.clientName = 'Sunshine Dental'
-    draft.context.clinic = 'clinic-id-9'
-    draft.context.clinicName = 'Main Clinic'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-
-    expect(buildPayload(draft, 'Operator One')).toMatchObject({
-      createdBy: 'Operator One',
-      client: 'Sunshine Dental',
-      clinic: 'Main Clinic',
+    expect(preview.context).toMatchObject({
+      env: 'prod',
+      clinicConfig: {},
+      payloadConfigs: [],
     })
   })
 
-  it('returns null when bot username or password is empty', () => {
-    const draft = createEmptyDraft()
+  it('returns null when required execution fields are missing', () => {
+    const draft = createValidDraft()
 
-    draft.context.project = 'liberty'
-    draft.context.client = 'customer-id-42'
-    draft.context.clientName = 'Sunshine Dental'
-    draft.context.clinic = 'clinic-id-9'
-    draft.context.clinicName = 'Main Clinic'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.verificationType = 'ELG'
-
-    expect(buildPayload(draft, 'user-id-7')).toBeNull()
-
-    draft.bot.username = 'operator'
-
-    expect(buildPayload(draft, 'user-id-7')).toBeNull()
+    expect(buildExecutionPayload(draft, '', 'dev')).toBeNull()
   })
 
-  it('omits the optional execution name when it is empty', () => {
-    const draft = createEmptyDraft()
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'customer-id-42'
-    draft.context.clientName = 'Sunshine Dental'
-    draft.context.clinic = 'clinic-id-9'
-    draft.context.clinicName = 'Main Clinic'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-
-    expect(buildPayload(draft, 'user-id-7')).not.toHaveProperty('execution')
-  })
-
-  it('falls back to the raw execution field when no execution name is available', () => {
-    const draft = createEmptyDraft()
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'customer-id-42'
-    draft.context.clientName = 'Sunshine Dental'
-    draft.context.clinic = 'clinic-id-9'
-    draft.context.clinicName = 'Main Clinic'
-    draft.execution.execution = 'legacy-execution-value'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-
-    expect(buildPayload(draft, 'user-id-7')).toMatchObject({
-      execution: 'legacy-execution-value',
-    })
-  })
-
-  it('omits patient clinic from the payload when it is blank', () => {
-    const draft = createEmptyDraft()
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'client-1'
-    draft.context.clientName = 'Legacy Dental Care'
-    draft.context.clinic = 'clinic-1'
-    draft.context.clinicName = 'Legacy Dental Care'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-    draft.execution.patients = [
-      {
-        carrierName: 'Delta Dental',
-        executed: false,
-        review: false,
-        insuranceVerificationProcessResults: '',
-        insuranceVerificationStatus: '',
-        patientName: 'Ana',
-        patientLastName: 'Lopez',
-        patientMemberId: 'A10001',
-        patientDob: '1985-03-10',
-        policyHolderName: 'Ana',
-        policyHolderLastName: 'Lopez',
-        policyHolderDob: '1985-03-10',
-        relationship: 'self',
-        zipCode: '90001',
-        clinic: '',
-        verificationType: 'ELG',
-        filenames: 'ana-lopez.pdf',
-        otherInformation: '{}',
-      },
-    ]
-
-    expect(buildPayload(draft, 'user-1')).toMatchObject({
-      context: {
-        patients: [
-          {
-            patientName: { key: 'patient_first_name', value: 'Ana' },
-          },
-        ],
-      },
-    })
-    expect(buildPayload(draft, 'user-1')?.context.patients[0]).not.toHaveProperty('clinic')
-  })
-
-  it('adds scheduledAt when the execution is scheduled', () => {
-    const draft = createEmptyDraft()
-    const scheduledAt = toDateTimeLocalValue(new Date(Date.now() + 60 * 60 * 1000))
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'customer-id-42'
-    draft.context.clientName = 'Sunshine Dental'
-    draft.context.clinic = 'clinic-id-9'
-    draft.context.clinicName = 'Main Clinic'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
+  it('builds a scheduled payload with an ISO scheduled time', () => {
+    const draft = createValidDraft()
     draft.execution.scheduleMode = 'scheduled'
-    draft.execution.scheduledAt = scheduledAt
+    draft.execution.scheduledAt = '2099-01-01T12:00'
 
-    expect(buildPayload(draft, 'user-id-7')).toMatchObject({
-      scheduledAt: new Date(scheduledAt).toISOString(),
+    expect(buildExecutionPayload(draft, 'Operator One', 'dev')).toMatchObject({
+      scheduledAt: new Date('2099-01-01T12:00').toISOString(),
     })
-  })
-
-  it('returns null when a scheduled execution has a past scheduledAt value', () => {
-    const draft = createEmptyDraft()
-
-    draft.context.project = 'liberty'
-    draft.context.client = 'customer-id-42'
-    draft.context.clientName = 'Sunshine Dental'
-    draft.context.clinic = 'clinic-id-9'
-    draft.context.clinicName = 'Main Clinic'
-    draft.bot.clinicBotId = 'clinic-bot-1'
-    draft.bot.botName = 'Eligibility Runner'
-    draft.bot.targetUrl = 'https://carrier.example.com'
-    draft.bot.username = 'operator'
-    draft.bot.password = 'secret'
-    draft.bot.verificationType = 'ELG'
-    draft.execution.scheduleMode = 'scheduled'
-    draft.execution.scheduledAt = '2020-01-01T09:00'
-
-    expect(buildPayload(draft, 'user-id-7')).toBeNull()
   })
 })

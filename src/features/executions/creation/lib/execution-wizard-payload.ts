@@ -1,13 +1,6 @@
-import type {
-  ExecutionCreatePayload,
-  ExecutionMetadata,
-  ExecutionPayloadPatientPropertyDetail,
-  ExecutionPayloadVerificationType,
-  ExecutionSchedulePayload,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
-import { parseExecutionMetadata } from './execution-metadata'
-import { getPatientsMatchingFilter } from './execution-patient-filters'
+import type { CccApiEnvironment } from '@/app.config'
+import type { ExecutionCreatePayload, ExecutionSchedulePayload } from '../../shared/model/execution-create-payload'
+import type { ExecutionWizardDraft } from '../model/execution-create'
 import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
 type ExecutionPayloadNumericPreviewValue = number | ''
@@ -18,42 +11,6 @@ export type ExecutionPayloadPreview = Omit<ExecutionCreatePayload, 'context'> & 
     workers: ExecutionPayloadNumericPreviewValue
   }
   scheduledAt?: string
-}
-
-const PATIENT_SOURCE_KEYS = {
-  patientName: 'patient_first_name',
-  patientLastName: 'patient_last_name',
-  patientMemberId: 'member_id',
-  patientDob: 'patient_dob',
-  policyHolderName: 'subscriber_first_name',
-  policyHolderLastName: 'subscriber_last_name',
-  policyHolderDob: 'subscriber_dob',
-  relationship: 'relationship_to_subscriber',
-  zipCode: 'subscriber_zip_code',
-  clinic: 'practice',
-  dateOfService: 'date_of_service'
-} as const
-
-const MACRO_CONFIG_KEYS = {
-  clinicName: 'clinicName',
-  clientName: 'clientName',
-  data: 'data',
-  defaultCharacters: 'defaultCharacters',
-  defaultEnable: 'defaultEnable',
-} as const
-const SNAKE_CASE_SEGMENT_PATTERN = /_([a-z])/g
-
-export const createDefaultBotOtherInformation = (): ExecutionMetadata => ({})
-
-const createPatientProperty = (key: string, value: string): ExecutionPayloadPatientPropertyDetail => ({
-  key,
-  value: value ? value.trim() : '',
-})
-
-const createPatientFilenames = (value: string) => {
-  const filename = value.trim()
-
-  return filename ? [filename] : []
 }
 
 const createExecutionPayloadNumberPreview = (value: string): ExecutionPayloadNumericPreviewValue => {
@@ -74,40 +31,12 @@ const createExecutionPayloadScheduledAtPreview = (value: string) => {
   return Number.isNaN(scheduledAt.getTime()) ? trimmedValue : scheduledAt.toISOString()
 }
 
-const createExecutionPayloadConfigData = (data: Record<string, unknown>) =>
-  Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [
-      key.replace(SNAKE_CASE_SEGMENT_PATTERN, (_match, character: string) => character.toUpperCase()),
-      value,
-    ]),
-  )
-
-const createExecutionPayloadConfig = (draft: ExecutionWizardDraft): ExecutionMetadata => {
-  const macroConfig = draft.context.config
-
-  if (!macroConfig) {
-    return {}
-  }
-
-  return {
-    [MACRO_CONFIG_KEYS.clientName]: draft.context.clientName.trim(),
-    [MACRO_CONFIG_KEYS.clinicName]: draft.context.clinicName.trim(),
-    [MACRO_CONFIG_KEYS.defaultEnable]: macroConfig.default_enable,
-    [MACRO_CONFIG_KEYS.defaultCharacters]: macroConfig.default_characters,
-    [MACRO_CONFIG_KEYS.data]: createExecutionPayloadConfigData(macroConfig.data),
-  }
-}
-
 export const buildExecutionPayloadPreview = (
   draft: ExecutionWizardDraft,
   createdBy: string,
-  accessToken: string,
-  apiUrl: string,
-  rv: ExecutionMetadata | undefined,
+  env: CccApiEnvironment,
 ): ExecutionPayloadPreview => {
-  const enabledPatients = getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter)
-  const patientOtherInformation = enabledPatients.map((patient) => parseExecutionMetadata(patient.otherInformation))
-  const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
+  const botId = draft.bot.clinicBotId.trim()
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
     createdBy: createdBy.trim(),
@@ -115,45 +44,22 @@ export const buildExecutionPayloadPreview = (
     clinic: draft.context.clinicName.trim(),
     botName: draft.bot.botName.trim(),
     context: {
-      accessToken: accessToken.trim(),
-      apiUrl: apiUrl.trim(),
+      env,
       bot: {
+        ...(botId ? { id: botId } : {}),
         botName: draft.bot.botName.trim(),
         targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password.trim(),
-        otherInformation: createDefaultBotOtherInformation(),
+        otherInformation: {},
       },
+      clinicConfig: {},
+      payloadConfigs: [],
       executionId: draft.execution.execution.trim(),
-      patients: enabledPatients.map((patient, index) => ({
-        ...(patient.id?.trim() ? { id: patient.id.trim() } : {}),
-        patientName: createPatientProperty(PATIENT_SOURCE_KEYS.patientName, patient.patientName),
-        patientLastName: createPatientProperty(PATIENT_SOURCE_KEYS.patientLastName, patient.patientLastName),
-        patientMemberId: createPatientProperty(PATIENT_SOURCE_KEYS.patientMemberId, patient.patientMemberId),
-        patientDob: createPatientProperty(PATIENT_SOURCE_KEYS.patientDob, patient.patientDob),
-        policyHolderName: createPatientProperty(PATIENT_SOURCE_KEYS.policyHolderName, patient.policyHolderName),
-        policyHolderLastName: createPatientProperty(
-          PATIENT_SOURCE_KEYS.policyHolderLastName,
-          patient.policyHolderLastName,
-        ),
-        policyHolderDob: createPatientProperty(PATIENT_SOURCE_KEYS.policyHolderDob, patient.policyHolderDob),
-        relationship: createPatientProperty(PATIENT_SOURCE_KEYS.relationship, patient.relationship),
-        dateOfService: createPatientProperty(PATIENT_SOURCE_KEYS.dateOfService, patient.dateOfService),
-        zipCode: createPatientProperty(PATIENT_SOURCE_KEYS.zipCode, patient.zipCode),
-        ...(patient.clinic.trim() ? { clinic: createPatientProperty(PATIENT_SOURCE_KEYS.clinic, patient.clinic) } : {}),
-        verificationType: patient.verificationType.toLowerCase() as ExecutionPayloadVerificationType,
-        filenames: createPatientFilenames(patient.filenames),
-        otherInformation: patientOtherInformation[index] ?? {},
-      })),
-      config: createExecutionPayloadConfig(draft),
-      rv: rv ?? {},
+      patients: draft.execution.patients,
       workers: createExecutionPayloadNumberPreview(draft.execution.workers),
       retries: createExecutionPayloadNumberPreview(draft.execution.retries),
     },
-  }
-
-  if (execution) {
-    payload.execution = execution
   }
 
   if (draft.execution.scheduleMode === 'scheduled' && draft.execution.scheduledAt.trim()) {
@@ -166,23 +72,17 @@ export const buildExecutionPayloadPreview = (
 export const buildExecutionPayload = (
   draft: ExecutionWizardDraft,
   createdBy: string,
-  accessToken: string,
-  apiUrl: string,
-  rv: ExecutionMetadata | undefined,
+  env: CccApiEnvironment,
 ): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
-  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, apiUrl, rv)
+  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, env)
 
   if (
     !createdBy ||
-    !accessToken.trim() ||
-    !apiUrl.trim() ||
-    !rv ||
     !draft.context.project.trim() ||
     !draft.context.client.trim() ||
     !draft.context.clientName.trim() ||
     !draft.context.clinic.trim() ||
     !draft.context.clinicName.trim() ||
-    !draft.context.config ||
     !draft.bot.clinicBotId.trim() ||
     !draft.bot.botName.trim() ||
     !draft.bot.targetUrl.trim() ||
@@ -194,22 +94,10 @@ export const buildExecutionPayload = (
     return null
   }
 
-  const enabledPatients = getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter)
-  const patientOtherInformation = enabledPatients.map((patient) => parseExecutionMetadata(patient.otherInformation))
-  if (draft.execution.patients.length > 0 && enabledPatients.length === 0) {
-    return null
-  }
-
-  if (patientOtherInformation.some((metadata) => !metadata)) {
-    return null
-  }
-
   const payload: ExecutionCreatePayload = {
     ...payloadPreview,
     context: {
       ...payloadPreview.context,
-      config: payloadPreview.context.config,
-      rv,
       workers: Number(draft.execution.workers),
       retries: Number(draft.execution.retries),
     },

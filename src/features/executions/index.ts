@@ -118,6 +118,7 @@ export type {
   PlaywrightRuntimeCreator,
   PlaywrightProject,
   PlaywrightProjectBot,
+  Patient,
   PlaywrightRuntime,
   PlaywrightRuntimeApplication,
   PlaywrightRuntimeApplicationPayload,

@@ -14,12 +14,13 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { IconTrash } from '@tabler/icons-react'
+import { IconAlertCircle, IconTrash } from '@tabler/icons-react'
 import { getExecutionWizardDisplayValue } from '../lib/execution-wizard-display'
 import type { ExecutionPatient } from '../model/execution-create'
 
 interface ImportedPatientCardProps {
   emptyValue: string
+  hasIncompleteShape: boolean
   hasRowErrors: boolean
   index: number
   missingFields: string[]
@@ -30,8 +31,22 @@ interface ImportedPatientCardProps {
   t: TFunction<'executions'>
 }
 
+const getPatientFileNames = (patient: ExecutionPatient) =>
+  [
+    patient.fileNames.fullForm,
+    patient.fileNames.shortForm,
+    patient.fileNames.claimsForm,
+    patient.fileNames.eligibilityPrint,
+    patient.fileNames.historyPrint,
+    patient.fileNames.claimsPrint,
+    ...patient.fileNames.otherDocuments,
+  ]
+    .filter(Boolean)
+    .join(', ')
+
 export function ImportedPatientCard({
   emptyValue,
+  hasIncompleteShape,
   hasRowErrors,
   index,
   missingFields,
@@ -43,10 +58,7 @@ export function ImportedPatientCard({
 }: ImportedPatientCardProps) {
   const fallbackPatientLabel = t('sections.patients.patientTitle', { index: index + 1 })
   const patientLabel = [patient.patientName, patient.patientLastName].filter(Boolean).join(' ') || fallbackPatientLabel
-  const verificationDescription = [
-    getExecutionWizardDisplayValue(patient.insuranceVerificationStatus, emptyValue),
-    getExecutionWizardDisplayValue(patient.insuranceVerificationProcessResults, emptyValue),
-  ].join(' - ')
+  const patientDescription = getExecutionWizardDisplayValue(patient.subscriberName, emptyValue)
   const removePatient = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     event.stopPropagation()
@@ -70,6 +82,12 @@ export function ImportedPatientCard({
               {patientLabel}
               <span className="ml-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</span>
             </CardTitle>
+            {hasIncompleteShape ? (
+              <CardDescription className="col-start-1 flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                <IconAlertCircle className="size-4 shrink-0" />
+                <span>{t('validation.patientInsuranceVerificationWarning')}</span>
+              </CardDescription>
+            ) : null}
             {showErrors && hasRowErrors ? (
               <CardDescription role="alert" className="col-start-1 text-destructive">
                 <span className="flex flex-col gap-1">
@@ -97,9 +115,7 @@ export function ImportedPatientCard({
             </CardAction>
           </CardHeader>
           <CardContent className="-mt-1 px-4">
-            <div className="min-w-0 truncate text-sm leading-tight text-muted-foreground">
-              {verificationDescription}
-            </div>
+            <div className="min-w-0 truncate text-sm leading-tight text-muted-foreground">{patientDescription}</div>
           </CardContent>
         </DialogTrigger>
         <PatientDetailsDialog emptyValue={emptyValue} patient={patient} patientLabel={patientLabel} t={t} />
@@ -131,53 +147,16 @@ function PatientDetailsDialog({
             <PatientField emptyValue={emptyValue} label={t('fields.patientName')} value={patient.patientName} />
             <PatientField emptyValue={emptyValue} label={t('fields.patientLastName')} value={patient.patientLastName} />
             <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob} />
-            <PatientField emptyValue={emptyValue} label={t('fields.memberId')} value={patient.patientMemberId} />
           </PatientDetailGroup>
           <PatientDetailGroup title={t('detail.patientDetailsPolicyHolderSection')}>
-            <PatientField
-              emptyValue={emptyValue}
-              label={t('fields.policyHolderName')}
-              value={patient.policyHolderName}
-            />
-            <PatientField
-              emptyValue={emptyValue}
-              label={t('fields.policyHolderLastName')}
-              value={patient.policyHolderLastName}
-            />
-            <PatientField emptyValue={emptyValue} label={t('fields.policyHolderDob')} value={patient.policyHolderDob} />
-            <PatientField emptyValue={emptyValue} label={t('fields.relationship')} value={patient.relationship} />
-          </PatientDetailGroup>
-          <PatientDetailGroup title={t('detail.patientDetailsCoverageSection')}>
-            <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode} />
-            <PatientField emptyValue={emptyValue} label={t('fields.carrierName')} value={patient.carrierName} />
-            <PatientField
-              emptyValue={emptyValue}
-              label={t('fields.insuranceVerificationProcessResults')}
-              value={patient.insuranceVerificationProcessResults}
-            />
-            <PatientField
-              emptyValue={emptyValue}
-              label={t('fields.insuranceVerificationStatus')}
-              value={patient.insuranceVerificationStatus}
-            />
-            <PatientField
-              emptyValue={emptyValue}
-              label={t('fields.executed')}
-              value={patient.executed ? t('options.enabled') : t('options.disabled')}
-            />
-            <PatientField emptyValue={emptyValue} label={t('fields.patientClinic')} value={patient.clinic} />
-            <PatientField
-              emptyValue={emptyValue}
-              label={t('fields.verificationType')}
-              value={patient.verificationType}
-            />
+            <PatientField emptyValue={emptyValue} label={t('fields.policyHolderName')} value={patient.subscriberName} />
+            <PatientField emptyValue={emptyValue} label={t('fields.policyHolderDob')} value={patient.subscriberDob} />
           </PatientDetailGroup>
           <PatientDetailGroup title={t('detail.patientDetailsFilesSection')}>
-            <PatientField emptyValue={emptyValue} label={t('fields.filenames')} value={patient.filenames} isWide />
             <PatientField
               emptyValue={emptyValue}
-              label={t('fields.patientOtherInformation')}
-              value={patient.otherInformation}
+              label={t('fields.filenames')}
+              value={getPatientFileNames(patient)}
               isWide
             />
           </PatientDetailGroup>

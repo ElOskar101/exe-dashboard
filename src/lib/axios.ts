@@ -1,5 +1,4 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
-import { APP_CONFIG } from '@/app.config'
 import { getAuthRequestHeaders } from '@/features/auth/lib/auth-transport'
 import { getCccApiUrl } from '@/lib/ccc-api-url'
 
@@ -25,9 +24,6 @@ export const exeClient = axios.create({
 export const exeReportsClient = axios.create({
   adapter: 'fetch',
 })
-export const syncClient = axios.create({
-  adapter: 'fetch',
-})
 
 const applyDefaultHeaders = (config: InternalAxiosRequestConfig) => {
   config.headers.set('User-Agent', false)
@@ -45,15 +41,8 @@ const applyCccRequestConfig = (config: InternalAxiosRequestConfig) => {
   return applyDefaultHeaders(config)
 }
 
-const applySyncRequestConfig = (config: InternalAxiosRequestConfig) => {
-  config.baseURL = ensurePathSuffix(APP_CONFIG.syncApiUrl, '/api/v1')
-
-  return applyDefaultHeaders(config)
-}
-
 cccClient.interceptors.request.use(applyCccRequestConfig)
 exeClient.interceptors.request.use(applyDefaultHeaders)
 exeReportsClient.interceptors.request.use(applyDefaultHeaders)
-syncClient.interceptors.request.use(applySyncRequestConfig)
 
 export default cccClient

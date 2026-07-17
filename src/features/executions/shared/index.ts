@@ -33,10 +33,11 @@ export type {
   ExecutionPayloadBot,
   ExecutionPayloadContext,
   ExecutionPayloadPatient,
-  ExecutionPayloadPatientPropertyDetail,
-  ExecutionPayloadVerificationType,
   ExecutionSchedulePayload,
   ExecutionVerificationType,
+  Patient,
+  PatientCells,
+  PatientFileNames,
 } from './model/execution-create-payload'
 export type { ExecutionQuery } from './model/execution-query'
 export type {

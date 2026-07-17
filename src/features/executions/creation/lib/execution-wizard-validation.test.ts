@@ -115,7 +115,7 @@ describe('getExecutionWizardValidationErrors', () => {
     expect(errors.bot.clinicBotId).toBe('validation.selectedBotNotInClinicBots')
   })
 
-  it('requires core imported patient fields before allowing submission', () => {
+  it('allows imported patients with incomplete core fields', () => {
     const draft = createEmptyDraft()
 
     draft.context.client = 'customer-1'
@@ -131,33 +131,25 @@ describe('getExecutionWizardValidationErrors', () => {
     draft.bot.verificationType = 'ELG'
     draft.execution.patients = [
       {
-        carrierName: '',
-        executed: false,
-        review: false,
-        insuranceVerificationProcessResults: '',
-        insuranceVerificationStatus: '',
         patientName: 'Jane',
-        patientLastName: '',
-        patientMemberId: '',
         patientDob: '',
-        policyHolderName: '',
-        policyHolderLastName: '',
-        policyHolderDob: '',
-        relationship: '',
-        zipCode: '',
-        clinic: '',
-        verificationType: 'ELG',
-        filenames: '',
-        otherInformation: '{}',
+        patientLastName: '',
+        subscriberDob: '',
+        subscriberName: '',
+        fileNames: {
+          fullForm: null,
+          shortForm: null,
+          claimsForm: null,
+          eligibilityPrint: null,
+          historyPrint: null,
+          claimsPrint: null,
+          otherDocuments: [],
+        },
       },
     ]
 
     const errors = getExecutionWizardValidationErrors(draft, 'user-1', t as never)
 
-    expect(errors.patients.rows[0]).toMatchObject({
-      patientLastName: 'validation.required',
-      patientMemberId: 'validation.required',
-      patientDob: 'validation.required',
-    })
+    expect(errors.patients.rows[0]).toEqual({})
   })
 })

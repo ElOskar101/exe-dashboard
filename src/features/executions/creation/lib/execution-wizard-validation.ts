@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next'
 import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
-import { isExecutionMetadataStringValid } from './execution-metadata'
 
 export type StepErrors = {
   context: Partial<Record<keyof ExecutionWizardDraft['context'], string>> & {
@@ -22,15 +21,20 @@ interface ExecutionWizardValidationOptions {
   hasSelectedCustomerWithoutClinics?: boolean
   hasSelectedClinicWithoutActiveBots?: boolean
   hasSelectedProjectWithoutAssociatedBots?: boolean
-  includedPatientIds?: ReadonlySet<string>
   selectedBotMissingFromClinicBots?: boolean
   workersLimit?: number
   retriesLimit?: number
 }
 
-const requiredPatientFields: Array<
-  keyof Pick<ExecutionPatient, 'patientName' | 'patientLastName' | 'patientMemberId' | 'patientDob'>
-> = ['patientName', 'patientLastName', 'patientMemberId', 'patientDob']
+const requiredPatientFields: Array<keyof Pick<ExecutionPatient, 'patientName' | 'patientLastName' | 'patientDob'>> = [
+  'patientName',
+  'patientLastName',
+  'patientDob',
+]
+
+export const hasIncompleteExecutionPatient = (patient: ExecutionPatient) => {
+  return requiredPatientFields.some((field) => !patient[field]?.trim())
+}
 
 export const hasErrors = (errors: Record<string, string | undefined>) => {
   return Object.values(errors).some(Boolean)
@@ -58,8 +62,6 @@ export const getExecutionWizardValidationErrors = (
 
   if (!draft.context.clinic.trim()) {
     context.clinic = t('validation.required')
-  } else if (!draft.context.config) {
-    context.clinic = t('validation.macroConfigRequired')
   }
 
   if (options.hasSelectedCustomerWithoutClinics) {
@@ -67,25 +69,7 @@ export const getExecutionWizardValidationErrors = (
   }
 
   const patients: StepErrors['patients'] = {
-    rows: draft.execution.patients.map((patient) => {
-      const rowErrors: StepErrors['patients']['rows'][number] = {}
-
-      if (patient.id && options.includedPatientIds && !options.includedPatientIds.has(patient.id)) {
-        return rowErrors
-      }
-
-      requiredPatientFields.forEach((field) => {
-        if (!patient[field].trim()) {
-          rowErrors[field] = t('validation.required')
-        }
-      })
-
-      if (!isExecutionMetadataStringValid(patient.otherInformation)) {
-        rowErrors.otherInformation = t('validation.validJsonObject')
-      }
-
-      return rowErrors
-    }),
+    rows: draft.execution.patients.map(() => ({})),
   }
 
   const bot: StepErrors['bot'] = {}
@@ -158,13 +142,7 @@ export const getExecutionWizardValidationErrors = (
   return {
     context,
     patients: {
-      form:
-        draft.execution.patients.length === 0 ||
-        draft.execution.patients.every(
-          (patient) => !patient.id || (options.includedPatientIds && !options.includedPatientIds.has(patient.id)),
-        )
-          ? t('validation.addPatient')
-          : undefined,
+      form: draft.execution.patients.length === 0 ? t('validation.addPatient') : undefined,
       rows: patients.rows,
     },
     bot,
