@@ -547,6 +547,7 @@ test.describe('protected executions route', () => {
       context: {
         env: 'dev',
         bot: {
+          id: 'bot-1',
           botName: 'Eligibility Runner',
           targetUrl: 'https://carrier.example.com',
           username: 'qa.operator',
@@ -586,6 +587,19 @@ test.describe('protected executions route', () => {
               shortForm: null,
               claimsForm: null,
               eligibilityPrint: 'john-doe.pdf',
+              historyPrint: null,
+              claimsPrint: null,
+              otherDocuments: [],
+            },
+          },
+          {
+            id: 'row-blank',
+            patientLastName: ' ',
+            fileNames: {
+              fullForm: null,
+              shortForm: null,
+              claimsForm: null,
+              eligibilityPrint: null,
               historyPrint: null,
               claimsPrint: null,
               otherDocuments: [],
