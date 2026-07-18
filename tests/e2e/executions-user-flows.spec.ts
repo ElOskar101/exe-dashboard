@@ -832,7 +832,7 @@ test.describe('execution user flows', () => {
 
     await page.goto(withExecutionTarget('/create'))
     await selectExecutionPatients(page)
-    await expect(page.getByRole('button', { name: /View details for Doe/ })).toBeVisible()
+    await expect(page.getByLabel(/View details for Doe/)).toBeVisible()
     const warning = page.locator('[aria-label="This patient can\'t be used in an insurance verification."]')
 
     await expect(warning).toBeVisible()

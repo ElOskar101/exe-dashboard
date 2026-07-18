@@ -342,8 +342,8 @@ async function importPatientsFromCCC(page: Page) {
   await page.getByRole('combobox', { name: 'Execution' }).click()
   await page.getByRole('option', { name: '2026-04-27' }).click()
   await expect(page.getByRole('option', { name: '2026-05-09' })).not.toBeVisible()
-  await expect(page.getByRole('button', { name: /View details for Jane Doe/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /View details for John Doe/ })).toBeVisible()
+  await expect(page.getByLabel(/View details for Jane Doe/)).toBeVisible()
+  await expect(page.getByLabel(/View details for John Doe/)).toBeVisible()
 }
 
 async function completeBotStep(
