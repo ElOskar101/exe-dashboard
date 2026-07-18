@@ -1,5 +1,9 @@
 import cccClient from '@/lib/axios'
-import type { ExecutionMetadata, ExecutionVerificationType } from '../../shared/model/execution-create-payload'
+import type {
+  ExecutionVerificationType,
+  PatientCells,
+  PatientFileNames,
+} from '../../shared/model/execution-create-payload'
 
 export interface CustomerSearchItem {
   _id: string
@@ -123,16 +127,17 @@ export interface ClinicExecutionDay {
   trashed: boolean
 }
 
-export interface CCCExecutionCell {
-  key: string
-  value: string
-}
-
 export interface CCCExecutionRow {
   _id: string
-  cells: CCCExecutionCell[]
+  cells: Partial<PatientCells> & Record<string, string>
+  fileNames: PatientFileNames
+  audited: string
+  loaded: boolean
   executed: boolean
   readyToReview: boolean
+  executionStatus: string
+  storedFiles: string[]
+  bot: unknown
 }
 
 export interface CCCExecutionResponse {
@@ -140,16 +145,6 @@ export interface CCCExecutionResponse {
   sheetName: string
   rows: CCCExecutionRow[]
   trashed: boolean
-}
-
-export interface RuntimeVariableRecord {
-  _id: string
-  key: string
-  value: unknown
-  comment: string
-  createdBy: string
-  createdAt: string
-  updatedAt: string
 }
 
 export const searchCustomers = (clientName: string, options: CustomerSearchOptions = {}) => {
@@ -224,31 +219,6 @@ export const decryptClinicBotPassword = async (clinicBotId: string) => {
 
 export const getCCCExecution = (executionId: string) => {
   return cccClient.get<CCCExecutionResponse>(`v2/executions/${executionId}`)
-}
-
-const parseRuntimeVariableValue = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return value
-  }
-
-  try {
-    return JSON.parse(value) as unknown
-  } catch {
-    return value
-  }
-}
-
-export const transformRuntimeVariables = (runtimeVariables: RuntimeVariableRecord[]): ExecutionMetadata => {
-  return Object.fromEntries(runtimeVariables.map(({ key, value }) => [key, parseRuntimeVariableValue(value)]))
-}
-
-export const getRuntimeVariables = async () => {
-  const response = await cccClient.get<RuntimeVariableRecord[]>('rv')
-
-  return {
-    ...response,
-    data: transformRuntimeVariables(response.data),
-  }
 }
 
 const normalizeDecryptedPassword = (value: string) => {

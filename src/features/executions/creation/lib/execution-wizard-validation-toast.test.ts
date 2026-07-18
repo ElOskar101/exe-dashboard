@@ -73,7 +73,7 @@ describe('getExecutionWizardValidationToastCopy', () => {
     errors.patients.rows = [
       {
         patientLastName: 'This field is required.',
-        patientMemberId: 'This field is required.',
+        patientDob: 'This field is required.',
       },
     ]
     errors.bot.botName = 'This field is required.'
@@ -84,7 +84,7 @@ describe('getExecutionWizardValidationToastCopy', () => {
     expect(copy).toEqual({
       title: 'Complete the required fields first.',
       description:
-        'Missing or incomplete: Project, Client, Clinic, Patient 1: Patient last name, Member ID, and 2 more.',
+        'Missing or incomplete: Project, Client, Clinic, Patient 1: Patient last name, Patient date of birth, and 2 more.',
     })
   })
 

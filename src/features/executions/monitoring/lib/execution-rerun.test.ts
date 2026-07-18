@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest'
 import type { Execution } from '@/features/executions/shared'
 import { buildExecutionRerunPayload, getExecutionRerunSummary, prepareExecutionRerun } from './execution-rerun'
 
-const patientProperty = (value: string, key = '') => ({ key, value })
-
 const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-1',
   createdBy: 'user-1',
@@ -16,6 +14,7 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   createdAt: '2026-05-27T12:00:00.000Z',
   updatedAt: '2026-05-27T12:10:00.000Z',
   context: {
+    env: 'dev',
     bot: {
       botName: 'Eligibility Runner',
       targetUrl: 'https://carrier.example.com',
@@ -25,24 +24,24 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
     },
     patients: [
       {
-        patientName: patientProperty('Jane', 'patient_first_name'),
-        patientLastName: patientProperty('Doe', 'patient_last_name'),
-        patientMemberId: patientProperty('111111'),
-        patientDob: patientProperty('01/01/1990'),
-        policyHolderName: patientProperty('Jane'),
-        policyHolderLastName: patientProperty('Doe'),
-        policyHolderDob: patientProperty('01/01/1980'),
-        relationship: patientProperty('Self'),
-        zipCode: patientProperty('90001'),
-        verificationType: 'elg',
-        filenames: ['jane-doe.pdf'],
-        otherInformation: {},
+        patientName: 'Jane',
+        patientDob: '01/01/1990',
+        patientLastName: 'Doe',
+        subscriberDob: '01/01/1980',
+        subscriberName: 'Jane Doe',
+        fileNames: {
+          fullForm: null,
+          shortForm: null,
+          claimsForm: null,
+          eligibilityPrint: 'jane-doe.pdf',
+          historyPrint: null,
+          claimsPrint: null,
+          otherDocuments: [],
+        },
       },
     ],
-    config: {
-      parallel: true,
-    },
-    rv: {},
+    clinicConfig: {},
+    payloadConfigs: [],
     workers: 4,
     retries: 2,
   },
@@ -59,6 +58,7 @@ describe('execution rerun helpers', () => {
       execution: 'Daily eligibility',
       botName: 'Eligibility Runner',
       context: {
+        env: 'dev',
         bot: {
           botName: 'Eligibility Runner',
           targetUrl: 'https://carrier.example.com',
@@ -68,24 +68,24 @@ describe('execution rerun helpers', () => {
         },
         patients: [
           {
-            patientName: patientProperty('Jane', 'patient_first_name'),
-            patientLastName: patientProperty('Doe', 'patient_last_name'),
-            patientMemberId: patientProperty('111111'),
-            patientDob: patientProperty('01/01/1990'),
-            policyHolderName: patientProperty('Jane'),
-            policyHolderLastName: patientProperty('Doe'),
-            policyHolderDob: patientProperty('01/01/1980'),
-            relationship: patientProperty('Self'),
-            zipCode: patientProperty('90001'),
-            verificationType: 'elg',
-            filenames: ['jane-doe.pdf'],
-            otherInformation: {},
+            patientName: 'Jane',
+            patientDob: '01/01/1990',
+            patientLastName: 'Doe',
+            subscriberDob: '01/01/1980',
+            subscriberName: 'Jane Doe',
+            fileNames: {
+              fullForm: null,
+              shortForm: null,
+              claimsForm: null,
+              eligibilityPrint: 'jane-doe.pdf',
+              historyPrint: null,
+              claimsPrint: null,
+              otherDocuments: [],
+            },
           },
         ],
-        config: {
-          parallel: true,
-        },
-        rv: {},
+        clinicConfig: {},
+        payloadConfigs: [],
         workers: 4,
         retries: 2,
       },
@@ -102,21 +102,19 @@ describe('execution rerun helpers', () => {
     ).toEqual(['createdBy'])
   })
 
-  it('rebuilds the payload even when rv is not an empty object in the stored execution context', () => {
+  it('preserves the new context configuration fields during reruns', () => {
     expect(
       buildExecutionRerunPayload(
         createExecution({
           context: {
             ...createExecution().context,
-            rv: {
-              previousAttempt: true,
-            },
+            clinicConfig: { previousAttempt: true },
           },
         }),
       ),
     ).toMatchObject({
       context: {
-        rv: {},
+        clinicConfig: { previousAttempt: true },
       },
     })
   })

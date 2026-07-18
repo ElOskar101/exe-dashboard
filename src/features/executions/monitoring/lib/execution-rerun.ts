@@ -1,4 +1,4 @@
-import type { Execution, ExecutionCreatePayload, ExecutionPayloadPatient } from '@/features/executions/shared'
+import type { Execution, ExecutionCreatePayload } from '@/features/executions/shared'
 
 export interface ExecutionRerunSummary {
   botName: string
@@ -31,8 +31,6 @@ const getRequiredString = (value: string | undefined, field: string, missingFiel
 
   return resolvedValue
 }
-
-const normalizeRerunPatients = (patients: ExecutionPayloadPatient[]) => patients
 
 export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPreparation => {
   const missingFields: string[] = []
@@ -68,8 +66,7 @@ export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPrepa
           ...context.bot,
           botName,
         },
-        patients: normalizeRerunPatients(context.patients),
-        rv: {},
+        patients: context.patients,
       },
     },
   }

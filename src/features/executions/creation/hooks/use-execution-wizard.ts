@@ -1,7 +1,8 @@
 import { useContext, useMemo, useState, startTransition } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '@/features/auth'
+import { getCccApiEnvironment } from '@/app.config'
 import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 import {
   getExecutionRequestErrorMessage,
@@ -14,8 +15,6 @@ import { toast } from 'sonner'
 import type { PlaywrightProjectBot } from '../../shared'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from '../lib/execution-wizard-payload'
 import { useExecutionAppLimits } from '../lib/execution-app-limits'
-import { getPatientsMatchingFilter } from '../lib/execution-patient-filters'
-import { executionWizardKeys } from '../lib/execution-wizard-query-keys'
 import { getExecutionWizardSuccessToastCopy } from '../lib/execution-wizard-success-toast'
 import { getExecutionWizardValidationToastCopy } from '../lib/execution-wizard-validation-toast'
 import {
@@ -31,14 +30,8 @@ import {
   isGeneralStepDirty,
 } from '../lib/execution-wizard-step-state'
 import { getExecutionWizardValidationErrors, hasErrors } from '../lib/execution-wizard-validation'
-import type {
-  ExecutionPatientFilter,
-  ExecutionScheduleMode,
-  ExecutionSchedulePayload,
-  ExecutionWizardDraft,
-} from '../model/execution-create'
+import type { ExecutionScheduleMode, ExecutionSchedulePayload, ExecutionWizardDraft } from '../model/execution-create'
 import { decryptClinicBotPassword, type ClinicBotRecord, type CustomerSearchItem } from '../services/ccc.service'
-import { getClinicMacroConfig } from '../services/sync.service'
 import { useExecutionWizardData } from './use-execution-wizard-data'
 
 export type ExecutionWizardStepKey = 'general' | 'config' | 'review'
@@ -84,10 +77,10 @@ const resetDraftDependentSelections = (
 
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
-  const { token, user } = useContext(AuthContext)
+  const { user } = useContext(AuthContext)
   const { cccApiUrl } = useCccApiUrl()
+  const env = getCccApiEnvironment(cccApiUrl)
   const createdBy = user?.fullName ?? ''
   const [draft, setDraft] = useState<ExecutionWizardDraft>(() => createEmptyDraft())
   const [currentStep, setCurrentStep] = useState(0)
@@ -98,7 +91,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   )
   const customerSearch = draft.context.clientName.trim()
   const wizardData = useExecutionWizardData({
-    cccApiUrl,
     context: draft.context,
     customerSearch,
     onPatientsImported: ({ executionId, patients }) => {
@@ -115,14 +107,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const executionDayOptions = wizardData.executionDayOptions
   const selectedBotId = draft.bot.clinicBotId
   const appLimits = useExecutionAppLimits()
-  const filteredPatients = useMemo(
-    () => getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter),
-    [draft.execution.patientFilter, draft.execution.patients],
-  )
-  const includedPatientIds = useMemo(
-    () => new Set(filteredPatients.flatMap((patient) => (patient.id ? [patient.id] : []))),
-    [filteredPatients],
-  )
   const selectedBotPasswordStatus =
     botPasswordRequest.selectedBotId === selectedBotId
       ? {
@@ -143,7 +127,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       hasSelectedCustomerWithoutClinics: wizardData.hasSelectedCustomerWithoutClinics,
       hasSelectedClinicWithoutActiveBots: wizardData.hasSelectedClinicWithoutActiveBots,
       hasSelectedProjectWithoutAssociatedBots: wizardData.hasSelectedProjectWithoutAssociatedBots,
-      includedPatientIds,
       selectedBotMissingFromClinicBots: draft.bot.clinicBotId.trim().length > 0 && !selectedClinicBot,
       workersLimit: appLimits.maxWorkers,
       retriesLimit: appLimits.maxRetries,
@@ -151,7 +134,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   }, [
     wizardData.associatedBotOptions,
     wizardData.clinicBotOptions,
-    includedPatientIds,
     createdBy,
     draft,
     t,
@@ -161,14 +143,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxWorkers,
     appLimits.maxRetries,
   ])
-  const payloadPreview = useMemo(
-    () => buildExecutionPayloadPreview(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
-    [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
-  )
-  const submitPayload = useMemo(
-    () => buildExecutionPayload(draft, createdBy, token, cccApiUrl, wizardData.runtimeVariablesQuery.data),
-    [cccApiUrl, createdBy, draft, token, wizardData.runtimeVariablesQuery.data],
-  )
+  const payloadPreview = useMemo(() => buildExecutionPayloadPreview(draft, createdBy, env), [createdBy, draft, env])
+  const submitPayload = useMemo(() => buildExecutionPayload(draft, createdBy, env), [createdBy, draft, env])
   const stepValidity = [
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
@@ -279,33 +255,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     wizardData.resetImportPatients()
   }
 
-  const loadSelectedClinicConfig = async (clinicId: string) => {
-    try {
-      const macroConfig = await queryClient.fetchQuery({
-        queryKey: executionWizardKeys.clinicMacroConfig(clinicId),
-        queryFn: async () => {
-          const response = await getClinicMacroConfig(clinicId)
-
-          return response.data.data[0]?.shortConfig ?? null
-        },
-      })
-
-      setDraft((previousDraft) =>
-        previousDraft.context.clinic === clinicId
-          ? {
-              ...previousDraft,
-              context: {
-                ...previousDraft.context,
-                config: macroConfig,
-              },
-            }
-          : previousDraft,
-      )
-    } catch {
-      return
-    }
-  }
-
   const updateCustomerSearch = (value: string) => {
     resetWizardRequests()
     startTransition(() => {
@@ -315,7 +264,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
           clientName: value,
           clinic: '',
           clinicName: '',
-          config: null,
         }),
       )
     })
@@ -328,7 +276,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         client: '',
         clinic: '',
         clinicName: '',
-        config: null,
       }),
     )
   }
@@ -342,7 +289,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
           client: '',
           clinic: '',
           clinicName: '',
-          config: null,
         })
       }
 
@@ -351,7 +297,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         clientName: customer.clientName,
         clinic: '',
         clinicName: '',
-        config: null,
       })
     })
   }
@@ -365,13 +310,8 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       resetDraftDependentSelections(previousDraft, {
         clinic: isDeselectingClinic ? '' : clinicId,
         clinicName: isDeselectingClinic ? '' : (selectedClinic?.clinicName ?? ''),
-        config: null,
       }),
     )
-
-    if (!isDeselectingClinic) {
-      void loadSelectedClinicConfig(clinicId)
-    }
   }
 
   const selectProject = (projectName: string) => {
@@ -483,7 +423,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
         ...previousDraft.execution,
         execution: executionDayId,
         executionName: selectedDay?.sheetName ?? '',
-        patientFilter: 'all',
         patients: [],
       },
     }))
@@ -497,16 +436,6 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       execution: {
         ...previousDraft.execution,
         scheduleMode,
-      },
-    }))
-  }
-
-  const updatePatientFilter = (patientFilter: ExecutionPatientFilter) => {
-    setDraft((previousDraft) => ({
-      ...previousDraft,
-      execution: {
-        ...previousDraft.execution,
-        patientFilter,
       },
     }))
   }
@@ -645,12 +574,9 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       onCustomerSearchChange: updateCustomerSearch,
       onCustomerSelect: selectCustomer,
       onExecutionDaySelect: selectExecutionDay,
-      onPatientFilterChange: updatePatientFilter,
       onProjectSelect: selectProject,
       onRemovePatient: removePatient,
       patients: draft.execution.patients,
-      includedPatientIds,
-      patientFilter: draft.execution.patientFilter,
       projectError: validationErrors.context.project,
       playwrightProjectsError:
         wizardData.playwrightProjectsQuery.error instanceof Error

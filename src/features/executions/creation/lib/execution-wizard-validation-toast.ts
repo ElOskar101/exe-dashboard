@@ -10,17 +10,10 @@ interface ExecutionWizardValidationToastCopy {
 const patientFieldLabels = {
   patientName: 'fields.patientName',
   patientLastName: 'fields.patientLastName',
-  patientMemberId: 'fields.memberId',
   patientDob: 'fields.patientDob',
-  policyHolderName: 'fields.policyHolderName',
-  policyHolderLastName: 'fields.policyHolderLastName',
-  policyHolderDob: 'fields.policyHolderDob',
-  relationship: 'fields.relationship',
-  zipCode: 'fields.zipCode',
-  clinic: 'fields.patientClinic',
-  verificationType: 'fields.verificationType',
-  filenames: 'fields.filenames',
-  otherInformation: 'fields.patientOtherInformation',
+  subscriberName: 'fields.policyHolderName',
+  subscriberDob: 'fields.policyHolderDob',
+  fileNames: 'fields.filenames',
 } as const satisfies Partial<Record<keyof ExecutionPatient, Parameters<TFunction<'executions'>>[0]>>
 
 const addFieldSummary = (
@@ -52,7 +45,6 @@ export const getExecutionWizardValidationToastCopy = (
     t('validation.noActiveClinicBots'),
     t('validation.noAssociatedBots'),
     t('validation.selectedBotNotInClinicBots'),
-    t('validation.macroConfigRequired'),
     t('validation.userRequired'),
   ])
 

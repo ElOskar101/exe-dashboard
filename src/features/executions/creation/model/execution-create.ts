@@ -1,9 +1,8 @@
-import type { ExecutionVerificationType } from '../../shared/model/execution-create-payload'
+import type { ExecutionVerificationType, Patient } from '../../shared/model/execution-create-payload'
+
+export type ExecutionPatient = Patient
 
 export type ExecutionScheduleMode = 'instant' | 'scheduled'
-
-export const executionPatientFilters = ['all', 'review', 'empty', 'notExecuted'] as const
-export type ExecutionPatientFilter = (typeof executionPatientFilters)[number]
 
 export interface ExecutionBot {
   clinicBotId: string
@@ -14,36 +13,6 @@ export interface ExecutionBot {
   verificationType: ExecutionVerificationType | ''
 }
 
-export interface ExecutionPatient {
-  id?: string
-  carrierName: string
-  executed: boolean
-  review: boolean
-  insuranceVerificationProcessResults: string
-  insuranceVerificationStatus: string
-  patientName: string
-  patientLastName: string
-  patientMemberId: string
-  patientDob: string
-  policyHolderName: string
-  policyHolderLastName: string
-  policyHolderDob: string
-  relationship: string
-  zipCode: string
-  clinic: string
-  dateOfService: string,
-  verificationType: ExecutionVerificationType | ''
-  filenames: string
-  otherInformation: string
-}
-
-export interface ExecutionWizardMacroConfig {
-  default_enable: unknown
-  default_characters: unknown
-  data: Record<string, unknown>
-  [botName: string]: unknown
-}
-
 export interface ExecutionWizardDraft {
   context: {
     project: string
@@ -51,13 +20,11 @@ export interface ExecutionWizardDraft {
     clientName: string
     clinic: string
     clinicName: string
-    config: ExecutionWizardMacroConfig | null
   }
   bot: ExecutionBot
   execution: {
     execution: string
     executionName: string
-    patientFilter: ExecutionPatientFilter
     patients: ExecutionPatient[]
     workers: string
     retries: string
@@ -67,10 +34,7 @@ export interface ExecutionWizardDraft {
 }
 
 export type {
-  ExecutionCreatePayload,
-  ExecutionMetadata,
-  ExecutionPayloadPatientPropertyDetail,
-  ExecutionPayloadVerificationType,
   ExecutionSchedulePayload,
   ExecutionVerificationType,
+  Patient,
 } from '../../shared/model/execution-create-payload'

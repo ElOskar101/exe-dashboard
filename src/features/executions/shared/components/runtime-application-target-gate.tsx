@@ -133,10 +133,12 @@ function ApplicationOptionLabel({
   application,
   availableApiUrls,
   isCheckingAvailability,
+  showApiUrlDomain = true,
 }: {
   application: PlaywrightRuntimeApplication
   availableApiUrls: ReadonlySet<string>
   isCheckingAvailability: boolean
+  showApiUrlDomain?: boolean
 }) {
   const unavailableLabel = getRuntimeApplicationUnavailableLabel(
     application,
@@ -144,7 +146,7 @@ function ApplicationOptionLabel({
     isCheckingAvailability,
     runtimeApplicationUnavailableLabels,
   )
-  const apiUrlDomain = getRuntimeApplicationApiUrlDomain(application)
+  const apiUrlDomain = showApiUrlDomain ? getRuntimeApplicationApiUrlDomain(application) : null
   const isStatsUnavailable = isRuntimeApplicationStatsUnavailable(application, availableApiUrls, isCheckingAvailability)
 
   return (
@@ -276,6 +278,7 @@ function RuntimeApplicationTargetCardContent({
                       application={selectedApplication}
                       availableApiUrls={availableApiUrls}
                       isCheckingAvailability={isCheckingAvailability}
+                      showApiUrlDomain={false}
                     />
                   ) : (
                     <span className="truncate">{selectedSelection.applicationName}</span>

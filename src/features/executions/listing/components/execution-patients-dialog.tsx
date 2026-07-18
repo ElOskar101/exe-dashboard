@@ -14,8 +14,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { Execution } from '@/features/executions/shared'
-import { formatExecutionPatientOtherInformation, getExecutionPatientsSummary } from '../lib/execution-patients-display'
+import type { Execution, PatientCellValue } from '@/features/executions/shared'
+import { getExecutionPatientsSummary } from '../lib/execution-patients-display'
 
 const FILENAME_PREVIEW_MAX_LENGTH = 40
 const VISIBLE_PATIENT_DETAILS_COUNT = 4
@@ -105,93 +105,37 @@ function PatientCard({
   const patientDetails = [
     {
       id: 'patientName',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.patientName')} value={patient.patientName.value} />,
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientName')} value={patient.patientName} />,
     },
     {
       id: 'patientLastName',
       field: (
-        <PatientField
-          emptyValue={emptyValue}
-          label={t('fields.patientLastName')}
-          value={patient.patientLastName.value}
-        />
-      ),
-    },
-    {
-      id: 'memberId',
-      field: (
-        <PatientField emptyValue={emptyValue} label={t('fields.memberId')} value={patient.patientMemberId.value} />
+        <PatientField emptyValue={emptyValue} label={t('fields.patientLastName')} value={patient.patientLastName} />
       ),
     },
     {
       id: 'patientDob',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob.value} />,
+      field: <PatientField emptyValue={emptyValue} label={t('fields.patientDob')} value={patient.patientDob} />,
     },
     {
-      id: 'policyHolderName',
+      id: 'subscriberName',
       field: (
-        <PatientField
-          emptyValue={emptyValue}
-          label={t('fields.policyHolderName')}
-          value={patient.policyHolderName.value}
-        />
+        <PatientField emptyValue={emptyValue} label={t('fields.policyHolderName')} value={patient.subscriberName} />
       ),
     },
     {
-      id: 'policyHolderLastName',
-      field: (
-        <PatientField
-          emptyValue={emptyValue}
-          label={t('fields.policyHolderLastName')}
-          value={patient.policyHolderLastName.value}
-        />
-      ),
+      id: 'subscriberDob',
+      field: <PatientField emptyValue={emptyValue} label={t('fields.policyHolderDob')} value={patient.subscriberDob} />,
     },
     {
-      id: 'policyHolderDob',
-      field: (
-        <PatientField
-          emptyValue={emptyValue}
-          label={t('fields.policyHolderDob')}
-          value={patient.policyHolderDob.value}
-        />
-      ),
-    },
-    {
-      id: 'relationship',
-      field: (
-        <PatientField emptyValue={emptyValue} label={t('fields.relationship')} value={patient.relationship.value} />
-      ),
-    },
-    {
-      id: 'zipCode',
-      field: <PatientField emptyValue={emptyValue} label={t('fields.zipCode')} value={patient.zipCode.value} />,
-    },
-    {
-      id: 'verificationType',
-      field: (
-        <PatientField emptyValue={emptyValue} label={t('fields.verificationType')} value={patient.verificationType} />
-      ),
-    },
-    {
-      id: 'filenames',
+      id: 'fileNames',
       field: (
         <PatientFilenamesField
           emptyValue={emptyValue}
           expandLabel={expandLabel}
           label={t('fields.filenames')}
           minimizeLabel={minimizeLabel}
-          value={patient.filenames}
-        />
-      ),
-    },
-    {
-      id: 'patientOtherInformation',
-      field: (
-        <PatientMetadataField
-          emptyValue={emptyValue}
-          label={t('fields.patientOtherInformation')}
-          value={formatExecutionPatientOtherInformation(patient.otherInformation, emptyValue)}
+          value={patient.fileNames}
         />
       ),
     },
@@ -223,7 +167,7 @@ function PatientCard({
   )
 }
 
-function PatientField({ emptyValue, label, value }: { emptyValue: string; label: string; value: string | undefined }) {
+function PatientField({ emptyValue, label, value }: { emptyValue: string; label: string; value: PatientCellValue }) {
   return (
     <div className="min-w-0">
       <dt>{label}</dt>
@@ -245,16 +189,30 @@ function PatientFilenamesField({
   expandLabel: string
   label: string
   minimizeLabel: string
-  value: string[] | undefined
+  value: ExecutionPatient['fileNames']
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const filenames = value?.join(', ').trim() || emptyValue
-  const canToggle = filenames !== emptyValue && filenames.length > FILENAME_PREVIEW_MAX_LENGTH
+  const filenames = [
+    value.fullForm,
+    value.shortForm,
+    value.claimsForm,
+    value.eligibilityPrint,
+    value.historyPrint,
+    value.claimsPrint,
+    ...value.otherDocuments,
+  ]
+    .filter(Boolean)
+    .join(', ')
+    .trim()
+  const displayFilenames = filenames || emptyValue
+  const canToggle = displayFilenames !== emptyValue && displayFilenames.length > FILENAME_PREVIEW_MAX_LENGTH
   const visibleFilenames =
-    canToggle && !isExpanded ? `${filenames.slice(0, FILENAME_PREVIEW_MAX_LENGTH).trimEnd()}...` : filenames
+    canToggle && !isExpanded
+      ? `${displayFilenames.slice(0, FILENAME_PREVIEW_MAX_LENGTH).trimEnd()}...`
+      : displayFilenames
 
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 sm:col-span-2">
       <dt>{label}</dt>
       <dd className="mt-1">
         <span className="whitespace-normal break-words font-medium text-muted-foreground">{visibleFilenames}</span>
@@ -269,23 +227,6 @@ function PatientFilenamesField({
             {isExpanded ? minimizeLabel : expandLabel}
           </Button>
         ) : null}
-      </dd>
-    </div>
-  )
-}
-
-function PatientMetadataField({ emptyValue, label, value }: { emptyValue: string; label: string; value: string }) {
-  return (
-    <div className="min-w-0 sm:col-span-2">
-      <dt>{label}</dt>
-      <dd className="mt-1">
-        {value === emptyValue ? (
-          <span className="font-medium text-muted-foreground">{emptyValue}</span>
-        ) : (
-          <pre className="overflow-hidden rounded-3xl bg-background p-3 text-xs text-muted-foreground whitespace-pre-wrap break-words">
-            {value}
-          </pre>
-        )}
       </dd>
     </div>
   )

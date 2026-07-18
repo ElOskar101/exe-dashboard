@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CCC_API_URLS } from '@/app.config'
+import { CCC_API_URLS, getCccApiEnvironment } from '@/app.config'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -192,6 +192,7 @@ export function SettingsPage() {
   const { t } = useTranslation('settings')
   const [searchParams, setSearchParams] = useSearchParams()
   const { cccApiUrl, setCccApiUrl } = useCccApiUrl()
+  const cccApiEnvironment = getCccApiEnvironment(cccApiUrl)
   const { target } = useExecutionTarget()
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
@@ -312,12 +313,15 @@ export function SettingsPage() {
                   </FieldLabel>
                   <Select value={cccApiUrl} onValueChange={setCccApiUrl}>
                     <SelectTrigger id="ccc-api-url" className="w-full">
-                      <SelectValue placeholder={t('cccApiUrl.placeholder')}>{cccApiUrl}</SelectValue>
+                      <SelectValue placeholder={t('cccApiUrl.placeholder')}>{cccApiEnvironment}</SelectValue>
                     </SelectTrigger>
                     <SelectContent align="start">
                       {CCC_API_URLS.map((apiUrl) => (
                         <SelectItem key={apiUrl} value={apiUrl}>
-                          <span className="break-all font-mono text-xs">{apiUrl}</span>
+                          <span className="flex min-w-0 flex-col">
+                            <span>{getCccApiEnvironment(apiUrl)}</span>
+                            <span className="break-all font-mono text-xs text-muted-foreground">{apiUrl}</span>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>

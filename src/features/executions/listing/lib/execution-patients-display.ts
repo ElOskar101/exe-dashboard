@@ -3,7 +3,7 @@ import type { ExecutionPayloadPatient } from '@/features/executions/shared'
 const MAX_VISIBLE_PATIENTS = 1
 
 export const getExecutionPatientFullName = (patient: ExecutionPayloadPatient, emptyValue: string) => {
-  const fullName = [patient.patientName.value.trim(), patient.patientLastName.value.trim()].filter(Boolean).join(' ')
+  const fullName = [patient.patientName?.trim(), patient.patientLastName?.trim()].filter(Boolean).join(' ')
 
   return fullName || emptyValue
 }
@@ -23,15 +23,4 @@ export const getExecutionPatientsSummary = (patients: ExecutionPayloadPatient[],
   }
 
   return [...visiblePatientNames, `+${hiddenPatientsCount}`].join(', ')
-}
-
-export const formatExecutionPatientOtherInformation = (
-  otherInformation: ExecutionPayloadPatient['otherInformation'] | null | undefined,
-  emptyValue: string,
-) => {
-  if (!otherInformation || Object.keys(otherInformation).length === 0) {
-    return emptyValue
-  }
-
-  return JSON.stringify(otherInformation, null, 2)
 }

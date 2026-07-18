@@ -5,7 +5,6 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import type { ExecutionWizardDraft } from '../model/execution-create'
 import type { ExecutionPayloadPreview } from '../lib/execution-wizard-payload'
-import { getPatientsMatchingFilter } from '../lib/execution-patient-filters'
 import { getExecutionWizardDisplayValue, getExecutionWizardPatientFullName } from '../lib/execution-wizard-display'
 
 interface ReviewStepProps {
@@ -16,7 +15,7 @@ interface ReviewStepProps {
 
 export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
   const emptyValue = t('review.emptyValue')
-  const patients = getPatientsMatchingFilter(draft.execution.patients, draft.execution.patientFilter)
+  const patients = draft.execution.patients
   const payloadText = useMemo(() => JSON.stringify(payload, null, 2), [payload])
 
   const handleCopyPayload = async () => {
@@ -121,7 +120,7 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
               <div className="space-y-3 p-3 md:hidden">
                 {patients.map((patient, index) => (
                   <div
-                    key={`${patient.patientMemberId}-${index}`}
+                    key={patient.id ?? `${patient.patientName}-${patient.patientLastName}-${index}`}
                     className="rounded-2xl border border-border/60 bg-muted/20 p-3"
                   >
                     <p className="font-medium">{getExecutionWizardPatientFullName(patient, emptyValue)}</p>
@@ -133,20 +132,16 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">{t('fields.memberId')}</dt>
+                        <dt className="text-xs text-muted-foreground">{t('fields.policyHolderName')}</dt>
                         <dd className="mt-1 text-sm font-medium">
-                          {getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}
+                          {getExecutionWizardDisplayValue(patient.subscriberName, emptyValue)}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs text-muted-foreground">{t('fields.relationship')}</dt>
+                        <dt className="text-xs text-muted-foreground">{t('fields.policyHolderDob')}</dt>
                         <dd className="mt-1 text-sm font-medium">
-                          {getExecutionWizardDisplayValue(patient.relationship, emptyValue)}
+                          {getExecutionWizardDisplayValue(patient.subscriberDob, emptyValue)}
                         </dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-muted-foreground">{t('fields.verificationType')}</dt>
-                        <dd className="mt-1 text-sm font-medium">{patient.verificationType || emptyValue}</dd>
                       </div>
                     </dl>
                   </div>
@@ -159,15 +154,14 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                     <tr className="border-b border-border/70">
                       <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientName')}</th>
                       <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.patientDob')}</th>
-                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.memberId')}</th>
-                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.relationship')}</th>
-                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.verificationType')}</th>
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.policyHolderName')}</th>
+                      <th className="px-3 py-2 font-medium text-muted-foreground">{t('fields.policyHolderDob')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {patients.map((patient, index) => (
                       <tr
-                        key={`${patient.patientMemberId}-${index}`}
+                        key={patient.id ?? `${patient.patientName}-${patient.patientLastName}-${index}`}
                         className="border-b border-border/50 last:border-b-0"
                       >
                         <td className="px-3 py-2 font-medium">
@@ -175,12 +169,11 @@ export function ReviewStep({ draft, payload, t }: ReviewStepProps) {
                         </td>
                         <td className="px-3 py-2">{getExecutionWizardDisplayValue(patient.patientDob, emptyValue)}</td>
                         <td className="px-3 py-2">
-                          {getExecutionWizardDisplayValue(patient.patientMemberId, emptyValue)}
+                          {getExecutionWizardDisplayValue(patient.subscriberName, emptyValue)}
                         </td>
                         <td className="px-3 py-2">
-                          {getExecutionWizardDisplayValue(patient.relationship, emptyValue)}
+                          {getExecutionWizardDisplayValue(patient.subscriberDob, emptyValue)}
                         </td>
-                        <td className="px-3 py-2">{patient.verificationType || emptyValue}</td>
                       </tr>
                     ))}
                   </tbody>

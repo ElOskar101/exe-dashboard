@@ -1,25 +1,4 @@
-import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-create'
-
-export const createEmptyPatient = (): ExecutionPatient => ({
-  carrierName: '',
-  executed: false,
-  review: false,
-  insuranceVerificationProcessResults: '',
-  insuranceVerificationStatus: '',
-  patientName: '',
-  patientLastName: '',
-  patientMemberId: '',
-  patientDob: '',
-  policyHolderName: '',
-  policyHolderLastName: '',
-  policyHolderDob: '',
-  relationship: '',
-  zipCode: '',
-  clinic: '',
-  verificationType: '',
-  filenames: '',
-  otherInformation: '{\n  "plan": ""\n}',
-})
+import type { ExecutionWizardDraft } from '../model/execution-create'
 
 export const createEmptyDraft = (): ExecutionWizardDraft => ({
   context: {
@@ -28,7 +7,6 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
     clientName: '',
     clinic: '',
     clinicName: '',
-    config: null,
   },
   bot: {
     clinicBotId: '',
@@ -41,7 +19,6 @@ export const createEmptyDraft = (): ExecutionWizardDraft => ({
   execution: {
     execution: '',
     executionName: '',
-    patientFilter: 'all',
     patients: [],
     workers: '2',
     retries: '1',

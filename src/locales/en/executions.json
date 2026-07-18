@@ -50,11 +50,11 @@
     "username": "Username",
     "password": "Password",
     "botOtherInformation": "Bot other information",
-    "patientFilter": "Patient filter",
     "patientName": "Patient name",
     "patientLastName": "Patient last name",
     "memberId": "Member ID",
     "patientDob": "DOB",
+    "dateOfService": "Date of service",
     "policyHolderName": "Policy holder name",
     "policyHolderLastName": "Policy holder last name",
     "policyHolderDob": "Policy holder date of birth",
@@ -117,14 +117,6 @@
     "enabled": "Enabled",
     "disabled": "Disabled"
   },
-  "filters": {
-    "patients": {
-      "all": "All",
-      "review": "Only Review",
-      "empty": "Only Empty",
-      "notExecuted": "Only Not Executed"
-    }
-  },
   "buttons": {
     "back": "Back",
     "next": "Next",
@@ -164,6 +156,7 @@
     "patientListTitle": "Patient list is incomplete",
     "patientDetailsTitle": "Patient details are incomplete",
     "patientDetailsDescription": "Fill the missing imported fields before creating the execution: {{fields}}.",
+    "patientInsuranceVerificationWarning": "This patient can't be used in an insurance verification.",
     "customerSearchTitle": "Clients could not be loaded",
     "clinicBotsTitle": "Clinic bots could not be loaded",
     "noActiveClinicBots": "The selected clinic has no active bots available.",
@@ -191,7 +184,6 @@
     "noActiveClinicBots": "This clinic has no active bots available. Choose a different clinic to continue.",
     "noAssociatedBots": "This Playwright Project has no active associated bots. Choose a different project to continue.",
     "noImportedPatients": "Select an execution day to import patients and continue.",
-    "noFilteredPatients": "No imported patients match the selected filter.",
     "importedPatients": "Imported patients: {{count}}",
     "readonlyFieldBadge": "Read-only",
     "readonlyFieldTooltip": "This value is loaded from the selected bot and cannot be edited.",

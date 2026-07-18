@@ -154,9 +154,14 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
 
         <TabsContent value="config" className="min-h-0 min-w-0">
           <pre className="max-h-[calc(100vh-20rem)] overflow-auto text-xs">
-            {execution.context?.config
-              ? JSON.stringify(execution.context.config, null, 2)
-              : t('detail.detailsFieldNoConfig')}
+            {JSON.stringify(
+              {
+                clinicConfig: execution.context?.clinicConfig ?? {},
+                payloadConfigs: execution.context?.payloadConfigs ?? [],
+              },
+              null,
+              2,
+            )}
           </pre>
         </TabsContent>
       </Tabs>
@@ -200,19 +205,14 @@ function PatientsTable({ execution }: { execution: Execution }) {
           <TableRow>
             <TableHead>{t('detail.patientColumns.patient')}</TableHead>
             <TableHead>{t('detail.patientColumns.dob')}</TableHead>
-            <TableHead>{t('detail.patientColumns.memberId')}</TableHead>
             <TableHead>{t('detail.patientColumns.policyHolder')}</TableHead>
             <TableHead>{t('detail.patientColumns.policyHolderDob')}</TableHead>
-            <TableHead>{t('detail.patientColumns.verificationType')}</TableHead>
+            <TableHead>{t('fields.filenames')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {patients.map((patient, index) => (
-            <PatientDetailsDialog
-              key={patient.id ?? `${execution._id}-patient-${index}`}
-              patient={patient}
-              patientIndex={index}
-            />
+            <PatientDetailsDialog key={`${execution._id}-patient-${index}`} patient={patient} patientIndex={index} />
           ))}
         </TableBody>
       </Table>
@@ -224,9 +224,19 @@ function PatientDetailsDialog({ patient, patientIndex }: { patient: ExecutionPay
   const { t } = useTranslation('executions')
   const titleRef = useRef<HTMLHeadingElement>(null)
   const patientLabel =
-    [patient.patientName.value, patient.patientLastName.value].filter(Boolean).join(' ') ||
+    [patient.patientName, patient.patientLastName].filter(Boolean).join(' ') ||
     t('detail.patientFallbackName', { index: patientIndex + 1 })
-  const patientOtherInformation = patient.otherInformation ?? {}
+  const fileNames = [
+    patient.fileNames.fullForm,
+    patient.fileNames.shortForm,
+    patient.fileNames.claimsForm,
+    patient.fileNames.eligibilityPrint,
+    patient.fileNames.historyPrint,
+    patient.fileNames.claimsPrint,
+    ...patient.fileNames.otherDocuments,
+  ]
+    .filter(Boolean)
+    .join(', ')
 
   return (
     <Dialog>
@@ -239,20 +249,14 @@ function PatientDetailsDialog({ patient, patientIndex }: { patient: ExecutionPay
         }
       >
         <TableCell className="whitespace-normal break-words">
-          {[patient.patientName.value, patient.patientLastName.value].filter(Boolean).join(' ') || t('list.emptyValue')}
+          {[patient.patientName, patient.patientLastName].filter(Boolean).join(' ') || t('list.emptyValue')}
         </TableCell>
-        <TableCell className="whitespace-nowrap">{patient.patientDob.value || t('list.emptyValue')}</TableCell>
+        <TableCell className="whitespace-nowrap">{patient.patientDob || t('list.emptyValue')}</TableCell>
         <TableCell className="whitespace-normal break-words">
-          {patient.patientMemberId.value || t('list.emptyValue')}
+          {patient.subscriberName || t('list.emptyValue')}
         </TableCell>
-        <TableCell className="whitespace-normal break-words">
-          {[patient.policyHolderName.value, patient.policyHolderLastName.value].filter(Boolean).join(' ') ||
-            t('list.emptyValue')}
-        </TableCell>
-        <TableCell className="whitespace-nowrap">{patient.policyHolderDob.value || t('list.emptyValue')}</TableCell>
-        <TableCell className="whitespace-nowrap uppercase">
-          {patient.verificationType || t('list.emptyValue')}
-        </TableCell>
+        <TableCell className="whitespace-nowrap">{patient.subscriberDob || t('list.emptyValue')}</TableCell>
+        <TableCell className="whitespace-normal break-words">{fileNames || t('list.emptyValue')}</TableCell>
       </DialogTrigger>
       <DialogContent initialFocus={titleRef} className="sm:max-w-3xl">
         <DialogHeader>
@@ -264,41 +268,16 @@ function PatientDetailsDialog({ patient, patientIndex }: { patient: ExecutionPay
         <ScrollArea className="max-h-[calc(100vh-16rem)]" viewportProps={{ className: 'max-h-[calc(100vh-16rem)]' }}>
           <div className="flex flex-col gap-6 p-1 pr-3">
             <PatientDetailGroup title={t('detail.patientDetailsPatientSection')}>
-              <PatientFieldGridItem label={t('fields.patientName')} value={patient.patientName.value} />
-              <PatientFieldGridItem label={t('fields.patientLastName')} value={patient.patientLastName.value} />
-              <PatientFieldGridItem label={t('fields.patientDob')} value={patient.patientDob.value} />
-              <PatientFieldGridItem label={t('fields.memberId')} value={patient.patientMemberId.value} />
+              <PatientFieldGridItem label={t('fields.patientName')} value={patient.patientName} />
+              <PatientFieldGridItem label={t('fields.patientLastName')} value={patient.patientLastName} />
+              <PatientFieldGridItem label={t('fields.patientDob')} value={patient.patientDob} />
             </PatientDetailGroup>
             <PatientDetailGroup title={t('detail.patientDetailsPolicyHolderSection')}>
-              <PatientFieldGridItem label={t('fields.policyHolderName')} value={patient.policyHolderName.value} />
-              <PatientFieldGridItem
-                label={t('fields.policyHolderLastName')}
-                value={patient.policyHolderLastName.value}
-              />
-              <PatientFieldGridItem label={t('fields.policyHolderDob')} value={patient.policyHolderDob.value} />
-              <PatientFieldGridItem label={t('fields.relationship')} value={patient.relationship.value} />
-            </PatientDetailGroup>
-            <PatientDetailGroup title={t('detail.patientDetailsCoverageSection')}>
-              <PatientFieldGridItem label={t('fields.zipCode')} value={patient.zipCode.value} />
-              {patient.clinic ? (
-                <PatientFieldGridItem label={t('fields.patientClinic')} value={patient.clinic.value} />
-              ) : null}
-              <PatientFieldGridItem label={t('fields.verificationType')} value={patient.verificationType} />
+              <PatientFieldGridItem label={t('fields.policyHolderName')} value={patient.subscriberName} />
+              <PatientFieldGridItem label={t('fields.policyHolderDob')} value={patient.subscriberDob} />
             </PatientDetailGroup>
             <PatientDetailGroup title={t('detail.patientDetailsFilesSection')}>
-              <PatientFieldGridItem
-                label={t('fields.filenames')}
-                value={patient.filenames.length > 0 ? patient.filenames.join(', ') : null}
-              />
-              <PatientFieldGridItem
-                label={t('fields.patientOtherInformation')}
-                value={
-                  Object.keys(patientOtherInformation).length > 0
-                    ? JSON.stringify(patientOtherInformation, null, 2)
-                    : null
-                }
-                isWide
-              />
+              <PatientFieldGridItem label={t('fields.filenames')} value={fileNames || null} isWide />
             </PatientDetailGroup>
           </div>
         </ScrollArea>
