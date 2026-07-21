@@ -92,6 +92,19 @@ describe('execution rerun helpers', () => {
     })
   })
 
+  it('rebuilds a rerun without an execution label', () => {
+    const rerunPreparation = prepareExecutionRerun(createExecution({ execution: undefined }))
+
+    expect(rerunPreparation.missingFields).toEqual([])
+    expect(rerunPreparation.payload).not.toBeNull()
+    expect(rerunPreparation.payload).not.toHaveProperty('execution')
+    expect(getExecutionRerunSummary(createExecution({ execution: undefined }), rerunPreparation.payload)).toMatchObject(
+      {
+        execution: 'Eligibility Runner',
+      },
+    )
+  })
+
   it('reports the required top-level fields that are missing', () => {
     expect(
       prepareExecutionRerun(

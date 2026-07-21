@@ -50,17 +50,23 @@ describe('execution display helpers', () => {
   })
 
   it('falls back to botName, project, then shortened id', () => {
-    expect(getExecutionLabel(createExecution({ botName: 'Eligibility bot' }))).toBe('Eligibility bot')
+    expect(getExecutionLabel(createExecution({ execution: undefined, botName: 'Eligibility bot' }))).toBe(
+      'Eligibility bot',
+    )
 
-    expect(getExecutionLabel(createExecution({}))).toBe('project-a')
+    const executionWithoutBotName = {
+      botName: undefined,
+      context: {
+        ...createExecution({}).context,
+        bot: {
+          ...createExecution({}).context.bot,
+          botName: '',
+        },
+      },
+    }
 
-    expect(
-      getExecutionLabel(
-        createExecution({
-          project: '',
-        }),
-      ),
-    ).toBe('executio...')
+    expect(getExecutionLabel(createExecution(executionWithoutBotName))).toBe('project-a')
+    expect(getExecutionLabel(createExecution({ ...executionWithoutBotName, project: '' }))).toBe('executio...')
   })
 
   it('normalizes status and only treats running as stoppable', () => {

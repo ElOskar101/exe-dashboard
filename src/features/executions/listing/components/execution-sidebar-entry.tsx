@@ -13,7 +13,7 @@ import {
   type ExecutionStatus,
 } from '@/features/executions/shared'
 import { getExecutionBotName } from '../lib/execution-bot-display'
-import { getExecutionDayLabel, getRelativeCreatedAt, getStatusDotClassName } from '../lib/execution-sidebar-display'
+import { getRelativeCreatedAt, getStatusDotClassName } from '../lib/execution-sidebar-display'
 import {
   SCHEDULED_EXECUTIONS_SECTION_ID,
   WAITING_SCHEDULED_STATUS_DOT_CLASS_NAME,
@@ -58,7 +58,6 @@ export function ExecutionSidebarEntry({
 }: ExecutionSidebarEntryProps) {
   const { t } = useTranslation('executions')
   const label = getExecutionLabel(execution)
-  const executionDayLabel = getExecutionDayLabel(execution)
   const secondaryLabel = getExecutionBotName(execution, emptyValueLabel)
   const relativeCreatedAt = getRelativeCreatedAt(execution.createdAt, currentTime)
   const projectTooltipLabel = t('sidebar.projectExecutionTooltip', { project: sectionProjectTitle, label })
@@ -93,7 +92,7 @@ export function ExecutionSidebarEntry({
         />
         <div className="min-w-0">
           <div className="flex min-w-0 items-baseline gap-1">
-            <span className="truncate">{executionDayLabel}</span>
+            <span className="truncate">{label}</span>
             {scheduledCountdownLabel ? (
               <span className="shrink-0 text-xs text-sidebar-foreground/60">
                 {t('sidebar.scheduledCountdown', { countdown: scheduledCountdownLabel })}
@@ -120,11 +119,11 @@ export function ExecutionSidebarEntry({
           menuButton
         )}
         <ExecutionSidebarDeleteDialog
-          executionLabel={executionDayLabel}
+          executionLabel={label}
           isDeleting={isDeleting}
           isMobileActionVisible={isMobileActionVisible}
           isOpen={isDeleteOpen}
-          onDelete={() => onDelete(execution._id, executionDayLabel)}
+          onDelete={() => onDelete(execution._id, label)}
           onOpenChange={(open) => onDeleteOpenChange(execution._id, open)}
         />
       </div>

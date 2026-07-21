@@ -22,7 +22,7 @@ export interface Execution {
   attachments?: unknown[]
   client: string
   clinic: string
-  execution: string
+  execution?: string
   bot?: string
   botName?: string
   context: ExecutionPayloadContext

@@ -1,6 +1,7 @@
 import { intlFormatDistance, isValid, parseISO } from 'date-fns'
 
 import {
+  getExecutionLabel,
   isExecutionPending,
   isExecutionSuccessful,
   normalizeExecutionStatus,
@@ -31,13 +32,14 @@ export interface ExecutionProjectGroup {
 }
 
 const getExecutionDaySortValue = (execution: Execution) => {
-  const executionDayDate = parseISO(execution.execution)
+  const executionLabel = getExecutionLabel(execution)
+  const executionDayDate = parseISO(executionLabel)
 
   if (isValid(executionDayDate)) {
     return executionDayDate.getTime()
   }
 
-  return execution.execution
+  return executionLabel
 }
 
 const compareExecutionDaysDescending = (left: Execution, right: Execution) => {
@@ -48,11 +50,7 @@ const compareExecutionDaysDescending = (left: Execution, right: Execution) => {
     return rightSortValue - leftSortValue
   }
 
-  return right.execution.localeCompare(left.execution)
-}
-
-export const getExecutionDayLabel = (execution: Execution) => {
-  return execution.execution || `${execution._id.slice(0, 8)}...`
+  return getExecutionLabel(right).localeCompare(getExecutionLabel(left))
 }
 
 export const groupExecutionsByProject = (executions: Execution[]): ExecutionProjectGroup[] => {

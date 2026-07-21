@@ -11,7 +11,13 @@ export const isExecutionStatus = (status: string): status is ExecutionStatus => 
 }
 
 export const getExecutionLabel = (execution: Execution) => {
-  return execution.execution || execution.botName || execution.project || `${execution._id.slice(0, 8)}...`
+  return (
+    execution.execution ||
+    execution.botName ||
+    execution.context.bot.botName ||
+    execution.project ||
+    `${execution._id.slice(0, 8)}...`
+  )
 }
 
 export const normalizeExecutionStatus = (status?: string | null): ExecutionStatus => {

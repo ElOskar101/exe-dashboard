@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   formatExecutionDate,
+  getExecutionLabel,
   normalizeExecutionStatus,
   useExecutionTargetNavigation,
   type Execution,
@@ -19,7 +20,6 @@ import {
   getExecutionProjectLabel,
   getResolvedExecutionStatus,
 } from '../lib/execution-listing-filters'
-import { getExecutionDayLabel } from '../lib/execution-sidebar-display'
 
 interface ExecutionsTableTranslations {
   columns: {
@@ -111,14 +111,17 @@ export function ExecutionsTable({
               const status = executionStatusReadModel
                 ? getResolvedExecutionStatus(execution, executionStatusReadModel)
                 : normalizeExecutionStatus(execution.status)
-              const executionDayLabel = getExecutionDayLabel(execution)
+              const executionLabel = getExecutionLabel(execution)
               const displayNames = getExecutionDisplayNames(execution)
 
               return (
                 <TableRow key={execution._id}>
-                  <TableCell className="whitespace-normal break-words">
-                    <Link className="hover:underline" to={getPathWithExecutionTarget(`/execution/${execution._id}`)}>
-                      {executionDayLabel}
+                  <TableCell className="max-w-64">
+                    <Link
+                      className="block truncate hover:underline"
+                      to={getPathWithExecutionTarget(`/execution/${execution._id}`)}
+                    >
+                      {executionLabel}
                     </Link>
                   </TableCell>
                   <TableCell className="whitespace-normal break-words">{getExecutionProjectLabel(execution)}</TableCell>
@@ -132,12 +135,12 @@ export function ExecutionsTable({
                     {displayNames.clinic || translations.emptyValue}
                   </TableCell>
                   <TableCell className="whitespace-normal break-words">
-                    <ExecutionPatientsDialog execution={execution} executionLabel={executionDayLabel} />
+                    <ExecutionPatientsDialog execution={execution} executionLabel={executionLabel} />
                   </TableCell>
                   <TableCell className="whitespace-normal break-words">
                     <ExecutionBotDialog
                       execution={execution}
-                      executionLabel={executionDayLabel}
+                      executionLabel={executionLabel}
                       emptyValue={translations.emptyValue}
                     />
                   </TableCell>

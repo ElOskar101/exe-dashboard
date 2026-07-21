@@ -5,6 +5,7 @@ import { AuthContext } from '@/features/auth'
 import { getCccApiEnvironment } from '@/app.config'
 import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
 import {
+  getExecutionLabel,
   getExecutionRequestErrorMessage,
   useCreateExecutionMutation,
   useExecutionTargetNavigation,
@@ -168,7 +169,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const submitExecutionMutation = useCreateExecutionMutation({
     onSuccess: async ([response]) => {
       const executionId = response.data._id
-      const successToastCopy = getExecutionWizardSuccessToastCopy(t, response.data.execution, 'instant')
+      const successToastCopy = getExecutionWizardSuccessToastCopy(t, getExecutionLabel(response.data), 'instant')
 
       toast.success(successToastCopy.title, {
         description: successToastCopy.description,
@@ -186,7 +187,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       const executionId = response.data._id
       const successToastCopy = getExecutionWizardSuccessToastCopy(
         t,
-        response.data.execution,
+        getExecutionLabel(response.data),
         'scheduled',
         payload.scheduledAt,
       )

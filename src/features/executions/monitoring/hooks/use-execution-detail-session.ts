@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useCurrentTime } from '@/hooks/use-current-time'
 import {
+  getExecutionLabel,
   getExecutionReportIndexUrl,
   executionKeys,
   isExecutionFailed,
@@ -186,9 +187,6 @@ export const useExecutionDetailSession = (executionId: string): ExecutionDetailS
     showReport,
     stopError: stopMutation.isError,
     subtitle: getExecutionDetailSubtitle(executionQuery.data, t),
-    title:
-      executionQuery.data?.project && executionQuery.data?.execution
-        ? `${executionQuery.data.project} ${executionQuery.data.execution}`
-        : null,
+    title: executionQuery.data ? `${executionQuery.data.project} ${getExecutionLabel(executionQuery.data)}` : null,
   }
 }

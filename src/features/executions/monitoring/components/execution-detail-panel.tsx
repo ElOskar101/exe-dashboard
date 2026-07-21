@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   formatExecutionDateTime,
+  getExecutionLabel,
   getStatusBadgeClassName,
   normalizeExecutionStatus,
   type Execution,
@@ -104,7 +105,11 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
               <DetailRow label={t('fields.project')} value={execution.project} />
               <DetailRow label={t('fields.client')} value={execution.client} />
               <DetailRow label={t('fields.clinic')} value={execution.clinic} />
-              <DetailRow label={t('fields.execution')} value={execution.execution} />
+              <DetailRow
+                label={t('fields.execution')}
+                value={getExecutionLabel(execution)}
+                valueClassName="min-w-0 truncate"
+              />
               <DetailRow label={t('detail.detailsFieldCreatedBy')} value={execution.createdBy} />
               <div className="grid grid-cols-[180px_1fr] gap-2 text-sm">
                 <span className="text-foreground">{t('fields.status')}</span>

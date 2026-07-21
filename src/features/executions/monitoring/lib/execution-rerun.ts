@@ -1,4 +1,4 @@
-import type { Execution, ExecutionCreatePayload } from '@/features/executions/shared'
+import { getExecutionLabel, type Execution, type ExecutionCreatePayload } from '@/features/executions/shared'
 
 export interface ExecutionRerunSummary {
   botName: string
@@ -42,7 +42,7 @@ export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPrepa
   const context = execution.context
 
   const botName = getRequiredString(execution.botName ?? context.bot.botName ?? execution.bot, 'botName', missingFields)
-  const rerunExecution = execution.execution.trim()
+  const rerunExecution = execution.execution?.trim() ?? ''
 
   if (missingFields.length > 0) {
     return {
@@ -84,7 +84,7 @@ export const getExecutionRerunSummary = (
     botName: payload?.botName || execution.botName || execution.bot || '',
     client: execution.client,
     clinic: execution.clinic,
-    execution: payload?.execution ?? execution.execution ?? null,
+    execution: payload?.execution ?? getExecutionLabel(execution),
     patientCount: payload?.context.patients.length ?? 0,
     project: payload?.project || execution.project || '',
     retries: payload?.context.retries ?? 0,
