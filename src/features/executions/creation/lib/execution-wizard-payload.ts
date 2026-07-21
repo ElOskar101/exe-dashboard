@@ -34,14 +34,18 @@ const createExecutionPayloadScheduledAtPreview = (value: string) => {
 export const buildExecutionPayloadPreview = (
   draft: ExecutionWizardDraft,
   createdBy: string,
+  accessToken: string,
   env: CccApiEnvironment,
 ): ExecutionPayloadPreview => {
   const botId = draft.bot.clinicBotId.trim()
+  const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
     createdBy: createdBy.trim(),
     client: draft.context.clientName.trim(),
     clinic: draft.context.clinicName.trim(),
+    execution,
+    accessToken: accessToken.trim(),
     botName: draft.bot.botName.trim(),
     context: {
       env,
@@ -72,17 +76,20 @@ export const buildExecutionPayloadPreview = (
 export const buildExecutionPayload = (
   draft: ExecutionWizardDraft,
   createdBy: string,
+  accessToken: string,
   env: CccApiEnvironment,
 ): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
-  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, env)
+  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, env)
 
   if (
     !createdBy ||
+    !accessToken.trim() ||
     !draft.context.project.trim() ||
     !draft.context.client.trim() ||
     !draft.context.clientName.trim() ||
     !draft.context.clinic.trim() ||
     !draft.context.clinicName.trim() ||
+    !draft.execution.execution.trim() ||
     !draft.bot.clinicBotId.trim() ||
     !draft.bot.botName.trim() ||
     !draft.bot.targetUrl.trim() ||

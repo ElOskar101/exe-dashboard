@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { buildExecutionPayload, buildExecutionPayloadPreview } from './execution-wizard-payload'
 import { createEmptyDraft } from './execution-wizard-draft'
 
+const ACCESS_TOKEN = 'token-123'
+
 const createValidDraft = () => {
   const draft = createEmptyDraft()
 
@@ -49,11 +51,13 @@ describe('buildExecutionPayload', () => {
     const draft = createValidDraft()
     const patient = draft.execution.patients[0]
 
-    expect(buildExecutionPayload(draft, 'Operator One', 'dev')).toEqual({
+    expect(buildExecutionPayload(draft, 'Operator One', ACCESS_TOKEN, 'dev')).toEqual({
       project: 'liberty',
       createdBy: 'Operator One',
       client: 'Legacy Dental Care',
       clinic: 'Downtown Clinic',
+      execution: 'Daily eligibility',
+      accessToken: ACCESS_TOKEN,
       botName: 'Eligibility Runner',
       context: {
         env: 'dev',
@@ -76,7 +80,7 @@ describe('buildExecutionPayload', () => {
   })
 
   it('uses empty config collections in the preview', () => {
-    const preview = buildExecutionPayloadPreview(createValidDraft(), 'Operator One', 'prod')
+    const preview = buildExecutionPayloadPreview(createValidDraft(), 'Operator One', ACCESS_TOKEN, 'prod')
 
     expect(preview.context).toMatchObject({
       env: 'prod',
@@ -88,7 +92,7 @@ describe('buildExecutionPayload', () => {
   it('returns null when required execution fields are missing', () => {
     const draft = createValidDraft()
 
-    expect(buildExecutionPayload(draft, '', 'dev')).toBeNull()
+    expect(buildExecutionPayload(draft, '', ACCESS_TOKEN, 'dev')).toBeNull()
   })
 
   it('builds a scheduled payload with an ISO scheduled time', () => {
@@ -96,7 +100,7 @@ describe('buildExecutionPayload', () => {
     draft.execution.scheduleMode = 'scheduled'
     draft.execution.scheduledAt = '2099-01-01T12:00'
 
-    expect(buildExecutionPayload(draft, 'Operator One', 'dev')).toMatchObject({
+    expect(buildExecutionPayload(draft, 'Operator One', ACCESS_TOKEN, 'dev')).toMatchObject({
       scheduledAt: new Date('2099-01-01T12:00').toISOString(),
     })
   })

@@ -49,6 +49,8 @@ const executionPayload: ExecutionCreatePayload = {
   createdBy: 'Jane Doe',
   client: 'Legacy Dental Care',
   clinic: 'Main Clinic',
+  execution: 'Daily eligibility',
+  accessToken: 'token-123',
   botName: 'eligibility-bot',
   context: {
     bot: {

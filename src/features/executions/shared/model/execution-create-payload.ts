@@ -56,7 +56,8 @@ export interface ExecutionCreatePayload {
   createdBy: string
   client: string
   clinic: string
-  execution?: string
+  execution: string
+  accessToken: string
   botName: string
   context: ExecutionPayloadContext
 }

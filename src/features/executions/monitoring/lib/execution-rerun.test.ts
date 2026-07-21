@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { Execution } from '@/features/executions/shared'
 import { buildExecutionRerunPayload, getExecutionRerunSummary, prepareExecutionRerun } from './execution-rerun'
 
+const ACCESS_TOKEN = 'token-123'
+
 const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
   _id: 'execution-1',
   createdBy: 'user-1',
@@ -50,12 +52,13 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
 
 describe('execution rerun helpers', () => {
   it('rebuilds a create execution payload from a finished execution', () => {
-    expect(buildExecutionRerunPayload(createExecution())).toEqual({
+    expect(buildExecutionRerunPayload(createExecution(), ACCESS_TOKEN)).toEqual({
       project: 'liberty',
       createdBy: 'user-1',
       client: 'client-1',
       clinic: 'clinic-1',
       execution: 'Daily eligibility',
+      accessToken: ACCESS_TOKEN,
       botName: 'Eligibility Runner',
       context: {
         env: 'dev',
@@ -92,17 +95,11 @@ describe('execution rerun helpers', () => {
     })
   })
 
-  it('rebuilds a rerun without an execution label', () => {
-    const rerunPreparation = prepareExecutionRerun(createExecution({ execution: undefined }))
+  it('does not rebuild a rerun without an execution day', () => {
+    const rerunPreparation = prepareExecutionRerun(createExecution({ execution: undefined }), ACCESS_TOKEN)
 
-    expect(rerunPreparation.missingFields).toEqual([])
-    expect(rerunPreparation.payload).not.toBeNull()
-    expect(rerunPreparation.payload).not.toHaveProperty('execution')
-    expect(getExecutionRerunSummary(createExecution({ execution: undefined }), rerunPreparation.payload)).toMatchObject(
-      {
-        execution: 'Eligibility Runner',
-      },
-    )
+    expect(rerunPreparation.missingFields).toEqual(['execution'])
+    expect(rerunPreparation.payload).toBeNull()
   })
 
   it('reports the required top-level fields that are missing', () => {
@@ -111,6 +108,7 @@ describe('execution rerun helpers', () => {
         createExecution({
           createdBy: '',
         }),
+        ACCESS_TOKEN,
       ).missingFields,
     ).toEqual(['createdBy'])
   })
@@ -124,6 +122,7 @@ describe('execution rerun helpers', () => {
             clinicConfig: { previousAttempt: true },
           },
         }),
+        ACCESS_TOKEN,
       ),
     ).toMatchObject({
       context: {
@@ -134,7 +133,7 @@ describe('execution rerun helpers', () => {
 
   it('builds a summary for the rerun confirmation dialog', () => {
     const execution = createExecution()
-    const payload = buildExecutionRerunPayload(execution)
+    const payload = buildExecutionRerunPayload(execution, ACCESS_TOKEN)
 
     expect(payload).not.toBeNull()
     expect(getExecutionRerunSummary(execution, payload!)).toEqual({

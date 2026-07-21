@@ -32,17 +32,18 @@ const getRequiredString = (value: string | undefined, field: string, missingFiel
   return resolvedValue
 }
 
-export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPreparation => {
+export const prepareExecutionRerun = (execution: Execution, accessToken: string): ExecutionRerunPreparation => {
   const missingFields: string[] = []
   const project = getRequiredString(execution.project, 'project', missingFields)
   const createdBy = getRequiredString(execution.createdBy, 'createdBy', missingFields)
   const client = getRequiredString(execution.client, 'client', missingFields)
   const clinic = getRequiredString(execution.clinic, 'clinic', missingFields)
+  const rerunExecution = getRequiredString(execution.execution, 'execution', missingFields)
+  const currentUserToken = getRequiredString(accessToken, 'accessToken', missingFields)
 
   const context = execution.context
 
   const botName = getRequiredString(execution.botName ?? context.bot.botName ?? execution.bot, 'botName', missingFields)
-  const rerunExecution = execution.execution?.trim() ?? ''
 
   if (missingFields.length > 0) {
     return {
@@ -58,7 +59,8 @@ export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPrepa
       createdBy,
       client,
       clinic,
-      ...(rerunExecution ? { execution: rerunExecution } : {}),
+      execution: rerunExecution,
+      accessToken: currentUserToken,
       botName,
       context: {
         ...context,
@@ -72,8 +74,11 @@ export const prepareExecutionRerun = (execution: Execution): ExecutionRerunPrepa
   }
 }
 
-export const buildExecutionRerunPayload = (execution: Execution): ExecutionCreatePayload | null => {
-  return prepareExecutionRerun(execution).payload
+export const buildExecutionRerunPayload = (
+  execution: Execution,
+  accessToken: string,
+): ExecutionCreatePayload | null => {
+  return prepareExecutionRerun(execution, accessToken).payload
 }
 
 export const getExecutionRerunSummary = (

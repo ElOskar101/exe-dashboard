@@ -79,7 +79,7 @@ const resetDraftDependentSelections = (
 export const useExecutionWizard = (t: TFunction<'executions'>) => {
   const navigate = useNavigate()
   const { getPathWithExecutionTarget } = useExecutionTargetNavigation()
-  const { user } = useContext(AuthContext)
+  const { token, user } = useContext(AuthContext)
   const { cccApiUrl } = useCccApiUrl()
   const env = getCccApiEnvironment(cccApiUrl)
   const createdBy = user?.fullName ?? ''
@@ -144,8 +144,14 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxWorkers,
     appLimits.maxRetries,
   ])
-  const payloadPreview = useMemo(() => buildExecutionPayloadPreview(draft, createdBy, env), [createdBy, draft, env])
-  const submitPayload = useMemo(() => buildExecutionPayload(draft, createdBy, env), [createdBy, draft, env])
+  const payloadPreview = useMemo(
+    () => buildExecutionPayloadPreview(draft, createdBy, token, env),
+    [createdBy, draft, env, token],
+  )
+  const submitPayload = useMemo(
+    () => buildExecutionPayload(draft, createdBy, token, env),
+    [createdBy, draft, env, token],
+  )
   const stepValidity = [
     !validationErrors.context.client &&
       !validationErrors.context.clinic &&
