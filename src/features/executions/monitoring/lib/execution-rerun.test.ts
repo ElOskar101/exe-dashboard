@@ -44,6 +44,7 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
     ],
     clinicConfig: {},
     payloadConfigs: [],
+    accessToken: '',
     workers: 4,
     retries: 2,
   },
@@ -58,7 +59,6 @@ describe('execution rerun helpers', () => {
       client: 'client-1',
       clinic: 'clinic-1',
       execution: 'Daily eligibility',
-      accessToken: ACCESS_TOKEN,
       botName: 'Eligibility Runner',
       context: {
         env: 'dev',
@@ -89,6 +89,7 @@ describe('execution rerun helpers', () => {
         ],
         clinicConfig: {},
         payloadConfigs: [],
+        accessToken: ACCESS_TOKEN,
         workers: 4,
         retries: 2,
       },

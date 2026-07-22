@@ -27,6 +27,7 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
     env: 'dev',
     clinicConfig: {},
     payloadConfigs: [],
+    accessToken: '',
     workers: 1,
     retries: 0,
   },

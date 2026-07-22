@@ -1,6 +1,7 @@
 import { EXECUTION_STATUSES, type Execution, type ExecutionStatus } from '../model/execution'
 
 const executionStatusSet = new Set<string>(EXECUTION_STATUSES)
+const EMPTY_EXECUTION_LABEL = '-'
 const legacyExecutionStatusMap: Record<string, ExecutionStatus> = {
   process: 'running',
   scheduled: 'queued',
@@ -11,13 +12,7 @@ export const isExecutionStatus = (status: string): status is ExecutionStatus => 
 }
 
 export const getExecutionLabel = (execution: Execution) => {
-  return (
-    execution.execution ||
-    execution.botName ||
-    execution.context.bot.botName ||
-    execution.project ||
-    `${execution._id.slice(0, 8)}...`
-  )
+  return execution.execution || EMPTY_EXECUTION_LABEL
 }
 
 export const normalizeExecutionStatus = (status?: string | null): ExecutionStatus => {

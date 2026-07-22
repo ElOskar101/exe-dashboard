@@ -45,7 +45,6 @@ export const buildExecutionPayloadPreview = (
     client: draft.context.clientName.trim(),
     clinic: draft.context.clinicName.trim(),
     execution,
-    accessToken: accessToken.trim(),
     botName: draft.bot.botName.trim(),
     context: {
       env,
@@ -59,6 +58,7 @@ export const buildExecutionPayloadPreview = (
       },
       clinicConfig: {},
       payloadConfigs: [],
+      accessToken: accessToken.trim(),
       executionId: draft.execution.execution.trim(),
       patients: draft.execution.patients,
       workers: createExecutionPayloadNumberPreview(draft.execution.workers),

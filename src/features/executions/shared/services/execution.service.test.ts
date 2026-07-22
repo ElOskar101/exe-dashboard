@@ -50,7 +50,6 @@ const executionPayload: ExecutionCreatePayload = {
   client: 'Legacy Dental Care',
   clinic: 'Main Clinic',
   execution: 'Daily eligibility',
-  accessToken: 'token-123',
   botName: 'eligibility-bot',
   context: {
     bot: {
@@ -64,6 +63,7 @@ const executionPayload: ExecutionCreatePayload = {
     env: 'dev',
     clinicConfig: {},
     payloadConfigs: [],
+    accessToken: 'token-123',
     workers: 1,
     retries: 0,
   },

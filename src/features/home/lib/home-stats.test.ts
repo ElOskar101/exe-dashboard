@@ -24,6 +24,7 @@ const createExecution = (execution: Partial<Execution>): Execution => ({
     env: 'dev',
     clinicConfig: {},
     payloadConfigs: [],
+    accessToken: '',
     workers: 1,
     retries: 0,
   },

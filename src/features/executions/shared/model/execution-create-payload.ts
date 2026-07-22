@@ -46,6 +46,7 @@ export interface ExecutionPayloadContext {
   bot: ExecutionPayloadBot
   clinicConfig: ExecutionMetadata
   payloadConfigs: Array<ExecutionMetadata>
+  accessToken: string
   workers: number
   retries: number
   patients: Patient[]
@@ -57,7 +58,6 @@ export interface ExecutionCreatePayload {
   client: string
   clinic: string
   execution: string
-  accessToken: string
   botName: string
   context: ExecutionPayloadContext
 }

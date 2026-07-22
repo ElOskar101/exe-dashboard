@@ -60,10 +60,10 @@ export const prepareExecutionRerun = (execution: Execution, accessToken: string)
       client,
       clinic,
       execution: rerunExecution,
-      accessToken: currentUserToken,
       botName,
       context: {
         ...context,
+        accessToken: currentUserToken,
         bot: {
           ...context.bot,
           botName,

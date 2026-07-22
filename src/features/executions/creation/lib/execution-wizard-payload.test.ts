@@ -57,7 +57,6 @@ describe('buildExecutionPayload', () => {
       client: 'Legacy Dental Care',
       clinic: 'Downtown Clinic',
       execution: 'Daily eligibility',
-      accessToken: ACCESS_TOKEN,
       botName: 'Eligibility Runner',
       context: {
         env: 'dev',
@@ -72,6 +71,7 @@ describe('buildExecutionPayload', () => {
         },
         clinicConfig: {},
         payloadConfigs: [],
+        accessToken: ACCESS_TOKEN,
         workers: 2,
         retries: 1,
         patients: [patient],

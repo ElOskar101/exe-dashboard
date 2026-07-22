@@ -29,6 +29,7 @@ const createExecution = (execution: Partial<Execution>): Execution => ({
     env: 'dev',
     clinicConfig: {},
     payloadConfigs: [],
+    accessToken: '',
     workers: 1,
     retries: 0,
   },
@@ -49,24 +50,8 @@ describe('execution display helpers', () => {
     ).toBe('Daily eligibility')
   })
 
-  it('falls back to botName, project, then shortened id', () => {
-    expect(getExecutionLabel(createExecution({ execution: undefined, botName: 'Eligibility bot' }))).toBe(
-      'Eligibility bot',
-    )
-
-    const executionWithoutBotName = {
-      botName: undefined,
-      context: {
-        ...createExecution({}).context,
-        bot: {
-          ...createExecution({}).context.bot,
-          botName: '',
-        },
-      },
-    }
-
-    expect(getExecutionLabel(createExecution(executionWithoutBotName))).toBe('project-a')
-    expect(getExecutionLabel(createExecution({ ...executionWithoutBotName, project: '' }))).toBe('executio...')
+  it('uses a dash when the execution is unavailable', () => {
+    expect(getExecutionLabel(createExecution({ execution: undefined, botName: 'Eligibility bot' }))).toBe('-')
   })
 
   it('normalizes status and only treats running as stoppable', () => {
