@@ -67,6 +67,7 @@ describe('buildExecutionPayload', () => {
           targetUrl: 'https://carrier.example.com/login',
           username: 'operator',
           password: 'secret',
+          verificationType: 'elg',
           otherInformation: {},
         },
         clinicConfig: {},

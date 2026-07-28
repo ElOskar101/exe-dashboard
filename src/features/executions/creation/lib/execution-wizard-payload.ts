@@ -1,5 +1,9 @@
 import type { CccApiEnvironment } from '@/app.config'
-import type { ExecutionCreatePayload, ExecutionSchedulePayload } from '../../shared/model/execution-create-payload'
+import type {
+  ExecutionCreatePayload,
+  ExecutionPayloadVerificationType,
+  ExecutionSchedulePayload,
+} from '../../shared/model/execution-create-payload'
 import type { ExecutionWizardDraft } from '../model/execution-create'
 import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
@@ -54,6 +58,7 @@ export const buildExecutionPayloadPreview = (
         targetUrl: draft.bot.targetUrl.trim(),
         username: draft.bot.username.trim(),
         password: draft.bot.password.trim(),
+        verificationType: draft.bot.verificationType.toLowerCase() as ExecutionPayloadVerificationType,
         otherInformation: {},
       },
       clinicConfig: {},

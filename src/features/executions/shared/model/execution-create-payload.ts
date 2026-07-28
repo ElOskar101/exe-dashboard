@@ -1,6 +1,7 @@
 import type { CccApiEnvironment } from '@/app.config'
 
 export type ExecutionVerificationType = 'ELG' | 'FBD'
+export type ExecutionPayloadVerificationType = Lowercase<ExecutionVerificationType>
 
 export type ExecutionMetadata = Record<string, unknown>
 
@@ -35,6 +36,7 @@ export interface ExecutionPayloadBot {
   targetUrl: string
   username: string
   password: string
+  verificationType?: ExecutionPayloadVerificationType
   otherInformation: ExecutionMetadata
 }
 
