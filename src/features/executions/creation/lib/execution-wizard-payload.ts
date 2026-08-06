@@ -9,6 +9,9 @@ import type { ExecutionWizardDraft } from '../model/execution-create'
 import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
 type ExecutionPayloadNumericPreviewValue = number | ''
+type ClinicCarriersConfigData = ExecutionMetadata & {
+  formConfig?: ExecutionMetadata
+}
 
 export type ExecutionPayloadPreview = Omit<ExecutionCreatePayload, 'context'> & {
   context: Omit<ExecutionCreatePayload['context'], 'retries' | 'workers'> & {
@@ -41,10 +44,11 @@ export const buildExecutionPayloadPreview = (
   createdBy: string,
   accessToken: string,
   env: CccApiEnvironment,
-  clinicConfig: ExecutionMetadata = {},
+  clinicConfigData: ClinicCarriersConfigData = {},
 ): ExecutionPayloadPreview => {
   const botId = draft.bot.clinicBotId.trim()
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
+  const { formConfig: formConfigs = {}, ...clinicConfig } = clinicConfigData
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
     createdBy: createdBy.trim(),
@@ -64,6 +68,7 @@ export const buildExecutionPayloadPreview = (
         otherInformation: {},
       },
       clinicConfig,
+      formConfigs,
       payloadConfigs: [],
       accessToken: accessToken.trim(),
       executionId: draft.execution.execution.trim(),
@@ -85,9 +90,9 @@ export const buildExecutionPayload = (
   createdBy: string,
   accessToken: string,
   env: CccApiEnvironment,
-  clinicConfig: ExecutionMetadata = {},
+  clinicConfigData: ClinicCarriersConfigData = {},
 ): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
-  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, env, clinicConfig)
+  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, env, clinicConfigData)
 
   if (
     !createdBy ||

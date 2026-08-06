@@ -1,8 +1,12 @@
 import { syncClient } from '@/lib/axios'
 import type { ExecutionMetadata } from '../../shared/model/execution-create-payload'
 
+interface ClinicCarriersConfigData extends ExecutionMetadata {
+  formConfig?: ExecutionMetadata
+}
+
 interface ClinicCarriersConfigResponse {
-  data: ExecutionMetadata
+  data: ClinicCarriersConfigData
 }
 
 export const getClinicCarriersConfig = (clinicId: string) =>

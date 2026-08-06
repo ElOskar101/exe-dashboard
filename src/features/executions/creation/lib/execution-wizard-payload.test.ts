@@ -50,8 +50,12 @@ describe('buildExecutionPayload', () => {
   it('builds the new context shape without transforming patients', () => {
     const draft = createValidDraft()
     const patient = draft.execution.patients[0]
+    const clinicConfigData = {
+      formConfig: { formId: 'form-1' },
+      networkType: 'INN',
+    }
 
-    expect(buildExecutionPayload(draft, 'Operator One', ACCESS_TOKEN, 'dev')).toEqual({
+    expect(buildExecutionPayload(draft, 'Operator One', ACCESS_TOKEN, 'dev', clinicConfigData)).toEqual({
       project: 'liberty',
       createdBy: 'Operator One',
       client: 'Legacy Dental Care',
@@ -70,7 +74,12 @@ describe('buildExecutionPayload', () => {
           verificationType: 'elg',
           otherInformation: {},
         },
-        clinicConfig: {},
+        clinicConfig: {
+          networkType: 'INN',
+        },
+        formConfigs: {
+          formId: 'form-1',
+        },
         payloadConfigs: [],
         accessToken: ACCESS_TOKEN,
         workers: 2,
@@ -86,6 +95,7 @@ describe('buildExecutionPayload', () => {
     expect(preview.context).toMatchObject({
       env: 'prod',
       clinicConfig: {},
+      formConfigs: {},
       payloadConfigs: [],
     })
   })
