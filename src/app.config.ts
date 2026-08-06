@@ -7,6 +7,7 @@ export const CCC_API_URL_ENVIRONMENTS = {
 } as const satisfies Record<CccApiUrl, CccApiEnvironment>
 
 export const DEFAULT_CCC_API_URL = CCC_API_URLS[0]
+export const CARRIERSYNC_API_BASE_URL = 'https://carriersync.dentalautomation.ai/api/v1'
 export const AUTH_LOGIN_URL = 'https://auth.controlcentralcarrier.com/'
 
 export type CccApiUrl = (typeof CCC_API_URLS)[number]

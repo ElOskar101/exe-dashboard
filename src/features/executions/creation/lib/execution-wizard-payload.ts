@@ -1,6 +1,7 @@
 import type { CccApiEnvironment } from '@/app.config'
 import type {
   ExecutionCreatePayload,
+  ExecutionMetadata,
   ExecutionPayloadVerificationType,
   ExecutionSchedulePayload,
 } from '../../shared/model/execution-create-payload'
@@ -40,6 +41,7 @@ export const buildExecutionPayloadPreview = (
   createdBy: string,
   accessToken: string,
   env: CccApiEnvironment,
+  clinicConfig: ExecutionMetadata = {},
 ): ExecutionPayloadPreview => {
   const botId = draft.bot.clinicBotId.trim()
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
@@ -61,7 +63,7 @@ export const buildExecutionPayloadPreview = (
         verificationType: draft.bot.verificationType.toLowerCase() as ExecutionPayloadVerificationType,
         otherInformation: {},
       },
-      clinicConfig: {},
+      clinicConfig,
       payloadConfigs: [],
       accessToken: accessToken.trim(),
       executionId: draft.execution.execution.trim(),
@@ -83,8 +85,9 @@ export const buildExecutionPayload = (
   createdBy: string,
   accessToken: string,
   env: CccApiEnvironment,
+  clinicConfig: ExecutionMetadata = {},
 ): ExecutionCreatePayload | ExecutionSchedulePayload | null => {
-  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, env)
+  const payloadPreview = buildExecutionPayloadPreview(draft, createdBy, accessToken, env, clinicConfig)
 
   if (
     !createdBy ||

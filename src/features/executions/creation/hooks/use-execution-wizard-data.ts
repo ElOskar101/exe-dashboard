@@ -15,6 +15,7 @@ import {
   getCustomerById,
   searchCustomers,
 } from '../services/ccc.service'
+import { getClinicCarriersConfig } from '../services/sync.service'
 
 interface UseExecutionWizardDataOptions {
   context: ExecutionWizardDraft['context']
@@ -91,6 +92,16 @@ export const useExecutionWizardData = ({
     enabled: context.clinic.trim().length > 0,
   })
 
+  const clinicConfigQuery = useQuery({
+    queryKey: executionWizardKeys.clinicCarriersConfig(context.clinic),
+    queryFn: async () => {
+      const response = await getClinicCarriersConfig(context.clinic)
+
+      return response.data.data
+    },
+    enabled: context.clinic.trim().length > 0,
+  })
+
   const importPatientsMutation = useMutation({
     mutationFn: async (executionId: string) => {
       const response = await getCCCExecution(executionId)
@@ -144,6 +155,7 @@ export const useExecutionWizardData = ({
     associatedBotOptions,
     clinicBotOptions,
     clinicBotsQuery,
+    clinicConfigQuery,
     clinicExecutionDaysQuery,
     clinicOptions,
     customerSearchQuery,

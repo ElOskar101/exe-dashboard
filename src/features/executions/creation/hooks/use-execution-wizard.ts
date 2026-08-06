@@ -145,12 +145,12 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
     appLimits.maxRetries,
   ])
   const payloadPreview = useMemo(
-    () => buildExecutionPayloadPreview(draft, createdBy, token, env),
-    [createdBy, draft, env, token],
+    () => buildExecutionPayloadPreview(draft, createdBy, token, env, wizardData.clinicConfigQuery.data),
+    [createdBy, draft, env, token, wizardData.clinicConfigQuery.data],
   )
   const submitPayload = useMemo(
-    () => buildExecutionPayload(draft, createdBy, token, env),
-    [createdBy, draft, env, token],
+    () => buildExecutionPayload(draft, createdBy, token, env, wizardData.clinicConfigQuery.data),
+    [createdBy, draft, env, token, wizardData.clinicConfigQuery.data],
   )
   const stepValidity = [
     !validationErrors.context.client &&
@@ -508,7 +508,7 @@ export const useExecutionWizard = (t: TFunction<'executions'>) => {
       Object.fromEntries(executionWizardSteps.map((_, index) => [index, true])) as Record<number, boolean>,
     )
 
-    if (!submitPayload || stepValidity.some((isStepValid) => !isStepValid)) {
+    if (!submitPayload || !wizardData.clinicConfigQuery.isSuccess || stepValidity.some((isStepValid) => !isStepValid)) {
       const validationToastCopy = getExecutionWizardValidationToastCopy(validationErrors, t)
 
       toast.warning(validationToastCopy?.title ?? t('validation.submitBlockedTitle'), {

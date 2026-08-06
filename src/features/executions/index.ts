@@ -4,6 +4,7 @@ export {
   cccUserKeys,
   getClinicById,
   getClinicBots,
+  getClinicCarriersConfig,
   getCustomerById,
   searchCCCUsers,
   searchCustomers,

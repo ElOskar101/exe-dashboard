@@ -12,6 +12,7 @@ export {
   searchCCCUsers,
   searchCustomers,
 } from './services/ccc.service'
+export { getClinicCarriersConfig } from './services/sync.service'
 export type {
   CCCExecutionResponse,
   CCCUser,
