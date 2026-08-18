@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const chromiumExecutablePath = process.env.PW_CHROMIUM_EXECUTABLE_PATH
-const systemChromiumWorkerCount = 1
+const systemChromiumWorkerCount = 2
 
 export default defineConfig({
   testDir: './tests/e2e',
