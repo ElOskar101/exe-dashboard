@@ -68,12 +68,14 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       VITE_API_URL: https://dev-carrier.dentalautomation.ai/
       VITE_EXE_API_URL: /execution-api
       VITE_PICTURES_URL: https://dev-carrier.dentalautomation.ai
       VITE_SOCKET_URL: https://api.controlcentralcarrier.com
       VITE_URL_LOGIN: https://auth.controlcentralcarrier.com/
+      PW_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium
       E2E_AUTH_LOGIN_URL: ${{ secrets.E2E_AUTH_LOGIN_URL }}
       E2E_TEST_USERNAME: ${{ secrets.E2E_TEST_USERNAME }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
@@ -93,9 +95,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run e2e tests
         run: pnpm run test:e2e
