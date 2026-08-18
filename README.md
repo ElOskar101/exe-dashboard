@@ -43,3 +43,12 @@ Then run:
 ```bash
 pnpm run test:e2e
 ```
+
+If Playwright cannot install its browser on your machine, use an installed Chromium binary instead:
+
+```bash
+PW_CHROMIUM_EXECUTABLE_PATH=/snap/bin/chromium pnpm run test:e2e
+```
+
+This fallback runs with one worker for better stability with system-installed browsers. When
+`PW_CHROMIUM_EXECUTABLE_PATH` is not set, Playwright uses its default managed browser and worker settings.

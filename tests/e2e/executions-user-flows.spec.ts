@@ -719,7 +719,10 @@ test.describe('execution user flows', () => {
       clinic: 'Downtown Clinic',
       execution: '2026-05-25',
       botName: 'Eligibility Runner',
-      context: createExecutionContext(),
+      context: {
+        ...createExecutionContext(),
+        accessToken: 'e2e-token',
+      },
     })
   })
 

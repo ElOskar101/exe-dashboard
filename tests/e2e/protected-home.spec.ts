@@ -543,18 +543,22 @@ test.describe('protected executions route', () => {
       createdBy: 'E2E Test User',
       client: 'Legacy Dental Care',
       clinic: 'Downtown Clinic',
+      execution: '2026-04-27',
       botName: 'Eligibility Runner',
       context: {
         env: 'dev',
+        accessToken: 'e2e-token',
         bot: {
           id: 'bot-1',
           botName: 'Eligibility Runner',
           targetUrl: 'https://carrier.example.com',
           username: 'qa.operator',
           password: 'super-secret',
+          verificationType: 'elg',
           otherInformation: {},
         },
         clinicConfig: {},
+        formConfigs: {},
         payloadConfigs: [],
         executionId: 'day-1',
         patients: [

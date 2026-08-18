@@ -69,6 +69,10 @@ export async function prepareAuthenticatedPage(page: Page) {
     })
   })
 
+  await page.route('**/api/v1/clinics/*/carriers-config', async (route) => {
+    await route.fulfill({ json: { data: {} } })
+  })
+
   await page.route('**/api/rv', async (route) => {
     await route.fulfill({
       json: [
