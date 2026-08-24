@@ -72,6 +72,7 @@ export const buildExecutionPayloadPreview = (
       payloadConfigs: [],
       accessToken: accessToken.trim(),
       executionId: draft.execution.execution.trim(),
+      sheetName: draft.execution.executionName.trim(),
       patients: draft.execution.patients,
       workers: createExecutionPayloadNumberPreview(draft.execution.workers),
       retries: createExecutionPayloadNumberPreview(draft.execution.retries),

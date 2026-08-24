@@ -84,6 +84,7 @@ describe('buildExecutionPayload', () => {
         accessToken: ACCESS_TOKEN,
         workers: 2,
         retries: 1,
+        sheetName: 'Daily eligibility',
         patients: [patient],
       },
     })

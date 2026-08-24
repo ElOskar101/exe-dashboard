@@ -44,6 +44,7 @@ export type ExecutionPayloadPatient = Patient
 
 export interface ExecutionPayloadContext {
   executionId?: string
+  sheetName?: string
   env: CccApiEnvironment
   bot: ExecutionPayloadBot
   clinicConfig: ExecutionMetadata
