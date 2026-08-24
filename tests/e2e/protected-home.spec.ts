@@ -561,6 +561,7 @@ test.describe('protected executions route', () => {
         formConfigs: {},
         payloadConfigs: [],
         executionId: 'day-1',
+        sheetName: '2026-04-27',
         patients: [
           {
             id: 'row-1',
