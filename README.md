@@ -1,3 +1,9 @@
+## Architecture reference
+
+General ecosystem architecture reference for where this project belongs:
+
+![Ecosystem architecture diagram](docs/fb85ba63-e0f7-4047-8216-8dc9ac93651b.svg)
+
 ## App configuration
 
 The production app runtime does not require custom environment variables.
