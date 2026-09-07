@@ -81,6 +81,17 @@ describe('getTopDimension', () => {
     ])
   })
 
+  it('falls back to the no-value label when the picked dimension is missing', () => {
+    const executionWithMissingClient = {
+      ...createExecution({ _id: '1', status: 'completed' }),
+      client: undefined,
+    } as unknown as Execution
+
+    const result = getTopDimension([executionWithMissingClient], (execution) => execution.client, noValueLabel)
+
+    expect(result).toEqual([{ name: noValueLabel, total: 1, completed: 1 }])
+  })
+
   it('limits results to TOP_DIMENSION_LIMIT', () => {
     const executions = Array.from({ length: TOP_DIMENSION_LIMIT + 3 }, (_, index) =>
       createExecution({ _id: String(index), client: `Client ${index}`, status: 'completed' }),

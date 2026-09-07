@@ -31,13 +31,13 @@ const sortEntries = (leftEntry: TopDimensionEntry, rightEntry: TopDimensionEntry
 
 export const getTopDimension = (
   executions: Execution[],
-  pickValue: (execution: Execution) => string,
+  pickValue: (execution: Execution) => string | null | undefined,
   noValueLabel: string,
 ): TopDimensionEntry[] => {
   const totalsByDimension = new Map<string, { name: string; totals: Partial<Record<ExecutionStatus, number>> }>()
 
   executions.forEach((execution) => {
-    const rawValue = pickValue(execution).trim() || noValueLabel
+    const rawValue = pickValue(execution)?.trim() || noValueLabel
     const status = normalizeExecutionStatus(execution.status)
     const current = totalsByDimension.get(rawValue) ?? { name: rawValue, totals: {} }
 
