@@ -11,9 +11,9 @@ function Layout() {
       <ExecutionStatusSubscriber key={`status:${target.key}`} />
       <ExecutionsSidebar key={target.key} />
       <SidebarInset>
-        <div className="flex h-screen flex-col">
+        <div className="flex h-screen min-w-0 flex-col">
           <Header />
-          <div className="min-h-0 flex-1 overflow-auto">
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
             <div className="flex min-h-full w-full flex-col px-4 py-6 md:px-6">
               <Outlet />
             </div>
