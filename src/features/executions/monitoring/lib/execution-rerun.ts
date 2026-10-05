@@ -39,9 +39,11 @@ export const prepareExecutionRerun = (execution: Execution, accessToken: string)
   const client = getRequiredString(execution.client, 'client', missingFields)
   const clinic = getRequiredString(execution.clinic, 'clinic', missingFields)
   const rerunExecution = getRequiredString(execution.execution, 'execution', missingFields)
-  const currentUserToken = getRequiredString(accessToken, 'accessToken', missingFields)
+  getRequiredString(accessToken, 'accessToken', missingFields)
 
   const context = execution.context
+  const contextWithoutAccessToken = { ...context }
+  delete contextWithoutAccessToken.accessToken
 
   const botName = getRequiredString(execution.botName ?? context.bot.botName ?? execution.bot, 'botName', missingFields)
 
@@ -62,8 +64,7 @@ export const prepareExecutionRerun = (execution: Execution, accessToken: string)
       execution: rerunExecution,
       botName,
       context: {
-        ...context,
-        accessToken: currentUserToken,
+        ...contextWithoutAccessToken,
         bot: {
           ...context.bot,
           botName,

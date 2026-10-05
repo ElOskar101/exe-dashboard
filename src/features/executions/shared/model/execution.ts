@@ -1,4 +1,4 @@
-import type { ExecutionPayloadContext } from './execution-create-payload'
+import type { ExecutionRecordContext } from './execution-create-payload'
 
 export type ExecutionStatus = 'queued' | 'running' | 'paused' | 'completed' | 'unknown' | 'cancelled' | 'failed'
 export type ExecutionRuntimeStatus = ExecutionStatus | 'process' | 'scheduled'
@@ -25,7 +25,7 @@ export interface Execution {
   execution?: string
   bot?: string
   botName?: string
-  context: ExecutionPayloadContext
+  context: ExecutionRecordContext
   createdAt: string
   updatedAt: string
   startedAt?: string

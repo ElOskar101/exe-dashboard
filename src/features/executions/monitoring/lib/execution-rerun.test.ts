@@ -87,7 +87,6 @@ describe('execution rerun helpers', () => {
           },
         ],
         clinicConfig: {},
-            accessToken: ACCESS_TOKEN,
         workers: 4,
         retries: 2,
       },

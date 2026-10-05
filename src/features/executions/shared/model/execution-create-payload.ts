@@ -49,10 +49,13 @@ export interface ExecutionPayloadContext {
   bot: ExecutionPayloadBot
   clinicConfig: ExecutionMetadata
   formConfigs?: ExecutionMetadata
-  accessToken: string
   workers: number
   retries: number
   patients: Patient[]
+}
+
+export type ExecutionRecordContext = ExecutionPayloadContext & {
+  accessToken?: string
 }
 
 export interface ExecutionCreatePayload {

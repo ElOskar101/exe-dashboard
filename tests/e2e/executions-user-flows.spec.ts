@@ -719,7 +719,6 @@ test.describe('execution user flows', () => {
       botName: 'Eligibility Runner',
       context: {
         ...createExecutionContext(),
-        accessToken: 'e2e-token',
       },
     })
   })

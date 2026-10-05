@@ -544,7 +544,6 @@ test.describe('protected executions route', () => {
       botName: 'Eligibility Runner',
       context: {
         env: 'dev',
-        accessToken: 'e2e-token',
         bot: {
           id: 'bot-1',
           botName: 'Eligibility Runner',

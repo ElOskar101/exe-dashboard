@@ -80,7 +80,6 @@ describe('buildExecutionPayload', () => {
         formConfigs: {
           formId: 'form-1',
         },
-            accessToken: ACCESS_TOKEN,
         workers: 2,
         retries: 1,
         sheetName: 'Daily eligibility',
