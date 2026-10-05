@@ -100,7 +100,7 @@ export const getExecutionWizardValidationErrors = (
 
     if (!draft.bot.targetUrl.trim()) {
       bot.targetUrl = t('validation.required')
-    } else if (!isUrlValid(draft.bot.targetUrl)) {
+    } else if (!isHttpUrl(draft.bot.targetUrl)) {
       bot.targetUrl = t('validation.validUrl')
     }
 
@@ -156,7 +156,7 @@ export const isFutureDateTimeLocalValue = (value: string) => {
   return !Number.isNaN(scheduledAt.getTime()) && scheduledAt.getTime() > Date.now()
 }
 
-const isUrlValid = (value: string) => {
+export const isHttpUrl = (value: string) => {
   try {
     const parsedUrl = new URL(value)
 

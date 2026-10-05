@@ -202,6 +202,23 @@
     "noFlags": "No flags enabled",
     "noPatients": "No patients added yet."
   },
+  "generateContext": {
+    "trigger": "Generate context",
+    "title": "Generate context",
+    "description": "Build the same context as the wizard, without choosing a Playwright Project. Empty optional fields are left out of the result.",
+    "optional": "Optional",
+    "botHelp": "Choose a clinic bot to fill these fields, or type them yourself.",
+    "noPatients": "No execution day selected, so this context has no patients.",
+    "loadingClinicConfig": "Loading clinic configuration...",
+    "generate": "Generate",
+    "resultTitle": "Generated context",
+    "resultDescription": "Review the context, copy it, or download it as a JSON file.",
+    "copy": "Copy context",
+    "copied": "Context copied to clipboard",
+    "copyFailed": "Could not copy the context to the clipboard",
+    "download": "Download JSON",
+    "close": "Close"
+  },
   "botCredentials": {
     "title": "Bot credentials",
     "description": "Review the selected bot and adjust the credentials for this execution.",
