@@ -1,9 +1,14 @@
 import cccClient from '@/lib/axios'
 import type {
+  ExecutionMetadata,
   ExecutionVerificationType,
   PatientCells,
   PatientFileNames,
 } from '../../shared/model/execution-create-payload'
+
+interface ClinicCarriersConfigData extends ExecutionMetadata {
+  formConfigs?: ExecutionMetadata
+}
 
 export interface CustomerSearchItem {
   _id: string
@@ -205,6 +210,9 @@ export const getClinicExecutionDays = (clinicId: string) =>
 
 export const getClinicBots = (clinicId: string) =>
   cccClient.get<ClinicBotRecord[]>(`v2/clinics/${clinicId}/clinic-bots`)
+
+export const getClinicCarriersConfig = (clinicId: string) =>
+  cccClient.get<ClinicCarriersConfigData>(`v2/clinics/${clinicId}/context`)
 
 export const decryptClinicBotPassword = async (clinicBotId: string) => {
   const response = await cccClient.get<string>(`clinicbots/decrypt/${clinicBotId}`, {

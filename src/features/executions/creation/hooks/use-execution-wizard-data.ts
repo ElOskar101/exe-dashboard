@@ -11,11 +11,11 @@ import type { ExecutionPatient, ExecutionWizardDraft } from '../model/execution-
 import {
   getCCCExecution,
   getClinicBots,
+  getClinicCarriersConfig,
   getClinicExecutionDays,
   getCustomerById,
   searchCustomers,
 } from '../services/ccc.service'
-import { getClinicCarriersConfig } from '../services/sync.service'
 
 interface UseExecutionWizardDataOptions {
   context: ExecutionWizardDraft['context']
@@ -97,7 +97,7 @@ export const useExecutionWizardData = ({
     queryFn: async () => {
       const response = await getClinicCarriersConfig(context.clinic)
 
-      return response.data.data
+      return response.data
     },
     enabled: context.clinic.trim().length > 0,
   })
