@@ -10,7 +10,7 @@ import { isFutureDateTimeLocalValue } from './execution-wizard-validation'
 
 type ExecutionPayloadNumericPreviewValue = number | ''
 type ClinicCarriersConfigData = ExecutionMetadata & {
-  formConfig?: ExecutionMetadata
+  formConfigs?: ExecutionMetadata
 }
 
 export type ExecutionPayloadPreview = Omit<ExecutionCreatePayload, 'context'> & {
@@ -48,7 +48,7 @@ export const buildExecutionPayloadPreview = (
 ): ExecutionPayloadPreview => {
   const botId = draft.bot.clinicBotId.trim()
   const execution = draft.execution.executionName.trim() || draft.execution.execution.trim()
-  const { formConfig: formConfigs = {}, ...clinicConfig } = clinicConfigData
+  const { formConfigs = {}, ...clinicConfig } = clinicConfigData
   const payload: ExecutionPayloadPreview = {
     project: draft.context.project.trim(),
     createdBy: createdBy.trim(),
@@ -69,7 +69,6 @@ export const buildExecutionPayloadPreview = (
       },
       clinicConfig,
       formConfigs,
-      payloadConfigs: [],
       accessToken: accessToken.trim(),
       executionId: draft.execution.execution.trim(),
       sheetName: draft.execution.executionName.trim(),

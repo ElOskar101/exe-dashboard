@@ -2,7 +2,7 @@ import { syncClient } from '@/lib/axios'
 import type { ExecutionMetadata } from '../../shared/model/execution-create-payload'
 
 interface ClinicCarriersConfigData extends ExecutionMetadata {
-  formConfig?: ExecutionMetadata
+  formConfigs?: ExecutionMetadata
 }
 
 interface ClinicCarriersConfigResponse {

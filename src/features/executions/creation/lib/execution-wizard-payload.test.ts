@@ -51,7 +51,7 @@ describe('buildExecutionPayload', () => {
     const draft = createValidDraft()
     const patient = draft.execution.patients[0]
     const clinicConfigData = {
-      formConfig: { formId: 'form-1' },
+      formConfigs: { formId: 'form-1' },
       networkType: 'INN',
     }
 
@@ -80,8 +80,7 @@ describe('buildExecutionPayload', () => {
         formConfigs: {
           formId: 'form-1',
         },
-        payloadConfigs: [],
-        accessToken: ACCESS_TOKEN,
+            accessToken: ACCESS_TOKEN,
         workers: 2,
         retries: 1,
         sheetName: 'Daily eligibility',
@@ -97,8 +96,7 @@ describe('buildExecutionPayload', () => {
       env: 'prod',
       clinicConfig: {},
       formConfigs: {},
-      payloadConfigs: [],
-    })
+      })
   })
 
   it('returns null when required execution fields are missing', () => {

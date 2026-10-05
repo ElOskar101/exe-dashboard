@@ -216,8 +216,7 @@ async function stubProtectedRouteDependencies(page: Page) {
               otherInformation: {},
             },
             clinicConfig: {},
-            payloadConfigs: [],
-            patients: [],
+                    patients: [],
             workers: 2,
             retries: 1,
           },
@@ -462,7 +461,6 @@ test.describe('protected executions route', () => {
     await expect(page.getByText('"workers": 2')).toBeVisible()
     await expect(page.getByText('"retries": 1')).toBeVisible()
     await expect(page.getByText('"clinicConfig": {')).toBeVisible()
-    await expect(page.getByText('"payloadConfigs": []')).toBeVisible()
   })
 
   test('submits the built payload with multiple patients', async ({ page }) => {
@@ -493,8 +491,7 @@ test.describe('protected executions route', () => {
           otherInformation: {},
         },
         clinicConfig: {},
-        payloadConfigs: [],
-        patients: [],
+            patients: [],
         workers: 2,
         retries: 1,
       },
@@ -559,8 +556,7 @@ test.describe('protected executions route', () => {
         },
         clinicConfig: {},
         formConfigs: {},
-        payloadConfigs: [],
-        executionId: 'day-1',
+            executionId: 'day-1',
         sheetName: '2026-04-27',
         patients: [
           {

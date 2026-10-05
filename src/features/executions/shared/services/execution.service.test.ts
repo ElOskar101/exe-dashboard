@@ -62,7 +62,6 @@ const executionPayload: ExecutionCreatePayload = {
     patients: [],
     env: 'dev',
     clinicConfig: {},
-    payloadConfigs: [],
     accessToken: 'token-123',
     workers: 1,
     retries: 0,

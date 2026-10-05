@@ -64,7 +64,6 @@ interface ExecutionFixture {
       otherInformation: Record<string, unknown>
     }
     clinicConfig: Record<string, unknown>
-    payloadConfigs: Array<Record<string, unknown>>
     patients: Array<{
       id?: string
       patientName?: string
@@ -98,7 +97,6 @@ const createExecutionContext = (): ExecutionFixture['context'] => ({
     otherInformation: {},
   },
   clinicConfig: {},
-  payloadConfigs: [],
   patients: [
     {
       id: 'row-1',
@@ -861,6 +859,5 @@ test.describe('execution user flows', () => {
     await expect(page.getByLabel('Other config')).not.toBeVisible()
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByText('"clinicConfig": {}')).toBeVisible()
-    await expect(page.getByText('"payloadConfigs": []')).toBeVisible()
   })
 })

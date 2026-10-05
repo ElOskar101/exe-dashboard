@@ -49,7 +49,6 @@ export interface ExecutionPayloadContext {
   bot: ExecutionPayloadBot
   clinicConfig: ExecutionMetadata
   formConfigs?: ExecutionMetadata
-  payloadConfigs: Array<ExecutionMetadata>
   accessToken: string
   workers: number
   retries: number

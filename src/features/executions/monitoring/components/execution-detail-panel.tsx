@@ -162,7 +162,6 @@ export function ExecutionDetailPanel({ execution }: ExecutionDetailPanelProps) {
             {JSON.stringify(
               {
                 clinicConfig: execution.context?.clinicConfig ?? {},
-                payloadConfigs: execution.context?.payloadConfigs ?? [],
               },
               null,
               2,
