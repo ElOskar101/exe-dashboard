@@ -42,8 +42,6 @@ export const prepareExecutionRerun = (execution: Execution, accessToken: string)
   getRequiredString(accessToken, 'accessToken', missingFields)
 
   const context = execution.context
-  const contextWithoutAccessToken = { ...context }
-  delete contextWithoutAccessToken.accessToken
 
   const botName = getRequiredString(execution.botName ?? context.bot.botName ?? execution.bot, 'botName', missingFields)
 
@@ -64,7 +62,7 @@ export const prepareExecutionRerun = (execution: Execution, accessToken: string)
       execution: rerunExecution,
       botName,
       context: {
-        ...contextWithoutAccessToken,
+        ...context,
         bot: {
           ...context.bot,
           botName,

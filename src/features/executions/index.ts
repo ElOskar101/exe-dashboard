@@ -107,7 +107,6 @@ export type {
   ExecutionCreatePayload,
   ExecutionMetadata,
   ExecutionPayloadContext,
-  ExecutionRecordContext,
   ExecutionQuery,
   ExecutionRuntimeStatus,
   ExecutionSchedulePayload,

@@ -33,7 +33,6 @@ export type {
   ExecutionPayloadBot,
   ExecutionPayloadContext,
   ExecutionPayloadPatient,
-  ExecutionRecordContext,
   ExecutionSchedulePayload,
   ExecutionVerificationType,
   Patient,

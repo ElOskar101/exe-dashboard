@@ -54,10 +54,6 @@ export interface ExecutionPayloadContext {
   patients: Patient[]
 }
 
-export type ExecutionRecordContext = ExecutionPayloadContext & {
-  accessToken?: string
-}
-
 export interface ExecutionCreatePayload {
   project: string
   createdBy: string

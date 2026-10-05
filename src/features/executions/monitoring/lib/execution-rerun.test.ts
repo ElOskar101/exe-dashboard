@@ -43,7 +43,6 @@ const createExecution = (overrides: Partial<Execution> = {}): Execution => ({
       },
     ],
     clinicConfig: {},
-    accessToken: '',
     workers: 4,
     retries: 2,
   },
