@@ -40,7 +40,7 @@ export const e2eUser = {
 }
 
 const encodedE2eUser = Buffer.from(JSON.stringify(e2eUser)).toString('base64')
-const e2eCccApiUrl = 'https://dev-carrier.dentalautomation.ai'
+const e2eCccApiUrl = 'https://carriers.dentalautomation.ai'
 
 export async function prepareAuthenticatedPage(page: Page) {
   await page.route('**/users/me', async (route) => {
@@ -123,18 +123,24 @@ export async function prepareAuthenticatedPage(page: Page) {
     })
   })
 
-  await page.context().addInitScript((user) => {
-    window.localStorage.setItem('token', 'e2e-token')
-    window.sessionStorage.setItem('me', window.btoa(JSON.stringify(user)))
-    window.sessionStorage.setItem('meCccApiUrl', 'https://dev-carrier.dentalautomation.ai')
-  }, e2eUser)
+  await page.context().addInitScript(
+    ({ user, cccApiUrl }) => {
+      window.localStorage.setItem('token', 'e2e-token')
+      window.sessionStorage.setItem('me', window.btoa(JSON.stringify(user)))
+      window.sessionStorage.setItem('meCccApiUrl', cccApiUrl)
+    },
+    { user: e2eUser, cccApiUrl: e2eCccApiUrl },
+  )
 
   await page.goto('/under-construction')
-  await page.evaluate((user) => {
-    window.localStorage.setItem('token', 'e2e-token')
-    window.sessionStorage.setItem('me', window.btoa(JSON.stringify(user)))
-    window.sessionStorage.setItem('meCccApiUrl', 'https://dev-carrier.dentalautomation.ai')
-  }, e2eUser)
+  await page.evaluate(
+    ({ user, cccApiUrl }) => {
+      window.localStorage.setItem('token', 'e2e-token')
+      window.sessionStorage.setItem('me', window.btoa(JSON.stringify(user)))
+      window.sessionStorage.setItem('meCccApiUrl', cccApiUrl)
+    },
+    { user: e2eUser, cccApiUrl: e2eCccApiUrl },
+  )
   await expect
     .poll(() =>
       page.evaluate(() => [

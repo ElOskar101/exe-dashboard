@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CCC_API_URLS, DEFAULT_CCC_API_URL } from '@/app.config'
+import { CCC_API_URLS, DEFAULT_CCC_API_URL, getCccApiEnvironment } from '@/app.config'
 import {
   getCccApiUrl,
   getCccApiUrlServerSnapshot,
@@ -66,6 +66,10 @@ describe('ccc-api-url', () => {
 
   it('returns the default API URL when nothing is stored', () => {
     expect(getCccApiUrl()).toBe(DEFAULT_CCC_API_URL)
+  })
+
+  it('defaults to the production API, which issues the tokens of the deployed dashboard', () => {
+    expect(getCccApiEnvironment(DEFAULT_CCC_API_URL)).toBe('prod')
   })
 
   it('returns the stored API URL after it is set', () => {

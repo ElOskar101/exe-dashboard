@@ -3,7 +3,7 @@ import { CCC_API_URLS, getCccApiEnvironment } from '@/app.config'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -35,7 +35,7 @@ import {
 import { type TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { useCccApiUrl } from '@/hooks/use-ccc-api-url'
+import { useCccApiUrlSwitch } from '../hooks/use-ccc-api-url-switch'
 
 const SETTINGS_TAB_SEARCH_PARAM = 'settingsTab'
 const DEFAULT_SETTINGS_TAB = 'runtime-application'
@@ -191,7 +191,7 @@ function AppStatusPanel({ runtimeName, stats }: { runtimeName: string; stats: Ex
 export function SettingsPage() {
   const { t } = useTranslation('settings')
   const [searchParams, setSearchParams] = useSearchParams()
-  const { cccApiUrl, setCccApiUrl } = useCccApiUrl()
+  const { cccApiUrl, switchCccApiUrl, isSwitching, rejectedApiUrl } = useCccApiUrlSwitch()
   const cccApiEnvironment = getCccApiEnvironment(cccApiUrl)
   const { target } = useExecutionTarget()
   const runtimesQuery = usePlaywrightRuntimesQuery()
@@ -311,7 +311,7 @@ export function SettingsPage() {
                     <IconDatabase data-icon="inline-start" />
                     {t('cccApiUrl.selectLabel')}
                   </FieldLabel>
-                  <Select value={cccApiUrl} onValueChange={setCccApiUrl}>
+                  <Select value={cccApiUrl} onValueChange={switchCccApiUrl} disabled={isSwitching}>
                     <SelectTrigger id="ccc-api-url" className="w-full">
                       <SelectValue placeholder={t('cccApiUrl.placeholder')}>{cccApiEnvironment}</SelectValue>
                     </SelectTrigger>
@@ -326,6 +326,11 @@ export function SettingsPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {rejectedApiUrl ? (
+                    <FieldError>
+                      {t('cccApiUrl.sessionRejected', { environment: getCccApiEnvironment(rejectedApiUrl) })}
+                    </FieldError>
+                  ) : null}
                 </Field>
 
                 <Field>

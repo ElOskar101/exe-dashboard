@@ -216,7 +216,7 @@ async function stubProtectedRouteDependencies(page: Page) {
               otherInformation: {},
             },
             clinicConfig: {},
-                    patients: [],
+            patients: [],
             workers: 2,
             retries: 1,
           },
@@ -383,7 +383,7 @@ test.describe('protected executions route', () => {
 
     await page.goto('/')
 
-    await expect(page).toHaveURL(/https:\/\/auth\.controlcentralcarrier\.com\/\?url=.+&mode=dev/)
+    await expect(page).toHaveURL(/https:\/\/auth\.controlcentralcarrier\.com\/\?url=.+&mode=prod/)
   })
 
   test('allows logged in users to see the home dashboard', async ({ page }) => {
@@ -491,7 +491,7 @@ test.describe('protected executions route', () => {
           otherInformation: {},
         },
         clinicConfig: {},
-            patients: [],
+        patients: [],
         workers: 2,
         retries: 1,
       },
@@ -555,7 +555,7 @@ test.describe('protected executions route', () => {
         },
         clinicConfig: {},
         formConfigs: {},
-            executionId: 'day-1',
+        executionId: 'day-1',
         sheetName: '2026-04-27',
         patients: [
           {

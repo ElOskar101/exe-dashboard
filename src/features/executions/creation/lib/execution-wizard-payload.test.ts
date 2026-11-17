@@ -95,7 +95,7 @@ describe('buildExecutionPayload', () => {
       env: 'prod',
       clinicConfig: {},
       formConfigs: {},
-      })
+    })
   })
 
   it('returns null when required execution fields are missing', () => {

@@ -47,7 +47,8 @@
   },
   "cccApiUrl": {
     "selectLabel": "CCC API URL",
-    "placeholder": "Choose a CCC API URL"
+    "placeholder": "Choose a CCC API URL",
+    "sessionRejected": "Your account could not be verified in the {{environment}} environment, so the API was not changed. Your user may not exist in that environment."
   },
   "projects": {
     "catalogProjects": "Active projects",
