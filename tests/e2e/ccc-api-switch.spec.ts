@@ -16,6 +16,9 @@ const getStoredCccApiUrl = (page: Page) => page.evaluate(() => window.localStora
 test.describe('CCC API switch', () => {
   test.beforeEach(async ({ page }) => {
     await prepareAuthenticatedPage(page)
+    await page.route('**/api/v2/playwright-projects**', async (route) => {
+      await route.fulfill({ json: [] })
+    })
   })
 
   test('keeps the current API and the session when the target API rejects the user', async ({ page }) => {

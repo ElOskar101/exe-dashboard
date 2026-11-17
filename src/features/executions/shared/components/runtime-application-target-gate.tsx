@@ -1,9 +1,16 @@
 import { useMemo, useState, type Dispatch, type ReactNode } from 'react'
-import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserCard } from '@/features/auth'
@@ -35,7 +42,6 @@ import {
 import { usePlaywrightRuntimesQuery, useRuntimeApplicationAvailability } from '../hooks/use-execution-target'
 
 const SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM = 'returnTo'
-const SELECT_RUNTIME_APPLICATION_PATH = '/select-runtime-application'
 
 const runtimeApplicationUnavailableLabels = {
   checkingAvailability: 'Checking API availability',
@@ -177,7 +183,7 @@ function ApplicationOptionLabel({
   )
 }
 
-function RuntimeApplicationTargetCardContent({
+function RuntimeApplicationTargetFormContent({
   defaultValue,
   onSelectionConfirmed,
   runtimes,
@@ -228,7 +234,7 @@ function RuntimeApplicationTargetCardContent({
 
   return (
     <>
-      <CardContent className="gap-4">
+      <div className="flex flex-col gap-4">
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="required-execution-runtime">
@@ -309,21 +315,21 @@ function RuntimeApplicationTargetCardContent({
             </Select>
           </Field>
         </FieldGroup>
-      </CardContent>
+      </div>
 
-      <CardFooter>
+      <DialogFooter>
         <Button className="w-full" type="button" onClick={handleConfirm}>
           Use selected app
         </Button>
-      </CardFooter>
+      </DialogFooter>
     </>
   )
 }
 
-function EmptyRuntimeApplicationTargetCardContent() {
+function EmptyRuntimeApplicationTargetFormContent() {
   return (
     <>
-      <CardContent className="gap-4">
+      <div className="flex flex-col gap-4">
         <FieldGroup>
           <Field data-disabled>
             <FieldLabel htmlFor="required-execution-runtime">
@@ -355,11 +361,11 @@ function EmptyRuntimeApplicationTargetCardContent() {
             </Select>
           </Field>
         </FieldGroup>
-      </CardContent>
+      </div>
 
-      <CardFooter>
+      <DialogFooter>
         <CreateRuntimeDialog triggerClassName="w-full" />
-      </CardFooter>
+      </DialogFooter>
     </>
   )
 }
@@ -378,100 +384,106 @@ function RuntimeApplicationTargetHeader() {
   )
 }
 
-export function RuntimeApplicationTargetGate() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+const noopOpenChange = () => {}
+
+function RuntimeApplicationTargetDialog({
+  onSelectionConfirmed,
+}: {
+  onSelectionConfirmed: Dispatch<ExecutionTargetSearchSelection>
+}) {
   const runtimesQuery = usePlaywrightRuntimesQuery()
   const { availableApiUrls, isCheckingAvailability } = useRuntimeApplicationAvailability(runtimesQuery.data)
   const firstSelection = useMemo(
     () => findFirstSelection(runtimesQuery.data, availableApiUrls, isCheckingAvailability),
     [availableApiUrls, isCheckingAvailability, runtimesQuery.data],
   )
-  const returnTo = searchParams.get(SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM) || '/'
-
-  const handleSelectionConfirmed = (selection: ExecutionTargetSearchSelection) => {
-    const nextUrl = new URL(returnTo, window.location.origin)
-
-    nextUrl.searchParams.set(EXECUTION_RUNTIME_SEARCH_PARAM, selection.runtimeId)
-    nextUrl.searchParams.set(EXECUTION_APPLICATION_SEARCH_PARAM, selection.applicationName)
-    nextUrl.searchParams.set(EXECUTION_TARGET_URL_SEARCH_PARAM, selection.targetUrl)
-    navigate(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`, { replace: true })
-  }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <RuntimeApplicationTargetHeader />
-      <main className="flex flex-1 items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Setup runtime and application</CardTitle>
-          </CardHeader>
+    <Dialog open onOpenChange={noopOpenChange} disablePointerDismissal>
+      <DialogContent showCloseButton={false} className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Setup runtime and application</DialogTitle>
+          <DialogDescription>Choose the runtime application this dashboard works with.</DialogDescription>
+        </DialogHeader>
 
-          {runtimesQuery.isError ? (
-            <CardContent>
-              <Alert variant="destructive">
-                <IconAlertCircle />
-                <AlertTitle>Runtime catalog could not be loaded</AlertTitle>
-                <AlertDescription className="flex flex-col items-start gap-3">
-                  <span>Reload the catalog to choose the runtime application for this dashboard.</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      void runtimesQuery.refetch()
-                    }}
-                  >
-                    <IconRefresh data-icon="inline-start" />
-                    Retry
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          ) : null}
+        {runtimesQuery.isError ? (
+          <Alert variant="destructive">
+            <IconAlertCircle />
+            <AlertTitle>Runtime catalog could not be loaded</AlertTitle>
+            <AlertDescription className="flex flex-col items-start gap-3">
+              <span>Reload the catalog to choose the runtime application for this dashboard.</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void runtimesQuery.refetch()
+                }}
+              >
+                <IconRefresh data-icon="inline-start" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
-          {runtimesQuery.isLoading ? (
-            <CardContent>
-              <div className="text-sm text-muted-foreground">Loading apps...</div>
-            </CardContent>
-          ) : null}
+        {runtimesQuery.isLoading ? <div className="text-sm text-muted-foreground">Loading apps...</div> : null}
 
-          {isCheckingAvailability ? (
-            <CardContent>
-              <div className="text-sm text-muted-foreground">Checking app availability...</div>
-            </CardContent>
-          ) : null}
+        {isCheckingAvailability ? (
+          <div className="text-sm text-muted-foreground">Checking app availability...</div>
+        ) : null}
 
-          {!runtimesQuery.isLoading && !isCheckingAvailability && runtimesQuery.data && !firstSelection ? (
-            <EmptyRuntimeApplicationTargetCardContent />
-          ) : null}
+        {!runtimesQuery.isLoading && !isCheckingAvailability && runtimesQuery.data && !firstSelection ? (
+          <EmptyRuntimeApplicationTargetFormContent />
+        ) : null}
 
-          {runtimesQuery.data && firstSelection ? (
-            <RuntimeApplicationTargetCardContent
-              key={`${firstSelection.runtimeId}-${firstSelection.applicationName}`}
-              defaultValue={firstSelection}
-              onSelectionConfirmed={handleSelectionConfirmed}
-              runtimes={runtimesQuery.data}
-              availableApiUrls={availableApiUrls}
-              isCheckingAvailability={isCheckingAvailability}
-            />
-          ) : null}
-        </Card>
-      </main>
-    </div>
+        {runtimesQuery.data && firstSelection ? (
+          <RuntimeApplicationTargetFormContent
+            key={`${firstSelection.runtimeId}-${firstSelection.applicationName}`}
+            defaultValue={firstSelection}
+            onSelectionConfirmed={onSelectionConfirmed}
+            runtimes={runtimesQuery.data}
+            availableApiUrls={availableApiUrls}
+            isCheckingAvailability={isCheckingAvailability}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
   )
 }
 
-export function RequireExecutionTarget({ children }: { children: ReactNode }) {
-  const location = useLocation()
+export function RuntimeApplicationSelectionRedirect() {
   const [searchParams] = useSearchParams()
+
+  return <Navigate to={searchParams.get(SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM) || '/'} replace />
+}
+
+export function RequireExecutionTarget({ children }: { children: ReactNode }) {
+  const [searchParams, setSearchParams] = useSearchParams()
   const selection = getExecutionTargetSearchSelection(searchParams)
 
-  if (!selection) {
-    const returnTo = `${location.pathname}${location.search}${location.hash}`
-    const selectorSearchParams = new URLSearchParams({ [SELECT_RUNTIME_APPLICATION_RETURN_TO_SEARCH_PARAM]: returnTo })
+  const handleSelectionConfirmed = (nextSelection: ExecutionTargetSearchSelection) => {
+    setSearchParams(
+      (currentSearchParams) => {
+        const nextSearchParams = new URLSearchParams(currentSearchParams)
 
-    return <Navigate to={`${SELECT_RUNTIME_APPLICATION_PATH}?${selectorSearchParams.toString()}`} replace />
+        nextSearchParams.set(EXECUTION_RUNTIME_SEARCH_PARAM, nextSelection.runtimeId)
+        nextSearchParams.set(EXECUTION_APPLICATION_SEARCH_PARAM, nextSelection.applicationName)
+        nextSearchParams.set(EXECUTION_TARGET_URL_SEARCH_PARAM, nextSelection.targetUrl)
+
+        return nextSearchParams
+      },
+      { replace: true },
+    )
+  }
+
+  if (!selection) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <RuntimeApplicationTargetHeader />
+        <RuntimeApplicationTargetDialog onSelectionConfirmed={handleSelectionConfirmed} />
+      </div>
+    )
   }
 
   return children

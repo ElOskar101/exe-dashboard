@@ -157,4 +157,7 @@ export {
 export { useExecutionStatusReadModel, useExecutionStatusValue } from './hooks/use-execution-status-read-model'
 export { useExecutionStatusUpdates } from './hooks/use-execution-status-updates'
 export { ExecutionStatusSubscriber } from './components/execution-status-subscriber'
-export { RequireExecutionTarget, RuntimeApplicationTargetGate } from './components/runtime-application-target-gate'
+export {
+  RequireExecutionTarget,
+  RuntimeApplicationSelectionRedirect,
+} from './components/runtime-application-target-gate'

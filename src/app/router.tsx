@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from '@/features/auth'
 import {
   RequireExecutionTarget,
-  RuntimeApplicationTargetGate,
+  RuntimeApplicationSelectionRedirect,
 } from '@/features/executions/shared/components/runtime-application-target-gate'
 import Layout from '@/components/layout/layout'
 
@@ -27,14 +27,7 @@ export const AppRouter = () => {
         <Routes>
           <Route path="/under-construction" element={<UnderConstruction />} />
           <Route path="/404" element={<NotFound />} />
-          <Route
-            path="/select-runtime-application"
-            element={
-              <ProtectedRoute>
-                <RuntimeApplicationTargetGate />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/select-runtime-application" element={<RuntimeApplicationSelectionRedirect />} />
           <Route
             path="/"
             element={

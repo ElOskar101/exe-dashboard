@@ -27,7 +27,7 @@ export type {
   ExecutionPatient,
   ExecutionWizardDraft,
 } from './creation'
-export { RequireExecutionTarget, RuntimeApplicationTargetGate } from './shared'
+export { RequireExecutionTarget, RuntimeApplicationSelectionRedirect } from './shared'
 export { ExecutionsSidebar } from './listing'
 export { ExecutionDetailPage } from './monitoring'
 export {

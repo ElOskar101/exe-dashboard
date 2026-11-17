@@ -43,6 +43,10 @@ const encodedE2eUser = Buffer.from(JSON.stringify(e2eUser)).toString('base64')
 const e2eCccApiUrl = 'https://carriers.dentalautomation.ai'
 
 export async function prepareAuthenticatedPage(page: Page) {
+  await page.route('https://*.dentalautomation.ai/**', async (route) => {
+    await route.fulfill({ status: 404, json: { message: `Unmocked CCC API request: ${route.request().url()}` } })
+  })
+
   await page.route('**/users/me', async (route) => {
     await route.fulfill({ json: e2eUser })
   })
