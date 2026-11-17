@@ -543,7 +543,7 @@ test.describe('protected executions route', () => {
       execution: '2026-04-27',
       botName: 'Eligibility Runner',
       context: {
-        env: 'dev',
+        env: 'prod',
         bot: {
           id: 'bot-1',
           botName: 'Eligibility Runner',
